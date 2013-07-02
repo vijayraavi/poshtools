@@ -39,16 +39,22 @@ namespace PowerGUIVSX
         {
             List<string> strList = new List<string>();
 
-            SnapshotPoint currentPoint = (session.TextView.Caret.Position.BufferPosition) - 1;
-            ITextStructureNavigator navigator = m_sourceProvider.NavigatorService.GetTextStructureNavigator(m_textBuffer);
-            TextExtent extent = navigator.GetExtentOfWord(currentPoint);
+            var text = session.TextView.TextBuffer.CurrentSnapshot.GetText();
+            var currentPoint = session.TextView.Caret.Position.BufferPosition;
+
+        //    ITextStructureNavigator navigator = m_sourceProvider.NavigatorService.GetTextStructureNavigator(m_textBuffer);
+           // TextExtent extent = navigator.GetExtentOfWord(currentPoint);
            
             using (var ps = PowerShell.Create())
             {
-                var text = m_textBuffer.CurrentSnapshot.GetText(extent.Span);
+                //var text = m_textBuffer.CurrentSnapshot.GetText(extent.Span);
 
-                ps.Runspace = _host.Runspace;
-                var commandCompletion = CommandCompletion.CompleteInput(text, text.Length - 1, new Hashtable(), ps);
+                if (_host != null)
+                {
+                    ps.Runspace = _host.Runspace;
+                }
+
+                var commandCompletion = CommandCompletion.CompleteInput(text, currentPoint, new Hashtable(), ps);
                 foreach(var match in commandCompletion.CompletionMatches)
                 {
                     strList.Add(match.CompletionText);
@@ -195,7 +201,8 @@ namespace PowerGUIVSX
                 {
                     if (TriggerCompletion() && m_session != null)
                     {
-                        m_session.Filter();
+                        if (m_session.IsStarted)
+                            m_session.Filter();
                     }
                 }
                 else     //the completion session is already active, so just filter

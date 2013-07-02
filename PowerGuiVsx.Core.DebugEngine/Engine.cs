@@ -1,8 +1,11 @@
 #region Usings
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Data;
 using System.Diagnostics;
+using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -37,7 +40,8 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         private ScriptProgramNode _node;
 
-        private ScriptBreakpoint _breakpoint;
+        private List<ScriptBreakpoint> bps = new List<ScriptBreakpoint>(); 
+
 
         #endregion
 
@@ -70,33 +74,25 @@ namespace PowerGuiVsx.Core.DebugEngine
                 throw new Exception("Runspace not set!");
             }
 
-            Debugger = new ScriptDebugger(Runspace);
-            Debugger.BreakpointUpdated += DebuggerBreakpointUpdated;
-            Debugger.DebuggerStopped += DebuggerDebuggerStopped;
-            Debugger.ScriptStopped += DebuggerScriptStopped;
+            Thread.Sleep(1000);
+
+            Debugger = new ScriptDebugger(Runspace, bps);
+            Debugger.BreakpointHit += Debugger_BreakpointHit;
+            Debugger.DebuggingFinished += Debugger_DebuggingFinished;
 
             Debugger.Execute(_node.FileName);
             _node.Debugger = Debugger;
         }
 
-        #region Implementation of IDebugEngine
-
-        void DebuggerScriptStopped(object sender, EventArgs e)
+        void Debugger_DebuggingFinished(object sender, EventArgs e)
         {
             _events.ProgramDestroyed(_node);
         }
 
-        void DebuggerDebuggerStopped(object sender, System.Management.Automation.DebuggerStopEventArgs e)
+        void Debugger_BreakpointHit(object sender, EventArgs<ScriptBreakpoint> e)
         {
-            _events.ProgramDestroyed(_node);
+            _events.BreakpointHit(e.Value, _node);
         }
-
-        void DebuggerBreakpointUpdated(object sender, System.Management.Automation.BreakpointUpdatedEventArgs e)
-        {
-            _events.BreakpointHit(_breakpoint, _node);
-        }
-
-        #endregion
 
         #region Implementation of IDebugEngine2
 
@@ -126,6 +122,8 @@ namespace PowerGuiVsx.Core.DebugEngine
             _events.RunspaceRequest();
             _events.EngineCreated();
             _events.ProgramCreated(_node);
+            _events.EngineLoaded();
+
             _events.DebugEntryPoint();
 
             Task.Factory.StartNew(Execute);
@@ -158,28 +156,25 @@ namespace PowerGuiVsx.Core.DebugEngine
         {
             Trace.WriteLine("Engine: CreatePendingBreakPoint");
 
-            if (_runspace != null)
+            ppPendingBP = null;
+
+            var info = new BP_REQUEST_INFO[1];
+            info[0].bpLocation.bpLocationType = (uint)enum_BP_LOCATION_TYPE.BPLT_FILE_LINE;
+            if (pBPRequest.GetRequestInfo(enum_BPREQI_FIELDS.BPREQI_BPLOCATION, info) == VSConstants.S_OK)
             {
-                
+                var position = (IDebugDocumentPosition2)Marshal.GetObjectForIUnknown(info[0].bpLocation.unionmember2);
+                var start = new TEXT_POSITION[1]; 
+                var end = new TEXT_POSITION[1];
+                string fileName;
+
+                position.GetRange(start, end);
+                position.GetFileName(out fileName);
+
+                var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine, (int)start[0].dwColumn, _events, _runspace);
+                ppPendingBP = breakpoint;
+
+                bps.Add(breakpoint);
             }
-
-            var type = new enum_BP_LOCATION_TYPE[10];
-            
-            if (pBPRequest.GetLocationType(type) != VSConstants.S_OK)
-            {
-                
-            }
-
-            var info = new BP_REQUEST_INFO[10];
-            if (pBPRequest.GetRequestInfo(enum_BPREQI_FIELDS.BPREQI_ALLFIELDS, info) != VSConstants.S_OK)
-            {
-                
-            }
-
-            _breakpoint = new ScriptBreakpoint(_node, 0, _events, _runspace);
-            ppPendingBP = _breakpoint;
-
-            _events.Breakpoint(_node, _breakpoint);
 
             return VSConstants.S_OK;
         }

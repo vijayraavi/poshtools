@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 
-namespace PowerGUIVSX.Classification
+namespace AdamDriscoll.PowerGUIVSX
 {
     internal static class OrdinaryClassificationDefinition
     {
@@ -159,5 +154,126 @@ namespace PowerGUIVSX.Classification
         internal static ClassificationTypeDefinition Type = null;
 
         #endregion
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellAttribute")]
+    [Name("PowerShell Attribute")]
+    [DisplayName("PowerShell Attribute")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellAttributeFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellCommand")]
+    [Name("PowerShell Command")]
+    [DisplayName("PowerShell Command")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellCommandFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellCommandArgument")]
+    [Name("PowerShell Command Argument")]
+    [DisplayName("PowerShell Command Argument")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellCommandArgumentFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellCommandParameter")]
+    [Name("PowerShell Command Parameter")]
+    [DisplayName("PowerShell Command Parameter")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellCommandParameterFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellComment")]
+    [Name("PowerShell Comment")]
+    [DisplayName("PowerShell Comment")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellCommentFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellKeyword")]
+    [Name("PowerShell Keyword")]
+    [DisplayName("PowerShell Keyword")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellKeywordFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellNumber")]
+    [Name("PowerShell Number")]
+    [DisplayName("PowerShell Number")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellNumberFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellOperator")]
+    [Name("PowerShell Operator")]
+    [DisplayName("PowerShell Operator")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellOperatorsFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellString")]
+    [Name("PowerShell String")]
+    [DisplayName("PowerShell String")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellStringFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellType")]
+    [Name("PowerShell Type")]
+    [DisplayName("PowerShell Types")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellTypeFormat : ClassificationFormatDefinition
+    {
+
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellVariable")]
+    [Name("PowerShell Variable")]
+    [DisplayName("PowerShell Variable")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellVariablesFormat : ClassificationFormatDefinition
+    {
+
     }
 }

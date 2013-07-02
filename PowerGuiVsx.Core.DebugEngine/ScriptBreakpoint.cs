@@ -12,14 +12,34 @@ namespace PowerGuiVsx.Core.DebugEngine
         private EngineEvents _callback;
         private ScriptProgramNode _node;
         private Runspace _runspace;
+        private string _file;
         private int _line;
 
-        public ScriptBreakpoint(ScriptProgramNode node, int line, EngineEvents callback, Runspace runspace)
+        public int Line
+        {
+            get { return _line; }
+        }
+
+        public int Column
+        {
+            get { return _column; }
+        }
+
+        public string File
+        {
+            get { return _file; }
+        }
+
+        private int _column;
+
+        public ScriptBreakpoint(ScriptProgramNode node, string file, int line, int column, EngineEvents callback, Runspace runspace)
         {
             _node = node;
             _callback = callback;
             _runspace = runspace;
             _line = line;
+            _column = column;
+            _file = file;
         }
 
         #region Implementation of IDebugBoundBreakpoint2
@@ -135,16 +155,16 @@ namespace PowerGuiVsx.Core.DebugEngine
         public int Bind()
         {
             Trace.WriteLine("ScriptBreakpoint: Bind");
-            using (var pipeline = _runspace.CreatePipeline())
-            {
-                var command = new Command("Set-PSBreakpoint");
-                command.Parameters.Add("Script", _node.FileName);
-                command.Parameters.Add("Line", _line);
-                command.Parameters.Add("Column", 0);
-                pipeline.Commands.Add(command);
-                pipeline.Invoke();
-            }
-            _callback.Breakpoint(_node, this);
+            //using (var pipeline = _runspace.CreatePipeline())
+            //{
+            //    var command = new Command("Set-PSBreakpoint");
+            //    command.Parameters.Add("Script", _file);
+            //    command.Parameters.Add("Line", _line);
+            //    command.Parameters.Add("Column", _column);
+            //    pipeline.Commands.Add(command);
+            //    pipeline.Invoke();
+            //}
+            //_callback.Breakpoint(_node, this);
             return VSConstants.S_OK;
         }
 

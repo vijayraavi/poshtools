@@ -1,19 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Reflection;
+using System.Threading;
 
 namespace PowerGuiVsx.Core.DebugEngine
 {
+    public class EventArgs<T> : EventArgs
+    {
+        public EventArgs(T value)
+        {
+            Value = value;
+        }
+
+        public T Value { get; private set; }
+    }
+
     public class ScriptDebugger 
     {
         public event Action<string> DocumentChanged;
         private Runspace _runspace;
         private Pipeline _currentPipeline;
 
-        public event EventHandler ScriptStopped;
-        public event EventHandler<BreakpointUpdatedEventArgs> BreakpointUpdated;
-        public event EventHandler<DebuggerStopEventArgs> DebuggerStopped;
+        private List<ScriptBreakpoint> _breakpoints = new List<ScriptBreakpoint>();
+
+        public event EventHandler<EventArgs<ScriptBreakpoint>> BreakpointHit;
+        public event EventHandler DebuggingFinished;
+
+        private AutoResetEvent _pausedEvent = new AutoResetEvent(false);
+        private DebuggerResumeAction _resumeAction;
 
         public Dictionary<string, object> Variables { get; private set; }
 
@@ -25,12 +42,27 @@ namespace PowerGuiVsx.Core.DebugEngine
             }
         }
 
-        public ScriptDebugger(Runspace runspace)
+        public ScriptDebugger(Runspace runspace, IEnumerable<ScriptBreakpoint> initialBreakpoints )
         {
             _runspace = runspace;
             _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
             _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
             _runspace.StateChanged += _runspace_StateChanged;
+
+            var addLineBreakpoint = _runspace.Debugger.GetType()
+                                             .GetMethod("NewLineBreakpoint",
+                                                        BindingFlags.Instance | BindingFlags.NonPublic, 
+                                                        null, 
+                                                        new []{typeof(string), typeof(int), typeof(ScriptBlock)}, 
+                                                        null);
+
+            if (addLineBreakpoint != null)
+            {
+                foreach (var bp in initialBreakpoints)
+                {
+                    addLineBreakpoint.Invoke(_runspace.Debugger, new object[] {bp.File, bp.Line, null});
+                }
+            }
 
             Variables = new Dictionary<string, object>();
         }
@@ -42,9 +74,9 @@ namespace PowerGuiVsx.Core.DebugEngine
                 case RunspaceState.Broken:
                 case RunspaceState.Closed:
                 case RunspaceState.Disconnected:
-                    if (ScriptStopped != null)
+                    if (DebuggingFinished != null)
                     {
-                        ScriptStopped(this, new EventArgs());
+                        DebuggingFinished(this, new EventArgs());
                     }
                     break;
             }
@@ -52,19 +84,35 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
-            if (BreakpointUpdated != null)
-            {
-                BreakpointUpdated(this, e);
-            }
+            
         }
 
         void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
         {
-            if (DebuggerStopped != null)
+            if (e.Breakpoints.Count > 0)
             {
-                Variables.Clear();
-                DebuggerStopped(this, e);
+                var lbp = e.Breakpoints[0] as LineBreakpoint;
+                if (lbp != null)
+                {
+                    var bp =
+                        _breakpoints.FirstOrDefault(
+                            m =>
+                            m.Column == lbp.Column && lbp.Line == m.Line &&
+                            lbp.Script.Equals(m.File, StringComparison.InvariantCultureIgnoreCase));
+
+                    if (bp != null)
+                    {
+                        if (BreakpointHit != null)
+                        {
+                            BreakpointHit(this, new EventArgs<ScriptBreakpoint>(bp));
+                        }
+                    }
+                }
             }
+
+            //Wait for the user to step, continue or stop
+            _pausedEvent.WaitOne();
+            e.ResumeAction = _resumeAction;
         }
 
         public void Stop()
@@ -73,6 +121,30 @@ namespace PowerGuiVsx.Core.DebugEngine
            {
                _currentPipeline.Stop();
            }
+        }
+
+        public void StepOver()
+        {
+            _resumeAction = DebuggerResumeAction.StepOver;
+            _pausedEvent.Set();
+        }
+
+        public void StepInto()
+        {
+            _resumeAction = DebuggerResumeAction.StepInto;
+            _pausedEvent.Set();
+        }
+
+        public void StepOut()
+        {
+            _resumeAction = DebuggerResumeAction.StepOut;
+            _pausedEvent.Set();
+        }
+
+        public void Continue()
+        {
+            _resumeAction = DebuggerResumeAction.Continue;
+            _pausedEvent.Set();
         }
 
         public void Execute()
@@ -99,9 +171,9 @@ namespace PowerGuiVsx.Core.DebugEngine
                 case PipelineState.Completed:
                 case PipelineState.Failed:
                 case PipelineState.Stopped:
-                    if (ScriptStopped != null)
+                    if (DebuggingFinished != null)
                     {
-                        ScriptStopped(this, new EventArgs());
+                        DebuggingFinished(this, new EventArgs());
                     }
                     _currentPipeline.Dispose();
                     break;

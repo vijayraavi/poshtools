@@ -107,6 +107,7 @@ namespace AdamDriscoll.PowerGUIVSX
             }
 
             RegisterProjectFactory(new PowerShellProjectFactory(this));
+            RegisterEngine();
 
             Host = new VSXHost();
         }
@@ -204,7 +205,7 @@ namespace AdamDriscoll.PowerGUIVSX
         {
             var value = key.GetValue("CodeBase");
 
-            return value == null ? false : value.Equals(destFile);
+            return value != null && value.Equals(destFile);
         }
         #endregion
 

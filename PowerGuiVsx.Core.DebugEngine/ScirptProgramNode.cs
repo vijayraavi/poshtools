@@ -195,7 +195,7 @@ namespace PowerGuiVsx.Core.DebugEngine
         public int Continue(IDebugThread2 pThread)
         {
             Trace.WriteLine("ScriptProgramNode: Entering Continue");
-            Debugger.Execute();
+            Debugger.Continue();
             return VSConstants.S_OK;
         }
 
@@ -205,13 +205,13 @@ namespace PowerGuiVsx.Core.DebugEngine
             switch(sk)
             {
                 case enum_STEPKIND.STEP_OVER:
-                    //TODO: Debugger.DebuggerManager.Execute(p, RunScriptMode.StepOver);
+                    Debugger.StepOver();
                     break;
                 case enum_STEPKIND.STEP_INTO:
-                   // Debugger.DebuggerManager.Execute(p, RunScriptMode.StepInto);
+                   Debugger.StepInto();
                     break;
                 case enum_STEPKIND.STEP_OUT:
-                   // Debugger.DebuggerManager.Execute(p, RunScriptMode.StepOut);
+                   Debugger.StepOut();
                     break;
             }
             return VSConstants.S_OK;
