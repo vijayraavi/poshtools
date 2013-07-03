@@ -4,7 +4,7 @@ PowerGUI VSX v2
 PowerShell integration for Visual Studio 2012.
 
 * Syntax Highlighting - *Completed*
-* IntelliSense- *Completed*
+* IntelliSense- *Completed* (slow)
 * Project System - *Completed*
 * Debugging
 * Output pane
