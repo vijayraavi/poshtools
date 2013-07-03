@@ -11,3 +11,5 @@ PowerShell integration for Visual Studio 2012.
 * Command Pane
 * Local\Watch Pane
 * Breakpoint Pane
+* Error Pane
+* Snippet Support
