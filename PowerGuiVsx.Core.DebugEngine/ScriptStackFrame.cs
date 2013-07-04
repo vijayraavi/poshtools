@@ -173,6 +173,8 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         public int Next(uint celt, FRAMEINFO[] rgelt, ref uint pceltFetched)
         {
+            pceltFetched = 0;
+
             if (celt == 0) return VSConstants.S_OK;            
 
             for (uint i = _iterationLocation; i < _iterationLocation + celt; i++)
