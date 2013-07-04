@@ -5,6 +5,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Threading;
+using PrivateReflectionUsingDynamic;
 
 namespace PowerGuiVsx.Core.DebugEngine
 {
@@ -22,9 +23,10 @@ namespace PowerGuiVsx.Core.DebugEngine
     {
         public event Action<string> DocumentChanged;
         private Runspace _runspace;
-        private Pipeline _currentPipeline;
+        private static object pipelineLock = new object();
 
-        private List<ScriptBreakpoint> _breakpoints = new List<ScriptBreakpoint>();
+        private List<ScriptBreakpoint> _breakpoints;
+        private List<ScriptStackFrame> _callstack;
 
         public event EventHandler<EventArgs<ScriptBreakpoint>> BreakpointHit;
         public event EventHandler<BreakpointUpdatedEventArgs> BreakpointUpdated;
@@ -34,7 +36,8 @@ namespace PowerGuiVsx.Core.DebugEngine
         private DebuggerResumeAction _resumeAction;
         private static MethodInfo _newLineBreakpoint;
 
-        public Dictionary<string, object> Variables { get; private set; }
+        public IDictionary<string, object> Variables { get; private set; }
+        public IEnumerable<ScriptStackFrame> CallStack { get { return _callstack; } } 
 
         public void OnDocumentChanged(string fileName)
         {
@@ -50,13 +53,13 @@ namespace PowerGuiVsx.Core.DebugEngine
             _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
             _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
             _runspace.StateChanged += _runspace_StateChanged;
+            _breakpoints = new List<ScriptBreakpoint>();
 
             foreach (var bp in initialBreakpoints)
             {
                 SetBreakpoint(bp);
+                _breakpoints.Add(bp);
             }
-
-            Variables = new Dictionary<string, object>();
         }
 
         private void SetBreakpoint(ScriptBreakpoint breakpoint)
@@ -102,25 +105,12 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
         {
+            RefreshScopedVariables();
+            RefreshCallStack();
+
             if (e.Breakpoints.Count > 0)
             {
-                var lbp = e.Breakpoints[0] as LineBreakpoint;
-                if (lbp != null)
-                {
-                    var bp =
-                        _breakpoints.FirstOrDefault(
-                            m =>
-                            m.Column == lbp.Column && lbp.Line == m.Line &&
-                            lbp.Script.Equals(m.File, StringComparison.InvariantCultureIgnoreCase));
-
-                    if (bp != null)
-                    {
-                        if (BreakpointHit != null)
-                        {
-                            BreakpointHit(this, new EventArgs<ScriptBreakpoint>(bp));
-                        }
-                    }
-                }
+                ProcessLineBreakpoints(e);
             }
 
             //Wait for the user to step, continue or stop
@@ -128,12 +118,29 @@ namespace PowerGuiVsx.Core.DebugEngine
             e.ResumeAction = _resumeAction;
         }
 
+        private void ProcessLineBreakpoints(DebuggerStopEventArgs e)
+        {
+            var lbp = e.Breakpoints[0] as LineBreakpoint;
+            if (lbp != null)
+            {
+                var bp =
+                    _breakpoints.FirstOrDefault(
+                        m =>
+                        m.Column == lbp.Column && lbp.Line == m.Line &&
+                        lbp.Script.Equals(m.File, StringComparison.InvariantCultureIgnoreCase));
+
+                if (bp != null)
+                {
+                    if (BreakpointHit != null)
+                    {
+                        BreakpointHit(this, new EventArgs<ScriptBreakpoint>(bp));
+                    }
+                }
+            }
+        }
+
         public void Stop()
         {
-           if (_currentPipeline != null)
-           {
-               _currentPipeline.Stop();
-           }
         }
 
         public void StepOver()
@@ -162,35 +169,86 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         public void Execute()
         {
+        }
+
+        public void Execute(string fileName)
+        {
             using (var pipeline = _runspace.CreatePipeline())
             {
-                _currentPipeline = pipeline;
+                pipeline.Commands.AddScript(String.Format(". '{0}'", fileName));
                 pipeline.Invoke();
             }
         }
 
-        public void Execute(string text)
+        private void RefreshScopedVariables()
         {
-            _currentPipeline = _runspace.CreatePipeline();
-            _currentPipeline.StateChanged += _currentPipeline_StateChanged;
-            _currentPipeline.Commands.AddScript(String.Format(". '{0}'", text));
-            _currentPipeline.InvokeAsync();
+            IEnumerable<PSObject> result = null;
+            using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+            {
+                result = pipeline.InvokeCommand("Get-Variable");
+            }
+
+            Variables = new Dictionary<string, object>();
+
+            foreach (var psobj in result)
+            {
+                var psVar = psobj.BaseObject as PSVariable;
+
+                if (psVar != null)
+                {
+                    Variables.Add(psVar.Name, psVar.Value);    
+                }
+            }
         }
 
-        void _currentPipeline_StateChanged(object sender, PipelineStateEventArgs e)
+        private void RefreshCallStack()
         {
-            switch (e.PipelineStateInfo.State)
+            IEnumerable<PSObject> result = null;
+            using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
             {
-                case PipelineState.Completed:
-                case PipelineState.Failed:
-                case PipelineState.Stopped:
-                    if (DebuggingFinished != null)
-                    {
-                        DebuggingFinished(this, new EventArgs());
-                    }
-                    _currentPipeline.Dispose();
-                    break;
+                result = pipeline.InvokeCommand("Get-PSCallstack");
             }
+
+            _callstack = new List<ScriptStackFrame>();
+
+            foreach (var psobj in result)
+            {
+                var frame = psobj.BaseObject as CallStackFrame;
+                if (frame != null)
+                {
+                    _callstack.Add(new ScriptStackFrame(this, frame));
+                }
+            }
+        }
+    }
+
+    public class LockablePipeline : IDisposable
+    {
+        private Mutex _mutex;
+        public Pipeline Pipeline { get; private set; }
+
+        public LockablePipeline(Pipeline pipeline)
+        {
+            _mutex = new Mutex(true);
+            Pipeline = pipeline;
+        }
+
+        public IEnumerable<PSObject> InvokeCommand(string command)
+        {
+            Pipeline.Commands.Add(command);
+            return Pipeline.Invoke();
+        }
+
+        public void InvokeScript(string fileName)
+        {
+            Pipeline.Commands.AddScript(String.Format(". '{0}'", fileName));
+            Pipeline.Invoke();
+        }
+
+        public void Dispose()
+        {
+            Pipeline.Dispose();
+            _mutex.ReleaseMutex();
         }
     }
 }

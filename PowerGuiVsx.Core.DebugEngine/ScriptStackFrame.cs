@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
 using System.Text;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
@@ -10,13 +11,19 @@ namespace PowerGuiVsx.Core.DebugEngine
 {
     public class ScriptStackFrame : IDebugStackFrame2
     {
-        private ScriptProgramNode _node;
+        private ScriptDebugger _debugger;
         private ScriptDocumentContext _docContext;
 
-        public ScriptStackFrame(ScriptProgramNode node)
+        public ScriptStackFrame(ScriptDebugger debugger, CallStackFrame frame)
         {
-            _node = node;
-            _docContext = new ScriptDocumentContext(_node.FileName);
+            _debugger = debugger;
+            _docContext = new ScriptDocumentContext(frame.ScriptName, frame.ScriptLineNumber, 0);
+        }
+
+        public ScriptStackFrame(ScriptDebugger debugger, string fileName, int line, int column)
+        {
+            _debugger = debugger;
+            _docContext = new ScriptDocumentContext(fileName, line, column);
         }
 
         #region Implementation of IDebugStackFrame2
@@ -38,7 +45,7 @@ namespace PowerGuiVsx.Core.DebugEngine
         public int GetName(out string pbstrName)
         {
             Trace.WriteLine("ScriptStackFrame: GetName");
-            pbstrName = "TestStack";
+            pbstrName = _docContext.ToString();
             return VSConstants.S_OK;
         }
 
@@ -127,7 +134,7 @@ namespace PowerGuiVsx.Core.DebugEngine
         {
             Trace.WriteLine("ScriptStackFrame: EnumProperties");
             pcelt = 0;
-            ppEnum = new ScriptPropertyCollection(_node);
+            ppEnum = new ScriptPropertyCollection(_debugger);
             return VSConstants.S_OK;
         }
 
@@ -139,43 +146,65 @@ namespace PowerGuiVsx.Core.DebugEngine
         }
 
         #endregion
+
+        public override string ToString()
+        {
+            return _docContext.ToString();
+        }
     }
 
     public class ScriptStackFrameCollection : List<ScriptStackFrame>, IEnumDebugFrameInfo2
     {
+        private uint _iterationLocation;
         private ScriptProgramNode _node;
 
-        public ScriptStackFrameCollection(ScriptProgramNode node)
+        public ScriptStackFrameCollection(IEnumerable<ScriptStackFrame> frames, ScriptProgramNode node)
         {
+            foreach (var frame in frames)
+            {
+                Add(frame);
+            }
+
+            _iterationLocation = 0;
             _node = node;
-            this.Add(new ScriptStackFrame(node));
         }
 
         #region Implementation of IEnumDebugFrameInfo2
 
         public int Next(uint celt, FRAMEINFO[] rgelt, ref uint pceltFetched)
         {
-            Trace.WriteLine("ScriptStackFrameCollection: Next");
-            rgelt[0].m_dwValidFields = (enum_FRAMEINFO_FLAGS.FIF_LANGUAGE | enum_FRAMEINFO_FLAGS.FIF_DEBUGINFO | enum_FRAMEINFO_FLAGS.FIF_STALECODE | enum_FRAMEINFO_FLAGS.FIF_FRAME | enum_FRAMEINFO_FLAGS.FIF_FUNCNAME | enum_FRAMEINFO_FLAGS.FIF_MODULE);
-            rgelt[0].m_fHasDebugInfo = 1;
-            rgelt[0].m_fStaleCode = 0;
-            rgelt[0].m_bstrLanguage = "PowerShell";
-            rgelt[0].m_bstrFuncName = "Stack Frame 1";
-            rgelt[0].m_pFrame = new ScriptStackFrame(_node);
-            rgelt[0].m_pModule = _node;
-            pceltFetched = 1;
+            if (celt == 0) return VSConstants.S_OK;            
+
+            for (uint i = _iterationLocation; i < _iterationLocation + celt; i++)
+            {
+                var currentFrame = this[(int)i];
+
+                Trace.WriteLine("ScriptStackFrameCollection: Next");
+                rgelt[0].m_dwValidFields = (enum_FRAMEINFO_FLAGS.FIF_LANGUAGE | enum_FRAMEINFO_FLAGS.FIF_DEBUGINFO | enum_FRAMEINFO_FLAGS.FIF_STALECODE | enum_FRAMEINFO_FLAGS.FIF_FRAME | enum_FRAMEINFO_FLAGS.FIF_FUNCNAME | enum_FRAMEINFO_FLAGS.FIF_MODULE);
+                rgelt[0].m_fHasDebugInfo = 1;
+                rgelt[0].m_fStaleCode = 0;
+                rgelt[0].m_bstrLanguage = "PowerShell";
+                rgelt[0].m_bstrFuncName = currentFrame.ToString();
+                rgelt[0].m_pFrame = currentFrame;
+                rgelt[0].m_pModule = _node;
+
+                pceltFetched++;
+            }
+
             return VSConstants.S_OK;
         }
 
         public int Skip(uint celt)
         {
             Trace.WriteLine("ScriptStackFrameCollection: Skip");
-            return VSConstants.E_NOTIMPL;
+            _iterationLocation += celt;
+            return VSConstants.S_OK;
         }
 
         public int Reset()
         {
             Trace.WriteLine("ScriptStackFrameCollection: Reset");
+            _iterationLocation = 0;
             return VSConstants.S_OK;
         }
 
@@ -189,7 +218,7 @@ namespace PowerGuiVsx.Core.DebugEngine
         public int GetCount(out uint pcelt)
         {
             Trace.WriteLine("ScriptStackFrameCollection: GetCount");
-            pcelt = 1;
+            pcelt = (uint)Count;
             return VSConstants.S_OK;
         }
 

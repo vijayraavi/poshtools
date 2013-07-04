@@ -155,15 +155,6 @@ namespace PowerGuiVsx.Core.DebugEngine
         public int Bind()
         {
             Trace.WriteLine("ScriptBreakpoint: Bind");
-            //using (var pipeline = _runspace.CreatePipeline())
-            //{
-            //    var command = new Command("Set-PSBreakpoint");
-            //    command.Parameters.Add("Script", _file);
-            //    command.Parameters.Add("Line", _line);
-            //    command.Parameters.Add("Column", _column);
-            //    pipeline.Commands.Add(command);
-            //    pipeline.Invoke();
-            //}
             _callback.Breakpoint(_node, this);
             return VSConstants.S_OK;
         }
@@ -222,7 +213,7 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         public int GetResolutionInfo(enum_BPRESI_FIELDS dwFields, BP_RESOLUTION_INFO[] pBPResolutionInfo)
         {
-            var documentContext = new ScriptDocumentContext(_node.FileName);
+            var documentContext = new ScriptDocumentContext(_node.FileName, _line, _column);
 
             Trace.WriteLine("ScriptBreakpoint: GetResolutionInfo");
             if (dwFields == enum_BPRESI_FIELDS.BPRESI_ALLFIELDS)

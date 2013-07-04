@@ -1,9 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation.Runspaces;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using EnvDTE;
+using EnvDTE80;
 using Microsoft.VisualStudio.Debugger.Interop;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
 using PowerGuiVsx.Core.DebugEngine;
+using Thread = System.Threading.Thread;
 
 namespace PowerGuiVsx.Core
 {
@@ -13,10 +21,31 @@ namespace PowerGuiVsx.Core
     public class DebugEventManager : IVsDebuggerEvents, IDebugEventCallback2
     {
         private Runspace _runspace;
+        private List<PendingBreakpoint> _breakpoints;
 
         public DebugEventManager(Runspace runspace)
         {
             _runspace = runspace;
+            _breakpoints = new List<PendingBreakpoint>();
+
+            var dte2 = Package.GetGlobalService(typeof(DTE)) as DTE2;
+
+            foreach (Breakpoint bp in dte2.Debugger.Breakpoints)
+            {
+                if (bp.File.ToLower().EndsWith(".ps1"))
+                {
+                    var pbp = new PendingBreakpoint
+                                  {
+                                      BreakpointType = BreakpointType.Line,
+                                      Column = bp.FileColumn,
+                                      Line = bp.FileLine,
+                                      Context = bp.File,
+                                      Language = bp.Language
+                                  };
+
+                    _breakpoints.Add(pbp);
+                }
+            }
         }
 
         #region Methods
@@ -31,7 +60,7 @@ namespace PowerGuiVsx.Core
             if (pEvent is IRunspaceRequest)
             {
                 var request = pEvent as IRunspaceRequest;
-                request.SetRunspace(_runspace);
+                request.SetRunspace(_runspace, _breakpoints);
             }
 
             return VSConstants.S_OK;

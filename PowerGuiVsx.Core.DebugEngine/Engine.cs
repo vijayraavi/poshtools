@@ -12,9 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ard.PowerGuiVsx.Core.DebugEngine;
+using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerGuiVsx.Core.DebugEngine.Definitions;
+using Thread = System.Threading.Thread;
 
 #endregion
 
@@ -60,6 +62,9 @@ namespace PowerGuiVsx.Core.DebugEngine
             }
         }
 
+        public IEnumerable<PendingBreakpoint> PendingBreakpoints { get; set; }
+
+
         #endregion
 
         public Engine()
@@ -74,15 +79,18 @@ namespace PowerGuiVsx.Core.DebugEngine
                 throw new Exception("Runspace not set!");
             }
 
-            Thread.Sleep(1000);
-
+            while (PendingBreakpoints.Count() > bps.Count)
+            {
+                Thread.Sleep(1000);
+            }
+            
             Debugger = new ScriptDebugger(Runspace, bps);
             Debugger.BreakpointHit += Debugger_BreakpointHit;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
             Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            _node.Debugger = Debugger;
 
             Debugger.Execute(_node.FileName);
-            _node.Debugger = Debugger;
         }
 
         void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)

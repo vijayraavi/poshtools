@@ -110,12 +110,10 @@ namespace PowerGuiVsx.Core.DebugEngine
     public class ScriptPropertyCollection : List<ScriptProperty>, IEnumDebugPropertyInfo2
     {
         private uint count;
-        private ScriptProgramNode _node;
 
-        public ScriptPropertyCollection(ScriptProgramNode node)
+        public ScriptPropertyCollection(ScriptDebugger debugger)
         {
-            _node = node;
-            foreach (var keyVal in _node.Debugger.Variables)
+            foreach (var keyVal in debugger.Variables)
             {
                 var val = keyVal.Value != null ? keyVal.Value : null;
                 this.Add(new ScriptProperty(keyVal.Key, val));

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerGuiVsx.Core.DebugEngin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.VisualStudio.Project", "ThirdParty\Src\CSharp\Microsoft.VisualStudio.Project.csproj", "{CACB60A9-1E76-4F92-8831-B134A658C695}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerGUIVSX.Test", "PowerGUIVSX.Test\PowerGUIVSX.Test.csproj", "{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,11 +47,16 @@ Global
 		{CACB60A9-1E76-4F92-8831-B134A658C695}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CACB60A9-1E76-4F92-8831-B134A658C695}.Release|x64.ActiveCfg = Release|Any CPU
 		{CACB60A9-1E76-4F92-8831-B134A658C695}.Release|x86.ActiveCfg = Release|Any CPU
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Release|x64.ActiveCfg = Release|Any CPU
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

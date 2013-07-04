@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management.Automation.Runspaces;
+using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 
@@ -101,7 +103,7 @@ namespace PowerGuiVsx.Core.DebugEngine
         {
             Trace.WriteLine("Sending break point bound event");
             var iid = new Guid(BreakPointEvent.IID);
-            _callback.Event(_engine, null, null, null, new BreakPointEvent(breakpoint), ref iid, BreakPointEvent.Attributes);
+            _callback.Event(_engine, null, program, program, new BreakPointEvent(breakpoint), ref iid, BreakPointEvent.Attributes);
         }
 
         public void BreakpointHit(ScriptBreakpoint breakpoint, ScriptProgramNode node)
@@ -128,8 +130,9 @@ namespace PowerGuiVsx.Core.DebugEngine
             m_engine = engine;
         }
 
-        public void SetRunspace(Runspace runspace)
+        public void SetRunspace(Runspace runspace, IEnumerable<PendingBreakpoint> breakpoints)
         {
+            Engine.PendingBreakpoints = breakpoints;
             Engine.Runspace = runspace;
         }
 

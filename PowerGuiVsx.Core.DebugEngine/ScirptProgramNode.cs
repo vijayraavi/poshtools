@@ -314,7 +314,7 @@ namespace PowerGuiVsx.Core.DebugEngine
         public int EnumFrameInfo(enum_FRAMEINFO_FLAGS dwFieldSpec, uint nRadix, out IEnumDebugFrameInfo2 ppEnum)
         {
             Trace.WriteLine("Thread: EnumFrameInfo");
-            ppEnum = new ScriptStackFrameCollection(this);
+            ppEnum = new ScriptStackFrameCollection(Debugger.CallStack, this);
             return VSConstants.S_OK;
         }
 

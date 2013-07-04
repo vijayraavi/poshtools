@@ -10,10 +10,13 @@ namespace PowerGuiVsx.Core.DebugEngine
     public class ScriptDocumentContext : IDebugDocumentContext2, IDebugCodeContext2, IEnumDebugCodeContexts2
     {
         private string _fileName;
+        private int _line, _column;
 
-        public ScriptDocumentContext(string fileName)
+        public ScriptDocumentContext(string fileName, int line, int column)
         {
             _fileName = fileName;
+            _line = line;
+            _column = column;
         }
 
         #region Implementation of IDebugDocumentContext2
@@ -51,8 +54,10 @@ namespace PowerGuiVsx.Core.DebugEngine
         {
             Trace.WriteLine("ScriptDocumentContext: GetStatementRange");
 
-            pBegPosition[0] = default(TEXT_POSITION);
-            pEndPosition[0] = default(TEXT_POSITION);
+            pBegPosition[0].dwLine = (uint)_line;
+            pBegPosition[0].dwColumn = (uint)_column;
+            pEndPosition[0].dwLine = (uint)_line;
+            pEndPosition[0].dwColumn = (uint)_column;
 
             return VSConstants.S_OK;
         }
@@ -60,6 +65,12 @@ namespace PowerGuiVsx.Core.DebugEngine
         public int GetSourceRange(TEXT_POSITION[] pBegPosition, TEXT_POSITION[] pEndPosition)
         {
             Trace.WriteLine("ScriptDocumentContext: GetSourceRange");
+
+            pBegPosition[0].dwLine = (uint)_line;
+            pBegPosition[0].dwColumn = (uint)_column;
+            pEndPosition[0].dwLine = (uint)_line;
+            pEndPosition[0].dwColumn = (uint)_column;
+
             return VSConstants.S_OK;
         }
 
@@ -178,5 +189,10 @@ namespace PowerGuiVsx.Core.DebugEngine
         }
 
         #endregion
+
+        public override string ToString()
+        {
+            return String.Format("{0} : {1}:{2}", _fileName, _line, _column);
+        }
     }
 }
