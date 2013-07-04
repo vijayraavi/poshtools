@@ -79,9 +79,42 @@ namespace PowerGuiVsx.Core.DebugEngine
             Debugger = new ScriptDebugger(Runspace, bps);
             Debugger.BreakpointHit += Debugger_BreakpointHit;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
+            Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
 
             Debugger.Execute(_node.FileName);
             _node.Debugger = Debugger;
+        }
+
+        void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
+        {
+            if (e.UpdateType == BreakpointUpdateType.Set)
+            {
+                var lbp = e.Breakpoint as LineBreakpoint;
+                if (lbp != null)
+                {
+                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.Script, lbp.Line, lbp.Column, _events, _runspace);
+                    breakpoint.Bind();
+                    bps.Add(breakpoint);
+                }
+            }
+
+            if (e.UpdateType == BreakpointUpdateType.Removed)
+            {
+                var lbp = e.Breakpoint as LineBreakpoint;
+                if (lbp != null)
+                {
+                    var bp =bps.FirstOrDefault(
+                        m =>
+                        m.Column == lbp.Column && m.Line == lbp.Line &&
+                        m.File.Equals(lbp.Script, StringComparison.InvariantCultureIgnoreCase));
+
+                    if (bp != null)
+                    {
+                        bp.Delete();
+                        bps.Remove(bp);
+                    }
+                }
+            }
         }
 
         void Debugger_DebuggingFinished(object sender, EventArgs e)

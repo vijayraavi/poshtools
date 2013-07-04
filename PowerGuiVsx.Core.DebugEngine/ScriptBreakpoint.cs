@@ -164,7 +164,7 @@ namespace PowerGuiVsx.Core.DebugEngine
             //    pipeline.Commands.Add(command);
             //    pipeline.Invoke();
             //}
-            //_callback.Breakpoint(_node, this);
+            _callback.Breakpoint(_node, this);
             return VSConstants.S_OK;
         }
 

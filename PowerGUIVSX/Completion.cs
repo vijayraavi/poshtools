@@ -7,6 +7,7 @@ using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using AdamDriscoll.PowerGUIVSX;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;

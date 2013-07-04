@@ -82,6 +82,22 @@ namespace AdamDriscoll.PowerGUIVSX
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }
 
+        public void WriteToOutputWindow(string value, bool activate = false)
+        {
+            var outWindow = GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+
+            if (outWindow == null) return;
+
+            var generalPaneGuid = VSConstants.GUID_OutWindowDebugPane; 
+            IVsOutputWindowPane generalPane;
+            outWindow.GetPane(ref generalPaneGuid, out generalPane);
+
+            generalPane.OutputString(value);
+
+            if (activate)
+                generalPane.Activate(); // Brings this pane into view
+        }
+
 
         /////////////////////////////////////////////////////////////////////////////
         // Overridden Package Implementation
@@ -109,7 +125,7 @@ namespace AdamDriscoll.PowerGUIVSX
             RegisterProjectFactory(new PowerShellProjectFactory(this));
             RegisterEngine();
 
-            Host = new VSXHost();
+            Host = new VSXHost(this);
         }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerGUIVSXPackage));
@@ -119,7 +135,6 @@ namespace AdamDriscoll.PowerGUIVSX
             get { return "PowerShellProj"; }
         }
 
-        [Export]
         internal VSXHost Host { get; private set; }
 
         public void RegisterEngine()

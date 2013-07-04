@@ -27,10 +27,12 @@ namespace PowerGuiVsx.Core.DebugEngine
         private List<ScriptBreakpoint> _breakpoints = new List<ScriptBreakpoint>();
 
         public event EventHandler<EventArgs<ScriptBreakpoint>> BreakpointHit;
+        public event EventHandler<BreakpointUpdatedEventArgs> BreakpointUpdated;
         public event EventHandler DebuggingFinished;
 
         private AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private DebuggerResumeAction _resumeAction;
+        private static MethodInfo _newLineBreakpoint;
 
         public Dictionary<string, object> Variables { get; private set; }
 
@@ -49,22 +51,30 @@ namespace PowerGuiVsx.Core.DebugEngine
             _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
             _runspace.StateChanged += _runspace_StateChanged;
 
-            var addLineBreakpoint = _runspace.Debugger.GetType()
-                                             .GetMethod("NewLineBreakpoint",
-                                                        BindingFlags.Instance | BindingFlags.NonPublic, 
-                                                        null, 
-                                                        new []{typeof(string), typeof(int), typeof(ScriptBlock)}, 
-                                                        null);
-
-            if (addLineBreakpoint != null)
+            foreach (var bp in initialBreakpoints)
             {
-                foreach (var bp in initialBreakpoints)
-                {
-                    addLineBreakpoint.Invoke(_runspace.Debugger, new object[] {bp.File, bp.Line, null});
-                }
+                SetBreakpoint(bp);
             }
 
             Variables = new Dictionary<string, object>();
+        }
+
+        private void SetBreakpoint(ScriptBreakpoint breakpoint)
+        {
+            if (_newLineBreakpoint == null)
+            {
+                _newLineBreakpoint = _runspace.Debugger.GetType()
+                     .GetMethod("NewLineBreakpoint",
+                                BindingFlags.Instance | BindingFlags.NonPublic,
+                                null,
+                                new[] { typeof(string), typeof(int), typeof(ScriptBlock) },
+                                null);
+            }
+
+            if (_newLineBreakpoint != null)
+            {
+                _newLineBreakpoint.Invoke(_runspace.Debugger, new object[] { breakpoint.File, breakpoint.Line, null });   
+            }
         }
 
         void _runspace_StateChanged(object sender, RunspaceStateEventArgs e)
@@ -84,7 +94,10 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
-            
+            if (BreakpointUpdated != null)
+            {
+                BreakpointUpdated(sender, e);
+            }
         }
 
         void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
