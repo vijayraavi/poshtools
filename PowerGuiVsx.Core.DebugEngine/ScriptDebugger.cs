@@ -23,12 +23,13 @@ namespace PowerGuiVsx.Core.DebugEngine
     {
         public event Action<string> DocumentChanged;
         private Runspace _runspace;
-        private static object pipelineLock = new object();
 
         private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
+        private Pipeline _currentPipeline;
 
         public event EventHandler<EventArgs<ScriptBreakpoint>> BreakpointHit;
+        public event EventHandler<EventArgs<ScriptLocation>> DebuggerPaused;
         public event EventHandler<BreakpointUpdatedEventArgs> BreakpointUpdated;
         public event EventHandler DebuggingFinished;
 
@@ -37,7 +38,8 @@ namespace PowerGuiVsx.Core.DebugEngine
         private static MethodInfo _newLineBreakpoint;
 
         public IDictionary<string, object> Variables { get; private set; }
-        public IEnumerable<ScriptStackFrame> CallStack { get { return _callstack; } } 
+        public IEnumerable<ScriptStackFrame> CallStack { get { return _callstack; } }
+        public ScriptProgramNode CurrentExecutingNode { get; private set; }
 
         public void OnDocumentChanged(string fileName)
         {
@@ -55,6 +57,8 @@ namespace PowerGuiVsx.Core.DebugEngine
             _runspace.StateChanged += _runspace_StateChanged;
             _breakpoints = new List<ScriptBreakpoint>();
 
+            ClearBreakpoints();
+
             foreach (var bp in initialBreakpoints)
             {
                 SetBreakpoint(bp);
@@ -62,21 +66,34 @@ namespace PowerGuiVsx.Core.DebugEngine
             }
         }
 
-        private void SetBreakpoint(ScriptBreakpoint breakpoint)
+        private void ClearBreakpoints()
         {
-            if (_newLineBreakpoint == null)
+            IEnumerable<PSObject> breakpoints;
+            using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
             {
-                _newLineBreakpoint = _runspace.Debugger.GetType()
-                     .GetMethod("NewLineBreakpoint",
-                                BindingFlags.Instance | BindingFlags.NonPublic,
-                                null,
-                                new[] { typeof(string), typeof(int), typeof(ScriptBlock) },
-                                null);
+                breakpoints = pipeline.InvokeCommand("Get-PSBreakpoint");
             }
 
-            if (_newLineBreakpoint != null)
+            if (!breakpoints.Any()) return;
+
+            using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
             {
-                _newLineBreakpoint.Invoke(_runspace.Debugger, new object[] { breakpoint.File, breakpoint.Line, null });   
+                var command = new Command("Remove-PSBreakpoint");
+                command.Parameters.Add("Breakpoint", breakpoints);
+
+                pipeline.InvokeCommand(command);
+            }
+        }
+
+        private void SetBreakpoint(ScriptBreakpoint breakpoint)
+        {
+            using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
+            {
+                var command = new Command("Set-PSBreakpoint");
+                command.Parameters.Add("Script", breakpoint.File);
+                command.Parameters.Add("Line", breakpoint.Line);
+
+                pipeline.InvokeCommand(command);
             }
         }
 
@@ -112,6 +129,19 @@ namespace PowerGuiVsx.Core.DebugEngine
             {
                 ProcessLineBreakpoints(e);
             }
+            else
+            {
+                if (DebuggerPaused != null)
+                {
+                    var scriptLocation = new ScriptLocation();
+                    scriptLocation.File = e.InvocationInfo.ScriptName;
+                    scriptLocation.Line = e.InvocationInfo.ScriptLineNumber;
+                    scriptLocation.Column = 0;
+
+                    DebuggerPaused(this, new EventArgs<ScriptLocation>(scriptLocation));
+                }
+            }
+            
 
             //Wait for the user to step, continue or stop
             _pausedEvent.WaitOne();
@@ -141,6 +171,11 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         public void Stop()
         {
+            _currentPipeline.Stop();
+            if (DebuggingFinished != null)
+            {
+                DebuggingFinished(this, new EventArgs());
+            }
         }
 
         public void StepOver()
@@ -171,12 +206,14 @@ namespace PowerGuiVsx.Core.DebugEngine
         {
         }
 
-        public void Execute(string fileName)
+        public void Execute(ScriptProgramNode node)
         {
-            using (var pipeline = _runspace.CreatePipeline())
+            CurrentExecutingNode = node;
+
+            using (_currentPipeline = _runspace.CreatePipeline())
             {
-                pipeline.Commands.AddScript(String.Format(". '{0}'", fileName));
-                pipeline.Invoke();
+                _currentPipeline.Commands.AddScript(String.Format(". '{0}'", node.FileName));
+                _currentPipeline.Invoke();
             }
         }
 
@@ -216,7 +253,7 @@ namespace PowerGuiVsx.Core.DebugEngine
                 var frame = psobj.BaseObject as CallStackFrame;
                 if (frame != null)
                 {
-                    _callstack.Add(new ScriptStackFrame(this, frame));
+                    _callstack.Add(new ScriptStackFrame(CurrentExecutingNode, frame));
                 }
             }
         }
@@ -231,6 +268,12 @@ namespace PowerGuiVsx.Core.DebugEngine
         {
             _mutex = new Mutex(true);
             Pipeline = pipeline;
+        }
+
+        public IEnumerable<PSObject> InvokeCommand(Command command)
+        {
+            Pipeline.Commands.Add(command);
+            return Pipeline.Invoke();
         }
 
         public IEnumerable<PSObject> InvokeCommand(string command)
@@ -250,5 +293,12 @@ namespace PowerGuiVsx.Core.DebugEngine
             Pipeline.Dispose();
             _mutex.ReleaseMutex();
         }
+    }
+
+    public class ScriptLocation
+    {
+        public string File { get; set; }
+        public int Line { get; set; }
+        public int Column { get; set; }
     }
 }

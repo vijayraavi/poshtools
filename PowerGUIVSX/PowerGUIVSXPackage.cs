@@ -49,7 +49,7 @@ namespace AdamDriscoll.PowerGUIVSX
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
-    public sealed class PowerGUIVSXPackage : ProjectPackage
+    public sealed class PowerGUIVSXPackage : ProjectPackage, IOutputWriter
     {
         /// <summary>
         /// Default constructor of the package.
@@ -82,20 +82,19 @@ namespace AdamDriscoll.PowerGUIVSX
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }
 
-        public void WriteToOutputWindow(string value, bool activate = false)
+        public void WriteLine(string value)
         {
             var outWindow = GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
 
             if (outWindow == null) return;
 
-            var generalPaneGuid = VSConstants.GUID_OutWindowDebugPane; 
+            var generalPaneGuid = VSConstants.GUID_OutWindowGeneralPane; 
             IVsOutputWindowPane generalPane;
             outWindow.GetPane(ref generalPaneGuid, out generalPane);
 
             generalPane.OutputString(value);
 
-            if (activate)
-                generalPane.Activate(); // Brings this pane into view
+                //generalPane.Activate(); // Brings this pane into view
         }
 
 

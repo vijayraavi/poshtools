@@ -10,13 +10,16 @@ namespace PowerGuiVsx.Core.DebugEngine
     public class ScriptDocumentContext : IDebugDocumentContext2, IDebugCodeContext2, IEnumDebugCodeContexts2
     {
         private string _fileName;
+        private string _description;
         private int _line, _column;
 
-        public ScriptDocumentContext(string fileName, int line, int column)
+
+        public ScriptDocumentContext(string fileName, int line, int column, string description)
         {
             _fileName = fileName;
             _line = line;
             _column = column;
+            _description = description;
         }
 
         #region Implementation of IDebugDocumentContext2
@@ -192,7 +195,7 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         public override string ToString()
         {
-            return String.Format("{0} : {1}:{2}", _fileName, _line, _column);
+            return _description;
         }
     }
 }

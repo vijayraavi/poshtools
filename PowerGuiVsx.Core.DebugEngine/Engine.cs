@@ -88,9 +88,15 @@ namespace PowerGuiVsx.Core.DebugEngine
             Debugger.BreakpointHit += Debugger_BreakpointHit;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
             Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            Debugger.DebuggerPaused += Debugger_DebuggerPaused;
             _node.Debugger = Debugger;
 
-            Debugger.Execute(_node.FileName);
+            Debugger.Execute(_node);
+        }
+
+        void Debugger_DebuggerPaused(object sender, EventArgs<ScriptLocation> e)
+        {
+            _events.Break(_node);
         }
 
         void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
@@ -211,7 +217,8 @@ namespace PowerGuiVsx.Core.DebugEngine
                 position.GetRange(start, end);
                 position.GetFileName(out fileName);
 
-                var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine, (int)start[0].dwColumn, _events, _runspace);
+                //VS Subtracts 1 from the start line for some reason
+                var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events, _runspace);
                 ppPendingBP = breakpoint;
 
                 bps.Add(breakpoint);

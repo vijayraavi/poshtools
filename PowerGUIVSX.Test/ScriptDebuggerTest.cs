@@ -17,16 +17,64 @@ namespace PowerGUIVSX.Test
         {
             _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
-            _runspace.SessionStateProxy.SetVariable("Test", "Test");
-
-            _debugger = new ScriptDebugger(_runspace, new List<ScriptBreakpoint>());
         }
 
         [TestMethod]
-        public void RefreshVariablesTest()
+        public void ShouldClearBreakpoints()
         {
-            Assert.IsTrue(_debugger.Variables.ContainsKey("Test"));
-            Assert.AreEqual("Test", _debugger.Variables["Test"].Value);
+            using (var pipe = _runspace.CreatePipeline())
+            {
+                var command = new Command("Set-PSBreakpoint");
+                command.Parameters.Add("Script", ".\\TestFile.ps1");
+                command.Parameters.Add("Line", 1);
+
+                pipe.Commands.Add(command);
+                pipe.Invoke();
+            }
+
+            _debugger = new ScriptDebugger(_runspace, new List<ScriptBreakpoint>());
+
+            using (var pipe = _runspace.CreatePipeline())
+            {
+                pipe.Commands.Add("Get-PSBreakpoint");
+                var breakpoints = pipe.Invoke();
+                
+                Assert.AreEqual(0, breakpoints.Count);
+            }
+        }
+
+        [TestMethod]
+        public void ShouldNotDieIfNoBreakpoints()
+        {
+            _debugger = new ScriptDebugger(_runspace, new List<ScriptBreakpoint>());
+
+            using (var pipe = _runspace.CreatePipeline())
+            {
+                pipe.Commands.Add("Get-PSBreakpoint");
+                var breakpoints = pipe.Invoke();
+
+                Assert.AreEqual(0, breakpoints.Count);
+            }
+        }
+
+
+        [TestMethod]
+        public void ShouldSetLineBreakpoint()
+        {
+            var sbps = new List<ScriptBreakpoint>
+                           {
+                               new ScriptBreakpoint(null, ".\\TestFile.ps1", 1, 0, null, _runspace)
+                           };
+
+            _debugger = new ScriptDebugger(_runspace, sbps);
+
+            using (var pipe = _runspace.CreatePipeline())
+            {
+                pipe.Commands.Add("Get-PSBreakpoint");
+                var breakpoints = pipe.Invoke();
+
+                Assert.AreEqual(1, breakpoints.Count);
+            }
         }
 
 

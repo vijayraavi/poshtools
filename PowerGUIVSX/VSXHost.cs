@@ -9,10 +9,10 @@ using System.Security;
 
 namespace AdamDriscoll.PowerGUIVSX
 {
-    internal class VSXHost : PSHost
+    public class VSXHost : PSHost
     {
         private Runspace _runspace;
-        private PowerGUIVSXPackage _package;
+        private IOutputWriter _package;
         private Guid _instanceId = Guid.NewGuid();
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace AdamDriscoll.PowerGUIVSX
         private CultureInfo originalUICultureInfo =
             System.Threading.Thread.CurrentThread.CurrentUICulture;
 
-        public VSXHost(PowerGUIVSXPackage package)
+        public VSXHost(IOutputWriter package)
         {
             _package = package;
             _runspace = RunspaceFactory.CreateRunspace(this);
@@ -99,9 +99,9 @@ namespace AdamDriscoll.PowerGUIVSX
 
     public class HostUi : PSHostUserInterface
     {
-        private PowerGUIVSXPackage _package;
+        private IOutputWriter _package;
 
-        public HostUi(PowerGUIVSXPackage package)
+        public HostUi(IOutputWriter package)
         {
             _package = package;
         }
@@ -118,27 +118,27 @@ namespace AdamDriscoll.PowerGUIVSX
 
         public override void Write(string value)
         {
-            _package.WriteToOutputWindow(value);
+            _package.WriteLine(value);
         }
 
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            _package.WriteToOutputWindow(value);
+            _package.WriteLine(value);
         }
 
         public override void WriteLine(string value)
         {
-            _package.WriteToOutputWindow(value);
+            _package.WriteLine(value);
         }
 
         public override void WriteErrorLine(string value)
         {
-            _package.WriteToOutputWindow(value);
+            _package.WriteLine(value);
         }
 
         public override void WriteDebugLine(string message)
         {
-            _package.WriteToOutputWindow(message);
+            _package.WriteLine(message);
         }
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
@@ -148,12 +148,12 @@ namespace AdamDriscoll.PowerGUIVSX
 
         public override void WriteVerboseLine(string message)
         {
-            _package.WriteToOutputWindow(message);
+            _package.WriteLine(message);
         }
 
         public override void WriteWarningLine(string message)
         {
-            _package.WriteToOutputWindow(message);
+            _package.WriteLine(message);
         }
 
         public override Dictionary<string, PSObject> Prompt(string caption, string message, Collection<FieldDescription> descriptions)
@@ -239,5 +239,10 @@ namespace AdamDriscoll.PowerGUIVSX
         }
 
         public override string WindowTitle { get; set; }
+    }
+
+    public interface IOutputWriter
+    {
+        void WriteLine(string message);
     }
 }

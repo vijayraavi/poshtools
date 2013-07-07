@@ -292,6 +292,7 @@ namespace PowerGuiVsx.Core.DebugEngine
         public int Stop()
         {
             Trace.WriteLine("Program: Stop");
+            _debugger.Stop();
             return VSConstants.S_OK;
         }
 

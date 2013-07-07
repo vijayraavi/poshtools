@@ -12,18 +12,21 @@ namespace PowerGuiVsx.Core.DebugEngine
     public class ScriptStackFrame : IDebugStackFrame2
     {
         private ScriptDebugger _debugger;
+        private ScriptProgramNode _node;
         private ScriptDocumentContext _docContext;
+        private CallStackFrame _frame;
 
-        public ScriptStackFrame(ScriptDebugger debugger, CallStackFrame frame)
+        public CallStackFrame Frame
         {
-            _debugger = debugger;
-            _docContext = new ScriptDocumentContext(frame.ScriptName, frame.ScriptLineNumber, 0);
+            get { return _frame; }
         }
 
-        public ScriptStackFrame(ScriptDebugger debugger, string fileName, int line, int column)
+        public ScriptStackFrame(ScriptProgramNode node, CallStackFrame frame)
         {
-            _debugger = debugger;
-            _docContext = new ScriptDocumentContext(fileName, line, column);
+            _node = node;
+            _debugger = node.Debugger;
+            _docContext = new ScriptDocumentContext(frame.ScriptName, frame.ScriptLineNumber, 0, frame.ToString());
+            _frame = frame;
         }
 
         #region Implementation of IDebugStackFrame2
@@ -55,11 +58,25 @@ namespace PowerGuiVsx.Core.DebugEngine
 
             Trace.WriteLine("ScriptStackFrame: GetInfo");
 
+
             if ((dwFieldSpec & enum_FRAMEINFO_FLAGS.FIF_FUNCNAME) != 0)
             {
-                frameInfo.m_bstrFuncName = "Stack Frame 1";
+                frameInfo.m_bstrFuncName = this.ToString();
                 frameInfo.m_dwValidFields |= enum_FRAMEINFO_FLAGS.FIF_FUNCNAME;
             }
+
+            if ((dwFieldSpec & enum_FRAMEINFO_FLAGS.FIF_MODULE) != 0)
+            {
+                frameInfo.m_pModule = _node;
+                frameInfo.m_dwValidFields |= enum_FRAMEINFO_FLAGS.FIF_MODULE;
+            }
+
+            if ((dwFieldSpec & enum_FRAMEINFO_FLAGS.FIF_DEBUG_MODULEP) != 0)
+            {
+                frameInfo.m_pModule = _node;
+                frameInfo.m_dwValidFields |= enum_FRAMEINFO_FLAGS.FIF_DEBUG_MODULEP;
+            }
+
 
             // The debugger is requesting the IDebugStackFrame2 value for this frame info.
             if ((dwFieldSpec & enum_FRAMEINFO_FLAGS.FIF_FUNCNAME_MODULE) != 0)
@@ -175,22 +192,28 @@ namespace PowerGuiVsx.Core.DebugEngine
         {
             pceltFetched = 0;
 
-            if (celt == 0) return VSConstants.S_OK;            
+            if (_iterationLocation == Count) return VSConstants.S_FALSE;  
+            if (celt == 0) return VSConstants.S_OK;
 
-            for (uint i = _iterationLocation; i < _iterationLocation + celt; i++)
+            var currentIteration = _iterationLocation;
+
+            for (uint i = currentIteration; i < currentIteration + celt; i++)
             {
                 var currentFrame = this[(int)i];
 
+                var index = i - currentIteration;
+
                 Trace.WriteLine("ScriptStackFrameCollection: Next");
-                rgelt[0].m_dwValidFields = (enum_FRAMEINFO_FLAGS.FIF_LANGUAGE | enum_FRAMEINFO_FLAGS.FIF_DEBUGINFO | enum_FRAMEINFO_FLAGS.FIF_STALECODE | enum_FRAMEINFO_FLAGS.FIF_FRAME | enum_FRAMEINFO_FLAGS.FIF_FUNCNAME | enum_FRAMEINFO_FLAGS.FIF_MODULE);
-                rgelt[0].m_fHasDebugInfo = 1;
-                rgelt[0].m_fStaleCode = 0;
-                rgelt[0].m_bstrLanguage = "PowerShell";
-                rgelt[0].m_bstrFuncName = currentFrame.ToString();
-                rgelt[0].m_pFrame = currentFrame;
-                rgelt[0].m_pModule = _node;
+                rgelt[index].m_dwValidFields = (enum_FRAMEINFO_FLAGS.FIF_LANGUAGE | enum_FRAMEINFO_FLAGS.FIF_DEBUGINFO | enum_FRAMEINFO_FLAGS.FIF_STALECODE | enum_FRAMEINFO_FLAGS.FIF_FRAME | enum_FRAMEINFO_FLAGS.FIF_FUNCNAME | enum_FRAMEINFO_FLAGS.FIF_MODULE);
+                rgelt[index].m_fHasDebugInfo = 1;
+                rgelt[index].m_fStaleCode = 0; 
+                rgelt[index].m_bstrLanguage = "PowerShell";
+                rgelt[index].m_bstrFuncName = currentFrame.ToString();
+                rgelt[index].m_pFrame = currentFrame;
+                rgelt[index].m_pModule = _node;
 
                 pceltFetched++;
+                _iterationLocation++;
             }
 
             return VSConstants.S_OK;

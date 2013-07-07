@@ -294,6 +294,8 @@ namespace PowerGuiVsx.Core.DebugEngine
         public const string IID = "c7405d1d-e24b-44e0-b707-d8a5a4e1641b";
     }
 
+   
+
     sealed class BreakPointEvent : AsynchronousEvent, IDebugBreakpointBoundEvent2
     {
         public const string IID = "1dddb704-cf99-4b8a-b746-dabb01dd13a0";

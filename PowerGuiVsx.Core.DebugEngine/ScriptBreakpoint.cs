@@ -213,7 +213,7 @@ namespace PowerGuiVsx.Core.DebugEngine
 
         public int GetResolutionInfo(enum_BPRESI_FIELDS dwFields, BP_RESOLUTION_INFO[] pBPResolutionInfo)
         {
-            var documentContext = new ScriptDocumentContext(_node.FileName, _line, _column);
+            var documentContext = new ScriptDocumentContext(_node.FileName, _line, _column, "");
 
             Trace.WriteLine("ScriptBreakpoint: GetResolutionInfo");
             if (dwFields == enum_BPRESI_FIELDS.BPRESI_ALLFIELDS)

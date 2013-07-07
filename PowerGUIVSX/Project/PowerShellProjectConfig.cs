@@ -70,8 +70,6 @@ namespace PowerGUIVsx.Project
 
             try
             {
-                //var guid = new Guid("0EEBAE13-3B2B-434D-BDAA-9A16A84AAA8B");
-                //debugger.InsertBreakpointByName(ref guid, "Script");
                 debugger.LaunchDebugTargets(1, pInfo);
                 string outstr;
                 shell.GetErrorInfo(out outstr);
