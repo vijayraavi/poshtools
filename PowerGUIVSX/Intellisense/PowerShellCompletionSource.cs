@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
-using PowerGUIVSX;
 
-namespace AdamDriscoll.PowerGUIVSX.Intellisense
+namespace PowerShellTools.Intellisense
 {
     internal class PowerShellCompletionSource : ICompletionSource
     {

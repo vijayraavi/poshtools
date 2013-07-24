@@ -4,13 +4,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Project;
 using Microsoft.VisualStudio.Project.Samples.CustomProject;
-using PowerGUIVsx.Project.Utils;
+using PowerGUIVsx.Project;
+using PowerShellTools.Project.Utils;
 
-namespace PowerGUIVsx.Project
+namespace PowerShellTools.Project
 {
     [ComVisible(true)]
     [Guid("487B0655-CCEF-4E4F-BAC9-BCED12745F8D")]

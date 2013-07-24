@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace Ard.PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine
 {
     public delegate void Operation();
 

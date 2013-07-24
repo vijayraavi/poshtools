@@ -1,5 +1,5 @@
 ﻿
-namespace Ard.PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine.Definitions
 {
     // Flags passed by the debugger to the engine to describe the desired format and execution options for properties 
     // (locals, arguments, etc...)

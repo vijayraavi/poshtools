@@ -14,8 +14,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using PowerGUIVsx.Project.Utils;
 
-namespace PowerGUIVsx.Project.Utils
+namespace PowerShellTools.Project.Utils
 {
     [Editor(typeof(DropDownListPropertyEditor), typeof(System.Drawing.Design.UITypeEditor))]
     public class DropDownListProperty

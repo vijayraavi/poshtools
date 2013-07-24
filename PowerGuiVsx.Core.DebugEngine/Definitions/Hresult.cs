@@ -1,4 +1,4 @@
-namespace Ard.PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine.Definitions
 {
     // These are managed definitions of the well-known AD7 HRESULTS. Defined in msdbg.idl.
     static public class HRESULT

@@ -1,13 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using AdamDriscoll.PowerGUIVSX;
 using Microsoft.VisualStudio.Project;
-using Microsoft.VisualStudio.Shell;
-using IOleServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
+using PowerGUIVsx.Project;
+using IServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 
-namespace PowerGUIVsx.Project
+namespace PowerShellTools.Project
 {
     [Guid("F5034706-568F-408A-B7B3-4D38C6DB8A32")]
     public class PowerShellProjectFactory : ProjectFactory
@@ -34,7 +32,7 @@ namespace PowerGUIVsx.Project
         protected override ProjectNode CreateProject()
         {
             var project = new PowerShellProjectNode(package);
-            project.SetSite((IOleServiceProvider)((IServiceProvider)this.package).GetService(typeof(IOleServiceProvider)));
+            project.SetSite((IServiceProvider)((System.IServiceProvider)this.package).GetService(typeof(IServiceProvider)));
 
             return project;
         }

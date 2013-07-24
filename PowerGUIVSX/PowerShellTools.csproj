@@ -22,8 +22,8 @@
     <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AdamDriscoll.PowerGUIVSX</RootNamespace>
-    <AssemblyName>PowerGUIVSX</AssemblyName>
+    <RootNamespace>PowerShellTools</RootNamespace>
+    <AssemblyName>PowerShellTools</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -245,9 +245,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowerGuiVsx.Core.DebugEngine\PowerGuiVsx.Core.DebugEngine.csproj">
+    <ProjectReference Include="..\PowerGuiVsx.Core.DebugEngine\PowerShellTools.DebugEngine.csproj">
       <Project>{6d2688fe-6fd8-44a8-b96a-6037457f72a7}</Project>
-      <Name>PowerGuiVsx.Core.DebugEngine</Name>
+      <Name>PowerShellTools.DebugEngine</Name>
     </ProjectReference>
     <ProjectReference Include="..\ThirdParty\Src\CSharp\Microsoft.VisualStudio.Project.csproj">
       <Project>{cacb60a9-1e76-4f92-8831-b134a658c695}</Project>

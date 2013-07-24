@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Text;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using System.Diagnostics;
 
-namespace PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine
 {
     public class ScriptStackFrame : IDebugStackFrame2
     {

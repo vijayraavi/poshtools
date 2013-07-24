@@ -4,7 +4,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Project;
 using Microsoft.VisualStudio.Project.Samples.CustomProject;
 
-namespace PowerGUIVsx.Project
+namespace PowerShellTools.Project
 {
     [ComVisible(true)]
     [Guid("37633C86-B9C5-4391-BBF1-1E7C2960F9F8")]
@@ -67,7 +67,7 @@ namespace PowerGUIVsx.Project
 
         [ResourcesCategory("OutputCategory")]
         [LocDisplayName("SignOutputSetting")]
-        [ResourcesDescriptionAttribute("SignOutputSettingDescription")]
+        [ResourcesDescription("SignOutputSettingDescription")]
         public bool SignOutput
         {
             get
@@ -83,7 +83,7 @@ namespace PowerGUIVsx.Project
 
         [ResourcesCategory("OutputCategory")]
         [LocDisplayName("OutputDirectory_DisplayName")]
-        [ResourcesDescriptionAttribute("OutputDirectory_Description")]
+        [ResourcesDescription("OutputDirectory_Description")]
         public string OutputDirectory
         {
             get
@@ -99,7 +99,7 @@ namespace PowerGUIVsx.Project
 
         [ResourcesCategory("OutputCategory")]
         [LocDisplayName("CodeCertSetting")]
-        [ResourcesDescriptionAttribute("CodeCertSettingDesc")]
+        [ResourcesDescription("CodeCertSettingDesc")]
         public string CodeSigningCertificate
         {
             get
@@ -115,7 +115,7 @@ namespace PowerGUIVsx.Project
 
         [ResourcesCategory("OutputCategory")]
         [LocDisplayName("OutputTypeSetting")]
-        [ResourcesDescriptionAttribute("OutputTypeSettingDescription")]
+        [ResourcesDescription("OutputTypeSettingDescription")]
         public bool CreateModule
         {
             get
@@ -131,7 +131,7 @@ namespace PowerGUIVsx.Project
 
         [ResourcesCategory("DebugCategory")]
         [LocDisplayName("StartupScriptSetting")]
-        [ResourcesDescriptionAttribute("StartupScriptSettingDescription")]
+        [ResourcesDescription("StartupScriptSettingDescription")]
         public string StartupScript
         {
             get

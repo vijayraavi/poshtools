@@ -1,8 +1,7 @@
 #region Usings
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation;
@@ -10,17 +9,14 @@ using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Ard.PowerGuiVsx.Core.DebugEngine;
-using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
-using PowerGuiVsx.Core.DebugEngine.Definitions;
+using PowerShellTools.DebugEngine.Definitions;
 using Thread = System.Threading.Thread;
 
 #endregion
 
-namespace PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine
 {
     [ComVisible(true)]
     [Guid("C7F9F131-53AB-4FD0-8517-E54D124EA392")]

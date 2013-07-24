@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management.Automation.Runspaces;
-using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 
-namespace PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine
 {
     /// <summary>
     /// Fires events triggered by the debug engine.

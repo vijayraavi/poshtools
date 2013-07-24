@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 
-namespace PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine
 {
 
     public class ScriptProperty : IDebugProperty2

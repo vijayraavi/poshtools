@@ -2,11 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Dynamic;
 using System.Reflection;
 
-namespace PrivateReflectionUsingDynamic {
+namespace PowerShellTools.DebugEngine {
     class PrivateReflectionDynamicObject : DynamicObject {
 
         private static IDictionary<Type, IDictionary<string, IProperty>> _propertiesOnType = new ConcurrentDictionary<Type, IDictionary<string, IProperty>>();

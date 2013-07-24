@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation.Runspaces;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
-using PowerGuiVsx.Core.DebugEngine;
-using Thread = System.Threading.Thread;
+using PowerShellTools.DebugEngine;
 
-namespace PowerGuiVsx.Core
+namespace PowerShellTools
 {
     /// <summary>
     /// Manages events coming from the debug engine.

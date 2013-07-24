@@ -2,13 +2,11 @@
 using Microsoft.VisualStudio.Project;
 using Microsoft.VisualStudio.Project.Automation;
 using Microsoft.VisualStudio.Shell;
-using VsCommands = Microsoft.VisualStudio.VSConstants.VSStd97CmdID;
-using OleConstants = Microsoft.VisualStudio.OLE.Interop.Constants;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell.Interop;
+using Constants = Microsoft.VisualStudio.OLE.Interop.Constants;
 using VsMenus = Microsoft.VisualStudio.Project.VsMenus;
 
-namespace PowerGUIVsx.Project
+namespace PowerShellTools.Project
 {
     public class PowerShellFileNode : FileNode
     {
@@ -49,10 +47,10 @@ namespace PowerGUIVsx.Project
             {
             if (cmdGroup == VsMenus.guidStandardCommandSet97)
                 {
-                switch((VsCommands)cmd)
+                switch((VSConstants.VSStd97CmdID)cmd)
                     {
-                    case VsCommands.Print:
-                    case VsCommands.PageSetup:
+                    case VSConstants.VSStd97CmdID.Print:
+                    case VSConstants.VSStd97CmdID.PageSetup:
                         result |= QueryStatusResult.SUPPORTED | QueryStatusResult.ENABLED;
                         return VSConstants.S_OK;
                     }
@@ -63,19 +61,19 @@ namespace PowerGUIVsx.Project
         protected override int ExecCommandOnNode(Guid cmdGroup, uint cmd, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
             {
             if (this.ProjectMgr == null || this.ProjectMgr.IsClosed)
-                return (int)OleConstants.OLECMDERR_E_NOTSUPPORTED;
+                return (int)Constants.OLECMDERR_E_NOTSUPPORTED;
                 
             // Exec on special filenode commands
             if(cmdGroup == VsMenus.guidStandardCommandSet97)
                 {
-                switch((VsCommands)cmd)
+                switch((VSConstants.VSStd97CmdID)cmd)
                     {
-                    case VsCommands.Print:
+                    case VSConstants.VSStd97CmdID.Print:
                             {
                            //TODO: m_package.EditorFactory.CurrentEditor.ShowPrintDialog();
                             return VSConstants.S_OK;
                             }
-                    case VsCommands.PageSetup:
+                    case VSConstants.VSStd97CmdID.PageSetup:
                             {
                             //TODO: m_package.EditorFactory.CurrentEditor.ShowPageSetupForm();
                             return VSConstants.S_OK;

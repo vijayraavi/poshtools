@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -9,13 +8,11 @@ using Microsoft.VisualStudio.Project;
 using Microsoft.Win32;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
-using PowerGUIVSX;
-using PowerGUIVsx.Project;
+using PowerShellTools.Project;
 using log4net;
 
-namespace AdamDriscoll.PowerGUIVSX
+namespace PowerShellTools
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
@@ -43,8 +40,8 @@ namespace AdamDriscoll.PowerGUIVSX
     [ProvideObject(typeof(PowerShellProjectPropertyPage))]
     [ProvideObject(typeof(PowerShellModulePropertyPage))]
     [ProvideDebugEngine("{43ACAB74-8226-4920-B489-BFCF05372437}", "PowerShell", PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}", ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true, CLSID = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}")]
-    [ClsidAttribute(Clsid = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}", Assembly = "PowerGuiVsx.Core.DebugEngine", Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
-    [ClsidAttribute(Clsid = "{08F3B557-C153-4F6C-8745-227439E55E79}", Assembly = "PowerGuiVsx.Core.DebugEngine", Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
+    [Clsid(Clsid = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}", Assembly = "PowerGuiVsx.Core.DebugEngine", Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
+    [Clsid(Clsid = "{08F3B557-C153-4F6C-8745-227439E55E79}", Assembly = "PowerGuiVsx.Core.DebugEngine", Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
     [ProvideIncompatibleEngineInfo("{92EF0900-2251-11D2-B72E-0000F87572EF}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]

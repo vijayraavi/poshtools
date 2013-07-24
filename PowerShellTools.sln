@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerGUIVSX", "PowerGUIVSX\PowerGUIVSX.csproj", "{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools", "PowerGUIVSX\PowerShellTools.csproj", "{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerGuiVsx.Core.DebugEngine", "PowerGuiVsx.Core.DebugEngine\PowerGuiVsx.Core.DebugEngine.csproj", "{6D2688FE-6FD8-44A8-B96A-6037457F72A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.DebugEngine", "PowerGuiVsx.Core.DebugEngine\PowerShellTools.DebugEngine.csproj", "{6D2688FE-6FD8-44A8-B96A-6037457F72A7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.VisualStudio.Project", "ThirdParty\Src\CSharp\Microsoft.VisualStudio.Project.csproj", "{CACB60A9-1E76-4F92-8831-B134A658C695}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerGUIVSX.Test", "PowerGUIVSX.Test\PowerGUIVSX.Test.csproj", "{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Test", "PowerGUIVSX.Test\PowerShellTools.Test.csproj", "{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,8 +58,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

@@ -1,8 +1,7 @@
-﻿using AdamDriscoll.PowerGUIVSX;
-using Microsoft.VisualStudio.Project;
-using Microsoft.VisualStudio.Shell;
+﻿using Microsoft.VisualStudio.Project;
+using PowerGUIVsx.Project;
 
-namespace PowerGUIVsx.Project
+namespace PowerShellTools.Project
 {
     public class PowerShellConfigProvider : ConfigProvider
     {

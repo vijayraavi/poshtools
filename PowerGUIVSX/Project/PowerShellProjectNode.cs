@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
-using System.Net.Mime;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using AdamDriscoll.PowerGUIVSX;
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Project;
 using Microsoft.VisualStudio.Project.Automation;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using VSLangProj;
 
-namespace PowerGUIVsx.Project
+namespace PowerShellTools.Project
 {
     [Guid("603B17E6-3063-4AFB-B72F-7BB31555B12F")]
     public class PowerShellProjectNode : ProjectNode

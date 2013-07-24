@@ -1,8 +1,7 @@
 ﻿// PkgCmdID.cs
 // MUST match PkgCmdID.h
-using System;
 
-namespace AdamDriscoll.PowerGUIVSX
+namespace PowerShellTools
 {
     static class PkgCmdIDList
     {

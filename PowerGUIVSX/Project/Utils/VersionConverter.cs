@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 
-namespace PowerGUIVsx.Project.Utils
+namespace PowerShellTools.Project.Utils
 {
     public class VersionConverter : TypeConverter
     {

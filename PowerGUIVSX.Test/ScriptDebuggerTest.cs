@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Management.Automation.Runspaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PowerGuiVsx.Core.DebugEngine;
+using PowerShellTools.DebugEngine;
 
-namespace PowerGUIVSX.Test
+namespace PowerShellTools.Test
 {
     [TestClass]
     public class ScriptDebuggerTest

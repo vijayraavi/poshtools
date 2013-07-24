@@ -1,11 +1,13 @@
 #region Usings
+
 using System;
 using System.Diagnostics;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+
 #endregion
 
-namespace PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine
 {
     // This class implements IDebugProgramNode2.
     // This interface represents a program that can be debugged.

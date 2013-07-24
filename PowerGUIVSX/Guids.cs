@@ -1,8 +1,9 @@
 ﻿// Guids.cs
 // MUST match guids.h
+
 using System;
 
-namespace AdamDriscoll.PowerGUIVSX
+namespace PowerShellTools
 {
     static class GuidList
     {

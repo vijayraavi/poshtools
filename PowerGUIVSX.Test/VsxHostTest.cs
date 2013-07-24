@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
-using System.Text;
-using System.Threading.Tasks;
-using AdamDriscoll.PowerGUIVSX;
+﻿using System.Management.Automation.Runspaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace PowerGUIVSX.Test
+namespace PowerShellTools.Test
 {
     [TestClass]
     public class VsxHostTest

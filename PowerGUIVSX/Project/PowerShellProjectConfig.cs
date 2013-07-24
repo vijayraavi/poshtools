@@ -2,15 +2,13 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using AdamDriscoll.PowerGUIVSX;
 using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Project;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using PowerGuiVsx.Core;
 
-namespace PowerGUIVsx.Project
+namespace PowerShellTools.Project
 {
     public class PowerShellProjectConfig : ProjectConfig
     {

@@ -3,7 +3,7 @@ using System.Windows.Media;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 
-namespace PowerGUIVSX.Classification
+namespace PowerShellTools
 {
 
     /// <summary>

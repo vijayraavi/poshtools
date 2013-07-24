@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Project;
 using Microsoft.VisualStudio.Project.Automation;
+using PowerGUIVsx.Project;
 
-namespace PowerGUIVsx.Project
+namespace PowerShellTools.Project
 {
     [ComVisible(true)]
     public class OAPowerShellProject : OAProject

@@ -7,7 +7,7 @@ using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Security;
 
-namespace AdamDriscoll.PowerGUIVSX
+namespace PowerShellTools
 {
     public class VSXHost : PSHost
     {

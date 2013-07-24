@@ -1,6 +1,6 @@
 using System;
 
-namespace Ard.PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine.Definitions
 {
     // These are well-known guids in AD7. Most of these are used to specify filters in what the debugger UI is requesting.
     // For instance, guidFilterLocals can be passed to IDebugStackFrame2::EnumProperties to specify only locals are requested.

@@ -8,8 +8,8 @@
     <ProjectGuid>{6D2688FE-6FD8-44A8-B96A-6037457F72A7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PowerGuiVsx.Core.DebugEngine</RootNamespace>
-    <AssemblyName>PowerGuiVsx.Core.DebugEngine</AssemblyName>
+    <RootNamespace>PowerShellTools.DebugEngine</RootNamespace>
+    <AssemblyName>PowerShellTools.DebugEngine</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

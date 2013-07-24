@@ -5,9 +5,8 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Threading;
-using PrivateReflectionUsingDynamic;
 
-namespace PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine
 {
     public class EventArgs<T> : EventArgs
     {

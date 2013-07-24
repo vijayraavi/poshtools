@@ -4,9 +4,8 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
-using PowerGuiVsx.Core.DebugEngine;
 
-namespace Ard.PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine
 {
     // This class implments IDebugProgramProvider2. 
     // This registered interface allows the session debug manager (SDM) to obtain information about programs 

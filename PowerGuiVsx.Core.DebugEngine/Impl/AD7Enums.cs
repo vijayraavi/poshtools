@@ -1,10 +1,9 @@
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 
-
 // These classes use a generic enumerator implementation to create the various enumerators required by the engine.
 // They allow the enumeration of everything from programs to breakpoints.
-namespace Ard.PowerGuiVsx.Core.DebugEngine
+namespace PowerShellTools.DebugEngine.Impl
 {
     #region Base Class
     class AD7Enum<T,I> where I: class

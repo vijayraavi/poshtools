@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 
-namespace AdamDriscoll.PowerGUIVSX
+namespace PowerShellTools
 {
     internal static class OrdinaryClassificationDefinition
     {
