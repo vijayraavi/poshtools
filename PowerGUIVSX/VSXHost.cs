@@ -15,6 +15,11 @@ namespace PowerShellTools
         private IOutputWriter _package;
         private Guid _instanceId = Guid.NewGuid();
 
+        public static VSXHost Instance { 
+            get;
+            private set;
+        }
+
         /// <summary>
         /// The culture information of the thread that created
         /// this object.
@@ -31,6 +36,13 @@ namespace PowerShellTools
 
         public VSXHost(IOutputWriter package)
         {
+            if (Instance != null)
+            {
+                throw new ArgumentException("Host already set!!");
+            }
+
+            Instance = this;
+
             _package = package;
             _runspace = RunspaceFactory.CreateRunspace(this);
             _runspace.Open();

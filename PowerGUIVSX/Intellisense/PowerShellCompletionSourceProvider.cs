@@ -14,12 +14,9 @@ namespace PowerShellTools.Intellisense
         [Import]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
 
-        [Import]
-        internal VSXHost Host { get; set; }
-
         public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
         {
-            return new PowerShellCompletionSource(this, textBuffer, Host);
+            return new PowerShellCompletionSource(this, textBuffer, VSXHost.Instance);
         }
     }
 }
