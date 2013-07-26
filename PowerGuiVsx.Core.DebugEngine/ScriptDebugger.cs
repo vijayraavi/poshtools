@@ -213,6 +213,10 @@ namespace PowerShellTools.DebugEngine
             {
                 _currentPipeline.Commands.AddScript(String.Format(". '{0}'", node.FileName));
                 _currentPipeline.Invoke();
+                if (DebuggingFinished != null)
+                {
+                    DebuggingFinished(this, new EventArgs());
+                }
             }
         }
 
