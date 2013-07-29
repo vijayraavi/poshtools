@@ -192,8 +192,8 @@ namespace PowerShellTools.Project
         [ResourcesDescription("FunctionsToExport_Description")]
         public string[] FunctionsToProcess
         {
-            get { return _functionsToExport; IsDirty = true; }
-            set { _functionsToExport = value; }
+            get { return _functionsToExport;  }
+            set { _functionsToExport = value; IsDirty = true; }
         }
         [ResourcesCategory("GeneralCategory")]
         [LocDisplayName("Guid_DisplayName")]
