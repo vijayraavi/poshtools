@@ -132,7 +132,6 @@ namespace PowerShellTools.DebugEngine
         public void SetRunspace(Runspace runspace, IEnumerable<PendingBreakpoint> breakpoints)
         {
             Engine.PendingBreakpoints = breakpoints;
-            Engine.Runspace = runspace;
         }
 
         public Engine Engine

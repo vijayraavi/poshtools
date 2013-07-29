@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -25,16 +26,16 @@ namespace PowerShellTools.DebugEngine
 
         private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
-        private Pipeline _currentPipeline;
+        private PowerShell _currentPowerShell;
 
         public event EventHandler<EventArgs<ScriptBreakpoint>> BreakpointHit;
         public event EventHandler<EventArgs<ScriptLocation>> DebuggerPaused;
         public event EventHandler<BreakpointUpdatedEventArgs> BreakpointUpdated;
+        public event EventHandler<EventArgs<string>> OutputString;
         public event EventHandler DebuggingFinished;
 
         private AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private DebuggerResumeAction _resumeAction;
-        private static MethodInfo _newLineBreakpoint;
 
         public IDictionary<string, object> Variables { get; private set; }
         public IEnumerable<ScriptStackFrame> CallStack { get { return _callstack; } }
@@ -170,7 +171,7 @@ namespace PowerShellTools.DebugEngine
 
         public void Stop()
         {
-            _currentPipeline.Stop();
+            _currentPowerShell.Stop();
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());
@@ -208,15 +209,49 @@ namespace PowerShellTools.DebugEngine
         public void Execute(ScriptProgramNode node)
         {
             CurrentExecutingNode = node;
+            Runspace.DefaultRunspace = _runspace;
 
-            using (_currentPipeline = _runspace.CreatePipeline())
+            try
             {
-                _currentPipeline.Commands.AddScript(String.Format(". '{0}'", node.FileName));
-                _currentPipeline.Invoke();
+                using (_currentPowerShell = PowerShell.Create(RunspaceMode.CurrentRunspace))
+                {
+                    var contents = File.ReadAllText(node.FileName);
+                    var psCommand = new PSCommand();
+                    psCommand.AddCommand(contents);
+                    psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                    psCommand.AddCommand(new Command("out-default"));
+
+                    _currentPowerShell.Commands = psCommand;
+
+                    var objects = new PSDataCollection<PSObject>();
+                    objects.DataAdded +=objects_DataAdded;
+
+                    var result = _currentPowerShell.BeginInvoke<object, PSObject>(null, objects);
+                    result.AsyncWaitHandle.WaitOne();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (OutputString != null)
+                {
+                    OutputString(this, new EventArgs<string>("Error: " + ex.InnerException + Environment.NewLine));
+                }
+            }
+            finally
+            {
                 if (DebuggingFinished != null)
                 {
                     DebuggingFinished(this, new EventArgs());
                 }
+            }
+
+        }
+
+        void objects_DataAdded(object sender, DataAddedEventArgs e)
+        {
+            if (OutputString != null)
+            {
+                OutputString(this, new EventArgs<string>(e.ToString()));
             }
         }
 

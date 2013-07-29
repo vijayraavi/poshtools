@@ -47,18 +47,16 @@ namespace PowerShellTools.DebugEngine
 
         internal ScriptDebugger Debugger { get; private set; }
 
-        private Runspace _runspace;
-        public Runspace Runspace 
+        public Runspace Runspace { get { return VSXHost.Instance.Runspace; } }
+
+        private IEnumerable<PendingBreakpoint> _pendingBreakpoints;
+        public IEnumerable<PendingBreakpoint> PendingBreakpoints
         {
-            get { return _runspace; }
-            set
-            {
-                _runspace = value;
+            get { return _pendingBreakpoints; }
+            set { _pendingBreakpoints = value;
                 _runspaceSet.Set();
             }
         }
-
-        public IEnumerable<PendingBreakpoint> PendingBreakpoints { get; set; }
 
 
         #endregion
@@ -79,8 +77,11 @@ namespace PowerShellTools.DebugEngine
             {
                 Thread.Sleep(1000);
             }
+
+            VSXHost.Instance.HostUi.OutputString = _events.OutputString;
             
             Debugger = new ScriptDebugger(Runspace, bps);
+            Debugger.OutputString += Debugger_OutputString;
             Debugger.BreakpointHit += Debugger_BreakpointHit;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
             Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
@@ -88,6 +89,11 @@ namespace PowerShellTools.DebugEngine
             _node.Debugger = Debugger;
 
             Debugger.Execute(_node);
+        }
+
+        void Debugger_OutputString(object sender, EventArgs<string> e)
+        {
+            _events.OutputString(e.Value);
         }
 
         void Debugger_DebuggerPaused(object sender, EventArgs<ScriptLocation> e)
@@ -102,7 +108,7 @@ namespace PowerShellTools.DebugEngine
                 var lbp = e.Breakpoint as LineBreakpoint;
                 if (lbp != null)
                 {
-                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.Script, lbp.Line, lbp.Column, _events, _runspace);
+                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.Script, lbp.Line, lbp.Column, _events, Runspace);
                     breakpoint.Bind();
                     bps.Add(breakpoint);
                 }
@@ -214,7 +220,7 @@ namespace PowerShellTools.DebugEngine
                 position.GetFileName(out fileName);
 
                 //VS Subtracts 1 from the start line for some reason
-                var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events, _runspace);
+                var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events, Runspace);
                 ppPendingBP = breakpoint;
 
                 bps.Add(breakpoint);

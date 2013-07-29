@@ -152,10 +152,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BraceMatching.cs" />
-    <Compile Include="ClassificationType.cs">
+    <Compile Include="Classification\ClassificationType.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Classifier.cs" />
+    <Compile Include="Classification\Classifier.cs" />
     <Compile Include="DebugEventManager.cs" />
     <Compile Include="Format.cs" />
     <Compile Include="Intellisense\PowerShellCompletionCommandHandler.cs" />
@@ -167,6 +167,7 @@
     </Compile>
     <Compile Include="MyToolWindow.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="Classification\OutputPaneClassifier.cs" />
     <Compile Include="Project\LocDisplayNameAttribute.cs" />
     <Compile Include="Project\OutputTypeConverter.cs" />
     <Compile Include="Project\PowerShellConfigProvider.cs" />
@@ -195,7 +196,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PkgCmdID.cs" />
     <Compile Include="TokenTag.cs" />
-    <Compile Include="VSXHost.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

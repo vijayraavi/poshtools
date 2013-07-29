@@ -12,13 +12,15 @@ namespace PowerShellTools
     public class VSXHost : PSHost
     {
         private Runspace _runspace;
-        private IOutputWriter _package;
         private Guid _instanceId = Guid.NewGuid();
+        public HostUi HostUi { get; private set; }
 
         public static VSXHost Instance { 
             get;
             private set;
         }
+
+
 
         /// <summary>
         /// The culture information of the thread that created
@@ -34,7 +36,7 @@ namespace PowerShellTools
         private CultureInfo originalUICultureInfo =
             System.Threading.Thread.CurrentThread.CurrentUICulture;
 
-        public VSXHost(IOutputWriter package)
+        public VSXHost()
         {
             if (Instance != null)
             {
@@ -43,7 +45,8 @@ namespace PowerShellTools
 
             Instance = this;
 
-            _package = package;
+            HostUi = new HostUi();
+            
             _runspace = RunspaceFactory.CreateRunspace(this);
             _runspace.Open();
         }
@@ -90,7 +93,7 @@ namespace PowerShellTools
 
         public override PSHostUserInterface UI
         {
-            get { return new HostUi(_package); }
+            get { return HostUi; }
         }
 
         public override CultureInfo CurrentCulture
@@ -111,13 +114,6 @@ namespace PowerShellTools
 
     public class HostUi : PSHostUserInterface
     {
-        private IOutputWriter _package;
-
-        public HostUi(IOutputWriter package)
-        {
-            _package = package;
-        }
-
         public override string ReadLine()
         {
             return "";
@@ -128,29 +124,37 @@ namespace PowerShellTools
             throw new NotImplementedException();
         }
 
+        public Action<String> OutputString { get; set; }
+
+        private void TryOutputString(string val)
+        {
+            if (OutputString != null)
+                OutputString(val);
+        }
+
         public override void Write(string value)
         {
-            _package.WriteLine(value);
+            TryOutputString(value);
         }
 
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            _package.WriteLine(value);
+            TryOutputString(value);
         }
 
         public override void WriteLine(string value)
         {
-            _package.WriteLine(value);
+            TryOutputString(value);
         }
 
         public override void WriteErrorLine(string value)
         {
-            _package.WriteLine(value);
+            TryOutputString("Error: " + value + Environment.NewLine);
         }
 
         public override void WriteDebugLine(string message)
         {
-            _package.WriteLine(message);
+            TryOutputString(message);
         }
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
@@ -160,12 +164,12 @@ namespace PowerShellTools
 
         public override void WriteVerboseLine(string message)
         {
-            _package.WriteLine(message);
+            TryOutputString(message);
         }
 
         public override void WriteWarningLine(string message)
         {
-            _package.WriteLine(message);
+            TryOutputString("Warning: " + message + Environment.NewLine);
         }
 
         public override Dictionary<string, PSObject> Prompt(string caption, string message, Collection<FieldDescription> descriptions)

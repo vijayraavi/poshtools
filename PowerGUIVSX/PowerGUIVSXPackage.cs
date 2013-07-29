@@ -47,7 +47,7 @@ namespace PowerShellTools
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
-    public sealed class PowerGUIVSXPackage : ProjectPackage, IOutputWriter
+    public sealed class PowerGUIVSXPackage : ProjectPackage
     {
         /// <summary>
         /// Default constructor of the package.
@@ -122,7 +122,7 @@ namespace PowerShellTools
             RegisterProjectFactory(new PowerShellProjectFactory(this));
             RegisterEngine();
 
-            Host = new VSXHost(this);
+            Host = new VSXHost();
         }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerGUIVSXPackage));

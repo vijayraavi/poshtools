@@ -47,9 +47,14 @@ namespace PowerShellTools.Intellisense
             return m_nextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
         }
 
+        private static bool IsFilterTrigger(char ch)
+        {
+            return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+        }
+
         private static bool IsIntellisenseTrigger(char ch)
         {
-            return ch == '-' || ch == '$' || ch == '.' || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+            return ch == '-' || ch == '$' || ch == '.';
         }
 
         public int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
@@ -96,6 +101,14 @@ namespace PowerShellTools.Intellisense
             if (!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar))
             {
                 if (TriggerCompletion() && _activeSession != null)
+                {
+                    if (_activeSession.IsStarted)
+                        _activeSession.Filter();
+                }
+            }
+            if (!typedChar.Equals(char.MinValue) && IsFilterTrigger(typedChar))
+            {
+                if (_activeSession != null)
                 {
                     if (_activeSession.IsStarted)
                         _activeSession.Filter();

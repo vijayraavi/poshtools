@@ -195,6 +195,7 @@
     </Compile>
     <Compile Include="ScriptProperty.cs" />
     <Compile Include="ScriptStackFrame.cs" />
+    <Compile Include="VSXHost.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ResourceStrings.resx">

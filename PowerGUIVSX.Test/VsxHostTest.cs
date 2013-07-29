@@ -14,7 +14,7 @@ namespace PowerShellTools.Test
         public void Init()
         {
             output = new Mock<IOutputWriter>();
-            _host = new VSXHost(output.Object);
+            _host = new VSXHost();
         }
 
         [TestMethod]
