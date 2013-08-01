@@ -14,9 +14,12 @@ namespace PowerShellTools.Intellisense
         [Import]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
 
+        [Import]
+        internal IGlyphService GlyphService { get; set; }
+
         public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
         {
-            return new PowerShellCompletionSource(this, textBuffer, VSXHost.Instance);
+            return new PowerShellCompletionSource(this, textBuffer, VSXHost.Instance, GlyphService);
         }
     }
 }

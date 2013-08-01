@@ -59,12 +59,10 @@ namespace PowerShellTools
 
                 foreach (var token in tokens)
                 {
-                        var tokenSpan = new SnapshotSpan(curSpan.Snapshot, new Span(curLoc, token.Length));
+                        var tokenSpan = new SnapshotSpan(curSpan.Snapshot, new Span(curLoc + token.Start, token.Length));
                         if (tokenSpan.IntersectsWith(curSpan))
                             yield return new TagSpan<PowerShellTokenTag>(tokenSpan,
                                                                   new PowerShellTokenTag(token.Type));
-                    //add an extra char location because of the space
-                    curLoc += token.Length + 1;
                 }
             }
 

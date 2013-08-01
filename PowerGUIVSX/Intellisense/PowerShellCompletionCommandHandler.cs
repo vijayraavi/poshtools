@@ -54,7 +54,7 @@ namespace PowerShellTools.Intellisense
 
         private static bool IsIntellisenseTrigger(char ch)
         {
-            return ch == '-' || ch == '$' || ch == '.';
+            return ch == '-' || ch == '$' || ch == '.' || ch == ':';
         }
 
         public int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
@@ -100,11 +100,7 @@ namespace PowerShellTools.Intellisense
             bool handled = false;
             if (!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar))
             {
-                if (TriggerCompletion() && _activeSession != null)
-                {
-                    if (_activeSession.IsStarted)
-                        _activeSession.Filter();
-                }
+                TriggerCompletion();
             }
             if (!typedChar.Equals(char.MinValue) && IsFilterTrigger(typedChar))
             {
