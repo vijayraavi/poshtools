@@ -110,7 +110,13 @@ namespace PowerShellTools.DebugEngine
                 {
                     var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.Script, lbp.Line, lbp.Column, _events, Runspace);
                     breakpoint.Bind();
-                    bps.Add(breakpoint);
+
+                    var bp = bps.FirstOrDefault(
+                                                m =>
+                                                m.Column == lbp.Column && m.Line == lbp.Line &&
+                                                m.File.Equals(lbp.Script, StringComparison.InvariantCultureIgnoreCase));
+                    if (bp == null)
+                        bps.Add(breakpoint);
                 }
             }
 
@@ -135,6 +141,8 @@ namespace PowerShellTools.DebugEngine
 
         void Debugger_DebuggingFinished(object sender, EventArgs e)
         {
+            bps.Clear();
+            Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
             _events.ProgramDestroyed(_node);
         }
 

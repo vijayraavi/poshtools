@@ -63,6 +63,7 @@ namespace PowerShellTools.DebugEngine
             {
                 SetBreakpoint(bp);
                 _breakpoints.Add(bp);
+                bp.Bind();
             }
         }
 
@@ -125,11 +126,7 @@ namespace PowerShellTools.DebugEngine
             RefreshScopedVariables();
             RefreshCallStack();
 
-            if (e.Breakpoints.Count > 0)
-            {
-                ProcessLineBreakpoints(e);
-            }
-            else
+            if (e.Breakpoints.Count == 0 || !ProcessLineBreakpoints(e))
             {
                 if (DebuggerPaused != null)
                 {
@@ -141,14 +138,13 @@ namespace PowerShellTools.DebugEngine
                     DebuggerPaused(this, new EventArgs<ScriptLocation>(scriptLocation));
                 }
             }
-            
 
             //Wait for the user to step, continue or stop
             _pausedEvent.WaitOne();
             e.ResumeAction = _resumeAction;
         }
 
-        private void ProcessLineBreakpoints(DebuggerStopEventArgs e)
+        private bool ProcessLineBreakpoints(DebuggerStopEventArgs e)
         {
             var lbp = e.Breakpoints[0] as LineBreakpoint;
             if (lbp != null)
@@ -164,9 +160,12 @@ namespace PowerShellTools.DebugEngine
                     if (BreakpointHit != null)
                     {
                         BreakpointHit(this, new EventArgs<ScriptBreakpoint>(bp));
+                        return true;
                     }
                 }
             }
+
+            return false;
         }
 
         public void Stop()
@@ -212,9 +211,8 @@ namespace PowerShellTools.DebugEngine
                 {
                     _currentPowerShell.Runspace = _runspace;
 
-                    var contents = File.ReadAllText(node.FileName);
                     var psCommand = new PSCommand();
-                    psCommand.AddScript(contents);
+                    psCommand.AddScript(". '" + node.FileName + "'");
                     psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
                     //psCommand.AddCommand(new Command("out-default"));
 

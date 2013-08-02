@@ -175,7 +175,11 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellCommandFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellCommandFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 255);
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -186,7 +190,11 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellCommandArgumentFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellCommandArgumentFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(138, 43, 226);
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -197,7 +205,11 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellCommandParameterFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellCommandParameterFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 128);
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -208,7 +220,11 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellCommentFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellCommentFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 100, 0);
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -219,7 +235,11 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellKeywordFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellKeywordFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 139);
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -230,7 +250,11 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellNumberFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellNumberFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(128, 0, 128);
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -241,7 +265,11 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellOperatorsFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellOperatorsFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(169, 169, 169);
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -252,7 +280,11 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellStringFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellStringFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(139, 0, 0);
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -263,7 +295,11 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellTypeFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellTypeFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 128, 128);
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -274,6 +310,10 @@ namespace PowerShellTools
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellVariablesFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellVariablesFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(255, 69, 0);
+            ForegroundCustomizable = true;
+        }
     }
 }
