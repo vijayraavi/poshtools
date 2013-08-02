@@ -202,39 +202,35 @@ namespace PowerShellTools.DebugEngine
             _pausedEvent.Set();
         }
 
-        public void Execute()
-        {
-        }
-
         public void Execute(ScriptProgramNode node)
         {
             CurrentExecutingNode = node;
-            Runspace.DefaultRunspace = _runspace;
-
+ 
             try
             {
-                using (_currentPowerShell = PowerShell.Create(RunspaceMode.CurrentRunspace))
+                using (_currentPowerShell = PowerShell.Create())
                 {
+                    _currentPowerShell.Runspace = _runspace;
+
                     var contents = File.ReadAllText(node.FileName);
                     var psCommand = new PSCommand();
-                    psCommand.AddCommand(contents);
+                    psCommand.AddScript(contents);
                     psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                    psCommand.AddCommand(new Command("out-default"));
+                    //psCommand.AddCommand(new Command("out-default"));
 
                     _currentPowerShell.Commands = psCommand;
 
                     var objects = new PSDataCollection<PSObject>();
                     objects.DataAdded +=objects_DataAdded;
 
-                    var result = _currentPowerShell.BeginInvoke<object, PSObject>(null, objects);
-                    result.AsyncWaitHandle.WaitOne();
+                    _currentPowerShell.Invoke<PSObject>(null, objects);
                 }
             }
             catch (Exception ex)
             {
                 if (OutputString != null)
                 {
-                    OutputString(this, new EventArgs<string>("Error: " + ex.InnerException + Environment.NewLine));
+                    OutputString(this, new EventArgs<string>("Error: " + ex.Message + Environment.NewLine));
                 }
             }
             finally
@@ -251,7 +247,8 @@ namespace PowerShellTools.DebugEngine
         {
             if (OutputString != null)
             {
-                OutputString(this, new EventArgs<string>(e.ToString()));
+                var list =  sender as PSDataCollection<PSObject>;
+                OutputString(this, new EventArgs<string>(list[e.Index].ToString() + Environment.NewLine));
             }
         }
 

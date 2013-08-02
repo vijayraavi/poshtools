@@ -14,29 +14,11 @@ namespace PowerShellTools.DebugEngine
     // A debug engine (DE) or a custom port supplier implements this interface to represent a program that can be debugged. 
     public class ScriptProgramNode : IDebugProgramNode2, IDebugProgram2, IDebugProgramNodeAttach2, IDebugEngineProgram2, IDebugThread2, IEnumDebugThreads2, IDebugModule3
     {
-        private ScriptDebugger _debugger;
-
         public ScriptDebugProcess Process { get; set; }
         public ScriptDebugger Debugger
         {
-            get
-            {
-                return _debugger;
-            }
-            set
-            {
-                _debugger = value;
-
-                if (_debugger != null)
-                {
-                    _debugger.DocumentChanged += _debugger_DocumentChanged;
-                }   
-            }
-        }
-
-        void _debugger_DocumentChanged(string obj)
-        {
-            FileName = obj;
+            get;
+            set;
         }
 
         public Guid Id { get; set; }
@@ -190,7 +172,7 @@ namespace PowerShellTools.DebugEngine
         public int Execute()
         {
             Trace.WriteLine("ScriptProgramNode: Entering Execute");
-            Debugger.Execute();
+            Debugger.Continue();
             return VSConstants.S_OK;
         }
 
@@ -294,7 +276,7 @@ namespace PowerShellTools.DebugEngine
         public int Stop()
         {
             Trace.WriteLine("Program: Stop");
-            _debugger.Stop();
+            Debugger.Stop();
             return VSConstants.S_OK;
         }
 
