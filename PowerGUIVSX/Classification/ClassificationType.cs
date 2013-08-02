@@ -316,4 +316,49 @@ namespace PowerShellTools
             ForegroundCustomizable = true;
         }
     }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellMember")]
+    [Name("PowerShell Member")]
+    [DisplayName("PowerShell Member")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellMemberFormat : ClassificationFormatDefinition
+    {
+        public PowerShellMemberFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 0);
+            ForegroundCustomizable = true;
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellGroupStart")]
+    [Name("PowerShell Group Start")]
+    [DisplayName("PowerShell Group Start")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellGroupStartFormat: ClassificationFormatDefinition
+    {
+        public PowerShellGroupStartFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 0);
+            ForegroundCustomizable = true;
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "PowerShellGroupEnd")]
+    [Name("PowerShell Group End")]
+    [DisplayName("PowerShell Group End")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellGroupEndFormat : ClassificationFormatDefinition
+    {
+        public PowerShellGroupEndFormat()
+        {
+            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 0);
+            ForegroundCustomizable = true;
+        }
+    }
 }
