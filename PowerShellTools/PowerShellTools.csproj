@@ -192,7 +192,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="PowerGUIVSXPackage.cs" />
+    <Compile Include="PowerShellToolsPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PkgCmdID.cs" />
     <Compile Include="TokenTag.cs" />
@@ -209,7 +209,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PowerGUIVSX.targets" />
+    <None Include="PowerShellTools.targets" />
+    <Content Include="License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="ProjectTemplates\PowerShell\PowerShellProject.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -222,7 +226,7 @@
     <None Include="Key.snk" />
   </ItemGroup>
   <ItemGroup>
-    <VSCTCompile Include="PowerGUIVSX.vsct">
+    <VSCTCompile Include="PowerShellTools.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
   </ItemGroup>
@@ -245,7 +249,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowerGuiVsx.Core.DebugEngine\PowerShellTools.DebugEngine.csproj">
+    <ProjectReference Include="..\PowerShellTools.DebugEngine\PowerShellTools.DebugEngine.csproj">
       <Project>{6d2688fe-6fd8-44a8-b96a-6037457f72a7}</Project>
       <Name>PowerShellTools.DebugEngine</Name>
     </ProjectReference>

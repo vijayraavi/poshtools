@@ -6,9 +6,9 @@ namespace PowerShellTools.Project
     public class PowerShellConfigProvider : ConfigProvider
     {
         private ProjectNode _node;
-        private PowerGUIVSXPackage _package;
+        private PowerShellToolsPackage _package;
 
-        public PowerShellConfigProvider(PowerGUIVSXPackage package, ProjectNode manager)
+        public PowerShellConfigProvider(PowerShellToolsPackage package, ProjectNode manager)
             : base(manager)
         {
             _package = package;

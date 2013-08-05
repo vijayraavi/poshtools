@@ -10,9 +10,9 @@ namespace PowerShellTools.Project
     [Guid("F5034706-568F-408A-B7B3-4D38C6DB8A32")]
     public class PowerShellProjectFactory : ProjectFactory
     {
-        private PowerGUIVSXPackage package;
+        private PowerShellToolsPackage package;
 
-        public PowerShellProjectFactory(PowerGUIVSXPackage package)
+        public PowerShellProjectFactory(PowerShellToolsPackage package)
             : base(package)
         {
             this.package = package;

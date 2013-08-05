@@ -16,7 +16,7 @@ namespace PowerShellTools.Project
     public class PowerShellProjectNode : ProjectNode
     {
         #region Fields
-        private PowerGUIVSXPackage package;
+        private PowerShellToolsPackage package;
         internal static int imageOffset;
         private static ImageList imageList;
         private VSLangProj.VSProject vsProject;
@@ -31,7 +31,7 @@ namespace PowerShellTools.Project
             imageList = Utilities.GetImageList(typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerGUIVsx.Project.Resources.ProjectIcon.bmp"));
         }
 
-        public PowerShellProjectNode(PowerGUIVSXPackage package)
+        public PowerShellProjectNode(PowerShellToolsPackage package)
         {
             this.package = package;
             imageOffset = this.ImageHandler.ImageList.Images.Count;

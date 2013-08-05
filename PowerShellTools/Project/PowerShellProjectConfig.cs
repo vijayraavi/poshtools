@@ -12,10 +12,10 @@ namespace PowerShellTools.Project
 {
     public class PowerShellProjectConfig : ProjectConfig
     {
-        private readonly PowerGUIVSXPackage _package;
+        private readonly PowerShellToolsPackage _package;
         private readonly ProjectNode _projectNode;
 
-        public PowerShellProjectConfig(PowerGUIVSXPackage package, ProjectNode project, string configuration)
+        public PowerShellProjectConfig(PowerShellToolsPackage package, ProjectNode project, string configuration)
             : base(project, configuration)
         {
             _package = package;
