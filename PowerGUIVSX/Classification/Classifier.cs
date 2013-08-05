@@ -20,9 +20,19 @@ namespace PowerShellTools
         internal static ContentTypeDefinition PowerShellContentType = null;
 
         [Export]
+        [FileExtension(".psd1")]
+        [ContentType("PowerShell")]
+        internal static FileExtensionToContentTypeDefinition PSD1 = null;
+
+        [Export]
+        [FileExtension(".psm1")]
+        [ContentType("PowerShell")]
+        internal static FileExtensionToContentTypeDefinition PSM1 = null;
+
+        [Export]
         [FileExtension(".ps1")]
         [ContentType("PowerShell")]
-        internal static FileExtensionToContentTypeDefinition PowerShellFileType = null;
+        internal static FileExtensionToContentTypeDefinition PS1 = null;
 
         [Import]
         internal IClassificationTypeRegistryService ClassificationTypeRegistry = null;
