@@ -38,7 +38,9 @@ namespace PowerShellTools.DebugEngine
 
         private ScriptProgramNode _node;
 
-        private List<ScriptBreakpoint> bps = new List<ScriptBreakpoint>(); 
+        private List<ScriptBreakpoint> bps = new List<ScriptBreakpoint>();
+
+        private bool _initializingRunspace;
 
 
         #endregion
@@ -68,6 +70,8 @@ namespace PowerShellTools.DebugEngine
 
         public void Execute()
         {
+            _initializingRunspace = true;
+
             if (!_runspaceSet.WaitOne())
             {
                 throw new Exception("Runspace not set!");
@@ -88,6 +92,8 @@ namespace PowerShellTools.DebugEngine
             Debugger.DebuggerPaused += Debugger_DebuggerPaused;
             _node.Debugger = Debugger;
 
+            _initializingRunspace = false;
+
             Debugger.Execute(_node);
         }
 
@@ -103,6 +109,8 @@ namespace PowerShellTools.DebugEngine
 
         void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
+            if (_initializingRunspace) return;
+
             if (e.UpdateType == BreakpointUpdateType.Set)
             {
                 var lbp = e.Breakpoint as LineBreakpoint;
@@ -227,7 +235,7 @@ namespace PowerShellTools.DebugEngine
                 position.GetRange(start, end);
                 position.GetFileName(out fileName);
 
-                //VS Subtracts 1 from the start line for some reason
+                //VS has a 0 based line\column value. PowerShell starts at 1
                 var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events, Runspace);
                 ppPendingBP = breakpoint;
 

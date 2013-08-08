@@ -212,7 +212,8 @@ namespace PowerShellTools.DebugEngine
 
         public int GetResolutionInfo(enum_BPRESI_FIELDS dwFields, BP_RESOLUTION_INFO[] pBPResolutionInfo)
         {
-            var documentContext = new ScriptDocumentContext(File, Line, Column, "");
+            //VS line\column is zero based. PowerShell is 1
+            var documentContext = new ScriptDocumentContext(File, Line - 1, Column, "");
 
             Trace.WriteLine("ScriptBreakpoint: GetResolutionInfo");
             if (dwFields == enum_BPRESI_FIELDS.BPRESI_ALLFIELDS)

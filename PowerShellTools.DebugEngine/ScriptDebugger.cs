@@ -67,6 +67,11 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
+        ~ScriptDebugger()
+        {
+            DebuggerFinished();
+        }
+
         private void ClearBreakpoints()
         {
             IEnumerable<PSObject> breakpoints;
@@ -171,10 +176,7 @@ namespace PowerShellTools.DebugEngine
         public void Stop()
         {
             _currentPowerShell.Stop();
-            if (DebuggingFinished != null)
-            {
-                DebuggingFinished(this, new EventArgs());
-            }
+            DebuggerFinished();
         }
 
         public void StepOver()
@@ -233,10 +235,7 @@ namespace PowerShellTools.DebugEngine
             }
             finally
             {
-                if (DebuggingFinished != null)
-                {
-                    DebuggingFinished(this, new EventArgs());
-                }
+                DebuggerFinished();
             }
 
         }
@@ -288,6 +287,17 @@ namespace PowerShellTools.DebugEngine
                 {
                     _callstack.Add(new ScriptStackFrame(CurrentExecutingNode, frame));
                 }
+            }
+        }
+
+        private void DebuggerFinished()
+        {
+            _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+            _runspace.StateChanged -= _runspace_StateChanged;
+            if (DebuggingFinished != null)
+            {
+                DebuggingFinished(this, new EventArgs());
             }
         }
     }
