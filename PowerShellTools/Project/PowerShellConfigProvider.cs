@@ -1,14 +1,15 @@
 ﻿using Microsoft.VisualStudio.Project;
+using Microsoft.VisualStudioTools.Project;
 using PowerGUIVsx.Project;
 
 namespace PowerShellTools.Project
 {
-    public class PowerShellConfigProvider : ConfigProvider
+    internal class PowerShellConfigProvider : CommonConfigProvider
     {
-        private ProjectNode _node;
+        private CommonProjectNode _node;
         private PowerShellToolsPackage _package;
 
-        public PowerShellConfigProvider(PowerShellToolsPackage package, ProjectNode manager)
+        public PowerShellConfigProvider(PowerShellToolsPackage package, CommonProjectNode manager)
             : base(manager)
         {
             _package = package;

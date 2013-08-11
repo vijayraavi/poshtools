@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Project;
+using Microsoft.VisualStudioTools.Project;
 using PowerGUIVsx.Project;
 using IServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 
@@ -22,14 +23,14 @@ namespace PowerShellTools.Project
             //TODO:
             var targetspath = Path.Combine(fileInfo.Directory.FullName, "PowerGUIVSX.Targets");
 
-            BuildEngine.SetGlobalProperty("PowerGUIVSXTargets", targetspath);
+            //BuildEngine.SetGlobalProperty("PowerGUIVSXTargets", targetspath);
 
             var taskpath = Path.Combine(fileInfo.Directory.FullName, "PowerGUIVSX.Targets");
 
-            BuildEngine.SetGlobalProperty("PowerGUIVSXTasks", loc);
+            //BuildEngine.SetGlobalProperty("PowerGUIVSXTasks", loc);
         }
 
-        protected override ProjectNode CreateProject()
+        internal override ProjectNode CreateProject()
         {
             var project = new PowerShellProjectNode(package);
             project.SetSite((IServiceProvider)((System.IServiceProvider)this.package).GetService(typeof(IServiceProvider)));

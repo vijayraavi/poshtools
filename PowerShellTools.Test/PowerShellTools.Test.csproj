@@ -71,10 +71,6 @@
       <Project>{456d66a8-e05e-496d-bdce-af24bbc12e0d}</Project>
       <Name>PowerShellTools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ThirdParty\Src\CSharp\Microsoft.VisualStudio.Project.csproj">
-      <Project>{cacb60a9-1e76-4f92-8831-b134a658c695}</Project>
-      <Name>Microsoft.VisualStudio.Project</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

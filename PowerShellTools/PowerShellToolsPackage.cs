@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
 using Microsoft.VisualStudio.Project;
+using Microsoft.VisualStudioTools.Project;
 using Microsoft.Win32;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -39,7 +40,7 @@ namespace PowerShellTools
     [ProvideProjectItem(typeof(PowerShellProjectFactory), "PowerShell", @"Templates", 500)]
     [Guid(GuidList.guidPowerGUIVSXPkgString)]
     [ProvideObject(typeof(PowerShellProjectPropertyPage))]
-    [ProvideObject(typeof(PowerShellModulePropertyPage))]
+    //[ProvideObject(typeof(PowerShellModulePropertyPage))]
     [ProvideDebugEngine("{43ACAB74-8226-4920-B489-BFCF05372437}", "PowerShell", PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}", ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true, CLSID = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}")]
     [Clsid(Clsid = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}", Assembly = "PowerGuiVsx.Core.DebugEngine", Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
     [Clsid(Clsid = "{08F3B557-C153-4F6C-8745-227439E55E79}", Assembly = "PowerGuiVsx.Core.DebugEngine", Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
@@ -47,7 +48,7 @@ namespace PowerShellTools
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
-    public sealed class PowerShellToolsPackage : ProjectPackage
+    public sealed class PowerShellToolsPackage : CommonProjectPackage
     {
         /// <summary>
         /// Default constructor of the package.
@@ -95,6 +96,43 @@ namespace PowerShellTools
                 //generalPane.Activate(); // Brings this pane into view
         }
 
+        public override ProjectFactory CreateProjectFactory()
+        {
+            return new PowerShellProjectFactory(this);
+        }
+
+        public override CommonEditorFactory CreateEditorFactory()
+        {
+            //return new PowerShellEditorFactory(this);
+            return null;
+        }
+
+        public override uint GetIconIdForAboutBox()
+        {
+            //TODO: GetIconIdForAboutBox
+            return 0;
+        }
+
+        public override uint GetIconIdForSplashScreen()
+        {
+            //TODO: GetIconIdFroSplashScreen
+            return 0;
+        }
+
+        public override string GetProductName()
+        {
+            return PowerShellConstants.LanguageName;
+        }
+
+        public override string GetProductDescription()
+        {
+            return PowerShellConstants.LanguageName;
+        }
+
+        public override string GetProductVersion()
+        {
+            return this.GetType().Assembly.GetName().Version.ToString();
+        }
 
         /////////////////////////////////////////////////////////////////////////////
         // Overridden Package Implementation
@@ -126,11 +164,6 @@ namespace PowerShellTools
         }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
-
-        public override string ProductUserContext
-        {
-            get { return "PowerShellProj"; }
-        }
 
         internal VSXHost Host { get; private set; }
 
