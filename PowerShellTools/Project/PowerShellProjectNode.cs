@@ -1,14 +1,15 @@
 ﻿using System;
 using System.IO;
 using Microsoft.VisualStudioTools.Project;
+using PowerShellTools.LanguageService;
 
 namespace PowerShellTools.Project
 {
     internal class PowerShellProjectNode : CommonProjectNode
     {
-        private readonly PowerShellToolsPackage _package;
+        private readonly CommonProjectPackage _package;
 
-        public PowerShellProjectNode(PowerShellToolsPackage package)
+        public PowerShellProjectNode(CommonProjectPackage package)
             : base(package, Utilities.GetImageList(typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.ProjectIcon.bmp")))
         {
             _package = package;

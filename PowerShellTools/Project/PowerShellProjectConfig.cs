@@ -12,10 +12,10 @@ namespace PowerShellTools.Project
 {
     internal class PowerShellProjectConfig : CommonProjectConfig
     {
-        private readonly PowerShellToolsPackage _package;
+        private readonly CommonProjectPackage _package;
         private readonly ProjectNode _projectNode;
 
-        public PowerShellProjectConfig(PowerShellToolsPackage package, CommonProjectNode project, string configuration)
+        public PowerShellProjectConfig(CommonProjectPackage package, CommonProjectNode project, string configuration)
             : base(project, configuration)
         {
             _package = package;

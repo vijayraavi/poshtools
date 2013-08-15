@@ -166,6 +166,9 @@
     <Compile Include="Intellisense\PowerShellCompletionHandlerProvider.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSource.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSourceProvider.cs" />
+    <Compile Include="LanguageService\CodeWindowManager.cs" />
+    <Compile Include="LanguageService\DropDownBarClient.cs" />
+    <Compile Include="LanguageService\PowerShellLanguageInfo.cs" />
     <Compile Include="MyControl.xaml.cs">
       <DependentUpon>MyControl.xaml</DependentUpon>
     </Compile>
@@ -173,10 +176,10 @@
     <Compile Include="Guids.cs" />
     <Compile Include="Classification\OutputPaneClassifier.cs" />
     <Compile Include="PowerShellConstants.cs" />
+    <Compile Include="LanguageService\PowerShellEditorFactory.cs" />
     <Compile Include="Project\LocDisplayNameAttribute.cs" />
     <Compile Include="Project\OutputTypeConverter.cs" />
     <Compile Include="Project\PowerShellConfigProvider.cs" />
-    <Compile Include="Project\PowerShellEditorFactory.cs" />
     <Compile Include="Project\PowerShellFileNode.cs" />
     <Compile Include="Project\PowerShellLibraryManager.cs" />
     <Compile Include="Project\PowerShellModulePropertyPage.cs" />
@@ -185,6 +188,7 @@
     <Compile Include="Project\PowerShellProjectLauncher.cs" />
     <Compile Include="Project\PowerShellProjectNode.cs" />
     <Compile Include="Project\PowerShellProjectNodeProperties.cs" />
+    <Compile Include="Project\PowerShellProjectPackage.cs" />
     <Compile Include="Project\PowerShellProjectPropertyPage.cs" />
     <Compile Include="Project\PSBuildTask.cs" />
     <Compile Include="Project\ResourcesCategoryAttribute.cs" />
@@ -374,6 +378,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="poshtools.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
@@ -446,7 +454,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="LanguageService\" />
     <Folder Include="Project\SharedProject\Debugger\" />
   </ItemGroup>
   <PropertyGroup>

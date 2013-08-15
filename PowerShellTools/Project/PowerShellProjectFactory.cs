@@ -11,9 +11,9 @@ namespace PowerShellTools.Project
     [Guid("F5034706-568F-408A-B7B3-4D38C6DB8A32")]
     public class PowerShellProjectFactory : ProjectFactory
     {
-        private PowerShellToolsPackage package;
+        private CommonProjectPackage package;
 
-        public PowerShellProjectFactory(PowerShellToolsPackage package)
+        public PowerShellProjectFactory(CommonProjectPackage package)
             : base(package)
         {
             this.package = package;

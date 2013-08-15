@@ -7,9 +7,9 @@ namespace PowerShellTools.Project
     internal class PowerShellConfigProvider : CommonConfigProvider
     {
         private CommonProjectNode _node;
-        private PowerShellToolsPackage _package;
+        private CommonProjectPackage _package;
 
-        public PowerShellConfigProvider(PowerShellToolsPackage package, CommonProjectNode manager)
+        public PowerShellConfigProvider(CommonProjectPackage package, CommonProjectNode manager)
             : base(manager)
         {
             _package = package;
