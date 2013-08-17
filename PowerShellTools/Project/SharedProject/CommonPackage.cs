@@ -52,7 +52,12 @@ namespace Microsoft.VisualStudioTools {
             IServiceContainer container = this as IServiceContainer;
             ServiceCreatorCallback callback = new ServiceCreatorCallback(CreateService);
             //container.AddService(GetLanguageServiceType(), callback, true);
-            container.AddService(GetLibraryManagerType(), callback, true);
+
+            var libraryManager = GetLibraryManagerType();
+            if (libraryManager != null)
+            {
+                container.AddService(GetLibraryManagerType(), callback, true);
+            }
         }
 
         protected override void Dispose(bool disposing) {
