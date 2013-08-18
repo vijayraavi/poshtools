@@ -5,11 +5,13 @@ using System.Globalization;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
+using System.Runtime.InteropServices;
 using System.Security;
+using System.Text;
 
-namespace PowerShellTools
+namespace PowerShellTools.DebugEngine
 {
-    public class VSXHost : PSHost
+    public class VSXHost : PSHost, IHostSupportsInteractiveSession
     {
         private Runspace _runspace;
         private Guid _instanceId = Guid.NewGuid();
@@ -62,6 +64,7 @@ namespace PowerShellTools
 
         public override void EnterNestedPrompt()
         {
+            
         }
 
         public override void ExitNestedPrompt()
@@ -78,12 +81,12 @@ namespace PowerShellTools
 
         public override string Name
         {
-            get { return "PowerGUI VSX Host"; }
+            get { return "PowerShell Tools for Visual Studio"; }
         }
 
         public override Version Version
         {
-            get { return new Version(2,0,0,0); }
+            get { return new Version(1,0,0,0); }
         }
 
         public override Guid InstanceId
@@ -105,6 +108,18 @@ namespace PowerShellTools
         {
             get { return originalUICultureInfo; }
         }
+
+        public void PushRunspace(Runspace runspace)
+        {
+            
+        }
+
+        public void PopRunspace()
+        {
+            
+        }
+
+        public bool IsRunspacePushed { get; private set; }
 
         public Runspace Runspace
         {
@@ -129,9 +144,6 @@ namespace PowerShellTools
             if (OutputProgress != null)
                 OutputProgress(label, percentage);
         }
-
-
-
 
         public Action<String, int> OutputProgress { get; set; }
 
@@ -190,13 +202,13 @@ namespace PowerShellTools
 
         public override PSCredential PromptForCredential(string caption, string message, string userName, string targetName)
         {
-            throw  new NotImplementedException();
+            return CredUIPromptForCredential(caption, message, userName, targetName, PSCredentialTypes.Default, PSCredentialUIOptions.Default, IntPtr.Zero);
         }
 
         public override PSCredential PromptForCredential(string caption, string message, string userName, string targetName,
                                                          PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
-            throw new NotImplementedException();
+            return CredUIPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes, options, IntPtr.Zero);
         }
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices, int defaultChoice)
@@ -208,6 +220,89 @@ namespace PowerShellTools
         {
             get { return new RawHostUi(); }
         }
+
+
+        // System.Management.Automation.HostUtilities
+        internal static PSCredential CredUIPromptForCredential(string caption, string message, string userName, string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options, IntPtr parentHWND)
+        {
+            if (string.IsNullOrEmpty(caption))
+            {
+                caption = ResourceStrings.PromptForCredential_DefaultCaption;
+            }
+            if (string.IsNullOrEmpty(message))
+            {
+                message = ResourceStrings.PromptForCredential_DefaultMessage;
+            }
+            if (caption.Length > 128)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, ResourceStrings.PromptForCredential_InvalidCaption, new object[]{128}));
+            }
+            if (message.Length > 1024)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, ResourceStrings.PromptForCredential_InvalidMessage, new object[]{1024}));
+            }
+            if (userName != null && userName.Length > 513)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, ResourceStrings.PromptForCredential_InvalidUserName, new object[]{513}));
+            }
+
+            var cREDUI_INFO = default(CredUI.CREDUI_INFO);
+            cREDUI_INFO.pszCaptionText = caption;
+            cREDUI_INFO.pszMessageText = message;
+            var stringBuilder = new StringBuilder(userName, 513);
+            var stringBuilder2 = new StringBuilder(256);
+            bool value = false;
+            int num = Convert.ToInt32(value);
+            cREDUI_INFO.cbSize = Marshal.SizeOf(cREDUI_INFO);
+            cREDUI_INFO.hwndParent = parentHWND;
+            CredUI.CREDUI_FLAGS cREDUI_FLAGS = CredUI.CREDUI_FLAGS.DO_NOT_PERSIST;
+            if ((allowedCredentialTypes & PSCredentialTypes.Domain) != PSCredentialTypes.Domain)
+            {
+                cREDUI_FLAGS |= CredUI.CREDUI_FLAGS.GENERIC_CREDENTIALS;
+                if ((options & PSCredentialUIOptions.AlwaysPrompt) == PSCredentialUIOptions.AlwaysPrompt)
+                {
+                    cREDUI_FLAGS |= CredUI.CREDUI_FLAGS.ALWAYS_SHOW_UI;
+                }
+            }
+            CredUI.CredUIReturnCodes credUIReturnCodes = CredUI.CredUIReturnCodes.ERROR_INVALID_PARAMETER;
+            if (stringBuilder.Length <= 513 && stringBuilder2.Length <= 256)
+            {
+                credUIReturnCodes = CredUI.CredUIPromptForCredentials(ref cREDUI_INFO, targetName, IntPtr.Zero, 0, stringBuilder, 513, stringBuilder2, 256, ref num, cREDUI_FLAGS);
+            }
+            PSCredential result;
+            if (credUIReturnCodes == CredUI.CredUIReturnCodes.NO_ERROR)
+            {
+                string text = null;
+                if (stringBuilder != null)
+                {
+                    text = stringBuilder.ToString();
+                }
+                text = text.TrimStart(new char[]
+		{
+			'\\'
+		});
+                SecureString secureString = new SecureString();
+                for (int i = 0; i < stringBuilder2.Length; i++)
+                {
+                    secureString.AppendChar(stringBuilder2[i]);
+                    stringBuilder2[i] = '\0';
+                }
+                if (!string.IsNullOrEmpty(text))
+                {
+                    result = new PSCredential(text, secureString);
+                }
+                else
+                {
+                    result = null;
+                }
+            }
+            else
+            {
+                result = null;
+            }
+            return result;
+        }
+
     }
 
     public class RawHostUi : PSHostRawUserInterface

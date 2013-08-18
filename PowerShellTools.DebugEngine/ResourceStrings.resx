@@ -135,4 +135,22 @@
   <data name="PS_Warning" xml:space="preserve">
     <value>WARNING: {0}</value>
   </data>
+  <data name="PromptForCredential_DefaultCaption" xml:space="preserve">
+    <value>Windows PowerShell Credential Request</value>
+  </data>
+  <data name="PromptForCredential_DefaultMessage" xml:space="preserve">
+    <value>Enter your credentials.</value>
+  </data>
+  <data name="PromptForCredential_DefaultTarget" xml:space="preserve">
+    <value>Enter your credentials.</value>
+  </data>
+  <data name="PromptForCredential_InvalidCaption" xml:space="preserve">
+    <value>The length of the caption should be less than {0}.</value>
+  </data>
+  <data name="PromptForCredential_InvalidMessage" xml:space="preserve">
+    <value>The length of the message should be less than {0}.</value>
+  </data>
+  <data name="PromptForCredential_InvalidUserName" xml:space="preserve">
+    <value>The length of the UserName should be less than {0}.</value>
+  </data>
 </root>

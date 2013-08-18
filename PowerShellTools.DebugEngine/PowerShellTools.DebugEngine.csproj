@@ -180,6 +180,7 @@
     <Compile Include="EngineEvents.cs" />
     <Compile Include="IRunspaceProvider.cs" />
     <Compile Include="PendingBreakpoint.cs" />
+    <Compile Include="PInvoke.cs" />
     <Compile Include="PrivateReflectionDynamicObject.cs" />
     <Compile Include="ScirptProgramNode.cs" />
     <Compile Include="ScriptBreakpoint.cs" />

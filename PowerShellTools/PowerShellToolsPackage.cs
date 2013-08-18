@@ -14,6 +14,7 @@ using Microsoft.Win32;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
+using PowerShellTools.DebugEngine;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using log4net;
