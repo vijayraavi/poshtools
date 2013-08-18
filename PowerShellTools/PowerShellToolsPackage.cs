@@ -148,8 +148,25 @@ namespace PowerShellTools
 
             RegisterEngine();
 
-            Host = new VSXHost();
+            InitializePowerShellHost();
         }
+
+        private void InitializePowerShellHost()
+        {
+            Host = new VSXHost();
+            Host.HostUi.OutputProgress = (label, percentage) =>
+            {
+                var statusBar = (IVsStatusbar) GetService(typeof (SVsStatusbar));
+                uint cookie = 0;
+                statusBar.Progress(ref cookie, 1, label, (uint) percentage, 100);
+
+                if (percentage == 100)
+                {
+                    statusBar.Progress(ref cookie, 1, "", 0, 0);    
+                }
+            };
+        }
+
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
 

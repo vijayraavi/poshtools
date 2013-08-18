@@ -124,6 +124,17 @@ namespace PowerShellTools
             throw new NotImplementedException();
         }
 
+        private void TryOutputProgress(string label, int percentage)
+        {
+            if (OutputProgress != null)
+                OutputProgress(label, percentage);
+        }
+
+
+
+
+        public Action<String, int> OutputProgress { get; set; }
+
         public Action<String> OutputString { get; set; }
 
         private void TryOutputString(string val)
@@ -159,7 +170,7 @@ namespace PowerShellTools
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
-            
+            TryOutputProgress(record.Activity + " - "  + record.StatusDescription, record.PercentComplete);
         }
 
         public override void WriteVerboseLine(string message)
