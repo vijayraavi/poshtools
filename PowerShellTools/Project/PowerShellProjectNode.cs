@@ -13,6 +13,7 @@ namespace PowerShellTools.Project
             : base(package, Utilities.GetImageList(typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.ProjectIcon.bmp")))
         {
             _package = package;
+            AddCATIDMapping(typeof (PowerShellModulePropertyPage), typeof (PowerShellModulePropertyPage).GUID);
         }
 
         public override Type GetProjectFactoryType()
@@ -37,7 +38,7 @@ namespace PowerShellTools.Project
 
         public override Type GetGeneralPropertyPageType()
         {
-            return typeof (PowerShellProjectPropertyPage);
+            return typeof (PowerShellGeneralPropertyPage);
         }
 
         public override Type GetLibraryManagerType()

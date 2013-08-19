@@ -197,6 +197,8 @@ namespace PowerShellTools.DebugEngine
 
         public override Dictionary<string, PSObject> Prompt(string caption, string message, Collection<FieldDescription> descriptions)
         {
+            
+
             return null;
         }
 

@@ -291,9 +291,6 @@
   <data name="SignOutputSettingDescription" xml:space="preserve">
     <value>Sign the scripts in this project with the specified certificate.</value>
   </data>
-  <data name="SupportedVersion" xml:space="preserve">
-    <value>2.4</value>
-  </data>
   <data name="TypesToProcess_Description" xml:space="preserve">
     <value>Specifies the type files (.ps1xml) that run when the module is imported.</value>
   </data>
