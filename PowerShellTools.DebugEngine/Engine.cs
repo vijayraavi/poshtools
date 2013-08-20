@@ -19,7 +19,7 @@ using Thread = System.Threading.Thread;
 namespace PowerShellTools.DebugEngine
 {
     [ComVisible(true)]
-    [Guid("C7F9F131-53AB-4FD0-8517-E54D124EA392")]
+    [Guid("C7F9F131-53AB-4FD0-8517-E54D124EA393")]
     public class Engine : IDebugEngine2, IDebugEngineLaunch2
     {
         #region Fields

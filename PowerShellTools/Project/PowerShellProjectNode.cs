@@ -41,6 +41,11 @@ namespace PowerShellTools.Project
             return typeof (PowerShellGeneralPropertyPage);
         }
 
+        protected override Guid[] GetConfigurationIndependentPropertyPages()
+        {
+            return new[] { typeof(PowerShellGeneralPropertyPage).GUID, typeof(PowerShellModulePropertyPage).GUID };
+        }
+
         public override Type GetLibraryManagerType()
         {
             return typeof(PowerShellLibraryManager);

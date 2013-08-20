@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Management.Automation.Runspaces;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using System.Runtime.InteropServices;
@@ -8,6 +9,8 @@ namespace PowerShellTools.DebugEngine
 {
     public class ScriptBreakpoint : IDebugBoundBreakpoint2, IEnumDebugBoundBreakpoints2, IDebugPendingBreakpoint2, IDebugBreakpointResolution2
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptBreakpoint));
+
         private EngineEvents _callback;
         private ScriptProgramNode _node;
         private Runspace _runspace;
@@ -33,6 +36,8 @@ namespace PowerShellTools.DebugEngine
 
         public ScriptBreakpoint(ScriptProgramNode node, string file, int line, int column, EngineEvents callback, Runspace runspace)
         {
+            Log.InfoFormat("ScriptBreakPoint: {0} {1} {2}", file, line, column);
+
             _node = node;
             _callback = callback;
             _runspace = runspace;
@@ -45,59 +50,59 @@ namespace PowerShellTools.DebugEngine
 
         public int GetPendingBreakpoint(out IDebugPendingBreakpoint2 ppPendingBreakpoint)
         {
-            Trace.WriteLine("ScriptBreakpoint: GetPendingBreakpoint");
+            Log.Info("ScriptBreakpoint: GetPendingBreakpoint");
             ppPendingBreakpoint = this;
             return VSConstants.S_OK;
         }
 
         public int GetState(enum_BP_STATE[] pState)
         {
-            Trace.WriteLine("ScriptBreakpoint: IDebugBoundBreakpoint2:GetState");
+            Log.Info("ScriptBreakpoint: IDebugBoundBreakpoint2:GetState");
             pState[0] = enum_BP_STATE.BPS_ENABLED;
             return VSConstants.S_OK;
         }
 
         public int GetHitCount(out uint pdwHitCount)
         {
-            Trace.WriteLine("ScriptBreakpoint: GetHitCount");
+            Log.Info("ScriptBreakpoint: GetHitCount");
             pdwHitCount = 0;
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetBreakpointResolution(out IDebugBreakpointResolution2 ppBPResolution)
         {
-            Trace.WriteLine("ScriptBreakpoint: GetBreakpointResolution");
+            Log.Info("ScriptBreakpoint: GetBreakpointResolution");
             ppBPResolution = this;
             return VSConstants.S_OK;
         }
 
         public int Enable(int fEnable)
         {
-            Trace.WriteLine("ScriptBreakpoint: Enable");
+            Log.Info("ScriptBreakpoint: Enable");
             return VSConstants.S_OK;
         }
 
         public int SetHitCount(uint dwHitCount)
         {
-            Trace.WriteLine("ScriptBreakpoint: SetHitCount");
+            Log.Info("ScriptBreakpoint: SetHitCount");
             return VSConstants.E_NOTIMPL;
         }
 
         public int SetCondition(BP_CONDITION bpCondition)
         {
-            Trace.WriteLine("ScriptBreakpoint: SetCondition");
+            Log.Info("ScriptBreakpoint: SetCondition");
             return VSConstants.E_NOTIMPL;
         }
 
         public int SetPassCount(BP_PASSCOUNT bpPassCount)
         {
-            Trace.WriteLine("ScriptBreakpoint: SetPassCount");
+            Log.Info("ScriptBreakpoint: SetPassCount");
             return VSConstants.E_NOTIMPL;
         }
 
         public int Delete()
         {
-            Trace.WriteLine("ScriptBreakpoint: Delete");
+            Log.Info("ScriptBreakpoint: Delete");
 
             return VSConstants.S_OK;
         }
@@ -108,7 +113,7 @@ namespace PowerShellTools.DebugEngine
 
         public int Next(uint celt, IDebugBoundBreakpoint2[] rgelt, ref uint pceltFetched)
         {
-            Trace.WriteLine("ScriptBreakpoint: Next");
+            Log.Info("ScriptBreakpoint: Next");
             rgelt[0] = this;
             pceltFetched = 1;
             return VSConstants.S_OK;
@@ -116,26 +121,26 @@ namespace PowerShellTools.DebugEngine
 
         public int Skip(uint celt)
         {
-            Trace.WriteLine("ScriptBreakpoint: Skip");
+            Log.Info("ScriptBreakpoint: Skip");
             return VSConstants.E_NOTIMPL;
         }
 
         public int Reset()
         {
-            Trace.WriteLine("ScriptBreakpoint: Reset");
+            Log.Info("ScriptBreakpoint: Reset");
             return VSConstants.S_OK;
         }
 
         public int Clone(out IEnumDebugBoundBreakpoints2 ppEnum)
         {
-            Trace.WriteLine("ScriptBreakpoint: Clone");
+            Log.Info("ScriptBreakpoint: Clone");
             ppEnum = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetCount(out uint pcelt)
         {
-            Trace.WriteLine("ScriptBreakpoint: GetCount");
+            Log.Info("ScriptBreakpoint: GetCount");
             pcelt = 1;
             return VSConstants.S_OK;
         }
@@ -146,21 +151,21 @@ namespace PowerShellTools.DebugEngine
 
         public int CanBind(out IEnumDebugErrorBreakpoints2 ppErrorEnum)
         {
-            Trace.WriteLine("ScriptBreakpoint: CanBind");
+            Log.Info("ScriptBreakpoint: CanBind");
             ppErrorEnum = null;
             return VSConstants.S_OK;
         }
 
         public int Bind()
         {
-            Trace.WriteLine("ScriptBreakpoint: Bind");
+            Log.Info("ScriptBreakpoint: Bind");
             _callback.Breakpoint(_node, this);
             return VSConstants.S_OK;
         }
 
         public int GetState(PENDING_BP_STATE_INFO[] pState)
         {
-            Trace.WriteLine("ScriptBreakpoint: IDebugPendingBreakpoint2:GetState");
+            Log.Info("ScriptBreakpoint: IDebugPendingBreakpoint2:GetState");
             var state = new PENDING_BP_STATE_INFO
                             {
                                 state = enum_PENDING_BP_STATE.PBPS_ENABLED,
@@ -173,27 +178,27 @@ namespace PowerShellTools.DebugEngine
 
         public int GetBreakpointRequest(out IDebugBreakpointRequest2 ppBPRequest)
         {
-            Trace.WriteLine("ScriptBreakpoint: GetBreakpointRequest");
+            Log.Info("ScriptBreakpoint: GetBreakpointRequest");
             ppBPRequest = null;
             return VSConstants.S_OK;
         }
 
         public int Virtualize(int fVirtualize)
         {
-            Trace.WriteLine("ScriptBreakpoint: Virtualize");
+            Log.Info("ScriptBreakpoint: Virtualize");
             return VSConstants.S_OK;
         }
 
         public int EnumBoundBreakpoints(out IEnumDebugBoundBreakpoints2 ppEnum)
         {
-            Trace.WriteLine("ScriptBreakpoint: EnumBoundBreakpoints");
+            Log.Info("ScriptBreakpoint: EnumBoundBreakpoints");
             ppEnum = this;
             return VSConstants.S_OK;
         }
 
         public int EnumErrorBreakpoints(enum_BP_ERROR_TYPE bpErrorType, out IEnumDebugErrorBreakpoints2 ppEnum)
         {
-            Trace.WriteLine("ScriptBreakpoint: EnumErrorBreakpoints");
+            Log.Info("ScriptBreakpoint: EnumErrorBreakpoints");
             ppEnum = null;
             return VSConstants.S_OK;
         }
@@ -204,7 +209,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetBreakpointType(enum_BP_TYPE[] pBPType)
         {
-            Trace.WriteLine("ScriptBreakpoint: GetBreakpointType");
+            Log.Info("ScriptBreakpoint: GetBreakpointType");
             pBPType[0] = enum_BP_TYPE.BPT_CODE;
             return VSConstants.S_OK;
         }
@@ -215,7 +220,7 @@ namespace PowerShellTools.DebugEngine
             //VS line\column is zero based. PowerShell is 1
             var documentContext = new ScriptDocumentContext(File, Line - 1, Column, "");
 
-            Trace.WriteLine("ScriptBreakpoint: GetResolutionInfo");
+            Log.Info("ScriptBreakpoint: GetResolutionInfo");
             if (dwFields == enum_BPRESI_FIELDS.BPRESI_ALLFIELDS)
             {
                 var loc = new BP_RESOLUTION_LOCATION

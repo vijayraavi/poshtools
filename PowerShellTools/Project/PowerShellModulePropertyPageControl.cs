@@ -155,6 +155,16 @@ namespace PowerShellTools.Project
             get { return txtVersion.Text; }
             set { txtVersion.Text = value; }
         }
+
+        private void PowerShellModulePropertyPageControl_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnGuid_Click(object sender, EventArgs e)
+        {
+            txtGuid.Text = System.Guid.NewGuid().ToString();
+        }
 }
 
 

@@ -6,6 +6,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Threading;
+using log4net;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -41,8 +42,11 @@ namespace PowerShellTools.DebugEngine
         public IEnumerable<ScriptStackFrame> CallStack { get { return _callstack; } }
         public ScriptProgramNode CurrentExecutingNode { get; private set; }
 
+        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptDebugger));
+
         public void OnDocumentChanged(string fileName)
         {
+            Log.InfoFormat("OnDocumentChanged: {0}", fileName);
             if (DocumentChanged != null)
             {
                 DocumentChanged(fileName);
@@ -51,6 +55,8 @@ namespace PowerShellTools.DebugEngine
 
         public ScriptDebugger(Runspace runspace, IEnumerable<ScriptBreakpoint> initialBreakpoints )
         {
+            Log.InfoFormat("ScriptDebugger: Initial Breakpoints: {0}", initialBreakpoints.Count());
+
             _runspace = runspace;
             _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
             _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
@@ -74,6 +80,8 @@ namespace PowerShellTools.DebugEngine
 
         private void ClearBreakpoints()
         {
+            Log.Info("ClearBreakpoints");
+
             IEnumerable<PSObject> breakpoints;
             using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
             {
@@ -81,6 +89,8 @@ namespace PowerShellTools.DebugEngine
             }
 
             if (!breakpoints.Any()) return;
+
+            Log.InfoFormat("Clearing {0} breakpoints.", breakpoints.Count());
 
             using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
             {
@@ -93,6 +103,8 @@ namespace PowerShellTools.DebugEngine
 
         private void SetBreakpoint(ScriptBreakpoint breakpoint)
         {
+            Log.InfoFormat("SetBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column);
+
             using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
             {
                 var command = new Command("Set-PSBreakpoint");
@@ -105,6 +117,8 @@ namespace PowerShellTools.DebugEngine
 
         void _runspace_StateChanged(object sender, RunspaceStateEventArgs e)
         {
+            Log.InfoFormat("Runspace State Changed: {0}", e.RunspaceStateInfo.State);
+
             switch (e.RunspaceStateInfo.State)
             {
                 case RunspaceState.Broken:
@@ -120,6 +134,8 @@ namespace PowerShellTools.DebugEngine
 
         void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
+            Log.InfoFormat("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
+
             if (BreakpointUpdated != null)
             {
                 BreakpointUpdated(sender, e);
@@ -128,6 +144,8 @@ namespace PowerShellTools.DebugEngine
 
         void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
         {
+            Log.InfoFormat("Debugger stopped");
+
             RefreshScopedVariables();
             RefreshCallStack();
 
@@ -151,6 +169,8 @@ namespace PowerShellTools.DebugEngine
 
         private bool ProcessLineBreakpoints(DebuggerStopEventArgs e)
         {
+            Log.InfoFormat("Process Line Breapoints");
+
             var lbp = e.Breakpoints[0] as LineBreakpoint;
             if (lbp != null)
             {
@@ -175,36 +195,42 @@ namespace PowerShellTools.DebugEngine
 
         public void Stop()
         {
+            Log.Info("Stop");
             _currentPowerShell.Stop();
             DebuggerFinished();
         }
 
         public void StepOver()
         {
+            Log.Info("StepOver");
             _resumeAction = DebuggerResumeAction.StepOver;
             _pausedEvent.Set();
         }
 
         public void StepInto()
         {
+            Log.Info("StepInto");
             _resumeAction = DebuggerResumeAction.StepInto;
             _pausedEvent.Set();
         }
 
         public void StepOut()
         {
+            Log.Info("StepOut");
             _resumeAction = DebuggerResumeAction.StepOut;
             _pausedEvent.Set();
         }
 
         public void Continue()
         {
+            Log.Info("Continue");
             _resumeAction = DebuggerResumeAction.Continue;
             _pausedEvent.Set();
         }
 
         public void Execute(ScriptProgramNode node)
         {
+            Log.Info("Execute");
             CurrentExecutingNode = node;
  
             try
@@ -228,6 +254,7 @@ namespace PowerShellTools.DebugEngine
             }
             catch (Exception ex)
             {
+                Log.Info("Terminating error", ex);
                 if (OutputString != null)
                 {
                     OutputString(this, new EventArgs<string>("Error: " + ex.Message + Environment.NewLine));
