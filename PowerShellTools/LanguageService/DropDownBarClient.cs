@@ -108,8 +108,8 @@ namespace PowerShellTools.LanguageService
                     count = (uint)_topLevelEntries.Count;
                     break;
                 case NestedComboBoxId:
-                    //TODO: CalculateNestedEntries();
-                    count = (uint)_nestedEntries.Count;
+                    CalculateTopLevelEntries();
+                    count = (uint)_topLevelEntries.Count;
                     break;
             }
 
@@ -617,7 +617,7 @@ namespace PowerShellTools.LanguageService
             ImageList list = new ImageList();
             list.ImageSize = new Size(0x10, 0x10);
             list.TransparentColor = Color.FromArgb(0xff, 0, 0xff);
-            Stream manifestResourceStream = typeof(DropDownBarClient).Assembly.GetManifestResourceStream("Microsoft.Resources.completionset.bmp");
+            Stream manifestResourceStream = typeof(DropDownBarClient).Assembly.GetManifestResourceStream("PowerShellTools.Resources.completionset.bmp");
             list.Images.AddStrip(new Bitmap(manifestResourceStream));
             return list;
         }
