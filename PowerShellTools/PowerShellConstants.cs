@@ -1,6 +1,4 @@
-﻿using System.Management.Automation.Runspaces;
-
-namespace PowerShellTools
+﻿namespace PowerShellTools
 {
     public static class PowerShellConstants
     {

@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
-using Microsoft.Win32;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using PowerShellTools.DebugEngine;
@@ -53,6 +49,8 @@ namespace PowerShellTools
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
     public sealed class PowerShellToolsPackage : CommonPackage
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
+
         /// <summary>
         /// Default constructor of the package.
         /// Inside this method you can place any initialization code that does not require 
@@ -62,9 +60,18 @@ namespace PowerShellTools
         /// </summary>
         public PowerShellToolsPackage()
         {
-            Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
+            Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
             Instance = this;
         }
+
+        /// <summary>
+        /// Returns the PowerShell host for the package.
+        /// </summary>
+        internal VSXHost Host { get; private set; }
+        /// <summary>
+        /// Returns the current package instance.
+        /// </summary>
+        public static PowerShellToolsPackage Instance { get; private set; }
 
         /// <summary>
         /// This function is called when the user clicks the menu item that shows the 
@@ -85,30 +92,6 @@ namespace PowerShellTools
             Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
         }
 
-        public void WriteLine(string value)
-        {
-            var outWindow = GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
-
-            if (outWindow == null) return;
-
-            var generalPaneGuid = VSConstants.GUID_OutWindowGeneralPane; 
-            IVsOutputWindowPane generalPane;
-            outWindow.GetPane(ref generalPaneGuid, out generalPane);
-
-            generalPane.OutputString(value);
-        }
-
-        public static PowerShellToolsPackage Instance
-        {
-            get; private set;
-        }
-
-
-
-
-        /////////////////////////////////////////////////////////////////////////////
-        // Overridden Package Implementation
-        #region Package Members
 
         public override Type GetLibraryManagerType()
         {
@@ -131,7 +114,7 @@ namespace PowerShellTools
         /// </summary>
         protected override void Initialize()
         {
-            Trace.WriteLine (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
+            Log.Info (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
@@ -144,12 +127,12 @@ namespace PowerShellTools
                 mcs.AddCommand( menuToolWin );
             }
 
-            //RegisterEngine();
-
             InitializePowerShellHost();
-            
         }
 
+        /// <summary>
+        /// Initialize the PowerShell host.
+        /// </summary>
         private void InitializePowerShellHost()
         {
             Host = new VSXHost();
@@ -167,100 +150,6 @@ namespace PowerShellTools
         }
 
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
-
-        internal VSXHost Host { get; private set; }
-
-        public void RegisterEngine()
-        {
-            Log.Debug("Entering RegisterEngine().");
-            RegistryKey key = null;
-            try
-            {
-                key = ApplicationRegistryRoot.OpenSubKey(@"CLSID\{C7F9F131-53AB-4FD0-8517-E54D124EA392}");
-
-                if (key == null)
-                {
-                    Log.Error("The debug engine was not installed correctly.");
-
-                    return;
-                }
-
-                Log.DebugFormat("PowerGUI VSX Registration Key [{0}].", key.ToString());
-
-                var assemblyLocation = GetType().Assembly.Location;
-
-                if (String.IsNullOrEmpty(assemblyLocation) || !File.Exists(assemblyLocation))
-                {
-                    Log.Error("Could not properly locate the PowerGUI VSX assemblies.");
-                    throw new ApplicationException("Failed to identitfy the current assembly's file path.");
-                }
-
-                var location = new FileInfo(assemblyLocation).Directory;
-                Log.DebugFormat("PowerGUI VSX file location [{0}].", location);
-
-                if (location == null)
-                {
-                    throw new ApplicationException("Failed to identitfy the current assembly's file path.");
-                }
-
-                var currentPath = Path.Combine(location.FullName, "PowerGuiVsx.Core.DebugEngine.dll");
-
-                if (!Registered(key, currentPath))
-                {
-                    Log.Info("Debug engine is not registered. Registering debug engine.");
-                    string stringKey;
-                    using (key)
-                    {
-                        stringKey = key.ToString();
-                    }
-
-                    if (stringKey.ToUpper().StartsWith("HKEY_LOCAL_MACHINE"))
-                    {
-                        stringKey = stringKey.Remove(0, "HKEY_LOCAL_MACHINE\\".Length);
-                        key = Registry.LocalMachine.OpenSubKey(stringKey, true);
-                    }
-                    else if (stringKey.ToUpper().StartsWith("HKEY_CURRENT_USER"))
-                    {
-                        stringKey = stringKey.Remove(0, "HKEY_CURRENT_USER\\".Length);
-                        key = Registry.CurrentUser.OpenSubKey(stringKey, true);
-                    }
-
-                    if (key == null)
-                    {
-                        Log.Error("Debug engine was not registered correctly.");
-                        return;
-                    }
-
-                    Log.DebugFormat("Setting Codebase value to [{0}].", currentPath);
-                    key.SetValue("Codebase", currentPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Failed to update assembly configuration file.", ex);
-            }
-            finally
-            {
-                if (key != null)
-                {
-                    key.Close();
-                    key.Dispose();
-                }
-            }
-        }
-
-        private bool Registered(RegistryKey key, string destFile)
-        {
-            var value = key.GetValue("CodeBase");
-
-            return value != null && value.Equals(destFile);
-        }
-
-        private uint m_componentID;
-
-
-        #endregion
 
     }
 }
