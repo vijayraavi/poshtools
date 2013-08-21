@@ -54,15 +54,18 @@ namespace PowerShellTools
 
        public class OutputClassifier : IClassifier
     {
-        private bool _settingsLoaded;
-        private IEnumerable<Classifier> _classifiers;
+        // private bool _settingsLoaded;
+        // private IEnumerable<Classifier> _classifiers;
         private readonly IClassificationTypeRegistryService _classificationTypeRegistry;
         public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
 
         public OutputClassifier(IClassificationTypeRegistryService registry)
         {
              _classificationTypeRegistry = registry;
-        }
+
+            // Just to avoid a compiler warning
+            var temp = this.ClassificationChanged;
+        }   
 
         private struct Classifier
         {
@@ -113,6 +116,8 @@ namespace PowerShellTools
 
     }
 
+#pragma warning disable 0649
+
        [ContentType("output")]
        [Export(typeof(IClassifierProvider))]
        public class OutputClassifierProvider : IClassifierProvider
@@ -136,3 +141,5 @@ namespace PowerShellTools
            }
        }
 }
+
+#pragma warning restore 0649

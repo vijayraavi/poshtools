@@ -97,7 +97,7 @@ namespace PowerShellTools.LanguageService
                 return AddDropDownBar();
             }
 
-            return VSConstants.S_OK;
+            // return VSConstants.S_OK;
         }
 
         private int AddDropDownBar()
