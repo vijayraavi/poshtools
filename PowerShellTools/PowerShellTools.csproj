@@ -164,6 +164,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Classification\Classifier.cs" />
+    <Compile Include="Classification\PowerShellOutliningTagger.cs" />
+    <Compile Include="Classification\PowerShellOutliningTaggerProvider.cs" />
+    <Compile Include="Classification\PowerShellTokenizationService.cs" />
+    <Compile Include="Classification\PSBufferTokenizationService.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
     <Compile Include="DebugEngine\Definitions\Enums.cs" />
     <Compile Include="DebugEngine\Definitions\Guids.cs" />
@@ -195,7 +199,6 @@
     <Compile Include="Intellisense\PowerShellCompletionSourceProvider.cs" />
     <Compile Include="LanguageService\CodeWindowManager.cs" />
     <Compile Include="LanguageService\DropDownBarClient.cs" />
-    <Compile Include="LanguageService\OutlineTagger.cs" />
     <Compile Include="LanguageService\PowerShellLanguageInfo.cs" />
     <Compile Include="LanguageService\TokenTag.cs" />
     <Compile Include="MyControl.xaml.cs">

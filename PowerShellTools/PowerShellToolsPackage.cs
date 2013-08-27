@@ -1,11 +1,15 @@
 ﻿using System;
+using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
+using PowerShellTools.Classification;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
@@ -64,6 +68,8 @@ namespace PowerShellTools
             Instance = this;
         }
 
+        ITextBufferFactoryService TextBufferFactoryService = null;
+
         /// <summary>
         /// Returns the PowerShell host for the package.
         /// </summary>
@@ -120,6 +126,14 @@ namespace PowerShellTools
             var langService = new PowerShellLanguageInfo(this);
             ((IServiceContainer)this).AddService(langService.GetType(), langService, true);
 
+            var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
+            TextBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
+
+            if (TextBufferFactoryService != null)
+            {
+                TextBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
+            }
+
             // Add our command handlers for menu (commands must exist in the .vsct file)
             OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if ( null != mcs )
@@ -131,6 +145,16 @@ namespace PowerShellTools
             }
 
             InitializePowerShellHost();
+        }
+
+        void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
+        {
+            PowerShellTokenizationService psts = new PowerShellTokenizationService(e.TextBuffer, false);
+            psts.Initialize();
+            psts.SetEmptyTokenizationProperties();
+            psts.StartTokenizeBuffer();
+
+            e.TextBuffer.PostChanged += (o, args) => psts.StartTokenizeBuffer();
         }
 
         /// <summary>

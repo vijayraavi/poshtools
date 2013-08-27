@@ -54,7 +54,7 @@ namespace PowerShellTools
     {
         ITextBuffer _buffer;
         ITagAggregator<PowerShellTokenTag> _aggregator;
-        IDictionary<PSTokenType, IClassificationType> _ookTypes;
+        static IDictionary<PSTokenType, IClassificationType> _ookTypes;
 
         internal PowerShellClassifier(ITextBuffer buffer,
                                ITagAggregator<PowerShellTokenTag> ookTagAggregator,
@@ -84,6 +84,15 @@ namespace PowerShellTools
             _ookTypes[PSTokenType.Variable] = typeService.GetClassificationType("PowerShellVariable");
             _ookTypes[PSTokenType.Unknown] = typeService.GetClassificationType("PowerShellUnknown");
             
+        }
+
+        public static IClassificationType GetClassificationType(PSTokenType tokenType)
+        {
+            if (_ookTypes != null)
+            {
+                return _ookTypes[tokenType];
+            }
+            return null;
         }
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged
