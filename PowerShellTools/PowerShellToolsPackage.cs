@@ -3,6 +3,8 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using log4net.Config;
+using log4net.Layout;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudioTools;
@@ -11,6 +13,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using PowerShellTools.Classification;
 using PowerShellTools.DebugEngine;
+using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using log4net;
@@ -51,6 +54,7 @@ namespace PowerShellTools
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
+    [ProvideOptionPage(typeof(DiagnosticsDialogPage), "PowerShell Tools", "Diagnostics",101, 106, true)]
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
@@ -120,6 +124,13 @@ namespace PowerShellTools
         /// </summary>
         protected override void Initialize()
         {
+            var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
+            
+            if (page.EnableDiagnosticLogging)
+            {
+                DiagnosticConfiguration.EnableDiagnostics();
+            }
+
             Log.Info (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
 

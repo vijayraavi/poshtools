@@ -9,6 +9,7 @@ using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerShellTools.DebugEngine.Definitions;
@@ -42,6 +43,7 @@ namespace PowerShellTools.DebugEngine
 
         private bool _initializingRunspace;
 
+        private static readonly ILog Log = LogManager.GetLogger(typeof (Engine));
 
         #endregion
 
@@ -173,7 +175,7 @@ namespace PowerShellTools.DebugEngine
         public int Attach(IDebugProgram2[] rgpPrograms, IDebugProgramNode2[] rgpProgramNodes, uint celtPrograms,
                           IDebugEventCallback2 pCallback, enum_ATTACH_REASON dwReason)
         {
-            Trace.WriteLine("Attaching the debug engine.");
+            Log.Debug("Attaching the debug engine.");
 
             Guid id;
             rgpPrograms[0].GetProgramId(out id);
@@ -219,7 +221,7 @@ namespace PowerShellTools.DebugEngine
         int IDebugEngine2.CreatePendingBreakpoint(IDebugBreakpointRequest2 pBPRequest,
                                                   out IDebugPendingBreakpoint2 ppPendingBP)
         {
-            Trace.WriteLine("Engine: CreatePendingBreakPoint");
+            Log.Debug("Engine: CreatePendingBreakPoint");
 
             ppPendingBP = null;
 
@@ -340,7 +342,7 @@ namespace PowerShellTools.DebugEngine
         // Determines if a process can be terminated.
         int IDebugEngineLaunch2.CanTerminateProcess(IDebugProcess2 process)
         {
-            Trace.WriteLine("Engine: CanTerminateProcess");
+            Log.Debug("Engine: CanTerminateProcess");
             return VSConstants.S_OK;
         }
 
@@ -369,7 +371,7 @@ namespace PowerShellTools.DebugEngine
         // The debugger will call IDebugEngineLaunch2::CanTerminateProcess before calling this method.
         int IDebugEngineLaunch2.TerminateProcess(IDebugProcess2 process)
         {
-            Trace.WriteLine("Engine: TerminateProcess");
+            Log.Debug("Engine: TerminateProcess");
             _events.ProgramDestroyed(_node);
 
             IDebugPort2 port;
