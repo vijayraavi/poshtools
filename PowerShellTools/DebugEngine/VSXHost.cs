@@ -8,6 +8,7 @@ using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using System.Threading;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -48,8 +49,12 @@ namespace PowerShellTools.DebugEngine
             Instance = this;
 
             HostUi = new HostUi();
-            
-            _runspace = RunspaceFactory.CreateRunspace(this);
+
+            InitialSessionState iss = InitialSessionState.CreateDefault();
+           // iss.ApartmentState = ApartmentState.STA;
+            //iss.ThreadOptions = PSThreadOptions.ReuseThread;
+
+            _runspace = RunspaceFactory.CreateRunspace(this, iss);
             _runspace.Open();
         }
 
@@ -167,7 +172,7 @@ namespace PowerShellTools.DebugEngine
 
         public override void WriteLine(string value)
         {
-            TryOutputString(value);
+            TryOutputString(value + Environment.NewLine);
         }
 
         public override void WriteErrorLine(string value)
@@ -344,7 +349,18 @@ namespace PowerShellTools.DebugEngine
         public override Coordinates CursorPosition { get; set; }
         public override Coordinates WindowPosition { get; set; }
         public override int CursorSize { get; set; }
-        public override Size BufferSize { get; set; }
+
+        public override Size BufferSize
+        {
+            get
+            {
+                return new Size(200,200);
+            }
+            set
+            {
+                
+            }
+        }
         public override Size WindowSize { get; set; }
 
         public override Size MaxWindowSize

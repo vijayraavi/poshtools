@@ -146,6 +146,8 @@ namespace PowerShellTools.LanguageService
                 return VSConstants.E_NOTIMPL;
             }
 
+
+
             #endregion
         }
 }

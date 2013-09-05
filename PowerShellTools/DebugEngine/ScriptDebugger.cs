@@ -73,11 +73,6 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-        ~ScriptDebugger()
-        {
-            DebuggerFinished();
-        }
-
         private void ClearBreakpoints()
         {
             Log.Info("ClearBreakpoints");
@@ -241,16 +236,12 @@ namespace PowerShellTools.DebugEngine
                 using (_currentPowerShell = PowerShell.Create())
                 {
                     _currentPowerShell.Runspace = _runspace;
-
-                    var psCommand = new PSCommand();
-                    psCommand.AddScript(". '" + node.FileName + "'");
-                    psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                    //psCommand.AddCommand(new Command("out-default"));
-
-                    _currentPowerShell.Commands = psCommand;
+                    _currentPowerShell.AddCommand(node.FileName);
+                    _currentPowerShell.AddCommand("out-default");
+                    _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
 
                     var objects = new PSDataCollection<PSObject>();
-                    objects.DataAdded +=objects_DataAdded;
+                    objects.DataAdded += objects_DataAdded;
 
                     _currentPowerShell.Invoke<PSObject>(null, objects);
                 }
