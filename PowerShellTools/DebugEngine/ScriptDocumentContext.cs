@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 
@@ -8,9 +8,11 @@ namespace PowerShellTools.DebugEngine
 {
     public class ScriptDocumentContext : IDebugDocumentContext2, IDebugCodeContext2, IEnumDebugCodeContexts2
     {
-        private string _fileName;
-        private string _description;
-        private int _line, _column;
+        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptDocumentContext));
+        private readonly string _fileName;
+        private readonly string _description;
+        private readonly int _line;
+        private readonly int _column;
 
 
         public ScriptDocumentContext(string fileName, int line, int column, string description)
@@ -25,28 +27,28 @@ namespace PowerShellTools.DebugEngine
 
         public int GetDocument(out IDebugDocument2 ppDocument)
         {
-            Trace.WriteLine("ScriptDocumentContext: GetDocument");
+            Log.Debug("ScriptDocumentContext: GetDocument");
             ppDocument = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetName(enum_GETNAME_TYPE gnType, out string pbstrFileName)
         {
-            Trace.WriteLine("ScriptDocumentContext: GetName");
+            Log.Debug("ScriptDocumentContext: GetName");
             pbstrFileName = _fileName;
             return VSConstants.S_OK;
         }
 
         public int EnumCodeContexts(out IEnumDebugCodeContexts2 ppEnumCodeCxts)
         {
-            Trace.WriteLine("ScriptDocumentContext: EnumCodeContexts");
+            Log.Debug("ScriptDocumentContext: EnumCodeContexts");
             ppEnumCodeCxts = this;
             return VSConstants.S_OK;
         }
 
         public int GetLanguageInfo(ref string pbstrLanguage, ref Guid pguidLanguage)
         {
-            Trace.WriteLine("ScriptDocumentContext: GetLanguageInfo");
+            Log.Debug("ScriptDocumentContext: GetLanguageInfo");
             pguidLanguage = Guid.Empty;
             pbstrLanguage = "PowerShell";
             return VSConstants.S_OK;
@@ -54,7 +56,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetStatementRange(TEXT_POSITION[] pBegPosition, TEXT_POSITION[] pEndPosition)
         {
-            Trace.WriteLine("ScriptDocumentContext: GetStatementRange");
+            Log.Debug("ScriptDocumentContext: GetStatementRange");
 
             pBegPosition[0].dwLine = (uint)_line;
             pBegPosition[0].dwColumn = (uint)_column;
@@ -66,7 +68,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetSourceRange(TEXT_POSITION[] pBegPosition, TEXT_POSITION[] pEndPosition)
         {
-            Trace.WriteLine("ScriptDocumentContext: GetSourceRange");
+            Log.Debug("ScriptDocumentContext: GetSourceRange");
 
             pBegPosition[0].dwLine = (uint)_line;
             pBegPosition[0].dwColumn = (uint)_column;
@@ -78,14 +80,14 @@ namespace PowerShellTools.DebugEngine
 
         public int Compare(enum_DOCCONTEXT_COMPARE Compare, IDebugDocumentContext2[] rgpDocContextSet, uint dwDocContextSetLen, out uint pdwDocContext)
         {
-            Trace.WriteLine("ScriptDocumentContext: Compare");
+            Log.Debug("ScriptDocumentContext: Compare");
             pdwDocContext = 0;
             return VSConstants.E_NOTIMPL;
         }
 
         public int Seek(int nCount, out IDebugDocumentContext2 ppDocContext)
         {
-            Trace.WriteLine("ScriptDocumentContext: Seek");
+            Log.Debug("ScriptDocumentContext: Seek");
             ppDocContext = null;
             return VSConstants.E_NOTIMPL;
         }
@@ -97,7 +99,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetName(out string pbstrName)
         {
-            Trace.WriteLine("ScriptDocumentContext: IDebugCodeContext2.GetName");
+            Log.Debug("ScriptDocumentContext: IDebugCodeContext2.GetName");
             pbstrName = "TestName";
             return VSConstants.S_OK;
         }
@@ -106,7 +108,7 @@ namespace PowerShellTools.DebugEngine
         {
             pinfo[0].dwFields = 0;
 
-            Trace.WriteLine("ScriptDocumentContext: IDebugCodeCotnext2.GetInfo");
+            Log.Debug("ScriptDocumentContext: IDebugCodeCotnext2.GetInfo");
 
             if ((dwFields & enum_CONTEXT_INFO_FIELDS.CIF_FUNCTION) != 0)
             {
@@ -125,28 +127,28 @@ namespace PowerShellTools.DebugEngine
 
         public int Add(ulong dwCount, out IDebugMemoryContext2 ppMemCxt)
         {
-            Trace.WriteLine("ScriptDocumentContext: IDebugCodeContext2.Add");
+            Log.Debug("ScriptDocumentContext: IDebugCodeContext2.Add");
             ppMemCxt = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int Subtract(ulong dwCount, out IDebugMemoryContext2 ppMemCxt)
         {
-            Trace.WriteLine("ScriptDocumentContext: IDebugCodeContext2.Subtract");
+            Log.Debug("ScriptDocumentContext: IDebugCodeContext2.Subtract");
             ppMemCxt = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int Compare(enum_CONTEXT_COMPARE Compare, IDebugMemoryContext2[] rgpMemoryContextSet, uint dwMemoryContextSetLen, out uint pdwMemoryContext)
         {
-            Trace.WriteLine("ScriptDocumentContext: IDebugCodeContext2.Compare");
+            Log.Debug("ScriptDocumentContext: IDebugCodeContext2.Compare");
             pdwMemoryContext = 0;
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetDocumentContext(out IDebugDocumentContext2 ppSrcCxt)
         {
-            Trace.WriteLine("ScriptDocumentContext: IDebugCodeContext2.GetDocumentContext");
+            Log.Debug("ScriptDocumentContext: IDebugCodeContext2.GetDocumentContext");
             ppSrcCxt = this;
             return VSConstants.S_OK;
         }

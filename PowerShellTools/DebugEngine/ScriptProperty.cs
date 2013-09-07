@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 
@@ -11,12 +12,15 @@ namespace PowerShellTools.DebugEngine
 
     public class ScriptProperty : IDebugProperty2
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptProperty));
+
         public string Name { get; set; }
 
         public object Value { get; set; }
 
         public ScriptProperty(string name, object value)
         {
+            Log.DebugFormat("{0} {1}", name, value);
             Name = name;
             Value = value;
         }
@@ -25,6 +29,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetPropertyInfo(enum_DEBUGPROP_INFO_FLAGS dwFields, uint dwRadix, uint dwTimeout, IDebugReference2[] rgpArgs, uint dwArgCount, DEBUG_PROPERTY_INFO[] pPropertyInfo)
         {
+            Log.Debug("GetPropertyInfo");
             if ((dwFields & enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_NAME) != 0)
             {
                 pPropertyInfo[0].bstrName = Name;
@@ -109,10 +114,12 @@ namespace PowerShellTools.DebugEngine
 
     public class ScriptPropertyCollection : List<ScriptProperty>, IEnumDebugPropertyInfo2
     {
-        private uint count;
+        private uint _count;
+        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptPropertyCollection));
 
         public ScriptPropertyCollection(ScriptDebugger debugger)
         {
+            Log.Debug("debugger");
             foreach (var keyVal in debugger.Variables)
             {
                 var val = keyVal.Value != null ? keyVal.Value : null;
@@ -122,6 +129,7 @@ namespace PowerShellTools.DebugEngine
 
         public ScriptPropertyCollection(params ScriptProperty[] children)
         {
+            Log.Debug("children");
             foreach (var scriptProperty in children)
             {
                 this.Add(scriptProperty);
@@ -132,14 +140,14 @@ namespace PowerShellTools.DebugEngine
 
         public int Next(uint celt, DEBUG_PROPERTY_INFO[] rgelt, out uint pceltFetched)
         {
-            Trace.WriteLine("ScriptPropertyCollection : Next");
+            Log.Debug("Next");
             for (var i = 0; i < celt; i++)
             {
-                rgelt[i].bstrName = this[(int)(i + count)].Name;
-                rgelt[i].bstrValue = this[(int)(i + count)].Value != null ? this[(int)(i + count)].Value.ToString() : "$null";
-                rgelt[i].bstrType = this[(int)(i + count)].Value != null ? this[(int)(i + count)].Value.GetType().ToString() : String.Empty;
-                rgelt[i].pProperty = this[(int)(i + count)];
-                rgelt[i].dwAttrib = GetAttributes(this[(int) (i + count)].Value);
+                rgelt[i].bstrName = this[(int)(i + _count)].Name;
+                rgelt[i].bstrValue = this[(int)(i + _count)].Value != null ? this[(int)(i + _count)].Value.ToString() : "$null";
+                rgelt[i].bstrType = this[(int)(i + _count)].Value != null ? this[(int)(i + _count)].Value.GetType().ToString() : String.Empty;
+                rgelt[i].pProperty = this[(int)(i + _count)];
+                rgelt[i].dwAttrib = GetAttributes(this[(int) (i + _count)].Value);
                 rgelt[i].dwFields = enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_NAME |
                                     enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_VALUE |
                                     enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_TYPE |
@@ -168,27 +176,28 @@ namespace PowerShellTools.DebugEngine
 
         public int Skip(uint celt)
         {
-            Trace.WriteLine("ScriptPropertyCollection : Skip");
-            count += celt;
+            Log.Debug("Skip");
+            _count += celt;
             return VSConstants.S_OK;
         }
 
         public int Reset()
         {
-            Trace.WriteLine("ScriptPropertyCollection : Reset");
-            count = 0;
+            Log.Debug("Reset");
+            _count = 0;
             return VSConstants.S_OK;
         }
 
         public int Clone(out IEnumDebugPropertyInfo2 ppEnum)
         {
+            Log.Debug("Clone");
             ppEnum = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetCount(out uint pcelt)
         {
-            Trace.WriteLine("ScriptPropertyCollection : GetCount");
+            Log.Debug("GetCount");
             pcelt = (uint)this.Count;
             return VSConstants.S_OK;
         }

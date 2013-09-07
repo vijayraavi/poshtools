@@ -173,9 +173,11 @@ namespace PowerShellTools
         /// </summary>
         private void InitializePowerShellHost()
         {
+            Log.Info("InitializePowerShellHost");
             Host = new VSXHost();
             Host.HostUi.OutputProgress = (label, percentage) =>
             {
+                Log.DebugFormat("Output progress: {0} {1}", label, percentage);
                 var statusBar = (IVsStatusbar) GetService(typeof (SVsStatusbar));
                 uint cookie = 0;
                 statusBar.Progress(ref cookie, 1, label, (uint) percentage, 100);

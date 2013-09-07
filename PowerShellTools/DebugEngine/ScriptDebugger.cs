@@ -87,27 +87,43 @@ namespace PowerShellTools.DebugEngine
 
             Log.InfoFormat("Clearing {0} breakpoints.", breakpoints.Count());
 
-            using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
+            try
             {
-                var command = new Command("Remove-PSBreakpoint");
-                command.Parameters.Add("Breakpoint", breakpoints);
+                using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
+                {
+                    var command = new Command("Remove-PSBreakpoint");
+                    command.Parameters.Add("Breakpoint", breakpoints);
 
-                pipeline.InvokeCommand(command);
+                    pipeline.InvokeCommand(command);
+                }
             }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to clear breakpoints.", ex);
+            }
+
         }
 
         private void SetBreakpoint(ScriptBreakpoint breakpoint)
         {
             Log.InfoFormat("SetBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column);
 
-            using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
+            try
             {
-                var command = new Command("Set-PSBreakpoint");
-                command.Parameters.Add("Script", breakpoint.File);
-                command.Parameters.Add("Line", breakpoint.Line);
+                using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
+                {
+                    var command = new Command("Set-PSBreakpoint");
+                    command.Parameters.Add("Script", breakpoint.File);
+                    command.Parameters.Add("Line", breakpoint.Line);
 
-                pipeline.InvokeCommand(command);
+                    pipeline.InvokeCommand(command);
+                }
             }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to set breakpoint.", ex);
+            }
+
         }
 
         void _runspace_StateChanged(object sender, RunspaceStateEventArgs e)
@@ -157,8 +173,10 @@ namespace PowerShellTools.DebugEngine
                 }
             }
 
+            Log.Debug("Waiting for debuggee to resume.");
             //Wait for the user to step, continue or stop
             _pausedEvent.WaitOne();
+            Log.DebugFormat("Debuggee resume action is {0}", _resumeAction);
             e.ResumeAction = _resumeAction;
         }
 
@@ -179,6 +197,7 @@ namespace PowerShellTools.DebugEngine
                 {
                     if (BreakpointHit != null)
                     {
+                        Log.InfoFormat("Breakpoint @ {0} {1} {2} was hit.", bp.File, bp.Line, bp.Column);
                         BreakpointHit(this, new EventArgs<ScriptBreakpoint>(bp));
                         return true;
                     }
@@ -273,10 +292,21 @@ namespace PowerShellTools.DebugEngine
         private void RefreshScopedVariables()
         {
             IEnumerable<PSObject> result = null;
-            using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+
+            try
             {
-                result = pipeline.InvokeCommand("Get-Variable");
+                using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+                {
+                    result = pipeline.InvokeCommand("Get-Variable");
+                }
             }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to refresh scoped variables.", ex);
+            }
+
+            if (result == null) return;
+
 
             Variables = new Dictionary<string, object>();
 
@@ -294,12 +324,20 @@ namespace PowerShellTools.DebugEngine
         private void RefreshCallStack()
         {
             IEnumerable<PSObject> result = null;
-            using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+            try
             {
-                result = pipeline.InvokeCommand("Get-PSCallstack");
+                using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+                {
+                    result = pipeline.InvokeCommand("Get-PSCallstack");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to refresh callstack", ex);
             }
 
             _callstack = new List<ScriptStackFrame>();
+            if (result == null) return;
 
             foreach (var psobj in result)
             {
@@ -313,6 +351,7 @@ namespace PowerShellTools.DebugEngine
 
         private void DebuggerFinished()
         {
+            Log.Debug("DebuggerFinished");
             _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
             _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
             _runspace.StateChanged -= _runspace_StateChanged;

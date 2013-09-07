@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 
@@ -7,10 +7,12 @@ namespace PowerShellTools.DebugEngine
 {
     public class ScriptDebugProcess : IDebugProcess2 
     {
-        private IDebugPort2 _port;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugProcess));
+
+        private readonly IDebugPort2 _port;
         public ScriptDebugProcess(IDebugPort2 debugPort)
         {
-            Trace.WriteLine("Process: Constructor");
+            Log.Debug("Process: Constructor");
             Id = Guid.NewGuid();
             _port = debugPort;
             Node = new ScriptProgramNode(this);
@@ -20,11 +22,11 @@ namespace PowerShellTools.DebugEngine
 
         public ScriptProgramNode Node { get; set; }
 
-        public int GetInfo(enum_PROCESS_INFO_FIELDS Fields, PROCESS_INFO[] pProcessInfo)
+        public int GetInfo(enum_PROCESS_INFO_FIELDS fields, PROCESS_INFO[] pProcessInfo)
         {
-            Trace.WriteLine("Process: GetInfo");
+            Log.Debug("Process: GetInfo");
 
-            if ((Fields & enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME) != 0)
+            if ((fields & enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME) != 0)
             {
                 pProcessInfo[0].bstrFileName = Node.FileName;
                 pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_DEBUGGER_ATTACHED |
@@ -36,46 +38,46 @@ namespace PowerShellTools.DebugEngine
 
         public int EnumPrograms(out IEnumDebugPrograms2 ppEnum)
         {
-            Trace.WriteLine("Process: EnumPrograms");
+            Log.Debug("Process: EnumPrograms");
             ppEnum = null;
             return VSConstants.S_OK;
         }
 
         public int GetName(enum_GETNAME_TYPE gnType, out string pbstrName)
         {
-            Trace.WriteLine("Process: GetName");
+            Log.Debug("Process: GetName");
             pbstrName = "PowerShell Script Process";
             return VSConstants.S_OK;
         }
 
         public int GetServer(out IDebugCoreServer2 ppServer)
         {
-            Trace.WriteLine("Process: GetServer");
+            Log.Debug("Process: GetServer");
             ppServer = null;
             return VSConstants.S_OK;
         }
 
         public int Terminate()
         {
-            Trace.WriteLine("Process: Terminate");
+            Log.Debug("Process: Terminate");
             return VSConstants.S_OK;
         }
 
         public int Attach(IDebugEventCallback2 pCallback, Guid[] rgguidSpecificEngines, uint celtSpecificEngines, int[] rghrEngineAttach)
         {
-            Trace.WriteLine("Process: Attach");
+            Log.Debug("Process: Attach");
             return VSConstants.S_OK;
         }
 
         public int CanDetach()
         {
-            Trace.WriteLine("Process: CanDetach");
+            Log.Debug("Process: CanDetach");
             return VSConstants.S_OK;
         }
 
         public int Detach()
         {
-            Trace.WriteLine("Process: Detach");
+            Log.Debug("Process: Detach");
             return VSConstants.S_OK;
         }
 
@@ -83,40 +85,40 @@ namespace PowerShellTools.DebugEngine
         {
             pProcessId[0].ProcessIdType = (uint)enum_AD_PROCESS_ID.AD_PROCESS_ID_GUID;
             pProcessId[0].guidProcessId = Id;
-            Trace.WriteLine("Process: GetPhysicalProcessId");
+            Log.Debug("Process: GetPhysicalProcessId");
             return VSConstants.S_OK;
         }
 
         public int GetProcessId(out Guid pguidProcessId)
         {
-            Trace.WriteLine("Process: GetProcessId");
+            Log.Debug("Process: GetProcessId");
             pguidProcessId = Id;
             return VSConstants.S_OK;
         }
 
         public int GetAttachedSessionName(out string pbstrSessionName)
         {
-            Trace.WriteLine("Process: GetAttachedSessionName");
+            Log.Debug("Process: GetAttachedSessionName");
             pbstrSessionName = String.Empty;
             return VSConstants.S_OK;
         }
 
         public int EnumThreads(out IEnumDebugThreads2 ppEnum)
         {
-            Trace.WriteLine("Process: EnumThreads");
+            Log.Debug("Process: EnumThreads");
             ppEnum = null;
             return VSConstants.S_OK;
         }
 
         public int CauseBreak()
         {
-            Trace.WriteLine("Process: CauseBreak");
+            Log.Debug("Process: CauseBreak");
             return VSConstants.S_OK;
         }
 
         public int GetPort(out IDebugPort2 ppPort)
         {
-            Trace.WriteLine("Process: GetPort");
+            Log.Debug("Process: GetPort");
             ppPort = _port;
             return VSConstants.S_OK;
         }

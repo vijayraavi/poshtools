@@ -21,11 +21,11 @@ namespace PowerShellTools.Project
             var loc = Assembly.GetExecutingAssembly().Location;
             var fileInfo = new FileInfo(loc);
             //TODO:
-            var targetspath = Path.Combine(fileInfo.Directory.FullName, "PowerGUIVSX.Targets");
+            var targetspath = Path.Combine(fileInfo.Directory.FullName, "PowerShellTools.Targets");
 
-            //BuildEngine.SetGlobalProperty("PowerGUIVSXTargets", targetspath);
+           // package.SetGlobalProperty("PowerGUIVSXTargets", targetspath);
 
-            var taskpath = Path.Combine(fileInfo.Directory.FullName, "PowerGUIVSX.Targets");
+            var taskpath = Path.Combine(fileInfo.Directory.FullName, "PowerShellTools.Targets");
 
             //BuildEngine.SetGlobalProperty("PowerGUIVSXTasks", loc);
         }
@@ -34,6 +34,8 @@ namespace PowerShellTools.Project
         {
             var project = new PowerShellProjectNode(package);
             project.SetSite((IServiceProvider)((System.IServiceProvider)this.package).GetService(typeof(IServiceProvider)));
+
+            
 
             return project;
         }

@@ -159,7 +159,6 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BraceMatching.cs" />
     <Compile Include="Classification\ClassificationType.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management.Automation.Runspaces;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 
@@ -13,7 +14,6 @@ namespace PowerShellTools.DebugEngine
         /// Fires the event notifying the SDM that the debug engine has loaded.
         /// </summary>
         void EngineCreated();
-
         void RunspaceRequest();
         void EngineLoaded();
 
@@ -40,7 +40,8 @@ namespace PowerShellTools.DebugEngine
     {
         #region Fields
         private readonly IDebugEngine2 _engine;
-        private readonly IDebugEventCallback2 _callback; 
+        private readonly IDebugEventCallback2 _callback;
+        private static readonly ILog Log = LogManager.GetLogger(typeof (EngineEvents));
         #endregion
 
         #region Constructor
@@ -57,18 +58,21 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void EngineCreated()
         {
+            Log.Debug("EngineCreated");
             var iid = new Guid(EngineCreateEvent.IID);
             _callback.Event(_engine, null, null, null, new EngineCreateEvent(_engine), ref iid, EngineCreateEvent.Attributes);
         }
 
         public void RunspaceRequest()
         {
+            Log.Debug("RunspaceRequest");
             var iid = new Guid(RunspaceRequestEvent.IID);
             _callback.Event(_engine, null, null, null, new RunspaceRequestEvent(_engine), ref iid, RunspaceRequestEvent.Attributes);
         }
 
         public void EngineLoaded()
         {
+            Log.Debug("EngineLoaded");
             var iid = new Guid(LoadCompleteEvent.IID);
             _callback.Event(_engine, null, null, null, new LoadCompleteEvent(), ref iid, LoadCompleteEvent.Attributes);
         }
@@ -78,62 +82,70 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void ProgramCreated(IDebugProgram2 program)
         {
+            Log.Debug("ProgramCreated");
             var iid = new Guid(ProgramCreateEvent.IID);
             _callback.Event(_engine, null, program, null, new ProgramCreateEvent(), ref iid, ProgramCreateEvent.Attributes);
         } 
 
         public void ProcessCreated(IDebugProcess2 process)
         {
+            Log.Debug("ProcessCreated");
             var iid = new Guid(ProcessCreatedEvent.IID);
             _callback.Event(_engine, process, null, null, new ProcessCreatedEvent(), ref iid, ProcessCreatedEvent.Attributes);
         }
 
         public void ProcessDestroyed()
         {
+            Log.Debug("ProcessDestroyed");
             var iid = new Guid(ProcessDestroyEvent.IID);
             _callback.Event(_engine, null, null, null, new ProcessDestroyEvent(), ref iid, ProcessDestroyEvent.Attributes);
         }
 
         public void DebugEntryPoint()
         {
+            Log.Debug("DebugEntryPoint");
             var iid = new Guid(DebugEntryPointEvent.IID);
             _callback.Event(_engine, null, null, null, new DebugEntryPointEvent(_engine), ref iid, DebugEntryPointEvent.Attributes);
         }
 
         public void ProgramDestroyed(IDebugProgram2 program)
         {
+            Log.Debug("ProgramDestroyed");
             var iid = new Guid(ProgramDestoryedEvent.IID);
             _callback.Event(_engine, null, program, null, new ProgramDestoryedEvent(), ref iid, ProgramDestoryedEvent.Attributes);
         }
 
         public void OutputString(string str)
         {
+            Log.Debug("OutputString");
             var iid = new Guid(OutputStringEvent.IID);
             _callback.Event(_engine, null, null, null, new OutputStringEvent(str), ref iid, OutputStringEvent.Attributes);
         }
 
         public void Break(ScriptProgramNode program)
         {
+            Log.Debug("Break");
             var iid = new Guid(BreakEvent.IID);
             _callback.Event(_engine, null, program, program, new BreakEvent(), ref iid, BreakEvent.Attributes);
         }
 
         public void Exception(ScriptProgramNode program)
         {
+            Log.Debug("Exception");
             var iid = new Guid(ExceptionEvent.IID);
             _callback.Event(_engine, null, program, program, new ExceptionEvent(program), ref iid, ExceptionEvent.Attributes);
         }
 
         public void Breakpoint(ScriptProgramNode program, ScriptBreakpoint breakpoint)
         {
-            Trace.WriteLine("Sending break point bound event");
+            Log.Debug("Breakpoint");
             var iid = new Guid(BreakPointEvent.IID);
             _callback.Event(_engine, null, program, program, new BreakPointEvent(breakpoint), ref iid, BreakPointEvent.Attributes);
         }
 
         public void BreakpointHit(ScriptBreakpoint breakpoint, ScriptProgramNode node)
         {
-            Trace.WriteLine("Sending break point hit event");
+            Log.Debug("BreakpointHit");
             var iid = new Guid(BreakPointHitEvent.IID);
             _callback.Event(_engine, null, node, node, new BreakPointHitEvent(breakpoint), ref iid, BreakPointHitEvent.Attributes);
         }

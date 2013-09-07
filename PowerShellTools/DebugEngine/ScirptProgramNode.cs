@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 
@@ -14,6 +15,8 @@ namespace PowerShellTools.DebugEngine
     // A debug engine (DE) or a custom port supplier implements this interface to represent a program that can be debugged. 
     public class ScriptProgramNode : IDebugProgramNode2, IDebugProgram2, IDebugProgramNodeAttach2, IDebugEngineProgram2, IDebugThread2, IEnumDebugThreads2, IDebugModule3
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptProgramNode));
+
         public ScriptDebugProcess Process { get; set; }
         public ScriptDebugger Debugger
         {
@@ -33,7 +36,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetHostName(enum_GETHOSTNAME_TYPE dwHostNameType, out string pbstrHostName)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering GetHostName");
+            Log.Debug("ScriptProgramNode: Entering GetHostName");
             pbstrHostName = null;
             return VSConstants.E_NOTIMPL;
         }
@@ -41,7 +44,7 @@ namespace PowerShellTools.DebugEngine
         // Gets the name and identifier of the DE running this program.
         int IDebugProgramNode2.GetEngineInfo(out string engineName, out Guid engineGuid)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering GetEngineInfo");
+            Log.Debug("ScriptProgramNode: Entering GetEngineInfo");
             engineName = ResourceStrings.EngineName;
             engineGuid = new Guid(Engine.Id);
 
@@ -51,7 +54,7 @@ namespace PowerShellTools.DebugEngine
         // Gets the system process identifier for the process hosting a program.
         int IDebugProgramNode2.GetHostPid(AD_PROCESS_ID[] pHostProcessId)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering GetHostPid");
+            Log.Debug("ScriptProgramNode: Entering GetHostPid");
             // Return the process id of the debugged process
             pHostProcessId[0].ProcessIdType = (uint)enum_AD_PROCESS_ID.AD_PROCESS_ID_GUID;
             pHostProcessId[0].guidProcessId = Process.Id;
@@ -62,7 +65,7 @@ namespace PowerShellTools.DebugEngine
         // Gets the name of a program.
         int IDebugProgramNode2.GetProgramName(out string programName)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering GetProgramName");
+            Log.Debug("ScriptProgramNode: Entering GetProgramName");
             // Since we are using default transport and don't want to customize the process name, this method doesn't need
             // to be implemented.
             programName = null;
@@ -103,21 +106,21 @@ namespace PowerShellTools.DebugEngine
 
         public int WriteDump(enum_DUMPTYPE DUMPTYPE, string pszDumpUrl)
         {
-            Trace.WriteLine("Program: WriteDump");
+            Log.Debug("Program: WriteDump");
             return VSConstants.E_NOTIMPL;
         }
 
 
         public int EnumThreads(out IEnumDebugThreads2 ppEnum)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering EnumThreads");
+            Log.Debug("ScriptProgramNode: Entering EnumThreads");
             ppEnum = this;
             return VSConstants.S_OK;
         }
 
         public int GetName(out string pbstrName)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering GetName");
+            Log.Debug("ScriptProgramNode: Entering GetName");
 
             pbstrName = "PowerShell Script";
             return VSConstants.S_OK;
@@ -125,67 +128,67 @@ namespace PowerShellTools.DebugEngine
 
         public int GetProcess(out IDebugProcess2 ppProcess)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering GetProcess");
+            Log.Debug("ScriptProgramNode: Entering GetProcess");
             ppProcess = Process;
             return VSConstants.S_OK;
         }
 
         public int Terminate()
         {
-            Trace.WriteLine("ScriptProgramNode: Entering Terminate");
+            Log.Debug("ScriptProgramNode: Entering Terminate");
             return VSConstants.S_OK;
         }
 
         public int Attach(IDebugEventCallback2 pCallback)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering Attach");
+            Log.Debug("ScriptProgramNode: Entering Attach");
             return VSConstants.S_OK;
         }
 
         public int CanDetach()
         {
-            Trace.WriteLine("ScriptProgramNode: Entering CanDetach");
+            Log.Debug("ScriptProgramNode: Entering CanDetach");
             return VSConstants.S_OK;
         }
 
         public int Detach()
         {
-            Trace.WriteLine("ScriptProgramNode: Entering Detach");
+            Log.Debug("ScriptProgramNode: Entering Detach");
             //ScriptDebugger.DebuggerManager.StopDebug();
             return VSConstants.S_OK;
         }
 
         public int GetProgramId(out Guid pguidProgramId)
         {
-            Trace.WriteLine(String.Format("ScriptProgramNode: Entering GetProgramId {0}", Id));
+            Log.Debug(String.Format("ScriptProgramNode: Entering GetProgramId {0}", Id));
             pguidProgramId = Id;
             return VSConstants.S_OK;
         }
 
         public int GetDebugProperty(out IDebugProperty2 ppProperty)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering GetDebugProperty");
+            Log.Debug("ScriptProgramNode: Entering GetDebugProperty");
             ppProperty = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int Execute()
         {
-            Trace.WriteLine("ScriptProgramNode: Entering Execute");
+            Log.Debug("ScriptProgramNode: Entering Execute");
             Debugger.Continue();
             return VSConstants.S_OK;
         }
 
         public int Continue(IDebugThread2 pThread)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering Continue");
+            Log.Debug("ScriptProgramNode: Entering Continue");
             Debugger.Continue();
             return VSConstants.S_OK;
         }
 
         public int Step(IDebugThread2 pThread, enum_STEPKIND sk, enum_STEPUNIT Step)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering Step");
+            Log.Debug("ScriptProgramNode: Entering Step");
             switch(sk)
             {
                 case enum_STEPKIND.STEP_OVER:
@@ -203,14 +206,14 @@ namespace PowerShellTools.DebugEngine
 
         public int CauseBreak()
         {
-            Trace.WriteLine("ScriptProgramNode: Entering CauseBreak");
+            Log.Debug("ScriptProgramNode: Entering CauseBreak");
             //TODO: Debugger.DebuggerManager.BreakDebug();
             return VSConstants.S_OK;
         }
 
         public int GetEngineInfo(out string pbstrEngine, out Guid pguidEngine)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering GetEngineInfo");
+            Log.Debug("ScriptProgramNode: Entering GetEngineInfo");
             pbstrEngine = ResourceStrings.EngineName;
             pguidEngine = Guid.Parse(Engine.Id);
             return VSConstants.S_OK;
@@ -218,42 +221,42 @@ namespace PowerShellTools.DebugEngine
 
         public int EnumCodeContexts(IDebugDocumentPosition2 pDocPos, out IEnumDebugCodeContexts2 ppEnum)
         {
-            Trace.WriteLine("Program: EnumCodeContexts");
+            Log.Debug("Program: EnumCodeContexts");
             ppEnum = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetMemoryBytes(out IDebugMemoryBytes2 ppMemoryBytes)
         {
-            Trace.WriteLine("Program: GetMemoryBytes");
+            Log.Debug("Program: GetMemoryBytes");
             ppMemoryBytes = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetDisassemblyStream(enum_DISASSEMBLY_STREAM_SCOPE dwScope, IDebugCodeContext2 pCodeContext, out IDebugDisassemblyStream2 ppDisassemblyStream)
         {
-            Trace.WriteLine("Program: GetDisassemblyStream");
+            Log.Debug("Program: GetDisassemblyStream");
             ppDisassemblyStream = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int EnumModules(out IEnumDebugModules2 ppEnum)
         {
-            Trace.WriteLine("Program: EnumModules");
+            Log.Debug("Program: EnumModules");
             ppEnum = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetENCUpdate(out object ppUpdate)
         {
-            Trace.WriteLine("Program: GetENCUpdate");
+            Log.Debug("Program: GetENCUpdate");
             ppUpdate = null;
             return VSConstants.E_NOTIMPL;
         }
 
         public int EnumCodePaths(string pszHint, IDebugCodeContext2 pStart, IDebugStackFrame2 pFrame, int fSource, out IEnumCodePaths2 ppEnum, out IDebugCodeContext2 ppSafety)
         {
-            Trace.WriteLine("Program: EnumCodePaths");
+            Log.Debug("Program: EnumCodePaths");
             ppEnum = null;
             ppSafety = null;
             return VSConstants.E_NOTIMPL;
@@ -265,7 +268,7 @@ namespace PowerShellTools.DebugEngine
 
         public int OnAttach(ref Guid guidProgramId)
         {
-            Trace.WriteLine("ScriptProgramNode: Entering OnAttach");
+            Log.Debug("ScriptProgramNode: Entering OnAttach");
             return VSConstants.S_OK;
         }
 
@@ -275,20 +278,20 @@ namespace PowerShellTools.DebugEngine
 
         public int Stop()
         {
-            Trace.WriteLine("Program: Stop");
+            Log.Debug("Program: Stop");
             Debugger.Stop();
             return VSConstants.S_OK;
         }
 
         public int WatchForThreadStep(IDebugProgram2 pOriginatingProgram, uint dwTid, int fWatch, uint dwFrame)
         {
-            Trace.WriteLine("Program: WatchForThreadStep");
+            Log.Debug("Program: WatchForThreadStep");
             return VSConstants.S_OK;
         }
 
         public int WatchForExpressionEvaluationOnThread(IDebugProgram2 pOriginatingProgram, uint dwTid, uint dwEvalFlags, IDebugEventCallback2 pExprCallback, int fWatch)
         {
-            Trace.WriteLine("Program: WatchForExpressionEvaluationOnThread");
+            Log.Debug("Program: WatchForExpressionEvaluationOnThread");
             return VSConstants.S_OK;
         }
 
@@ -298,60 +301,60 @@ namespace PowerShellTools.DebugEngine
 
         public int EnumFrameInfo(enum_FRAMEINFO_FLAGS dwFieldSpec, uint nRadix, out IEnumDebugFrameInfo2 ppEnum)
         {
-            Trace.WriteLine("Thread: EnumFrameInfo");
+            Log.Debug("Thread: EnumFrameInfo");
             ppEnum = new ScriptStackFrameCollection(Debugger.CallStack, this);
             return VSConstants.S_OK;
         }
 
         public int SetThreadName(string pszName)
         {
-            Trace.WriteLine("Thread: SetThreadName");
+            Log.Debug("Thread: SetThreadName");
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetProgram(out IDebugProgram2 ppProgram)
         {
-            Trace.WriteLine("Thread: GetProgram");
+            Log.Debug("Thread: GetProgram");
             ppProgram = this;
             return VSConstants.S_OK;
         }
 
         public int CanSetNextStatement(IDebugStackFrame2 pStackFrame, IDebugCodeContext2 pCodeContext)
         {
-            Trace.WriteLine("Thread: CanSetNextStatement");
+            Log.Debug("Thread: CanSetNextStatement");
             return VSConstants.S_OK;
         }
 
         public int SetNextStatement(IDebugStackFrame2 pStackFrame, IDebugCodeContext2 pCodeContext)
         {
-            Trace.WriteLine("Thread: SetNextStatement");
+            Log.Debug("Thread: SetNextStatement");
             return VSConstants.S_OK;
         }
 
         public int GetThreadId(out uint pdwThreadId)
         {
-            Trace.WriteLine("Thread: GetThreadId");
+            Log.Debug("Thread: GetThreadId");
             pdwThreadId = 0;
             return VSConstants.S_OK;
         }
 
         public int Suspend(out uint pdwSuspendCount)
         {
-            Trace.WriteLine("Thread: Suspend");
+            Log.Debug("Thread: Suspend");
             pdwSuspendCount = 0;
             return VSConstants.S_OK;
         }
 
         public int Resume(out uint pdwSuspendCount)
         {
-            Trace.WriteLine("Thread: Resume");
+            Log.Debug("Thread: Resume");
             pdwSuspendCount = 0;
             return VSConstants.E_NOTIMPL;
         }
 
         public int GetThreadProperties(enum_THREADPROPERTY_FIELDS dwFields, THREADPROPERTIES[] ptp)
         {
-            Trace.WriteLine("Thread: GetThreadProperties");
+            Log.Debug("Thread: GetThreadProperties");
 
             if ((dwFields & enum_THREADPROPERTY_FIELDS.TPF_ID) != 0)
             {
@@ -376,7 +379,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetLogicalThread(IDebugStackFrame2 pStackFrame, out IDebugLogicalThread2 ppLogicalThread)
         {
-            Trace.WriteLine("Thread: GetLogicalThread");
+            Log.Debug("Thread: GetLogicalThread");
             ppLogicalThread = null;
             return VSConstants.E_NOTIMPL;
         }
@@ -420,7 +423,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetInfo(enum_MODULE_INFO_FIELDS dwFields, MODULE_INFO[] pinfo)
         {
-            Trace.WriteLine("ScriptProgramNode: IDebugModule2.GetInfo");
+            Log.Debug("ScriptProgramNode: IDebugModule2.GetInfo");
             if ((dwFields & enum_MODULE_INFO_FIELDS.MIF_NAME) != 0)
             {
                 pinfo[0].m_bstrName = FileName;

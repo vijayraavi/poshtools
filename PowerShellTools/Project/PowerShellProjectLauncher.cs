@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Management.Automation;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using EnvDTE80;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -18,6 +14,7 @@ namespace PowerShellTools.Project
     internal class PowerShellProjectLauncher : IProjectLauncher
     {
         private PowerShellProjectNode _node;
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellProjectLauncher));
 
         public PowerShellProjectLauncher(PowerShellProjectNode node)
         {
@@ -26,7 +23,7 @@ namespace PowerShellTools.Project
 
         public int LaunchProject(bool debug)
         {
-            Trace.WriteLine("PowerShellProjectLauncher.LaunchProject");
+            Log.Debug("PowerShellProjectLauncher.LaunchProject");
             var debugger = (IVsDebugger)Package.GetGlobalService(typeof(IVsDebugger));
             var shell = (IVsUIShell)Package.GetGlobalService(typeof(IVsUIShell));
 
@@ -62,7 +59,7 @@ namespace PowerShellTools.Project
 
             if (debugger.AdviseDebugEventCallback(eventManager) != VSConstants.S_OK)
             {
-                Trace.WriteLine("Failed to advise the UI of debug events.");
+                Log.Debug("Failed to advise the UI of debug events.");
                 if (pInfo != IntPtr.Zero)
                 {
                     Marshal.FreeCoTaskMem(pInfo);
@@ -77,7 +74,7 @@ namespace PowerShellTools.Project
 
                 if (!String.IsNullOrWhiteSpace(outstr))
                 {
-                    Trace.WriteLine("Error:" + outstr);
+                    Log.Debug("Error:" + outstr);
                 }
             }
             finally
@@ -93,7 +90,7 @@ namespace PowerShellTools.Project
 
         public int LaunchFile(string file, bool debug)
         {
-            Trace.WriteLine("PowerShellProjectLauncher.LaunchFile");
+            Log.Debug("PowerShellProjectLauncher.LaunchFile");
             var debugger = (IVsDebugger)Package.GetGlobalService(typeof(IVsDebugger));
             var shell = (IVsUIShell)Package.GetGlobalService(typeof(IVsUIShell));
 
@@ -129,7 +126,7 @@ namespace PowerShellTools.Project
 
             if (debugger.AdviseDebugEventCallback(eventManager) != VSConstants.S_OK)
             {
-                Trace.WriteLine("Failed to advise the UI of debug events.");
+                Log.Debug("Failed to advise the UI of debug events.");
                 if (pInfo != IntPtr.Zero)
                 {
                     Marshal.FreeCoTaskMem(pInfo);
@@ -144,7 +141,7 @@ namespace PowerShellTools.Project
 
                 if (!String.IsNullOrWhiteSpace(outstr))
                 {
-                    Trace.WriteLine("Error:" + outstr);
+                    Log.Debug("Error:" + outstr);
                 }
             }
             finally
