@@ -70,6 +70,7 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Editor, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Language.Intellisense, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Modeling.SDK.Integration.Shell.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.OLE.Interop" />
     <Reference Include="Microsoft.VisualStudio.Package.LanguageService.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop" />
@@ -203,8 +204,10 @@
     <Compile Include="Intellisense\PowerShellCompletionSourceProvider.cs" />
     <Compile Include="LanguageService\CodeWindowManager.cs" />
     <Compile Include="LanguageService\DropDownBarClient.cs" />
+    <Compile Include="LanguageService\EditorExtensions.cs" />
     <Compile Include="LanguageService\PowerShellLanguageInfo.cs" />
     <Compile Include="LanguageService\TokenTag.cs" />
+    <Compile Include="LanguageService\ViewFilter.cs" />
     <Compile Include="MyControl.xaml.cs">
       <DependentUpon>MyControl.xaml</DependentUpon>
     </Compile>
@@ -456,7 +459,9 @@
     </Content>
     <None Include="Templates\Files\ScriptDataFile.psd1" />
     <None Include="Templates\Files\Script.psm1" />
-    <None Include="Templates\Projects\PowerShellProject.pssproj" />
+    <None Include="Templates\Projects\PowerShellProject.pssproj">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Templates\Projects\Script.ps1" />
     <Resource Include="Templates\Files\PowerShell.ico" />
     <None Include="PowerShellTools.targets" />
@@ -480,6 +485,7 @@
   <ItemGroup>
     <VSCTCompile Include="PowerShellTools.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
+      <SubType>Designer</SubType>
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>

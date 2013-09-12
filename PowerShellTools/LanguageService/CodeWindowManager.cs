@@ -29,8 +29,8 @@ namespace PowerShellTools.LanguageService
     class CodeWindowManager : IVsCodeWindowManager
     {
         private readonly IVsCodeWindow _window;
+        private readonly EditFilter _filter;
         private readonly IWpfTextView _textView;
-        //private readonly EditFilter _filter;
         private static readonly Dictionary<IWpfTextView, CodeWindowManager> _windows = new Dictionary<IWpfTextView, CodeWindowManager>();
         private DropDownBarClient _client;
 
@@ -48,12 +48,9 @@ namespace PowerShellTools.LanguageService
             var adaptersFactory = model.GetService<IVsEditorAdaptersFactoryService>();
             IEditorOperationsFactoryService factory = model.GetService<IEditorOperationsFactoryService>();
 
-        //    EditFilter editFilter = _filter = new EditFilter(textView, factory.GetEditorOperations(textView));
-         //   IntellisenseController intellisenseController = IntellisenseControllerProvider.GetOrCreateController(model, textView);
-
-        //    var adapter = adaptersFactory.GetViewAdapter(textView);
-        //    editFilter.AttachKeyboardFilter(adapter);
-         //   intellisenseController.AttachKeyboardFilter();
+            EditFilter editFilter = _filter = new EditFilter(textView, factory.GetEditorOperations(textView));
+            var adapter = adaptersFactory.GetViewAdapter(textView);
+            editFilter.AttachKeyboardFilter(adapter);
 
 #if DEV11_OR_LATER
             var viewFilter = new TextViewFilter();
@@ -70,7 +67,7 @@ namespace PowerShellTools.LanguageService
                     break;
                 }
 
-              //  window.Value._filter.DoIdle(e.ComponentManager);
+                //window.Value._filter.DoIdle(e.ComponentManager);
             }
         }
 
