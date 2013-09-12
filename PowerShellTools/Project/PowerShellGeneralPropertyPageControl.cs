@@ -1,13 +1,26 @@
 ﻿using System;
 using System.Windows.Forms;
+using Microsoft.VisualStudioTools.Project;
 
 namespace PowerShellTools.Project
 {
     public partial class PowerShellGeneralPropertyPageControl : UserControl
     {
-        public PowerShellGeneralPropertyPageControl(PowerShellGeneralPropertyPage project)
+        private readonly CommonPropertyPage _page;
+
+        public PowerShellGeneralPropertyPageControl(CommonPropertyPage page)
         {
             InitializeComponent();
+            _page = page;
+
+            txtCodeSigningCert.TextChanged += Changed;
+            chkSignOutput.CheckedChanged += Changed;
+            txtOutputDirectory.TextChanged += Changed;
+        }
+
+        void Changed(object sender, EventArgs e)
+        {
+            _page.IsDirty = true;
         }
 
         private void chkSignOutput_CheckedChanged(object sender, EventArgs e)

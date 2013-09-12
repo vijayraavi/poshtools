@@ -1,9 +1,7 @@
 ﻿using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.VisualStudio.Project;
 using Microsoft.VisualStudioTools.Project;
-using PowerGUIVsx.Project;
 using IServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 
 namespace PowerShellTools.Project

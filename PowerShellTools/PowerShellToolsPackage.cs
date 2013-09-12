@@ -1,10 +1,9 @@
 ﻿using System;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
-using log4net.Config;
-using log4net.Layout;
+using System.Windows;
+using EnvDTE80;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudioTools;
@@ -17,6 +16,7 @@ using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using log4net;
+using Engine = PowerShellTools.DebugEngine.Engine;
 
 namespace PowerShellTools
 {
@@ -83,25 +83,6 @@ namespace PowerShellTools
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
 
-        /// <summary>
-        /// This function is called when the user clicks the menu item that shows the 
-        /// tool window. See the Initialize method to see how the menu item is associated to 
-        /// this function using the OleMenuCommandService service and the MenuCommand class.
-        /// </summary>
-        private void ShowToolWindow(object sender, EventArgs e)
-        {
-            // Get the instance number 0 of this tool window. This window is single instance so this instance
-            // is actually the only one.
-            // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.FindToolWindow(typeof(MyToolWindow), 0, true);
-            if ((null == window) || (null == window.Frame))
-            {
-                throw new NotSupportedException("Couldn't create tool window");
-            }
-            IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
-            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
-        }
-
 
         public override Type GetLibraryManagerType()
         {
@@ -150,12 +131,40 @@ namespace PowerShellTools
             if ( null != mcs )
             {
                 // Create the command for the tool window
-                CommandID toolwndCommandID = new CommandID(GuidList.guidPowerGUIVSXCmdSet, (int)PkgCmdIDList.cmdidPowerGUIVSXConsole);
-                MenuCommand menuToolWin = new MenuCommand(ShowToolWindow, toolwndCommandID);
+                CommandID commandId = new CommandID(new Guid(GuidList.CmdSetGuid), (int)GuidList.CmdidExecuteAsScript);
+                OleMenuCommand menuToolWin = new OleMenuCommand(OnExecuteAsScript, commandId);
+                menuToolWin.BeforeQueryStatus += QueryStatusExecuteAsScript;
                 mcs.AddCommand( menuToolWin );
             }
 
             InitializePowerShellHost();
+        }
+
+        void QueryStatusExecuteAsScript(object sender, EventArgs e)
+        {
+            bool bVisible = false;
+
+            var dte2 = (DTE2)GetGlobalService(typeof(SDTE));
+            if (dte2 != null && dte2.ActiveDocument.Language == "PowerShell")
+            {
+                bVisible = true;
+            }
+
+            var menuItem = sender as OleMenuCommand;
+            if (menuItem != null)
+            {
+                menuItem.Visible = bVisible;
+            }
+        }
+
+        private void OnExecuteAsScript(object sender, EventArgs e)
+        {
+            var dte2 = (DTE2)GetGlobalService(typeof(SDTE));
+            if (dte2 != null)
+            {
+                var launcher = new PowerShellProjectLauncher();
+                launcher.LaunchFile(dte2.ActiveDocument.FullName, true);
+            }
         }
 
         void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)

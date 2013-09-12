@@ -21,11 +21,9 @@
   <Extern href="vsshlids.h"/>
 
 
-
-
   <!--The Commands section is where we the commands, menus and menu groups are defined.
       This section uses a Guid to identify the package that provides the command defined inside it. -->
-  <Commands package="guidPowerGUIVSXPkg">
+  <Commands package="guidPoshToolsPckg">
     <!-- Inside this section we have different sub-sections: one for the menus, another  
     for the menu groups, one for the buttons (the actual commands), one for the combos 
     and the last one for the bitmaps used. Each element is identified by a command id that  
@@ -34,38 +32,25 @@
     group; your package should define its own command set in order to avoid collisions  
     with command ids defined by other packages. -->
 
-    
-    <!-- In this section you can define new menu groups. A menu group is a container for 
-         other menus or buttons (commands); from a visual point of view you can see the 
-         group as the part of a menu contained between two lines. The parent of a group 
-         must be a menu. -->
+
+    <!-- Define a group - a section in the menu -->
     <Groups>
-
-
+      <Group guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup" priority="0x0100">
+        <!-- These symbols are defined in GeneratedVSCT.vsct -->
+        <Parent guid="guidCmdSet" id="menuidContext" />
+      </Group>
     </Groups>
-    
-    <!--Buttons section. -->
-    <!--This section defines the elements the user can interact with, like a menu command or a button 
-        or combo box in a toolbar. -->
+    <!-- Define a button - a menu item - inside the Group -->
     <Buttons>
-      <!--To define a menu group you have to specify its ID, the parent menu and its display priority. 
-          The command is visible and enabled by default. If you need to change the visibility, status, etc, you can use
-          the CommandFlag node.
-          You can add more than one CommandFlag node e.g.:
-              <CommandFlag>DefaultInvisible</CommandFlag>
-              <CommandFlag>DynamicVisibility</CommandFlag>
-          If you do not want an image next to your command, remove the Icon node /> -->
-
-
-      <Button guid="guidPowerGUIVSXCmdSet" id="cmdidPowerGUIVSXConsole" priority="0x0100" type="Button">
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
-        <Icon guid="guidImages" id="bmpPic2" />
+      <Button guid="guidPoshToolsCmdSet" id="cmdidExecuteAsScript"
+        priority="0x0100" type="Button">
+        <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <ButtonText>PowerGUI VSX Console</ButtonText>
+          <ButtonText>Execute as script...</ButtonText>
         </Strings>
       </Button>
-
-
     </Buttons>
    
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -87,15 +72,23 @@
 
   <Symbols>
     <!-- This is the package guid. -->
-    <GuidSymbol name="guidPowerGUIVSXPkg" value="{58dce676-42b0-4dd6-9ee4-afbc8e582b8a}" />
-    
-    <!-- This is the guid used to group the menu commands together -->
-    <GuidSymbol name="guidPowerGUIVSXCmdSet" value="{63463243-6492-4230-b29c-c0f5caaf0c5b}">
+    <GuidSymbol name="guidPoshToolsPckg" value="{58dce676-42b0-4dd6-9ee4-afbc8e582b8a}" />
 
-      <IDSymbol name="MyMenuGroup" value="0x1020" />
-      <IDSymbol name="cmdidPowerGUIVSXConsole" value="0x0101" />
+    <!-- Substitute a unique GUID for the placeholder: -->
+    <GuidSymbol name="guidPoshToolsCmdSet"
+      value="{099073C0-B561-4BC1-A847-92657B89A00E}" >
+      <IDSymbol name="grpidPoshToolsGroup" value="0x01001"/>
+      <IDSymbol name="cmdidExecuteAsScript" value="0x00001"/>
     </GuidSymbol>
     
+    <GuidSymbol name="guidCmdSet" value="{D309F791-903F-11D0-9EFC-00A0C911004F}" >
+      <IDSymbol name="menuidContext" value="0x0040D"/>
+      <!--<IDSymbol name="menuidContext" value="0x10000"/>-->
+      <IDSymbol name="grpidContextMain" value="0x20000"/>
+      <IDSymbol name="grpidExplorerCopyPaste" value="0x30000"/>
+      <IDSymbol name="menuidExplorer" value="0x10001"/>
+      <IDSymbol name="cmdidViewExplorer" value="0x0001"/>
+    </GuidSymbol>
     
     
     <GuidSymbol name="guidImages" value="{229ed0f0-d653-4e8a-b880-28679056d810}" >

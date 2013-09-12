@@ -35,6 +35,7 @@ namespace PowerShellTools.Project
             Project.SetProjectProperty(ProjectConstants.CodeSigningCert, _control.CodeSigningCert);
             Project.SetProjectProperty(ProjectConstants.OutputDirectory, _control.OutputDirectory);
             Project.SetProjectProperty(ProjectConstants.SignOutput, _control.SignOutput.ToString());
+            IsDirty = false;
         }
 
         public override void LoadSettings()

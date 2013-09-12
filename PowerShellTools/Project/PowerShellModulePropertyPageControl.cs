@@ -1,21 +1,45 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Media.Converters;
+using Microsoft.VisualStudioTools.Project;
 
 namespace PowerShellTools.Project
 {
     public partial class PowerShellModulePropertyPageControl : UserControl
     {
-        public PowerShellModulePropertyPageControl()
+        private readonly CommonPropertyPage _page;
+
+        public PowerShellModulePropertyPageControl(CommonPropertyPage propertyPage)
         {
             InitializeComponent();
+            _page = propertyPage;
+            txtManifestFileName.TextChanged += Changed;
+            txtAuthor.TextChanged += Changed;
+            txtAlisesToExport.TextChanged += Changed;
+            cmoCLRVersion.SelectedIndexChanged += Changed;
+            txtCmdletsToExport.TextChanged += Changed;
+            txtCompany.TextChanged += Changed;
+            txtCopyright.TextChanged += Changed;
+            txtDescription.TextChanged += Changed;
+            txtFormatsToProcess.TextChanged += Changed;
+            txtFunctionsToProcess.TextChanged += Changed;
+            txtGuid.TextChanged += Changed;
+            txtModuleList.TextChanged += Changed;
+            txtModuleToProcess.TextChanged += Changed;
+            txtNestedModules.TextChanged += Changed;
+            txtPowerShellHostVersion.TextChanged += Changed;
+            cmoPowerShellVersion.SelectedIndexChanged += Changed;
+            cmoProcessorArchitecture.SelectedIndexChanged += Changed;
+            txtRequiredModules.TextChanged += Changed;
+            txtRequiredAssemblies.TextChanged += Changed;
+            txtScriptsToProcess.TextChanged += Changed;
+            txtTypesToProcess.TextChanged += Changed;
+            txtVariablesToExport.TextChanged += Changed;
+            txtVersion.TextChanged += Changed;
+        }
+
+        void Changed(object sender, EventArgs e)
+        {
+            _page.IsDirty = true;
         }
 
         public string ManifestFileName

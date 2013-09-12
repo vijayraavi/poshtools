@@ -11,7 +11,7 @@ namespace PowerShellTools.Project
 
         public PowerShellModulePropertyPage()
         {
-            _control = new PowerShellModulePropertyPageControl();
+            _control = new PowerShellModulePropertyPageControl(this);
         }
 
         public override Control Control
@@ -22,7 +22,6 @@ namespace PowerShellTools.Project
         public override void Apply()
         {
             Project.SetProjectProperty("ManifestFileName", _control.ManifestFileName);
-
             Project.SetProjectProperty("AliasesToExport", _control.AliasesToExport);
             Project.SetProjectProperty("Author", _control.Author);
             Project.SetProjectProperty("ClrVersion", _control.ClrVersion);
@@ -47,7 +46,7 @@ namespace PowerShellTools.Project
             Project.SetProjectProperty("ScriptsToProcess", _control.ScriptsToProcess);
             Project.SetProjectProperty("TypesToProcess", _control.TypesToProcess);
             Project.SetProjectProperty("VariablesToExport", _control.VariablesToExport);
-
+            IsDirty = false;
         }
 
         public override void LoadSettings()

@@ -13,13 +13,7 @@ namespace PowerShellTools.Project
 {
     internal class PowerShellProjectLauncher : IProjectLauncher
     {
-        private PowerShellProjectNode _node;
         private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellProjectLauncher));
-
-        public PowerShellProjectLauncher(PowerShellProjectNode node)
-        {
-            _node = node;
-        }
 
         public int LaunchProject(bool debug)
         {
@@ -31,18 +25,15 @@ namespace PowerShellTools.Project
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
 
-            var startupScript = "";  //TODO:ProjectMgr.GetProjectProperty("StartupScript");
-
-            if (String.IsNullOrEmpty(startupScript))
+            string script = "";
+            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            if (dte2 != null)
             {
-                var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-                if (dte2 != null)
-                {
-                    startupScript = dte2.ActiveDocument.FullName;
-                }
+                script = dte2.ActiveDocument.FullName;
             }
 
-            info.bstrExe = startupScript;
+
+            info.bstrExe = script;
             info.bstrCurDir = Path.GetDirectoryName(info.bstrExe);
             info.bstrArg = null; // no command line parameters
             info.bstrRemoteMachine = null; // debug locally
@@ -98,18 +89,7 @@ namespace PowerShellTools.Project
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
 
-            var startupScript = "";//TODO:ProjectMgr.GetProjectProperty("StartupScript");
-
-            if (String.IsNullOrEmpty(startupScript))
-            {
-                var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-                if (dte2 != null)
-                {
-                    startupScript = dte2.ActiveDocument.FullName;
-                }
-            }
-
-            info.bstrExe = startupScript;
+            info.bstrExe = file;
             info.bstrCurDir = Path.GetDirectoryName(info.bstrExe);
             info.bstrArg = null; // no command line parameters
             info.bstrRemoteMachine = null; // debug locally
