@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.Composition;
+using log4net;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
@@ -9,9 +10,11 @@ namespace PowerShellTools.Intellisense
 {
     [Export(typeof(ICompletionSourceProvider))]
     [ContentType("PowerShell")]
-    [Name("token completion")]
+    [Name("PowerShellTokenCompletion")]
     internal class PowerShellCompletionSourceProvider : ICompletionSourceProvider
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellCompletionSourceProvider));
+
         [Import]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
 
@@ -20,6 +23,7 @@ namespace PowerShellTools.Intellisense
 
         public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
         {
+            Log.Debug("TryCreateCompletionSource");
             return new PowerShellCompletionSource(this, textBuffer, VSXHost.Instance, GlyphService);
         }
     }

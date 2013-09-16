@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
+using log4net;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
@@ -19,10 +20,11 @@ namespace PowerShellTools.Intellisense
         private List<Completion> m_compList;
         private VSXHost _host;
         private IGlyphService _glyphs;
-
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellCompletionSource));
 
         public PowerShellCompletionSource(PowerShellCompletionSourceProvider sourceProvider, ITextBuffer textBuffer, VSXHost host, IGlyphService glyphService)
         {
+            Log.Debug("Constructor");
             m_sourceProvider = sourceProvider;
             m_textBuffer = textBuffer;
             _host = host;
@@ -32,6 +34,8 @@ namespace PowerShellTools.Intellisense
         void ICompletionSource.AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
             m_compList = new List<Completion>();
+
+            Log.Debug("AugmentCompletionSession");
 
             var text = session.TextView.TextBuffer.CurrentSnapshot.GetText();
             var currentPoint = session.TextView.Caret.Position.BufferPosition;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -16,7 +17,7 @@ namespace PowerShellTools.Intellisense
         private ITextView m_textView;
         private PowerShellCompletionHandlerProvider m_provider;
         private ICompletionSession _activeSession;
-
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellCompletionCommandHandler));
 
         private ICompletionBroker CompletionBroker { get; set; }
 
@@ -24,6 +25,7 @@ namespace PowerShellTools.Intellisense
         internal PowerShellCompletionCommandHandler(IVsTextView textViewAdapter, ITextView textView,
                                                     PowerShellCompletionHandlerProvider provider)
         {
+            Log.Debug("Constructor");
             this.m_textView = textView;
             this.m_provider = provider;
 
@@ -40,11 +42,13 @@ namespace PowerShellTools.Intellisense
 
         private static bool IsFilterTrigger(char ch)
         {
+            Log.DebugFormat("IsFilterTrigger: [{0}]", ch);
             return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
         }
 
         private static bool IsIntellisenseTrigger(char ch)
         {
+            Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':';
         }
 
@@ -63,6 +67,8 @@ namespace PowerShellTools.Intellisense
                 typedChar = (char) (ushort) Marshal.GetObjectForNativeVariant(pvaIn);
             }
 
+            Log.DebugFormat("Typed Character: {0}", typedChar);
+
             //check for a commit character 
             if (nCmdID == (uint) VSConstants.VSStd2KCmdID.RETURN
                 || nCmdID == (uint) VSConstants.VSStd2KCmdID.TAB
@@ -74,12 +80,14 @@ namespace PowerShellTools.Intellisense
                     //if the selection is fully selected, commit the current session 
                     if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
                     {
+                        Log.Debug("Commit");
                         _activeSession.Commit();
                         //also, don't add the character to the buffer 
                         return VSConstants.S_OK;
                     }
                     else
                     {
+                        Log.Debug("Dismiss");
                         //if there is no selection, dismiss the session
                         _activeSession.Dismiss();
                     }
@@ -98,14 +106,22 @@ namespace PowerShellTools.Intellisense
                 if (_activeSession != null)
                 {
                     if (_activeSession.IsStarted)
+                    {
+                        Log.Debug("Filter");
                         _activeSession.Filter();
+                    }
+                        
                 }
             }
             else if (commandID == (uint) VSConstants.VSStd2KCmdID.BACKSPACE //redo the filter if there is a deletion
                      || commandID == (uint) VSConstants.VSStd2KCmdID.DELETE)
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
+                {
+                    Log.Debug("Filter");
                     _activeSession.Filter();
+                }
+                    
                 handled = true;
             }
             if (handled) return VSConstants.S_OK;
@@ -115,6 +131,8 @@ namespace PowerShellTools.Intellisense
         private bool TriggerCompletion()
         {
             if (_activeSession != null) return true;
+
+            Log.Debug("TriggerCompletion");
 
             //the caret must be in a non-projection location 
             SnapshotPoint? caretPoint =
@@ -131,6 +149,7 @@ namespace PowerShellTools.Intellisense
                  true);
 
             //subscribe to the Dismissed event on the session 
+            Log.Debug("Start Session");
             _activeSession.Dismissed += this.OnCompletionSessionDismissedOrCommitted;
             _activeSession.Start();
 
@@ -139,6 +158,7 @@ namespace PowerShellTools.Intellisense
 
         private void OnCompletionSessionDismissedOrCommitted(object sender, EventArgs e)
         {
+            Log.Debug("Session Dismissed or Committed");
             _activeSession.Dismissed -= this.OnCompletionSessionDismissedOrCommitted;
             _activeSession = null;
         }
