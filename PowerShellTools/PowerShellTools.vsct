@@ -51,6 +51,15 @@
           <ButtonText>Execute as script...</ButtonText>
         </Strings>
       </Button>
+      <!-- <Button guid="guidPoshToolsCmdSet" id="cmdidExecuteSelection"
+        priority="0x0100" type="Button">
+        <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>Execute selection...</ButtonText>
+        </Strings>
+      </Button> -->
     </Buttons>
    
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -79,6 +88,7 @@
       value="{099073C0-B561-4BC1-A847-92657B89A00E}" >
       <IDSymbol name="grpidPoshToolsGroup" value="0x01001"/>
       <IDSymbol name="cmdidExecuteAsScript" value="0x00001"/>
+      <IDSymbol name="cmdidExecuteSelection" value="0x00002"/>
     </GuidSymbol>
     
     <GuidSymbol name="guidCmdSet" value="{D309F791-903F-11D0-9EFC-00A0C911004F}" >

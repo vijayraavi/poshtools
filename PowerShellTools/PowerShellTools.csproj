@@ -168,6 +168,9 @@
     <Compile Include="Classification\PowerShellOutliningTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
     <Compile Include="Classification\PSBufferTokenizationService.cs" />
+    <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
+    <Compile Include="Commands\ExecuteSelectionCommand.cs" />
+    <Compile Include="Commands\ICommand.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
     <Compile Include="DebugEngine\Definitions\Enums.cs" />
     <Compile Include="DebugEngine\Definitions\Guids.cs" />
@@ -444,6 +447,10 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <EmbeddedResource Include="Resources\completionset.bmp" />
+    <Content Include="preview.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />

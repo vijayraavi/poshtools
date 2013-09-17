@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
@@ -11,6 +12,7 @@ using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using PowerShellTools.Classification;
+using PowerShellTools.Commands;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
@@ -70,9 +72,11 @@ namespace PowerShellTools
         {
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
             Instance = this;
+            _commands = new Dictionary<ICommand, MenuCommand>();
         }
 
         ITextBufferFactoryService TextBufferFactoryService = null;
+        private static Dictionary<ICommand, MenuCommand> _commands; 
 
         /// <summary>
         /// Returns the PowerShell host for the package.
@@ -82,7 +86,6 @@ namespace PowerShellTools
         /// Returns the current package instance.
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
-
 
         public override Type GetLibraryManagerType()
         {
@@ -97,6 +100,22 @@ namespace PowerShellTools
         public override bool IsRecognizedFile(string filename)
         {
             throw new NotImplementedException();
+        }
+
+        private void RefreshCommands(params ICommand[] commands)
+        {
+            // Add our command handlers for menu (commands must exist in the .vsct file)
+            OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            if (null != mcs)
+            {
+                foreach (var command in commands)
+                {
+                    OleMenuCommand menuCommand = new OleMenuCommand(command.Execute, command.CommandId);
+                    menuCommand.BeforeQueryStatus += command.QueryStatus;
+                    mcs.AddCommand(menuCommand);
+                    _commands[command] = menuCommand;
+                }
+            }
         }
 
         /// <summary>
@@ -126,45 +145,9 @@ namespace PowerShellTools
                 TextBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            // Add our command handlers for menu (commands must exist in the .vsct file)
-            OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if ( null != mcs )
-            {
-                // Create the command for the tool window
-                CommandID commandId = new CommandID(new Guid(GuidList.CmdSetGuid), (int)GuidList.CmdidExecuteAsScript);
-                OleMenuCommand menuToolWin = new OleMenuCommand(OnExecuteAsScript, commandId);
-                menuToolWin.BeforeQueryStatus += QueryStatusExecuteAsScript;
-                mcs.AddCommand( menuToolWin );
-            }
+            RefreshCommands(new ExecuteAsScriptCommand(), new ExecuteSelectionCommand());
 
             InitializePowerShellHost();
-        }
-
-        void QueryStatusExecuteAsScript(object sender, EventArgs e)
-        {
-            bool bVisible = false;
-
-            var dte2 = (DTE2)GetGlobalService(typeof(SDTE));
-            if (dte2 != null && dte2.ActiveDocument.Language == "PowerShell")
-            {
-                bVisible = true;
-            }
-
-            var menuItem = sender as OleMenuCommand;
-            if (menuItem != null)
-            {
-                menuItem.Visible = bVisible;
-            }
-        }
-
-        private void OnExecuteAsScript(object sender, EventArgs e)
-        {
-            var dte2 = (DTE2)GetGlobalService(typeof(SDTE));
-            if (dte2 != null)
-            {
-                var launcher = new PowerShellProjectLauncher();
-                launcher.LaunchFile(dte2.ActiveDocument.FullName, true);
-            }
         }
 
         void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
