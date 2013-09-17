@@ -45,8 +45,6 @@ PowerShell Tools for Visual Studio currently offers the following features.
 
 The following features are still in development.
 
-* IntelliSense
-* Output pane
 * Command Pane
 * Watch Pane
 * Error Pane
