@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using log4net;
@@ -18,11 +17,14 @@ namespace PowerShellTools.DebugEngine
 
         public object Value { get; set; }
 
-        public ScriptProperty(string name, object value)
+        private ScriptDebugger _debugger;
+
+        public ScriptProperty(ScriptDebugger debugger, string name, object value)
         {
             Log.DebugFormat("{0} {1}", name, value);
             Name = name;
             Value = value;
+            _debugger = debugger;
         }
 
         #region Implementation of IDebugProperty2
@@ -38,7 +40,7 @@ namespace PowerShellTools.DebugEngine
 
             if ((dwFields & enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_VALUE) != 0)
             {
-                pPropertyInfo[0].bstrValue = Value.ToString();
+                pPropertyInfo[0].bstrValue =  Value == null ? String.Empty : Value.ToString();
                 pPropertyInfo[0].dwFields = enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_VALUE;
             }
 
@@ -47,7 +49,8 @@ namespace PowerShellTools.DebugEngine
 
         public int SetValueAsString(string pszValue, uint dwRadix, uint dwTimeout)
         {
-            throw new NotImplementedException();
+            _debugger.SetVariable(Name, pszValue);
+            return VSConstants.S_OK;
         }
 
         public int SetValueAsReference(IDebugReference2[] rgpArgs, uint dwArgCount, IDebugReference2 pValue, uint dwTimeout)
@@ -71,7 +74,7 @@ namespace PowerShellTools.DebugEngine
         private IEnumerable<ScriptProperty> GetProperties()
         {
             var props = Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            return props.Select(propertyInfo => new ScriptProperty(propertyInfo.Name, propertyInfo.GetValue(Value, null)));
+            return props.Select(propertyInfo => new ScriptProperty(_debugger , propertyInfo.Name, propertyInfo.GetValue(Value, null)));
         }
 
         public int GetParent(out IDebugProperty2 ppParent)
@@ -123,7 +126,7 @@ namespace PowerShellTools.DebugEngine
             foreach (var keyVal in debugger.Variables)
             {
                 var val = keyVal.Value != null ? keyVal.Value : null;
-                this.Add(new ScriptProperty(keyVal.Key, val));
+                this.Add(new ScriptProperty(debugger, keyVal.Key, val));
             }
         }
 

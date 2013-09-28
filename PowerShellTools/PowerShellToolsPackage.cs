@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
 using System.Windows;
 using EnvDTE80;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudioTools;
@@ -40,26 +41,33 @@ namespace PowerShellTools
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(UIContextGuids.NoSolution)]
     [ProvideAutoLoad(UIContextGuids.SolutionExists)]
-    [ProvideLanguageService(typeof(PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true, EnableCommenting =  true)]
+    [ProvideLanguageService(typeof (PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true,
+        EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     // This attribute registers a tool window exposed by this package.
-    [ProvideToolWindow(typeof(MyToolWindow))]
+    [ProvideToolWindow(typeof (MyToolWindow))]
     [Guid(GuidList.PowerShellToolsPackageGuid)]
-    [ProvideObject(typeof(PowerShellGeneralPropertyPage))]
-    [ProvideObject(typeof(PowerShellModulePropertyPage))]
-    [Microsoft.VisualStudio.Shell.ProvideDebugEngine("{43ACAB74-8226-4920-B489-BFCF05372437}", "PowerShell", PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}", ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true, CLSID = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}")]
-    [Clsid(Clsid = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}", Assembly = "PowerGuiVsx.Core.DebugEngine", Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
-    [Clsid(Clsid = "{08F3B557-C153-4F6C-8745-227439E55E79}", Assembly = "PowerGuiVsx.Core.DebugEngine", Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
-    [Microsoft.VisualStudioTools.ProvideDebugEngine("PowerShell", typeof(ScriptProgramProvider), typeof(Engine), "{43ACAB74-8226-4920-B489-BFCF05372437}")]
+    [ProvideObject(typeof (PowerShellGeneralPropertyPage))]
+    [ProvideObject(typeof (PowerShellModulePropertyPage))]
+    [Microsoft.VisualStudio.Shell.ProvideDebugEngine("{43ACAB74-8226-4920-B489-BFCF05372437}", "PowerShell",
+        PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}",
+        ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true,
+        CLSID = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}")]
+    [Clsid(Clsid = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}", Assembly = "PowerGuiVsx.Core.DebugEngine",
+        Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
+    [Clsid(Clsid = "{08F3B557-C153-4F6C-8745-227439E55E79}", Assembly = "PowerGuiVsx.Core.DebugEngine",
+        Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
+    [Microsoft.VisualStudioTools.ProvideDebugEngine("PowerShell", typeof (ScriptProgramProvider), typeof (Engine),
+        "{43ACAB74-8226-4920-B489-BFCF05372437}")]
     [ProvideIncompatibleEngineInfo("{92EF0900-2251-11D2-B72E-0000F87572EF}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
-    [ProvideOptionPage(typeof(DiagnosticsDialogPage), "PowerShell Tools", "Diagnostics",101, 106, true)]
-    public sealed class PowerShellToolsPackage : CommonPackage
+    [ProvideOptionPage(typeof (DiagnosticsDialogPage), "PowerShell Tools", "Diagnostics", 101, 106, true)]
+    public sealed class PowerShellToolsPackage : CommonPackage, IDisposable
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellToolsPackage));
 
         /// <summary>
         /// Default constructor of the package.
@@ -75,13 +83,16 @@ namespace PowerShellTools
             _commands = new Dictionary<ICommand, MenuCommand>();
         }
 
-        ITextBufferFactoryService TextBufferFactoryService = null;
-        private static Dictionary<ICommand, MenuCommand> _commands; 
+        private ITextBufferFactoryService TextBufferFactoryService = null;
+        private static Dictionary<ICommand, MenuCommand> _commands;
+        private uint _adviseBroadcastCookie;
+        private VisualStudioEvents _events;
 
         /// <summary>
         /// Returns the PowerShell host for the package.
         /// </summary>
         internal VSXHost Host { get; private set; }
+
         /// <summary>
         /// Returns the current package instance.
         /// </summary>
@@ -105,7 +116,7 @@ namespace PowerShellTools
         private void RefreshCommands(params ICommand[] commands)
         {
             // Add our command handlers for menu (commands must exist in the .vsct file)
-            OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            OleMenuCommandService mcs = GetService(typeof (IMenuCommandService)) as OleMenuCommandService;
             if (null != mcs)
             {
                 foreach (var command in commands)
@@ -124,20 +135,20 @@ namespace PowerShellTools
         /// </summary>
         protected override void Initialize()
         {
-            var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
-            
+            var page = (DiagnosticsDialogPage) GetDialogPage(typeof (DiagnosticsDialogPage));
+
             if (page.EnableDiagnosticLogging)
             {
                 DiagnosticConfiguration.EnableDiagnostics();
             }
 
-            Log.Info (string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
+            Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
 
             var langService = new PowerShellLanguageInfo(this);
-            ((IServiceContainer)this).AddService(langService.GetType(), langService, true);
+            ((IServiceContainer) this).AddService(langService.GetType(), langService, true);
 
-            var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
+            var componentModel = (IComponentModel) GetGlobalService(typeof (SComponentModel));
             TextBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
 
             if (TextBufferFactoryService != null)
@@ -145,12 +156,13 @@ namespace PowerShellTools
                 TextBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            RefreshCommands(new ExecuteAsScriptCommand(), new ExecuteSelectionCommand());
+            RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand());
 
             InitializePowerShellHost();
+            AdviseBroadcast();
         }
 
-        void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
+        private void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
         {
             PowerShellTokenizationService psts = new PowerShellTokenizationService(e.TextBuffer, false);
             psts.Initialize();
@@ -176,12 +188,40 @@ namespace PowerShellTools
 
                 if (percentage == 100)
                 {
-                    statusBar.Progress(ref cookie, 1, "", 0, 0);    
+                    statusBar.Progress(ref cookie, 1, "", 0, 0);
                 }
             };
         }
 
+        private void AdviseBroadcast()
+        {
+            _adviseBroadcastCookie = 0;
+            _events = new VisualStudioEvents();
+            _events.ThemeColorChanged += _events_ThemeColorChanged;
+            var shell = (IVsShell)GetService(typeof (IVsShell));
+            try
+            {
+                int r = shell.AdviseBroadcastMessages(_events, out _adviseBroadcastCookie);
+            }
+            catch (COMException) { }
+            catch (InvalidComObjectException) { }
+        }
+
+        void _events_ThemeColorChanged(object sender, EventArgs e)
+        {
+            
+        }
 
 
+        public void Dispose()
+        {
+            var shell = (IVsShell)GetService(typeof(IVsShell));
+            try
+            {
+                int r = shell.UnadviseBroadcastMessages(_adviseBroadcastCookie);
+            }
+            catch (COMException) { }
+            catch (InvalidComObjectException) { }
+        }
     }
 }

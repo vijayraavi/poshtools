@@ -164,13 +164,16 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Classification\Classifier.cs" />
+    <Compile Include="Classification\DefaultColors.cs" />
     <Compile Include="Classification\PowerShellOutliningTagger.cs" />
     <Compile Include="Classification\PowerShellOutliningTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
     <Compile Include="Classification\PSBufferTokenizationService.cs" />
+    <Compile Include="Classification\ThemeUtility.cs" />
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\TestCommand.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
     <Compile Include="DebugEngine\Definitions\Enums.cs" />
     <Compile Include="DebugEngine\Definitions\Guids.cs" />
@@ -407,6 +410,7 @@
     <Compile Include="PowerShellToolsPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PkgCmdID.cs" />
+    <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DebugEngine\ResourceStrings.resx" />

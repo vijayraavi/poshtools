@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
@@ -34,11 +30,11 @@ namespace PowerShellTools.Commands
                 {
                     sel.SelectLine();
 
-                    launcher.LaunchFile(sel.Text, true);
+                    launcher.LaunchSelection(sel.Text);
                 }
                 else
                 {
-                     launcher.LaunchFile(sel.Text, true);
+                    launcher.LaunchSelection(sel.Text);
                 }
             }
         }
@@ -57,6 +53,8 @@ namespace PowerShellTools.Commands
             if (menuItem != null)
             {
                 menuItem.Visible = bVisible;
+                menuItem.Supported = bVisible;
+                menuItem.Enabled = bVisible;
             }
         }
     }

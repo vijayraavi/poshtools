@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
-using System.Reflection;
 using System.Threading;
 using log4net;
 
@@ -255,7 +253,15 @@ namespace PowerShellTools.DebugEngine
                 using (_currentPowerShell = PowerShell.Create())
                 {
                     _currentPowerShell.Runspace = _runspace;
-                    _currentPowerShell.AddCommand(node.FileName);
+
+                    if (node.IsFile)
+                    {
+                        _currentPowerShell.AddCommand(node.FileName);
+                    }
+                    else
+                    {
+                        _currentPowerShell.AddScript(node.FileName);
+                    }
                     _currentPowerShell.AddCommand("out-default");
                     _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
 
@@ -359,6 +365,59 @@ namespace PowerShellTools.DebugEngine
             {
                 DebuggingFinished(this, new EventArgs());
             }
+        }
+
+        public void SetVariable(string name, string value)
+        {
+            try
+            {
+                using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+                {
+                    Command command = new Command("Set-Variable");
+                    command.Parameters.Add("Name", name);
+                    command.Parameters.Add("Value", value);
+
+                    pipeline.InvokeCommand(command);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to set variable.", ex);
+            }
+        }
+
+        public PSVariable GetVariable(string name)
+        {
+            IEnumerable<PSObject> result = null;
+
+            try
+            {
+                
+                using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+                {
+                    Command command = new Command("Get-Variable -Name " + name, true);
+
+                    result = pipeline.InvokeCommand(command);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to refresh scoped variables.", ex);
+            }
+
+            if (result == null) return null;
+
+            foreach (var psobj in result)
+            {
+                var psVar = psobj.BaseObject as PSVariable;
+
+                if (psVar != null)
+                {
+                    return psVar;
+                }
+            }
+
+            return null;
         }
     }
 

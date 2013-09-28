@@ -89,9 +89,9 @@ namespace PowerShellTools.Project
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
 
-            info.bstrExe = selection;
+            info.bstrExe = "Selection";
             info.bstrCurDir = Environment.CurrentDirectory;
-            info.bstrOptions = "Selection";
+            info.bstrOptions = selection;
             info.bstrArg = null; // no command line parameters
             info.bstrRemoteMachine = null; // debug locally
             info.fSendStdoutToOutputWindow = 0; // Let stdout stay with the application.

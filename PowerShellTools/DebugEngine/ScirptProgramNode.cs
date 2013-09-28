@@ -26,6 +26,7 @@ namespace PowerShellTools.DebugEngine
 
         public Guid Id { get; set; }
         public string FileName { get; set; }
+        public bool IsFile { get; set; }
         public ScriptProgramNode(ScriptDebugProcess process)
         {
             Id = Guid.NewGuid();

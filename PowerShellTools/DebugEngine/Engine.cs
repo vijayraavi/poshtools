@@ -332,7 +332,18 @@ namespace PowerShellTools.DebugEngine
             }
 
             _node = (ppProcess as ScriptDebugProcess).Node;
-            _node.FileName = pszExe;
+
+            if (pszExe == "Selection")
+            {
+                _node.IsFile = false;
+                _node.FileName = pszOptions;
+            }
+            else
+            {
+                _node.IsFile = true;
+                _node.FileName = pszExe;    
+            }
+            
 
             _events = new EngineEvents(this, pCallback);
 

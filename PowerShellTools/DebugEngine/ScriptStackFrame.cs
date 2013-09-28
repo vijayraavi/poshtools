@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Debugger.Interop;
 
 namespace PowerShellTools.DebugEngine
 {
-    public class ScriptStackFrame : IDebugStackFrame2
+    public class ScriptStackFrame : IDebugStackFrame2, IDebugExpressionContext2
     {
         private readonly ScriptDebugger _debugger;
         private readonly ScriptProgramNode _node;
@@ -128,8 +128,8 @@ namespace PowerShellTools.DebugEngine
         public int GetExpressionContext(out IDebugExpressionContext2 ppExprCxt)
         {
             Log.Debug("ScriptStackFrame: GetExpressionContext");
-            ppExprCxt = null;
-            return VSConstants.E_NOTIMPL;
+            ppExprCxt = this;
+            return VSConstants.S_OK;
         }
 
         public int GetLanguageInfo(ref string pbstrLanguage, ref Guid pguidLanguage)
@@ -157,12 +157,24 @@ namespace PowerShellTools.DebugEngine
 
         public int GetThread(out IDebugThread2 ppThread)
         {
-            Log.Debug("ScriptStackFrame: GetThread!!!!!!!!!!!!!!!!!!");
+            Log.Debug("ScriptStackFrame: GetThread");
             ppThread = null;
             return VSConstants.E_NOTIMPL;
         }
 
         #endregion
+
+        public int ParseText(string pszCode, enum_PARSEFLAGS dwFlags, uint nRadix, out IDebugExpression2 ppExpr, out string pbstrError,
+            out uint pichError)
+        {
+            var variable = _debugger.GetVariable(pszCode);
+
+            pbstrError = null;
+            pichError = 0;
+
+            ppExpr = new ScriptExpression(_debugger, pszCode, variable);
+            return VSConstants.S_OK;
+        }
 
         public override string ToString()
         {
@@ -249,5 +261,44 @@ namespace PowerShellTools.DebugEngine
         }
 
         #endregion
+
+
+    }
+
+    public class ScriptExpression : IDebugExpression2, IDebugEventCallback2
+    {
+        private string _name;
+        private object _value;
+        private ScriptDebugger _debugger;
+
+        public ScriptExpression(ScriptDebugger debugger, string name, object value)
+        {
+            _name = name;
+            _value = value;
+            _debugger = debugger;
+        }
+
+        public int EvaluateAsync(enum_EVALFLAGS dwFlags, IDebugEventCallback2 pExprCallback)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int Abort()
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int EvaluateSync(enum_EVALFLAGS dwFlags, uint dwTimeout, IDebugEventCallback2 pExprCallback,
+            out IDebugProperty2 ppResult)
+        {
+            ppResult = new ScriptProperty(_debugger, _name, _value);
+            return VSConstants.S_OK;
+        }
+
+        public int Event(IDebugEngine2 pEngine, IDebugProcess2 pProcess, IDebugProgram2 pProgram, IDebugThread2 pThread,
+            IDebugEvent2 pEvent, ref Guid riidEvent, uint dwAttrib)
+        {
+            return VSConstants.E_NOTIMPL;
+        }
     }
 }
