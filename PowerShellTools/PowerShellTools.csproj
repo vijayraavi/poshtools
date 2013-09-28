@@ -173,7 +173,6 @@
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
-    <Compile Include="Commands\TestCommand.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
     <Compile Include="DebugEngine\Definitions\Enums.cs" />
     <Compile Include="DebugEngine\Definitions\Guids.cs" />
