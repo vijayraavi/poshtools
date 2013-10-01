@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
-using System.Windows;
-using EnvDTE80;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudioTools;
@@ -78,12 +75,12 @@ namespace PowerShellTools
         /// </summary>
         public PowerShellToolsPackage()
         {
-            Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
+            Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
             Instance = this;
             _commands = new Dictionary<ICommand, MenuCommand>();
         }
 
-        private ITextBufferFactoryService TextBufferFactoryService = null;
+        private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
         private uint _adviseBroadcastCookie;
         private VisualStudioEvents _events;
@@ -116,12 +113,12 @@ namespace PowerShellTools
         private void RefreshCommands(params ICommand[] commands)
         {
             // Add our command handlers for menu (commands must exist in the .vsct file)
-            OleMenuCommandService mcs = GetService(typeof (IMenuCommandService)) as OleMenuCommandService;
+            var mcs = GetService(typeof (IMenuCommandService)) as OleMenuCommandService;
             if (null != mcs)
             {
                 foreach (var command in commands)
                 {
-                    OleMenuCommand menuCommand = new OleMenuCommand(command.Execute, command.CommandId);
+                    var menuCommand = new OleMenuCommand(command.Execute, command.CommandId);
                     menuCommand.BeforeQueryStatus += command.QueryStatus;
                     mcs.AddCommand(menuCommand);
                     _commands[command] = menuCommand;
@@ -142,18 +139,18 @@ namespace PowerShellTools
                 DiagnosticConfiguration.EnableDiagnostics();
             }
 
-            Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this.ToString()));
+            Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this));
             base.Initialize();
 
             var langService = new PowerShellLanguageInfo(this);
             ((IServiceContainer) this).AddService(langService.GetType(), langService, true);
 
             var componentModel = (IComponentModel) GetGlobalService(typeof (SComponentModel));
-            TextBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
+            _textBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
 
-            if (TextBufferFactoryService != null)
+            if (_textBufferFactoryService != null)
             {
-                TextBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
+                _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
             RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand());
@@ -162,9 +159,9 @@ namespace PowerShellTools
             AdviseBroadcast();
         }
 
-        private void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
+        private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
         {
-            PowerShellTokenizationService psts = new PowerShellTokenizationService(e.TextBuffer, false);
+            var psts = new PowerShellTokenizationService(e.TextBuffer, false);
             psts.Initialize();
             psts.SetEmptyTokenizationProperties();
             psts.StartTokenizeBuffer();
@@ -201,7 +198,7 @@ namespace PowerShellTools
             var shell = (IVsShell)GetService(typeof (IVsShell));
             try
             {
-                int r = shell.AdviseBroadcastMessages(_events, out _adviseBroadcastCookie);
+                shell.AdviseBroadcastMessages(_events, out _adviseBroadcastCookie);
             }
             catch (COMException) { }
             catch (InvalidComObjectException) { }
@@ -209,7 +206,9 @@ namespace PowerShellTools
 
         void _events_ThemeColorChanged(object sender, EventArgs e)
         {
-            
+            Log.Debug("Theme Color Changed");
+            var fontsAndColors = (IVsFontAndColorStorage)GetService(typeof(IVsFontAndColorStorage));
+            ThemeUtil.UpdateColorsForTheme(fontsAndColors);
         }
 
 
@@ -218,7 +217,7 @@ namespace PowerShellTools
             var shell = (IVsShell)GetService(typeof(IVsShell));
             try
             {
-                int r = shell.UnadviseBroadcastMessages(_adviseBroadcastCookie);
+                shell.UnadviseBroadcastMessages(_adviseBroadcastCookie);
             }
             catch (COMException) { }
             catch (InvalidComObjectException) { }

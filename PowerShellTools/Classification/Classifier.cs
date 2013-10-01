@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 
-namespace PowerShellTools
+namespace PowerShellTools.Classification
 {
     [Export(typeof(ITaggerProvider))]
     [ContentType("PowerShell")]
@@ -22,75 +22,71 @@ namespace PowerShellTools
         [Export]
         [FileExtension(".psd1")]
         [ContentType("PowerShell")]
-        internal static FileExtensionToContentTypeDefinition PSD1 = null;
+        internal static FileExtensionToContentTypeDefinition Psd1 = null;
 
         [Export]
         [FileExtension(".psm1")]
         [ContentType("PowerShell")]
-        internal static FileExtensionToContentTypeDefinition PSM1 = null;
+        internal static FileExtensionToContentTypeDefinition Psm1 = null;
 
         [Export]
         [FileExtension(".ps1")]
         [ContentType("PowerShell")]
-        internal static FileExtensionToContentTypeDefinition PS1 = null;
+        internal static FileExtensionToContentTypeDefinition Ps1 = null;
 
         [Import]
         internal IClassificationTypeRegistryService ClassificationTypeRegistry = null;
 
         [Import]
-        internal IBufferTagAggregatorFactoryService aggregatorFactory = null;
+        internal IBufferTagAggregatorFactoryService AggregatorFactory = null;
 
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
         {
-
             ITagAggregator<PowerShellTokenTag> ookTagAggregator =
-                                            aggregatorFactory.CreateTagAggregator<PowerShellTokenTag>(buffer);
+                                            AggregatorFactory.CreateTagAggregator<PowerShellTokenTag>(buffer);
 
-            return new PowerShellClassifier(buffer, ookTagAggregator, ClassificationTypeRegistry) as ITagger<T>;
+            return new PowerShellClassifier(ookTagAggregator, ClassificationTypeRegistry) as ITagger<T>;
         }
     }
 
     internal sealed class PowerShellClassifier : ITagger<ClassificationTag>
     {
-        ITextBuffer _buffer;
-        ITagAggregator<PowerShellTokenTag> _aggregator;
-        static IDictionary<PSTokenType, IClassificationType> _ookTypes;
+        readonly ITagAggregator<PowerShellTokenTag> _aggregator;
+        static IDictionary<PSTokenType, IClassificationType> _types;
 
-        internal PowerShellClassifier(ITextBuffer buffer,
-                               ITagAggregator<PowerShellTokenTag> ookTagAggregator,
+        internal PowerShellClassifier(ITagAggregator<PowerShellTokenTag> ookTagAggregator,
                                IClassificationTypeRegistryService typeService)
         {
-            _buffer = buffer;
             _aggregator = ookTagAggregator;
-            _ookTypes = new Dictionary<PSTokenType, IClassificationType>();
-            _ookTypes[PSTokenType.Attribute] = typeService.GetClassificationType("PowerShellAttribute");
-            _ookTypes[PSTokenType.Command] = typeService.GetClassificationType("PowerShellCommand");
-            _ookTypes[PSTokenType.CommandArgument] = typeService.GetClassificationType("PowerShellCommandArgument");
-            _ookTypes[PSTokenType.CommandParameter] = typeService.GetClassificationType("PowerShellCommandParameter");
-            _ookTypes[PSTokenType.Comment] = typeService.GetClassificationType("PowerShellComment");
-            _ookTypes[PSTokenType.GroupEnd] = typeService.GetClassificationType("PowerShellGroupEnd");
-            _ookTypes[PSTokenType.GroupStart] = typeService.GetClassificationType("PowerShellGroupStart");
-            _ookTypes[PSTokenType.Keyword] = typeService.GetClassificationType("PowerShellKeyword");
-            _ookTypes[PSTokenType.LineContinuation] = typeService.GetClassificationType("PowerShellLineCotinuation");
-            _ookTypes[PSTokenType.LoopLabel] = typeService.GetClassificationType("PowerShellLoopLabel");
-            _ookTypes[PSTokenType.Member] = typeService.GetClassificationType("PowerShellMember");
-            _ookTypes[PSTokenType.NewLine] = typeService.GetClassificationType("PowerShellNewLine");
-            _ookTypes[PSTokenType.Number] = typeService.GetClassificationType("PowerShellNumber");
-            _ookTypes[PSTokenType.Operator] = typeService.GetClassificationType("PowerShellOperator");
-            _ookTypes[PSTokenType.Position] = typeService.GetClassificationType("PowerShellPosition");
-            _ookTypes[PSTokenType.StatementSeparator] = typeService.GetClassificationType("PowerShellStatementSeparator");
-            _ookTypes[PSTokenType.String] = typeService.GetClassificationType("PowerShellString");
-            _ookTypes[PSTokenType.Type] = typeService.GetClassificationType("PowerShellType");
-            _ookTypes[PSTokenType.Variable] = typeService.GetClassificationType("PowerShellVariable");
-            _ookTypes[PSTokenType.Unknown] = typeService.GetClassificationType("PowerShellUnknown");
+            _types = new Dictionary<PSTokenType, IClassificationType>();
+            _types[PSTokenType.Attribute] = typeService.GetClassificationType(Classifications.PowerShellAttribute);
+            _types[PSTokenType.Command] = typeService.GetClassificationType(Classifications.PowerShellCommand);
+            _types[PSTokenType.CommandArgument] = typeService.GetClassificationType(Classifications.PowerShellCommandArgument);
+            _types[PSTokenType.CommandParameter] = typeService.GetClassificationType(Classifications.PowerShellCommandParameter);
+            _types[PSTokenType.Comment] = typeService.GetClassificationType(Classifications.PowerShellComment);
+            _types[PSTokenType.GroupEnd] = typeService.GetClassificationType(Classifications.PowerShellGroupEnd);
+            _types[PSTokenType.GroupStart] = typeService.GetClassificationType(Classifications.PowerShellGroupStart);
+            _types[PSTokenType.Keyword] = typeService.GetClassificationType(Classifications.PowerShellKeyword);
+            _types[PSTokenType.LineContinuation] = typeService.GetClassificationType(Classifications.PowerShellLineCotinuation);
+            _types[PSTokenType.LoopLabel] = typeService.GetClassificationType(Classifications.PowerShellLoopLabel);
+            _types[PSTokenType.Member] = typeService.GetClassificationType(Classifications.PowerShellMember);
+            _types[PSTokenType.NewLine] = typeService.GetClassificationType(Classifications.PowerShellNewLine);
+            _types[PSTokenType.Number] = typeService.GetClassificationType(Classifications.PowerShellNumber);
+            _types[PSTokenType.Operator] = typeService.GetClassificationType(Classifications.PowerShellOperator);
+            _types[PSTokenType.Position] = typeService.GetClassificationType(Classifications.PowerShellPosition);
+            _types[PSTokenType.StatementSeparator] = typeService.GetClassificationType(Classifications.PowerShellStatementSeparator);
+            _types[PSTokenType.String] = typeService.GetClassificationType(Classifications.PowerShellString);
+            _types[PSTokenType.Type] = typeService.GetClassificationType(Classifications.PowerShellType);
+            _types[PSTokenType.Variable] = typeService.GetClassificationType(Classifications.PowerShellVariable);
+            _types[PSTokenType.Unknown] = typeService.GetClassificationType(Classifications.PowerShellUnknown);
             
         }
 
         public static IClassificationType GetClassificationType(PSTokenType tokenType)
         {
-            if (_ookTypes != null)
+            if (_types != null)
             {
-                return _ookTypes[tokenType];
+                return _types[tokenType];
             }
             return null;
         }
@@ -103,16 +99,15 @@ namespace PowerShellTools
 
         public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-
             foreach (var tagSpan in this._aggregator.GetTags(spans))
             {
                 var tagSpans = tagSpan.Span.GetSpans(spans[0].Snapshot);
 
-                if (_ookTypes.ContainsKey(tagSpan.Tag.type))
+                if (_types.ContainsKey(tagSpan.Tag.type))
                 {
                     yield return
                         new TagSpan<ClassificationTag>(tagSpans[0],
-                                                       new ClassificationTag(_ookTypes[tagSpan.Tag.type]));    
+                                                       new ClassificationTag(_types[tagSpan.Tag.type]));    
                 }
 
                 

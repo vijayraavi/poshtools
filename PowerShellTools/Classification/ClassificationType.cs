@@ -2,8 +2,32 @@
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 
-namespace PowerShellTools
+namespace PowerShellTools.Classification
 {
+    static class Classifications
+    {
+        public const string PowerShellAttribute = "PowerShellAttribute";
+        public const string PowerShellCommand = "PowerShellCommand";
+        public const string PowerShellCommandArgument = "PowerShellCommandArgument";
+        public const string PowerShellCommandParameter = "PowerShellCommandParameter";
+        public const string PowerShellComment = "PowerShellComment";
+        public const string PowerShellKeyword = "PowerShellKeyword";
+        public const string PowerShellNumber = "PowerShellNumber";
+        public const string PowerShellOperator = "PowerShellOperator";
+        public const string PowerShellString = "PowerShellString";
+        public const string PowerShellType = "PowerShellType";
+        public const string PowerShellVariable = "PowerShellVariable";
+        public const string PowerShellMember = "PowerShellMember";
+        public const string PowerShellGroupStart = "PowerShellGroupStart";
+        public const string PowerShellGroupEnd = "PowerShellGroupEnd";
+        public const string PowerShellLineCotinuation = "PowerShellLineCotinuation";
+        public const string PowerShellLoopLabel = "PowerShellLoopLabel";
+        public const string PowerShellNewLine = "PowerShellNewLine";
+        public const string PowerShellPosition = "PowerShellPosition";
+        public const string PowerShellStatementSeparator = "PowerShellStatementSeparator";
+        public const string PowerShellUnknown = "PowerShellUnknown";
+    }
+
     internal static class OrdinaryClassificationDefinition
     {
         #region Type definition
@@ -157,18 +181,22 @@ namespace PowerShellTools
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellAttribute")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellAttribute)]
     [Name("PowerShell Attribute")]
     [DisplayName("PowerShell Attribute")]
     [UserVisible(true)]
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellAttributeFormat : ClassificationFormatDefinition
     {
-
+        public PowerShellAttributeFormat()
+        {
+            ForegroundColor = ThemeUtil.GetDefaultColors().Attribute;
+            ForegroundCustomizable = true;
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellCommand")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellCommand)]
     [Name("PowerShell Command")]
     [DisplayName("PowerShell Command")]
     [UserVisible(true)]
@@ -177,13 +205,13 @@ namespace PowerShellTools
     {
         public PowerShellCommandFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 255);
+            ForegroundColor = ThemeUtil.GetDefaultColors().Command;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellCommandArgument")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellCommandArgument)]
     [Name("PowerShell Command Argument")]
     [DisplayName("PowerShell Command Argument")]
     [UserVisible(true)]
@@ -192,13 +220,13 @@ namespace PowerShellTools
     {
         public PowerShellCommandArgumentFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(138, 43, 226);
+            ForegroundColor = ThemeUtil.GetDefaultColors().CommandArgument;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellCommandParameter")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellCommandParameter)]
     [Name("PowerShell Command Parameter")]
     [DisplayName("PowerShell Command Parameter")]
     [UserVisible(true)]
@@ -207,13 +235,13 @@ namespace PowerShellTools
     {
         public PowerShellCommandParameterFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 128);
+            ForegroundColor = ThemeUtil.GetDefaultColors().CommandParameter;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellComment")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellComment)]
     [Name("PowerShell Comment")]
     [DisplayName("PowerShell Comment")]
     [UserVisible(true)]
@@ -222,13 +250,13 @@ namespace PowerShellTools
     {
         public PowerShellCommentFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 100, 0);
+            ForegroundColor = ThemeUtil.GetDefaultColors().Comment;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellKeyword")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellKeyword)]
     [Name("PowerShell Keyword")]
     [DisplayName("PowerShell Keyword")]
     [UserVisible(true)]
@@ -237,13 +265,13 @@ namespace PowerShellTools
     {
         public PowerShellKeywordFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 139);
+            ForegroundColor = ThemeUtil.GetDefaultColors().Keyword;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellNumber")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellNumber)]
     [Name("PowerShell Number")]
     [DisplayName("PowerShell Number")]
     [UserVisible(true)]
@@ -252,13 +280,13 @@ namespace PowerShellTools
     {
         public PowerShellNumberFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(128, 0, 128);
+            ForegroundColor = ThemeUtil.GetDefaultColors().Number;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellOperator")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellOperator)]
     [Name("PowerShell Operator")]
     [DisplayName("PowerShell Operator")]
     [UserVisible(true)]
@@ -267,13 +295,13 @@ namespace PowerShellTools
     {
         public PowerShellOperatorsFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(169, 169, 169);
+            ForegroundColor = ThemeUtil.GetDefaultColors().Operator;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellString")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellString)]
     [Name("PowerShell String")]
     [DisplayName("PowerShell String")]
     [UserVisible(true)]
@@ -282,13 +310,13 @@ namespace PowerShellTools
     {
         public PowerShellStringFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(139, 0, 0);
+            ForegroundColor = ThemeUtil.GetDefaultColors().String;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellType")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellType)]
     [Name("PowerShell Type")]
     [DisplayName("PowerShell Types")]
     [UserVisible(true)]
@@ -297,13 +325,13 @@ namespace PowerShellTools
     {
         public PowerShellTypeFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 128, 128);
+            ForegroundColor = ThemeUtil.GetDefaultColors().Type;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellVariable")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellVariable)]
     [Name("PowerShell Variable")]
     [DisplayName("PowerShell Variable")]
     [UserVisible(true)]
@@ -312,13 +340,13 @@ namespace PowerShellTools
     {
         public PowerShellVariablesFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(255, 69, 0);
+            ForegroundColor = ThemeUtil.GetDefaultColors().Variable;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellMember")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellMember)]
     [Name("PowerShell Member")]
     [DisplayName("PowerShell Member")]
     [UserVisible(true)]
@@ -327,13 +355,13 @@ namespace PowerShellTools
     {
         public PowerShellMemberFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 0);
+            ForegroundColor = ThemeUtil.GetDefaultColors().Member;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellGroupStart")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellGroupStart)]
     [Name("PowerShell Group Start")]
     [DisplayName("PowerShell Group Start")]
     [UserVisible(true)]
@@ -342,13 +370,13 @@ namespace PowerShellTools
     {
         public PowerShellGroupStartFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 0);
+            ForegroundColor = ThemeUtil.GetDefaultColors().GroupStart;
             ForegroundCustomizable = true;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "PowerShellGroupEnd")]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellGroupEnd)]
     [Name("PowerShell Group End")]
     [DisplayName("PowerShell Group End")]
     [UserVisible(true)]
@@ -357,8 +385,11 @@ namespace PowerShellTools
     {
         public PowerShellGroupEndFormat()
         {
-            ForegroundColor = System.Windows.Media.Color.FromRgb(0, 0, 0);
+            ForegroundColor = ThemeUtil.GetDefaultColors().GroupEnd;
             ForegroundCustomizable = true;
         }
     }
 }
+
+
+
