@@ -165,6 +165,8 @@
     </Compile>
     <Compile Include="Classification\Classifier.cs" />
     <Compile Include="Classification\DefaultColors.cs" />
+    <Compile Include="Classification\PowerShellErrorTagger.cs" />
+    <Compile Include="Classification\PowerShellErrorTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellOutliningTagger.cs" />
     <Compile Include="Classification\PowerShellOutliningTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
