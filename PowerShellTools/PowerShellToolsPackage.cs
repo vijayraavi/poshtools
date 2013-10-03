@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -147,6 +149,8 @@ namespace PowerShellTools
 
             var componentModel = (IComponentModel) GetGlobalService(typeof (SComponentModel));
             _textBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
+            EditorImports.ClassificationTypeRegistryService = componentModel.GetService<IClassificationTypeRegistryService>();
+            EditorImports.ClassificationFormatMap = componentModel.GetService<IClassificationFormatMapService>();
 
             if (_textBufferFactoryService != null)
             {

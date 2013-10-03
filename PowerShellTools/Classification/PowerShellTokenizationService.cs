@@ -7,6 +7,7 @@ using Microsoft.PowerShell.Commands;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
+using Microsoft.Windows.PowerShell.Gui.Internal;
 
 namespace PowerShellTools.Classification
 {
