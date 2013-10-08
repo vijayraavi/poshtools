@@ -76,15 +76,14 @@ namespace PowerShellTools.Classification
 				return;
 			}
 			string tokenizationText = spanToTokenizeCache.GetText(this.Buffer.CurrentSnapshot);
-			ThreadPool.QueueUserWorkItem(delegate(object unused)
+		    
+			ThreadPool.QueueUserWorkItem(delegate
 			{
 				bool done = false;
 				while (!done)
 				{
 					this.Tokenize(spanToTokenizeCache, tokenizationText);
 					this.PauseTokenization.WaitOne();
-					//WPFHelper.SendToUIThread(delegate(object param0)
-					//{
 						ITrackingSpan trackingSpan = this.SpanToTokenize;
 						if (!object.ReferenceEquals(trackingSpan, spanToTokenizeCache))
 						{
@@ -98,7 +97,27 @@ namespace PowerShellTools.Classification
 						this.OnTokenizationComplete();
 						this.isBufferTokenizing = false;
 						done = true;
-					//});
+
+                    // 
+                    // Notify the classification and tagging services
+                    //
+				    if (Buffer.Properties.ContainsProperty("ISEClassifier"))
+				    {
+				        var classifier = Buffer.Properties.GetProperty<ISEClassifier>("ISEClassifier");
+				        if (classifier != null)
+				        {
+                            classifier.OnClassificationChanged(spanToTokenize.GetSpan(Buffer.CurrentSnapshot));
+				        }
+				    }
+
+                    if (Buffer.Properties.ContainsProperty("PowerShellErrorTagger"))
+                    {
+                        var classifier = Buffer.Properties.GetProperty<PowerShellErrorTagger>("PowerShellErrorTagger");
+                        if (classifier != null)
+                        {
+                            classifier.OnTagsChanged(spanToTokenize.GetSpan(Buffer.CurrentSnapshot));
+                        }
+                    }
 				}
 			}, this);
 		}

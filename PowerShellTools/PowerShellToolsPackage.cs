@@ -169,8 +169,7 @@ namespace PowerShellTools
             psts.Initialize();
             psts.SetEmptyTokenizationProperties();
             psts.StartTokenizeBuffer();
-
-            e.TextBuffer.Changed += (o, args) => psts.StartTokenizeBuffer();
+            e.TextBuffer.ChangedLowPriority += (o, args) => psts.StartTokenizeBuffer();
         }
 
         /// <summary>

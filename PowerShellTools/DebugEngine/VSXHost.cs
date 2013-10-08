@@ -177,12 +177,12 @@ namespace PowerShellTools.DebugEngine
 
         public override void WriteErrorLine(string value)
         {
-            TryOutputString("Error: " + value + Environment.NewLine);
+            TryOutputString("[ERROR] " + value + Environment.NewLine);
         }
 
         public override void WriteDebugLine(string message)
         {
-            TryOutputString(message);
+            TryOutputString("[DEBUG] " + message + Environment.NewLine);
         }
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
@@ -197,7 +197,7 @@ namespace PowerShellTools.DebugEngine
 
         public override void WriteWarningLine(string message)
         {
-            TryOutputString("Warning: " + message + Environment.NewLine);
+            TryOutputString("[WARNING] " + message + Environment.NewLine);
         }
 
         public override Dictionary<string, PSObject> Prompt(string caption, string message, Collection<FieldDescription> descriptions)
