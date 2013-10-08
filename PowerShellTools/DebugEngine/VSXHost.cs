@@ -192,7 +192,7 @@ namespace PowerShellTools.DebugEngine
 
         public override void WriteVerboseLine(string message)
         {
-            TryOutputString(message);
+            TryOutputString("[VERBOSE] " + message + Environment.NewLine);
         }
 
         public override void WriteWarningLine(string message)

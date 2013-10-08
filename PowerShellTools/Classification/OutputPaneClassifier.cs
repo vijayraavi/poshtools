@@ -17,6 +17,7 @@ namespace PowerShellTools
         private const string LogError = "LogError";
         private const string LogWarning = "LogWarning";
         private const string LogDebug = "LogDebug";
+        private const string LogVerbose = "LogVerbose";
 
         [Export]
         [Name(LogError)]
@@ -65,6 +66,23 @@ namespace PowerShellTools
             public LogDebugFormat()
             {
                 DisplayName = "PowerShell Output Debug";
+                ForegroundColor = Colors.Green;
+            }
+        }
+
+        [Export]
+        [Name(LogVerbose)]
+        public static ClassificationTypeDefinition LogVerboseDefinition { get; set; }
+
+        [Name(LogVerbose)]
+        [UserVisible(true)]
+        [Export(typeof(EditorFormatDefinition))]
+        [ClassificationType(ClassificationTypeNames = LogVerbose)]
+        public sealed class LogVerboseFormat : ClassificationFormatDefinition
+        {
+            public LogVerboseFormat()
+            {
+                DisplayName = "PowerShell Output Verbose";
                 ForegroundColor = Colors.Green;
             }
         }
@@ -121,6 +139,10 @@ namespace PowerShellTools
                     else if (text.StartsWith("[DEBUG]"))
                     {
                         classificationName = "LogDebug";
+                    }
+                    else if (text.StartsWith("[VERBOSE]"))
+                    {
+                        classificationName = "LogVerbose";
                     }
 
                     if (!String.IsNullOrEmpty(classificationName))
