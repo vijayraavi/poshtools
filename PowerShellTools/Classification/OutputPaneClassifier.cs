@@ -14,10 +14,10 @@ namespace PowerShellTools
 {
     public class OutputPaneClassifier
     {
-        private const string LogError = "LogError";
-        private const string LogWarning = "LogWarning";
-        private const string LogDebug = "LogDebug";
-        private const string LogVerbose = "LogVerbose";
+        public const string LogError = "PowerShellLogError";
+        public const string LogWarning = "PowerShellLogWarning";
+        public const string LogDebug = "PowerShellLogDebug";
+        public const string LogVerbose = "PowerShellLogVerbose";
 
         [Export]
         [Name(LogError)]
@@ -130,19 +130,19 @@ namespace PowerShellTools
                     string classificationName = null;
                     if (text.StartsWith("[WARNING]"))
                     {
-                        classificationName = "LogWarning";
+                        classificationName = OutputPaneClassifier.LogWarning;
                     }
                     else if (text.StartsWith("[ERROR]"))
                     {
-                        classificationName = "LogError";
+                        classificationName = OutputPaneClassifier.LogError;
                     }
                     else if (text.StartsWith("[DEBUG]"))
                     {
-                        classificationName = "LogDebug";
+                        classificationName = OutputPaneClassifier.LogDebug;
                     }
                     else if (text.StartsWith("[VERBOSE]"))
                     {
-                        classificationName = "LogVerbose";
+                        classificationName = OutputPaneClassifier.LogVerbose;
                     }
 
                     if (!String.IsNullOrEmpty(classificationName))
