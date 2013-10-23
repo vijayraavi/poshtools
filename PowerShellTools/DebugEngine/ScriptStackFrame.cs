@@ -267,12 +267,14 @@ namespace PowerShellTools.DebugEngine
 
     public class ScriptExpression : IDebugExpression2, IDebugEventCallback2
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptExpression));
         private string _name;
         private object _value;
         private ScriptDebugger _debugger;
 
         public ScriptExpression(ScriptDebugger debugger, string name, object value)
         {
+            Log.DebugFormat("Name [{0}] Value [{1}]", name, value);
             _name = name;
             _value = value;
             _debugger = debugger;
@@ -280,17 +282,20 @@ namespace PowerShellTools.DebugEngine
 
         public int EvaluateAsync(enum_EVALFLAGS dwFlags, IDebugEventCallback2 pExprCallback)
         {
+            Log.Debug("EvaluateAsync");
             throw new NotImplementedException();
         }
 
         public int Abort()
         {
+            Log.Debug("Abort");
             return VSConstants.S_OK;
         }
 
         public int EvaluateSync(enum_EVALFLAGS dwFlags, uint dwTimeout, IDebugEventCallback2 pExprCallback,
             out IDebugProperty2 ppResult)
         {
+            Log.Debug("EvaluateSync");
             ppResult = new ScriptProperty(_debugger, _name, _value);
             return VSConstants.S_OK;
         }
@@ -298,6 +303,7 @@ namespace PowerShellTools.DebugEngine
         public int Event(IDebugEngine2 pEngine, IDebugProcess2 pProcess, IDebugProgram2 pProgram, IDebugThread2 pThread,
             IDebugEvent2 pEvent, ref Guid riidEvent, uint dwAttrib)
         {
+            Log.Debug("Event");
             return VSConstants.E_NOTIMPL;
         }
     }

@@ -14,5 +14,6 @@ namespace PowerShellTools
         public const string CmdSetGuid = "099073C0-B561-4BC1-A847-92657B89A00E";
         public const uint CmdidExecuteAsScript =  0x0102;
         public const uint CmdidExecuteSelection = 0x0103;
+        public const uint CmdidGotoDefinition = 0x0104;
     };
 }

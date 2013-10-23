@@ -86,6 +86,7 @@ namespace PowerShellTools
         private static Dictionary<ICommand, MenuCommand> _commands;
         private uint _adviseBroadcastCookie;
         private VisualStudioEvents _events;
+        private static GotoDefinitionCommand _gotoDefinitionCommand;
 
         /// <summary>
         /// Returns the PowerShell host for the package.
@@ -157,7 +158,8 @@ namespace PowerShellTools
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand());
+            _gotoDefinitionCommand = new GotoDefinitionCommand();
+            RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand(), _gotoDefinitionCommand);
 
             InitializePowerShellHost();
             AdviseBroadcast();
@@ -165,11 +167,15 @@ namespace PowerShellTools
 
         private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
         {
-            var psts = new PowerShellTokenizationService(e.TextBuffer, false);
-            psts.Initialize();
-            psts.SetEmptyTokenizationProperties();
-            psts.StartTokenizeBuffer();
-            e.TextBuffer.ChangedLowPriority += (o, args) => psts.StartTokenizeBuffer();
+            if (e.TextBuffer.ContentType.DisplayName == "powershell")
+            {
+                var psts = new PowerShellTokenizationService(e.TextBuffer, false);
+                _gotoDefinitionCommand.AddTextBuffer(e.TextBuffer);
+                psts.Initialize();
+                psts.SetEmptyTokenizationProperties();
+                psts.StartTokenizeBuffer();
+                e.TextBuffer.ChangedLowPriority += (o, args) => psts.StartTokenizeBuffer();
+            }
         }
 
         /// <summary>
