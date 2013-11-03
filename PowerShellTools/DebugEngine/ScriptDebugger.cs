@@ -209,9 +209,18 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Info("Stop");
 
-            _resumeAction = DebuggerResumeAction.Stop;
-            _pausedEvent.Set();
-            _currentPowerShell.Stop();
+            try
+            {
+                _resumeAction = DebuggerResumeAction.Stop;
+                _pausedEvent.Set();
+                _currentPowerShell.Stop();
+            }
+            catch (Exception ex)
+            {
+                //BUGBUG: Suppressing an exception that is thrown when stopping...
+                Log.Debug("Error while stopping script...", ex);
+            }
+
             DebuggerFinished();
         }
 
