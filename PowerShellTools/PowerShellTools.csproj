@@ -414,6 +414,7 @@
     <Compile Include="Project\Utils\DropDownListPropertyEditor.cs" />
     <Compile Include="Project\Utils\FileListTypeConverter.cs" />
     <Compile Include="Project\Utils\VersionConverter.cs" />
+    <Compile Include="ProvideDiffSupportedContentTypeAttribute.cs" />
     <Compile Include="RegistrationAttributes.cs">
       <SubType>Code</SubType>
     </Compile>

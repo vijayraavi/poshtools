@@ -108,7 +108,9 @@ namespace PowerShellTools.LanguageService
                 ParseError[] currentErrors;
 
                 var currentAst = Parser.ParseInput(currentText, out currentTokens, out currentErrors);
-                _client.UpdateAst(currentAst);
+
+                if (_client != null)
+                    _client.UpdateAst(currentAst);
             };
 
             Token[] tokens;

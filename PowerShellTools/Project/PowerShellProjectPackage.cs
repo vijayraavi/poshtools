@@ -10,9 +10,6 @@ namespace PowerShellTools.Project
     [Guid(GuidList.PowerShellToolsProjectPackageGuid)]
     [ProvideProjectFactory(typeof(PowerShellProjectFactory), "PowerShell", "PowerShell Project Files (*.pssproj);*.pssproj", "pssproj", "pssproj", @"\ProjectTemplates\PowerShell", LanguageVsTemplate = "PowerShell", NewProjectRequireNewFolderVsTemplate = false)]
     [ProvideProjectItem(typeof(PowerShellProjectFactory), "PowerShell", @"Templates", 500)]
-    [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
-    [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
-    [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
     [ProvideEditorExtension(typeof(PowerShellEditorFactory), PowerShellConstants.PS1File, 50, ProjectGuid = VSConstants.CLSID.MiscellaneousFilesProject_string, NameResourceID = 3004, DefaultName = "module", TemplateDir = "NewItemTemplates")]
     public class PowerShellProjectPackage : CommonProjectPackage
     {

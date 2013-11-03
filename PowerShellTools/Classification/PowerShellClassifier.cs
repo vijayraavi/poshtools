@@ -26,8 +26,6 @@ namespace PowerShellTools.Classification
         //}
 		internal const double FromPointsToPixelsMultiplyer = 1.3333333333333333;
 		private static double characterWidth;
-		[BaseDefinition("text"), Name("powershell"), Export]
-		private static ContentTypeDefinition PS1TypeDefinition;
         [BaseDefinition("text"), Name(Classifications.PowerShellAttribute), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition attributeTypeDefinition;
         [BaseDefinition("text"), Name(Classifications.PowerShellCommand), Export(typeof(ClassificationTypeDefinition))]

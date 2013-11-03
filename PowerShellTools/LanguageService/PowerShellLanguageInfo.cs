@@ -47,7 +47,7 @@ namespace PowerShellTools.LanguageService
             {
                 // This is the same extension the language service was
                 // registered as supporting.
-                pbstrExtensions = PowerShellConstants.PS1File + ";" + PowerShellConstants.PSD1File + ";" + PowerShellConstants.PSD1File;
+                pbstrExtensions = PowerShellConstants.PS1File + ";" + PowerShellConstants.PSD1File + ";" + PowerShellConstants.PSM1File;
                 return VSConstants.S_OK;
             }
 

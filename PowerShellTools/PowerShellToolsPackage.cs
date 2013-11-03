@@ -4,9 +4,11 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -64,6 +66,10 @@ namespace PowerShellTools
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
     [ProvideOptionPage(typeof (DiagnosticsDialogPage), "PowerShell Tools", "Diagnostics", 101, 106, true)]
+    [ProvideDiffSupportedContentType(".ps1;.psm1;.psd1", ";")]
+    [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
+    [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
+    [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
     public sealed class PowerShellToolsPackage : CommonPackage, IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellToolsPackage));
@@ -167,7 +173,9 @@ namespace PowerShellTools
 
         private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
         {
-            if (e.TextBuffer.ContentType.DisplayName == "powershell")
+            e.TextBuffer.ContentTypeChanged += TextBuffer_ContentTypeChanged;
+
+            if (e.TextBuffer.ContentType.IsOfType("PowerShell"))
             {
                 var psts = new PowerShellTokenizationService(e.TextBuffer, false);
                 _gotoDefinitionCommand.AddTextBuffer(e.TextBuffer);
@@ -175,6 +183,24 @@ namespace PowerShellTools
                 psts.SetEmptyTokenizationProperties();
                 psts.StartTokenizeBuffer();
                 e.TextBuffer.ChangedLowPriority += (o, args) => psts.StartTokenizeBuffer();
+                e.TextBuffer.Properties.AddProperty("HasTokenizer", true);
+            }
+        }
+
+        static void TextBuffer_ContentTypeChanged(object sender, ContentTypeChangedEventArgs e)
+        {
+            var buffer = sender as ITextBuffer;
+            if (buffer == null) return;
+
+            if (e.AfterContentType.IsOfType("PowerShell") && !buffer.Properties.ContainsProperty("HasTokenizer"))
+            {
+                var psts = new PowerShellTokenizationService(buffer, false);
+                _gotoDefinitionCommand.AddTextBuffer(buffer);
+                psts.Initialize();
+                psts.SetEmptyTokenizationProperties();
+                psts.StartTokenizeBuffer();
+                buffer.ChangedLowPriority += (o, args) => psts.StartTokenizeBuffer();
+                buffer.Properties.AddProperty("HasTokenizer", true);
             }
         }
 
