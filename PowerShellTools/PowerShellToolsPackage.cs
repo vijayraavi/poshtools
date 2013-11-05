@@ -65,6 +65,7 @@ namespace PowerShellTools
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
+    [ProvideOptionPage(typeof(GeneralDialogPage), "PowerShell Tools", "General", 101, 106, true)]
     [ProvideOptionPage(typeof (DiagnosticsDialogPage), "PowerShell Tools", "Diagnostics", 101, 106, true)]
     [ProvideDiffSupportedContentType(".ps1;.psm1;.psd1", ";")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
@@ -209,8 +210,10 @@ namespace PowerShellTools
         /// </summary>
         private void InitializePowerShellHost()
         {
+            var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
+
             Log.Info("InitializePowerShellHost");
-            Host = new VSXHost();
+            Host = new VSXHost(page.OverrideExecutionPolicyConfiguration);
             Host.HostUi.OutputProgress = (label, percentage) =>
             {
                 Log.DebugFormat("Output progress: {0} {1}", label, percentage);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
@@ -9,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading;
+using Microsoft.PowerShell;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -39,7 +41,7 @@ namespace PowerShellTools.DebugEngine
         private CultureInfo originalUICultureInfo =
             System.Threading.Thread.CurrentThread.CurrentUICulture;
 
-        public VSXHost()
+        public VSXHost(bool overrideExecutionPolicy)
         {
             if (Instance != null)
             {
@@ -56,6 +58,58 @@ namespace PowerShellTools.DebugEngine
 
             _runspace = RunspaceFactory.CreateRunspace(this, iss);
             _runspace.Open();
+
+            if (overrideExecutionPolicy)
+            {
+                SetupExecutionPolicy();
+            }
+        }
+
+        private void SetupExecutionPolicy()
+        {
+            ExecutionPolicy policy = GetExecutionPolicy();
+            if (policy != ExecutionPolicy.Unrestricted &&
+                policy != ExecutionPolicy.RemoteSigned &&
+                policy != ExecutionPolicy.Bypass)
+            {
+                ExecutionPolicy machinePolicy = GetExecutionPolicy(ExecutionPolicyScope.MachinePolicy);
+                ExecutionPolicy userPolicy = GetExecutionPolicy(ExecutionPolicyScope.UserPolicy);
+
+                if (machinePolicy == ExecutionPolicy.Undefined && userPolicy == ExecutionPolicy.Undefined)
+                {
+                    SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
+                }
+            }
+        }
+
+        private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
+        {
+            using (var ps = PowerShell.Create())
+            {
+                ps.Runspace = _runspace;
+                ps.AddCommand("Set-ExecutionPolicy").AddParameter("ExecutionPolicy", policy).AddParameter("Scope", scope);
+                ps.Invoke();
+            }
+        }
+
+        private ExecutionPolicy GetExecutionPolicy()
+        {
+            using (var ps = PowerShell.Create())
+            {
+                ps.Runspace = _runspace;
+                ps.AddCommand("Get-ExecutionPolicy");
+                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
+            }
+        }
+
+        private ExecutionPolicy GetExecutionPolicy(ExecutionPolicyScope scope)
+        {
+            using (var ps = PowerShell.Create())
+            {
+                ps.Runspace = _runspace;
+                ps.AddCommand("Get-ExecutionPolicy").AddParameter("Scope", scope);
+                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
+            }
         }
 
         public VSXHost(Runspace runspace)
