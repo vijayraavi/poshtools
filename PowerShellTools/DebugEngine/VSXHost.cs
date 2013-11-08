@@ -41,7 +41,7 @@ namespace PowerShellTools.DebugEngine
         private CultureInfo originalUICultureInfo =
             System.Threading.Thread.CurrentThread.CurrentUICulture;
 
-        public VSXHost(bool overrideExecutionPolicy)
+        public VSXHost(bool overrideExecutionPolicy = false)
         {
             if (Instance != null)
             {
