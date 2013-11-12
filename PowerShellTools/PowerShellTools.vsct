@@ -93,7 +93,7 @@
       <!--Buttons-->
       <IDSymbol name="cmdidExecuteAsScript"  value="0x0102"/>
       <IDSymbol name="cmdidExecuteSelection" value="0x0103"/>
-      <IDSymbol name="cmdidGotoDefinition" value="0x0104"/>
+      <IDSymbol name="cmdidGotoDefinition" value="0x0104"/> 
 
       <!--Groups-->
       <IDSymbol name="grpidPoshToolsGroup" value="0x01001"/>

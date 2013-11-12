@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Windows.Media;
+using Microsoft.VisualStudio.Language.StandardClassification;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Formatting;
@@ -26,43 +27,43 @@ namespace PowerShellTools.Classification
         //}
 		internal const double FromPointsToPixelsMultiplyer = 1.3333333333333333;
 		private static double characterWidth;
-        [BaseDefinition("text"), Name(Classifications.PowerShellAttribute), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.SymbolDefinition), Name(Classifications.PowerShellAttribute), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition attributeTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellCommand), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.SymbolDefinition), Name(Classifications.PowerShellCommand), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition commandFormatTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellCommandArgument), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Literal), Name(Classifications.PowerShellCommandArgument), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition commandArgumentTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellCommandParameter), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellCommandParameter), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition commandParameterTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellComment), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Comment), Name(Classifications.PowerShellComment), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition commentTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellGroupEnd), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellGroupEnd), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition groupEndTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellGroupStart), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellGroupStart), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition groupStartTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellKeyword), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Keyword), Name(Classifications.PowerShellKeyword), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition keywordTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellLineCotinuation), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellLineCotinuation), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition lineContinuationTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellLoopLabel), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellLoopLabel), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition loopLabelTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellMember), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellMember), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition memberTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellNewLine), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.WhiteSpace), Name(Classifications.PowerShellNewLine), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition newLineTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellNumber), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Number), Name(Classifications.PowerShellNumber), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition numberTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellOperator), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellOperator), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition operatorTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellPosition), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.WhiteSpace), Name(Classifications.PowerShellPosition), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition positionTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellStatementSeparator), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellStatementSeparator), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition statementSeparatorTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellString), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.String), Name(Classifications.PowerShellString), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition stringTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellType), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.SymbolDefinition), Name(Classifications.PowerShellType), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition typeTypeDefinition;
-        [BaseDefinition("text"), Name(Classifications.PowerShellVariable), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Identifier), Name(Classifications.PowerShellVariable), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition variableTypeDefinition;
         //[BaseDefinition("text"), Name("PowerShell AttributeConsole"), Export(typeof(ClassificationTypeDefinition))]
         //private static ClassificationTypeDefinition attributeTypeDefinitionConsole;

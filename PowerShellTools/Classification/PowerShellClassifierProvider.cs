@@ -1,11 +1,9 @@
+using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
-using System;
-using System.ComponentModel.Composition;
-using PowerShellTools.Classification;
 
-namespace Microsoft.Windows.PowerShell.Gui.Internal
+namespace PowerShellTools.Classification
 {
 	[ContentType("PowerShell"), Export(typeof(IClassifierProvider))]
 	internal sealed class PowerShellClassifierProvider : IClassifierProvider
@@ -38,7 +36,7 @@ namespace Microsoft.Windows.PowerShell.Gui.Internal
 
 		public IClassifier GetClassifier(ITextBuffer textBuffer)
 		{
-            return textBuffer.Properties.GetOrCreateSingletonProperty<PowerShellClassifier>(() => new PowerShellClassifier(textBuffer));
+            return textBuffer.Properties.GetOrCreateSingletonProperty(() => new PowerShellClassifier(textBuffer));
 		}
 	}
 }

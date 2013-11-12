@@ -79,6 +79,7 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Editor, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Language.Intellisense, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Language.StandardClassification, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.OLE.Interop" />
     <Reference Include="Microsoft.VisualStudio.Package.LanguageService.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop" />
@@ -171,7 +172,6 @@
     <Compile Include="Classification\ClassificationType.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Classification\DefaultColors.cs" />
     <Compile Include="Classification\ISEClassifier.cs" />
     <Compile Include="Classification\PowerShellClassifier.cs">
       <SubType>Code</SubType>
@@ -185,7 +185,6 @@
     <Compile Include="Classification\PowerShellOutliningTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
     <Compile Include="Classification\PSBufferTokenizationService.cs" />
-    <Compile Include="Classification\ThemeUtility.cs" />
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
     <Compile Include="Commands\GotoDefinitionCommand.cs" />
@@ -232,6 +231,7 @@
     <Compile Include="LanguageService\DropDownBarClient.cs" />
     <Compile Include="LanguageService\EditorExtensions.cs" />
     <Compile Include="LanguageService\PowerShellLanguageInfo.cs" />
+    <Compile Include="LanguageService\SnippetViewFilter.cs" />
     <Compile Include="LanguageService\ViewFilter.cs" />
     <Compile Include="MyControl.xaml.cs">
       <DependentUpon>MyControl.xaml</DependentUpon>
@@ -429,7 +429,6 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PowerShellToolsPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PkgCmdID.cs" />
     <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>
   <ItemGroup>

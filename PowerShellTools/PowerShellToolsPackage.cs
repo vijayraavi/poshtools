@@ -169,7 +169,6 @@ namespace PowerShellTools
             RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand(), _gotoDefinitionCommand);
 
             InitializePowerShellHost();
-            AdviseBroadcast();
         }
 
         private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
@@ -227,28 +226,6 @@ namespace PowerShellTools
                 }
             };
         }
-
-        private void AdviseBroadcast()
-        {
-            _adviseBroadcastCookie = 0;
-            _events = new VisualStudioEvents();
-            _events.ThemeColorChanged += _events_ThemeColorChanged;
-            var shell = (IVsShell)GetService(typeof (IVsShell));
-            try
-            {
-                shell.AdviseBroadcastMessages(_events, out _adviseBroadcastCookie);
-            }
-            catch (COMException) { }
-            catch (InvalidComObjectException) { }
-        }
-
-        void _events_ThemeColorChanged(object sender, EventArgs e)
-        {
-            Log.Debug("Theme Color Changed");
-            var fontsAndColors = (IVsFontAndColorStorage)GetService(typeof(IVsFontAndColorStorage));
-            ThemeUtil.UpdateColorsForTheme(fontsAndColors);
-        }
-
 
         public void Dispose()
         {
