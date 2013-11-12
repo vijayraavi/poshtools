@@ -231,7 +231,6 @@
     <Compile Include="LanguageService\DropDownBarClient.cs" />
     <Compile Include="LanguageService\EditorExtensions.cs" />
     <Compile Include="LanguageService\PowerShellLanguageInfo.cs" />
-    <Compile Include="LanguageService\SnippetViewFilter.cs" />
     <Compile Include="LanguageService\ViewFilter.cs" />
     <Compile Include="MyControl.xaml.cs">
       <DependentUpon>MyControl.xaml</DependentUpon>
