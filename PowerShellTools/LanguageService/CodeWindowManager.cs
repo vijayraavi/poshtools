@@ -14,6 +14,7 @@
 
 using System.Collections.Generic;
 using System.Management.Automation.Language;
+using Microsoft.PythonTools.Language;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -44,18 +45,16 @@ namespace PowerShellTools.LanguageService
             _window = codeWindow;
             _textView = textView;
 
-            var model = PowerShellToolsPackage.ComponentModel;
+            var model = CommonPackage.ComponentModel;
             var adaptersFactory = model.GetService<IVsEditorAdaptersFactoryService>();
-            IEditorOperationsFactoryService factory = model.GetService<IEditorOperationsFactoryService>();
+            var factory = model.GetService<IEditorOperationsFactoryService>();
 
             EditFilter editFilter = _filter = new EditFilter(textView, factory.GetEditorOperations(textView));
             var adapter = adaptersFactory.GetViewAdapter(textView);
             editFilter.AttachKeyboardFilter(adapter);
 
-#if DEV11_OR_LATER
             var viewFilter = new TextViewFilter();
             viewFilter.AttachFilter(adapter);
-#endif
         }
 
         private static void OnIdle(object sender, ComponentManagerEventArgs e)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
@@ -8,7 +7,6 @@ using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
-using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -71,7 +69,14 @@ namespace PowerShellTools
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
-    public sealed class PowerShellToolsPackage : CommonPackage, IDisposable
+    [ProvideLanguageCodeExpansion(
+         typeof(PowerShellLanguageInfo),
+         "PowerShell",          // Name of language used as registry key
+         0,                               // Resource ID of localized name of language service
+         "PowerShell",        // Name of Language attribute in snippet template
+         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
+         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
+    public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellToolsPackage));
 
@@ -91,9 +96,8 @@ namespace PowerShellTools
 
         private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
-        private uint _adviseBroadcastCookie;
-        private VisualStudioEvents _events;
         private static GotoDefinitionCommand _gotoDefinitionCommand;
+        private VisualStudioEvents _visualStudioEvents;
 
         /// <summary>
         /// Returns the PowerShell host for the package.
@@ -159,6 +163,9 @@ namespace PowerShellTools
             _textBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
             EditorImports.ClassificationTypeRegistryService = componentModel.GetService<IClassificationTypeRegistryService>();
             EditorImports.ClassificationFormatMap = componentModel.GetService<IClassificationFormatMapService>();
+            _visualStudioEvents = componentModel.GetService<VisualStudioEvents>();
+
+            _visualStudioEvents.SettingsChanged += _visualStudioEvents_SettingsChanged;
 
             if (_textBufferFactoryService != null)
             {
@@ -169,6 +176,22 @@ namespace PowerShellTools
             RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand(), _gotoDefinitionCommand);
 
             InitializePowerShellHost();
+        }
+
+        void _visualStudioEvents_SettingsChanged(object sender, DialogPage e)
+        {
+            if (e is DiagnosticsDialogPage)
+            {
+                var page = (DiagnosticsDialogPage)e;
+                if (page.EnableDiagnosticLogging)
+                {
+                    DiagnosticConfiguration.EnableDiagnostics();
+                }
+                else
+                {
+                    DiagnosticConfiguration.DisableDiagnostics();
+                }
+            }
         }
 
         private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
@@ -225,17 +248,6 @@ namespace PowerShellTools
                     statusBar.Progress(ref cookie, 1, "", 0, 0);
                 }
             };
-        }
-
-        public void Dispose()
-        {
-            var shell = (IVsShell)GetService(typeof(IVsShell));
-            try
-            {
-                shell.UnadviseBroadcastMessages(_adviseBroadcastCookie);
-            }
-            catch (COMException) { }
-            catch (InvalidComObjectException) { }
         }
     }
 }

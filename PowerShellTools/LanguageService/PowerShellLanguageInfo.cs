@@ -35,7 +35,6 @@ namespace PowerShellTools.LanguageService
                 if (ErrorHandler.Succeeded(pCodeWin.GetPrimaryView(out textView)))
                 {
                     ppCodeWinMgr = new CodeWindowManager(pCodeWin, service.GetWpfTextView(textView));
-
                     return VSConstants.S_OK;
                 }
 

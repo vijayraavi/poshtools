@@ -268,13 +268,19 @@ namespace PowerShellTools.DebugEngine
     public class ScriptExpression : IDebugExpression2, IDebugEventCallback2
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptExpression));
-        private string _name;
-        private object _value;
-        private ScriptDebugger _debugger;
+        private readonly string _name;
+        private readonly object _value;
+        private readonly ScriptDebugger _debugger;
 
         public ScriptExpression(ScriptDebugger debugger, string name, object value)
         {
             Log.DebugFormat("Name [{0}] Value [{1}]", name, value);
+
+            if (name.StartsWith("$"))
+            {
+                name = name.Remove(0, 1);
+            }
+
             _name = name;
             _value = value;
             _debugger = debugger;

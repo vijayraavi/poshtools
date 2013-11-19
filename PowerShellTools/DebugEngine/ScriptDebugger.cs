@@ -4,6 +4,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
+using System.Windows.Threading;
 using log4net;
 
 namespace PowerShellTools.DebugEngine
@@ -21,9 +22,9 @@ namespace PowerShellTools.DebugEngine
     public class ScriptDebugger 
     {
         public event Action<string> DocumentChanged;
-        private Runspace _runspace;
+        private readonly Runspace _runspace;
 
-        private List<ScriptBreakpoint> _breakpoints;
+        private readonly List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
         private PowerShell _currentPowerShell;
 
@@ -33,12 +34,15 @@ namespace PowerShellTools.DebugEngine
         public event EventHandler<EventArgs<string>> OutputString;
         public event EventHandler DebuggingFinished;
 
-        private AutoResetEvent _pausedEvent = new AutoResetEvent(false);
+        private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
+
         private DebuggerResumeAction _resumeAction;
+
 
         public IDictionary<string, object> Variables { get; private set; }
         public IEnumerable<ScriptStackFrame> CallStack { get { return _callstack; } }
         public ScriptProgramNode CurrentExecutingNode { get; private set; }
+        public Runspace Runspace { get { return _runspace; }}
 
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptDebugger));
 
@@ -76,9 +80,11 @@ namespace PowerShellTools.DebugEngine
             Log.Info("ClearBreakpoints");
 
             IEnumerable<PSObject> breakpoints;
-            using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
+            using (var pipeline = (_runspace.CreatePipeline()))
             {
-                breakpoints = pipeline.InvokeCommand("Get-PSBreakpoint");
+                var command = new Command("Get-PSBreakpoint");
+                pipeline.Commands.Add(command);
+                breakpoints = pipeline.Invoke();
             }
 
             if (!breakpoints.Any()) return;
@@ -87,12 +93,13 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
+                using (var pipeline = (_runspace.CreatePipeline()))
                 {
                     var command = new Command("Remove-PSBreakpoint");
                     command.Parameters.Add("Breakpoint", breakpoints);
+                    pipeline.Commands.Add(command);
 
-                    pipeline.InvokeCommand(command);
+                    pipeline.Invoke();
                 }
             }
             catch (Exception ex)
@@ -108,20 +115,21 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                using (var pipeline = new LockablePipeline(_runspace.CreatePipeline()))
+                using (var pipeline = (_runspace.CreatePipeline()))
                 {
                     var command = new Command("Set-PSBreakpoint");
                     command.Parameters.Add("Script", breakpoint.File);
                     command.Parameters.Add("Line", breakpoint.Line);
 
-                    pipeline.InvokeCommand(command);
+                    pipeline.Commands.Add(command);
+
+                    pipeline.Invoke();
                 }
             }
             catch (Exception ex)
             {
                 Log.Error("Failed to set breakpoint.", ex);
             }
-
         }
 
         void _runspace_StateChanged(object sender, RunspaceStateEventArgs e)
@@ -172,6 +180,7 @@ namespace PowerShellTools.DebugEngine
             }
 
             Log.Debug("Waiting for debuggee to resume.");
+
             //Wait for the user to step, continue or stop
             _pausedEvent.WaitOne();
             Log.DebugFormat("Debuggee resume action is {0}", _resumeAction);
@@ -277,7 +286,7 @@ namespace PowerShellTools.DebugEngine
                     var objects = new PSDataCollection<PSObject>();
                     objects.DataAdded += objects_DataAdded;
 
-                    _currentPowerShell.Invoke<PSObject>(null, objects);
+                    _currentPowerShell.Invoke(null, objects);
                 }
             }
             catch (Exception ex)
@@ -292,7 +301,6 @@ namespace PowerShellTools.DebugEngine
             {
                 DebuggerFinished();
             }
-
         }
 
         void objects_DataAdded(object sender, DataAddedEventArgs e)
@@ -310,9 +318,11 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+                using (var pipeline = (_runspace.CreateNestedPipeline()))
                 {
-                    result = pipeline.InvokeCommand("Get-Variable");
+                    var command = new Command("Get-Variable");
+                    pipeline.Commands.Add(command);
+                    result = pipeline.Invoke();
                 }
             }
             catch (Exception ex)
@@ -321,7 +331,6 @@ namespace PowerShellTools.DebugEngine
             }
 
             if (result == null) return;
-
 
             Variables = new Dictionary<string, object>();
 
@@ -341,9 +350,11 @@ namespace PowerShellTools.DebugEngine
             IEnumerable<PSObject> result = null;
             try
             {
-                using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+                using (var pipeline = (_runspace.CreateNestedPipeline()))
                 {
-                    result = pipeline.InvokeCommand("Get-PSCallstack");
+                    Command command = new Command("Get-PSCallstack");
+                    pipeline.Commands.Add(command);
+                    result = pipeline.Invoke();
                 }
             }
             catch (Exception ex)
@@ -380,13 +391,14 @@ namespace PowerShellTools.DebugEngine
         {
             try
             {
-                using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+                using (var pipeline = (_runspace.CreateNestedPipeline()))
                 {
-                    Command command = new Command("Set-Variable");
+                    var command = new Command("Set-Variable");
                     command.Parameters.Add("Name", name);
                     command.Parameters.Add("Value", value);
 
-                    pipeline.InvokeCommand(command);
+                    pipeline.Commands.Add(command);
+                    pipeline.Invoke();
                 }
             }
             catch (Exception ex)
@@ -395,18 +407,29 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-        public PSVariable GetVariable(string name)
+        public object GetVariable(string name)
         {
+            if (name.StartsWith("$"))
+            {
+                name = name.Remove(0, 1);
+            }
+
+            if (Variables.ContainsKey(name))
+            {
+                var var = Variables[name];
+                return var;
+            }
+
             IEnumerable<PSObject> result = null;
 
             try
             {
-                
-                using (var pipeline = new LockablePipeline(_runspace.CreateNestedPipeline()))
+                using (var pipeline = _runspace.CreateNestedPipeline())
                 {
-                    Command command = new Command("Get-Variable -Name " + name, true);
+                    var command = new Command("Get-Variable -Name " + name, true);
 
-                    result = pipeline.InvokeCommand(command);
+                    pipeline.Commands.Add(command);
+                    result = pipeline.Invoke();
                 }
             }
             catch (Exception ex)
@@ -427,42 +450,6 @@ namespace PowerShellTools.DebugEngine
             }
 
             return null;
-        }
-    }
-
-    public class LockablePipeline : IDisposable
-    {
-        private Mutex _mutex;
-        public Pipeline Pipeline { get; private set; }
-
-        public LockablePipeline(Pipeline pipeline)
-        {
-            _mutex = new Mutex(true);
-            Pipeline = pipeline;
-        }
-
-        public IEnumerable<PSObject> InvokeCommand(Command command)
-        {
-            Pipeline.Commands.Add(command);
-            return Pipeline.Invoke();
-        }
-
-        public IEnumerable<PSObject> InvokeCommand(string command)
-        {
-            Pipeline.Commands.Add(command);
-            return Pipeline.Invoke();
-        }
-
-        public void InvokeScript(string fileName)
-        {
-            Pipeline.Commands.AddScript(String.Format(". '{0}'", fileName));
-            Pipeline.Invoke();
-        }
-
-        public void Dispose()
-        {
-            Pipeline.Dispose();
-            _mutex.ReleaseMutex();
         }
     }
 

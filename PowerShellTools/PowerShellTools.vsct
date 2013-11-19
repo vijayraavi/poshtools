@@ -63,6 +63,17 @@
           <ButtonText>Go to definition</ButtonText>
         </Strings>
       </Button>-->
+      <Button guid="guidPoshToolsCmdSet" id="cmdidSnippet"
+  priority="0x0100" type="Button">
+        <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <LocCanonicalName>PowerShell.Snippet</LocCanonicalName>
+          <CanonicalName>PowerShell.Snippet</CanonicalName>
+          <ButtonText>Insert snippet</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
    
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -93,8 +104,8 @@
       <!--Buttons-->
       <IDSymbol name="cmdidExecuteAsScript"  value="0x0102"/>
       <IDSymbol name="cmdidExecuteSelection" value="0x0103"/>
-      <IDSymbol name="cmdidGotoDefinition" value="0x0104"/> 
-
+      <IDSymbol name="cmdidGotoDefinition" value="0x0104"/>
+      <IDSymbol name="cmdidSnippet" value="0x0105"/>
       <!--Groups-->
       <IDSymbol name="grpidPoshToolsGroup" value="0x01001"/>
     </GuidSymbol>

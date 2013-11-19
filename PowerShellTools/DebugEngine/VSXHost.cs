@@ -53,7 +53,7 @@ namespace PowerShellTools.DebugEngine
             HostUi = new HostUi();
 
             InitialSessionState iss = InitialSessionState.CreateDefault();
-           // iss.ApartmentState = ApartmentState.STA;
+            //iss.ApartmentState = ApartmentState.MTA;
             //iss.ThreadOptions = PSThreadOptions.ReuseThread;
 
             _runspace = RunspaceFactory.CreateRunspace(this, iss);

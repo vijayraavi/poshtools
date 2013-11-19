@@ -1,28 +1,18 @@
 ﻿using System;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell.Interop;
+using System.ComponentModel.Composition;
+using Microsoft.VisualStudio.Shell;
 
 namespace PowerShellTools
 {
-    class VisualStudioEvents : IVsBroadcastMessageEvents
+    [PartCreationPolicy(CreationPolicy.Shared)]
+    [Export]
+    class VisualStudioEvents
     {
-        /// <summary>
-        /// Raised when the system changes the theme color. 
-        /// </summary>
-        public event EventHandler ThemeColorChanged;
+        public event EventHandler<DialogPage> SettingsChanged;
 
-        int IVsBroadcastMessageEvents.OnBroadcastMessage(uint msg, IntPtr wParam, IntPtr lParam)
+        public void OnSettingsChanged(DialogPage dialogPageType)
         {
-            const uint WM_SYSCOLORCHANGE = 0x15;
-            if (msg == WM_SYSCOLORCHANGE)
-            {
-                if (ThemeColorChanged != null)
-                {
-                    ThemeColorChanged(this, new EventArgs());
-                }
-            }
-
-            return VSConstants.S_OK;
+            if (SettingsChanged != null) SettingsChanged(this, dialogPageType);
         }
     }
 }

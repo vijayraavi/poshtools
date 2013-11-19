@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using System.Reflection;
+using System.Windows.Documents;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
@@ -17,7 +20,7 @@ namespace PowerShellTools.DebugEngine
 
         public object Value { get; set; }
 
-        private ScriptDebugger _debugger;
+        private readonly ScriptDebugger _debugger;
 
         public ScriptProperty(ScriptDebugger debugger, string name, object value)
         {
@@ -27,22 +30,43 @@ namespace PowerShellTools.DebugEngine
             _debugger = debugger;
         }
 
+
+
         #region Implementation of IDebugProperty2
 
         public int GetPropertyInfo(enum_DEBUGPROP_INFO_FLAGS dwFields, uint dwRadix, uint dwTimeout, IDebugReference2[] rgpArgs, uint dwArgCount, DEBUG_PROPERTY_INFO[] pPropertyInfo)
         {
-            Log.Debug("GetPropertyInfo");
+            Log.DebugFormat("GetPropertyInfo [{0}]", dwFields);
+
+            pPropertyInfo[0].dwFields = enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_NONE;
+
             if ((dwFields & enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_NAME) != 0)
             {
                 pPropertyInfo[0].bstrName = Name;
-                pPropertyInfo[0].dwFields = enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_NAME;
+                pPropertyInfo[0].dwFields |= enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_NAME;
             }
 
             if ((dwFields & enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_VALUE) != 0)
             {
-                pPropertyInfo[0].bstrValue =  Value == null ? String.Empty : Value.ToString();
-                pPropertyInfo[0].dwFields = enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_VALUE;
+                pPropertyInfo[0].bstrValue = Value == null ? String.Empty : Value.ToString();
+                pPropertyInfo[0].dwFields |= enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_VALUE;
             }
+
+            if ((dwFields & enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_TYPE) != 0)
+            {
+                pPropertyInfo[0].bstrType = Value == null ? String.Empty : Value.GetType().ToString();
+                pPropertyInfo[0].dwFields |= enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_TYPE;
+            }
+
+            if ((dwFields & enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_ATTRIB) != 0)
+            {
+                pPropertyInfo[0].dwFields |= enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_ATTRIB;
+                pPropertyInfo[0].dwAttrib |= enum_DBG_ATTRIB_FLAGS.DBG_ATTRIB_VALUE_READONLY; 
+                pPropertyInfo[0].dwAttrib |= enum_DBG_ATTRIB_FLAGS.DBG_ATTRIB_OBJ_IS_EXPANDABLE;
+            }
+
+            pPropertyInfo[0].pProperty = this;
+            pPropertyInfo[0].dwFields |= enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_PROP;
 
             return VSConstants.S_OK;
         }
@@ -73,6 +97,32 @@ namespace PowerShellTools.DebugEngine
 
         private IEnumerable<ScriptProperty> GetProperties()
         {
+            if (Value is PSObject)
+            {
+                Runspace.DefaultRunspace = _debugger.Runspace;
+                var proeprties = new List<ScriptProperty>();
+                foreach (var prop in (Value as PSObject).Properties)
+                {
+                    if (proeprties.Any(m => m.Name == prop.Name))
+                    {
+                        continue;
+                    }
+
+                    object val;
+                    try
+                    {
+                        val = prop.Value;
+                    }
+                    catch
+                    {
+                        val = "Failed to evaluate value.";
+                    }
+
+                    proeprties.Add(new ScriptProperty(_debugger, prop.Name, val));
+                }
+                return proeprties;
+            }
+
             var props = Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
             return props.Select(propertyInfo => new ScriptProperty(_debugger , propertyInfo.Name, propertyInfo.GetValue(Value, null)));
         }
@@ -158,6 +208,7 @@ namespace PowerShellTools.DebugEngine
                                     enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_ATTRIB;
             }
             pceltFetched = celt;
+            _count += celt;
             return VSConstants.S_OK;
 
         }

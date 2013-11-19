@@ -1,10 +1,19 @@
-﻿using log4net.Config;
+﻿using log4net;
+using log4net.Config;
 using log4net.Layout;
 
 namespace PowerShellTools.Diagnostics
 {
     class DiagnosticConfiguration
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (DiagnosticConfiguration));
+
+        public static void DisableDiagnostics()
+        {
+            Log.Info("Diagnostics disabled.");
+            SetLoggingLevel("OFF");
+        }
+
         public static void EnableDiagnostics()
         {
             var appender = new OutputPaneAppender();
@@ -14,6 +23,8 @@ namespace PowerShellTools.Diagnostics
             BasicConfigurator.Configure(appender);
 
             SetLoggingLevel("ALL");
+
+            Log.Info("Diagnostics enabled.");
         }
 
         private static void SetLoggingLevel(string level)
