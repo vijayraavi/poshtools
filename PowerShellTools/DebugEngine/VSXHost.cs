@@ -196,7 +196,14 @@ namespace PowerShellTools.DebugEngine
 
         public override SecureString ReadLineAsSecureString()
         {
-            throw new NotImplementedException();
+            var str = Interaction.InputBox("Read-Host", "Read-Host");
+
+            var s = new SecureString();
+            foreach (var ch in str.ToCharArray())
+            {
+                s.AppendChar(ch);
+            }
+            return s;
         }
 
         private void TryOutputProgress(string label, int percentage)
