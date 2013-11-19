@@ -11,6 +11,7 @@ using System.Security;
 using System.Text;
 using System.Threading;
 using Microsoft.PowerShell;
+using Microsoft.VisualBasic;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -190,7 +191,7 @@ namespace PowerShellTools.DebugEngine
     {
         public override string ReadLine()
         {
-            return "";
+            return Interaction.InputBox("Read-Host", "Read-Host");
         }
 
         public override SecureString ReadLineAsSecureString()
