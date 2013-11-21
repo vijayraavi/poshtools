@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
@@ -8,9 +9,108 @@ using System.Windows.Documents;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using Microsoft.VisualStudio.Debugger.SampleEngine.Impl;
 
 namespace PowerShellTools.DebugEngine
 {
+
+    public class ScriptPropertyFactory
+    {
+        public static ScriptProperty MakeProperty(ScriptDebugger debugger, string name, object value)
+        {
+            var psObject = value as PSObject;
+
+            if (psObject != null && psObject.BaseObject is IEnumerable && !psObject.TypeNames.Contains("System.String"))
+            {
+                return new EnumerableScriptProperty(debugger, name, psObject.BaseObject);
+            }
+
+            if (psObject != null)
+            {
+                return new PSObjectScriptProperty(debugger, name, value);
+            }
+
+
+            if (value is IEnumerable && !(value is string))
+            {
+                return new EnumerableScriptProperty(debugger, name, value);
+            }
+
+            return new ScriptProperty(debugger, name, value);
+        }
+    }
+
+    public class EnumerableScriptProperty : ScriptProperty
+    {
+        private readonly IEnumerable _enumerable;
+
+        public EnumerableScriptProperty(ScriptDebugger debugger, string name, object value) : base(debugger, name, value)
+        {
+            if (!(value is IEnumerable))
+            {
+                throw new ArgumentException("Value must be of type IEnumerable.");
+            }
+
+            _enumerable = value as IEnumerable;
+        }
+
+        protected override IEnumerable<ScriptProperty> GetChildren()
+        {
+            int i = 0;
+            foreach (var item in _enumerable)
+            {
+                yield return ScriptPropertyFactory.MakeProperty(_debugger, String.Format("[{0}]", i), item);
+                i++;
+            }
+        }
+    }
+
+    public class PSObjectScriptProperty : ScriptProperty
+    {
+        private readonly PSObject _psObject;
+
+        public PSObjectScriptProperty(ScriptDebugger debugger, string name, object value) : base(debugger, name, value)
+        {
+            if (!(value is PSObject))
+            {
+                throw new ArgumentException("Value must be of type PSObject");
+            }
+
+
+            _psObject = value as PSObject;
+        }
+
+        protected override IEnumerable<ScriptProperty> GetChildren()
+        {
+            Runspace.DefaultRunspace = _debugger.Runspace;
+            var proeprties = new List<ScriptProperty>();
+            foreach (var prop in _psObject.Properties)
+            {
+                if (proeprties.Any(m => m.Name == prop.Name))
+                {
+                    continue;
+                }
+
+                object val;
+                try
+                {
+                    val = prop.Value;
+                }
+                catch
+                {
+                    val = "Failed to evaluate value.";
+                }
+
+                proeprties.Add(ScriptPropertyFactory.MakeProperty(_debugger, prop.Name, val));
+            }
+            return proeprties;
+        }
+
+        public override string TypeName
+        {
+            get { return _psObject.BaseObject.GetType().ToString(); }
+        }
+    }
 
     public class ScriptProperty : IDebugProperty2
     {
@@ -20,7 +120,15 @@ namespace PowerShellTools.DebugEngine
 
         public object Value { get; set; }
 
-        private readonly ScriptDebugger _debugger;
+        public virtual String TypeName
+        {
+            get
+            {
+                return Value == null ? String.Empty : Value.GetType().ToString();
+            }
+        }
+
+        protected readonly ScriptDebugger _debugger;
 
         public ScriptProperty(ScriptDebugger debugger, string name, object value)
         {
@@ -29,8 +137,6 @@ namespace PowerShellTools.DebugEngine
             Value = value;
             _debugger = debugger;
         }
-
-
 
         #region Implementation of IDebugProperty2
 
@@ -54,7 +160,7 @@ namespace PowerShellTools.DebugEngine
 
             if ((dwFields & enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_TYPE) != 0)
             {
-                pPropertyInfo[0].bstrType = Value == null ? String.Empty : Value.GetType().ToString();
+                pPropertyInfo[0].bstrType = TypeName;
                 pPropertyInfo[0].dwFields |= enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_TYPE;
             }
 
@@ -86,7 +192,7 @@ namespace PowerShellTools.DebugEngine
         {
             if (Value != null)
             {
-                var props = GetProperties();
+                var props = GetChildren();
                 ppEnum = new ScriptPropertyCollection(props.ToArray());
                 return VSConstants.S_OK;
             }
@@ -95,36 +201,10 @@ namespace PowerShellTools.DebugEngine
             return VSConstants.S_FALSE;
         }
 
-        private IEnumerable<ScriptProperty> GetProperties()
+        protected virtual IEnumerable<ScriptProperty> GetChildren()
         {
-            if (Value is PSObject)
-            {
-                Runspace.DefaultRunspace = _debugger.Runspace;
-                var proeprties = new List<ScriptProperty>();
-                foreach (var prop in (Value as PSObject).Properties)
-                {
-                    if (proeprties.Any(m => m.Name == prop.Name))
-                    {
-                        continue;
-                    }
-
-                    object val;
-                    try
-                    {
-                        val = prop.Value;
-                    }
-                    catch
-                    {
-                        val = "Failed to evaluate value.";
-                    }
-
-                    proeprties.Add(new ScriptProperty(_debugger, prop.Name, val));
-                }
-                return proeprties;
-            }
-
             var props = Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            return props.Select(propertyInfo => new ScriptProperty(_debugger , propertyInfo.Name, propertyInfo.GetValue(Value, null)));
+            return props.Select(propertyInfo => ScriptPropertyFactory.MakeProperty(_debugger , propertyInfo.Name, propertyInfo.GetValue(Value, null)));
         }
 
         public int GetParent(out IDebugProperty2 ppParent)
@@ -176,7 +256,7 @@ namespace PowerShellTools.DebugEngine
             foreach (var keyVal in debugger.Variables)
             {
                 var val = keyVal.Value != null ? keyVal.Value : null;
-                this.Add(new ScriptProperty(debugger, keyVal.Key, val));
+                this.Add(ScriptPropertyFactory.MakeProperty(debugger, keyVal.Key, val));
             }
         }
 

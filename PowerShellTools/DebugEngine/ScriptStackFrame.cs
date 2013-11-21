@@ -302,7 +302,7 @@ namespace PowerShellTools.DebugEngine
             out IDebugProperty2 ppResult)
         {
             Log.Debug("EvaluateSync");
-            ppResult = new ScriptProperty(_debugger, _name, _value);
+            ppResult = ScriptPropertyFactory.MakeProperty(_debugger, _name, _value);
             return VSConstants.S_OK;
         }
 
