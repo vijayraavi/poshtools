@@ -3,18 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using Microsoft.PowerShell;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using PowerShellTools.TestAdapter.Pester.ResultParser;
-using XmlTestAdapter;
 using TestCase = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase;
 using TestResult = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestResult;
 
 namespace PowerShellTools.TestAdapter.Pester
 {
-    [ExtensionUri(PesterTestExecutor.ExecutorUriString)]
+    [ExtensionUri(ExecutorUriString)]
     public class PesterTestExecutor : ITestExecutor
     {
         public void RunTests(IEnumerable<string> sources, IRunContext runContext,
@@ -73,11 +70,11 @@ namespace PowerShellTools.TestAdapter.Pester
         public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext,
                IFrameworkHandle frameworkHandle)
         {
-            m_cancelled = false;
+            _mCancelled = false;
 
             foreach (TestCase test in tests)
             {
-                if (m_cancelled) break;
+                if (_mCancelled) break;
 
                 var testResult = new TestResult(test);
                 testResult.Outcome = TestOutcome.Failed;
@@ -93,7 +90,7 @@ namespace PowerShellTools.TestAdapter.Pester
 
                         ps.Commands.Clear();
 
-                        FileInfo fi = new FileInfo(test.CodeFilePath);
+                        var fi = new FileInfo(test.CodeFilePath);
 
                         var tempFile = Path.GetTempFileName();
 
@@ -137,11 +134,11 @@ namespace PowerShellTools.TestAdapter.Pester
 
         public void Cancel()
         {
-            m_cancelled = true;
+            _mCancelled = true;
         }
 
         public const string ExecutorUriString = "executor://PesterTestExecutor/v1";
-        public static readonly Uri ExecutorUri = new Uri(PesterTestExecutor.ExecutorUriString);
-        private bool m_cancelled;
+        public static readonly Uri ExecutorUri = new Uri(ExecutorUriString);
+        private bool _mCancelled;
     }
 }
