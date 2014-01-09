@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Runtime.Remoting.Contexts;
 using System.Xml;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -34,8 +35,45 @@ namespace PowerShellTools.TestAdapter.Pester
 
                 foreach (CommandAst contextAst in testAsts)
                 {
-                    var nameAst = (StringConstantExpressionAst)contextAst.CommandElements[1];
-                    var contextName = nameAst.Value;
+                    contextAst.CommandElements.FirstOrDefault(
+                        m =>
+                            (m is CommandParameterAst) &&
+                            (m as CommandParameterAst).ParameterName.Equals("Name", StringComparison.OrdinalIgnoreCase));
+
+                    var contextName = String.Empty;
+                    bool nextElementIsName = false, lastElementWasTags = false;
+                    foreach (var element in contextAst.CommandElements)
+                    {
+                        if (!lastElementWasTags && 
+                            element is StringConstantExpressionAst && 
+                            !(element as StringConstantExpressionAst).Value.Equals("Describe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            contextName = (element as StringConstantExpressionAst).Value;
+                            break;
+                        }
+
+                        if (nextElementIsName && element is StringConstantExpressionAst)
+                        {
+                            contextName = (element as StringConstantExpressionAst).Value;
+                            break;
+                        }
+
+                        if (element is CommandParameterAst &&
+                           (element as CommandParameterAst).ParameterName.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                        {
+                            nextElementIsName = true;
+                        }
+
+                        if (element is CommandParameterAst &&
+                           (element as CommandParameterAst).ParameterName.Equals("Tags", StringComparison.OrdinalIgnoreCase))
+                        {
+                            lastElementWasTags = true;
+                        }
+                        else
+                        {
+                            lastElementWasTags = false;
+                        }
+                    }
 
                     var testcase = new TestCase(contextName, PesterTestExecutor.ExecutorUri, source)
                     {
