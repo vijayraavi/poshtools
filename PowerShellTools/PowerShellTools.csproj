@@ -548,7 +548,7 @@
     <Folder Include="Project\SharedProject\Debugger\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowerShellTools.TestAdapter.Pester\PowerShellTools.TestAdapter.csproj">
+    <ProjectReference Include="..\PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj">
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>
       <Name>PowerShellTools.TestAdapter</Name>
     </ProjectReference>
