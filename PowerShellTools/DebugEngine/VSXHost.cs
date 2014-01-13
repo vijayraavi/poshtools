@@ -9,7 +9,6 @@ using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-using System.Threading;
 using Microsoft.PowerShell;
 using Microsoft.VisualBasic;
 

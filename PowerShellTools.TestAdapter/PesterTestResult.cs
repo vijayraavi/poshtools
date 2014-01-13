@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
 using System.Text;
 using System.Xml.Linq;
 
-namespace PowerShellTools.TestAdapter.Pester
+namespace PowerShellTools.TestAdapter
 {
     /// <summary>
     /// Test results
@@ -20,9 +22,33 @@ namespace PowerShellTools.TestAdapter.Pester
         Error,
     }
 
-    class TestResultEx
+    class PowerShellTestResult
     {
-        public TestResultEx(string fileName)
+        public PowerShellTestResult(PSObject obj)
+        {
+            var variable = obj.BaseObject as PSVariable;
+            var hashTable = variable.Value as Hashtable;
+
+            hashTable = ((object[])hashTable["Cases"])[0] as Hashtable;
+            hashTable = ((object[])hashTable["Cases"])[0] as Hashtable;
+            hashTable = ((object[])hashTable["Cases"])[0] as Hashtable;
+
+            var result = hashTable["Result"] as String;
+            var exception = hashTable["Exception"] as ErrorRecord;
+            var stackTrace = ((object[]) hashTable["StackTrace"]);
+
+            StringBuilder sb = new StringBuilder();
+            foreach (var frame in stackTrace)
+            {
+                sb.Append(frame);
+            }
+
+            Passed = result != "Failure";
+            ErrorMessage = exception.ToString();
+            ErrorStacktrace = sb.ToString();
+        }
+
+        public PowerShellTestResult(string fileName)
         {
             using (var s = new FileStream(fileName, FileMode.Open))
             {

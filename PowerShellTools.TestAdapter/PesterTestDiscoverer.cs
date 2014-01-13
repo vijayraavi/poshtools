@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation.Language;
-using System.Runtime.Remoting.Contexts;
-using System.Xml;
-using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -35,11 +31,6 @@ namespace PowerShellTools.TestAdapter.Pester
 
                 foreach (CommandAst contextAst in testAsts)
                 {
-                    contextAst.CommandElements.FirstOrDefault(
-                        m =>
-                            (m is CommandParameterAst) &&
-                            (m as CommandParameterAst).ParameterName.Equals("Name", StringComparison.OrdinalIgnoreCase));
-
                     var contextName = String.Empty;
                     bool nextElementIsName = false, lastElementWasTags = false;
                     foreach (var element in contextAst.CommandElements)

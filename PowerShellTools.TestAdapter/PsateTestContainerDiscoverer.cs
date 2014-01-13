@@ -11,12 +11,12 @@ using XmlTestAdapter;
 using XmlTestAdapter.EventWatchers;
 using XmlTestAdapter.EventWatchers.EventArgs;
 
-namespace PowerShellTools.TestAdapter.Pester
+namespace PowerShellTools.TestAdapter
 {
     [Export(typeof(ITestContainerDiscoverer))]
-    public class PesterTestContainerDiscoverer : ITestContainerDiscoverer
+    public class PsateTestContainerDiscoverer : ITestContainerDiscoverer
     {
-        public const string ExecutorUriString = "executor://PesterTestExecutor/v1";
+        public const string ExecutorUriString = "executor://PsateTestExecutor/v1";
    
         public event EventHandler TestContainersUpdated;
         private IServiceProvider serviceProvider;
@@ -31,7 +31,7 @@ namespace PowerShellTools.TestAdapter.Pester
         public IEnumerable<ITestContainer> TestContainers   {get { return GetTestContainers(); }   }
 
         [ImportingConstructor]
-        public PesterTestContainerDiscoverer(
+        public PsateTestContainerDiscoverer(
             [Import(typeof(SVsServiceProvider))] IServiceProvider serviceProvider,
             ILogger logger,
             ISolutionEventsListener solutionListener,
@@ -146,7 +146,7 @@ namespace PowerShellTools.TestAdapter.Pester
             // If this is a test file
             if (isTestFile)
             {
-                var container = new PesterTestContainer(this, file, ExecutorUri);
+                var container = new PsateTestContainer(this, file, ExecutorUri);
                 cachedContainers.Add(container);
             }
         }

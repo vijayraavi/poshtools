@@ -548,11 +548,9 @@
     <Folder Include="Project\SharedProject\Debugger\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowerShellTools.TestAdapter.Pester\PowerShellTools.TestAdapter.Pester.csproj">
+    <ProjectReference Include="..\PowerShellTools.TestAdapter.Pester\PowerShellTools.TestAdapter.csproj">
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>
-      <Name>PowerShellTools.TestAdapter.Pester</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+      <Name>PowerShellTools.TestAdapter</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

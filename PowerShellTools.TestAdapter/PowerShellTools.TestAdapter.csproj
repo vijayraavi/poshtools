@@ -7,8 +7,8 @@
     <ProjectGuid>{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PowerShellTools.TestAdapter.Pester</RootNamespace>
-    <AssemblyName>PowerShellTools.TestAdapter.Pester</AssemblyName>
+    <RootNamespace>PowerShellTools.TestAdapter</RootNamespace>
+    <AssemblyName>PowerShellTools.TestAdapter</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -73,6 +73,11 @@
     <Compile Include="PesterTestDiscoverer.cs" />
     <Compile Include="PesterTestExecutor.cs" />
     <Compile Include="PesterTestResult.cs" />
+    <Compile Include="PsateTestContainer.cs" />
+    <Compile Include="PsateTestContainerDiscoverer.cs" />
+    <Compile Include="PsateTestDiscoverer.cs" />
+    <Compile Include="PsateTestExecutor.cs" />
+    <Compile Include="TestAdapterHost.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

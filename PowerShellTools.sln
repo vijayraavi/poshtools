@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools", "PowerShe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Test", "PowerShellTools.Test\PowerShellTools.Test.csproj", "{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.TestAdapter.Pester", "PowerShellTools.TestAdapter.Pester\PowerShellTools.TestAdapter.Pester.csproj", "{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.TestAdapter", "PowerShellTools.TestAdapter.Pester\PowerShellTools.TestAdapter.csproj", "{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

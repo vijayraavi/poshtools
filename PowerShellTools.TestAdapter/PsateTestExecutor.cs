@@ -1,24 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using Microsoft.PowerShell;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using TestCase = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase;
-using TestResult = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestResult;
 
-namespace PowerShellTools.TestAdapter.Pester
+namespace PowerShellTools.TestAdapter
 {
     [ExtensionUri(ExecutorUriString)]
-    public class PesterTestExecutor : ITestExecutor
+    public class PsateTestExecutor : ITestExecutor
     {
         public void RunTests(IEnumerable<string> sources, IRunContext runContext,
             IFrameworkHandle frameworkHandle)
         {
             SetupExecutionPolicy();
-            IEnumerable<TestCase> tests = PesterTestDiscoverer.GetTests(sources, null);
+            IEnumerable<TestCase> tests = PsateTestDiscoverer.GetTests(sources, null);
             RunTests(tests, runContext, frameworkHandle);
         }
 
@@ -80,29 +78,37 @@ namespace PowerShellTools.TestAdapter.Pester
                 testResult.Outcome = TestOutcome.Failed;
                 testResult.ErrorMessage = "Unexpected error! Failed to run tests!";
 
-                TestResultEx testResultData = null;
+                PowerShellTestResult testResultData = null;
                 try
                 {
+                    Runspace r = RunspaceFactory.CreateRunspace(new TestAdapterHost());
+                    r.Open();
+
                     using (var ps = PowerShell.Create())
                     {
-                        ps.AddCommand("Import-Module").AddParameter("Name", "Pester");
+                        ps.Runspace = r;
+
+                        ps.AddCommand("Import-Module").AddParameter("Name", "PSate");
                         ps.Invoke();
 
                         ps.Commands.Clear();
 
-                        var fi = new FileInfo(test.CodeFilePath);
+                        var nameParts = test.FullyQualifiedName.Split(',');
 
-                        var tempFile = Path.GetTempFileName();
-
-                        ps.AddCommand("Invoke-Pester")
-                            .AddParameter("relative_path", fi.Directory.FullName)
-                            .AddParameter("TestName", test.FullyQualifiedName)
-                            .AddParameter("OutputXml", tempFile);
+                        ps.AddCommand("Invoke-Tests")
+                            .AddParameter("Path", test.CodeFilePath)
+                            .AddParameter("Filter", nameParts)
+                            .AddParameter("Output", "Results")
+                            .AddParameter("ResultsVariable", "Results");
 
                         ps.Invoke();
 
-                        testResultData = new TestResultEx(tempFile);
-                        File.Delete(tempFile);
+                        ps.Commands.Clear();
+                        ps.AddCommand("Get-Variable").AddParameter("Name", "Results");
+
+                        var results = ps.Invoke<PSObject>();
+
+                        testResultData = new PowerShellTestResult(results.FirstOrDefault());
                     }
                 }
                 catch (Exception ex)
@@ -137,7 +143,7 @@ namespace PowerShellTools.TestAdapter.Pester
             _mCancelled = true;
         }
 
-        public const string ExecutorUriString = "executor://PesterTestExecutor/v1";
+        public const string ExecutorUriString = "executor://PsateTestExecutor/v1";
         public static readonly Uri ExecutorUri = new Uri(ExecutorUriString);
         private bool _mCancelled;
     }
