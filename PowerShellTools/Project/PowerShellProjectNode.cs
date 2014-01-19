@@ -54,7 +54,7 @@ namespace PowerShellTools.Project
 
         public override IProjectLauncher GetLauncher()
         {
-            return new PowerShellProjectLauncher();
+            return new PowerShellProjectLauncher(this);
         }
 
         protected override Stream ProjectIconsImageStripStream

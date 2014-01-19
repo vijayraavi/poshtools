@@ -14,6 +14,16 @@ namespace PowerShellTools.Project
     internal class PowerShellProjectLauncher : IProjectLauncher
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellProjectLauncher));
+        private readonly PowerShellProjectNode _project;
+
+        public PowerShellProjectLauncher(PowerShellProjectNode project)
+        {
+            _project = project;
+        }
+
+        public PowerShellProjectLauncher()
+        {
+        }
 
         public int LaunchProject(bool debug)
         {
@@ -29,14 +39,13 @@ namespace PowerShellTools.Project
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             if (dte2 != null)
             {
-                dte2.ActiveDocument.ProjectItem.ContainingProject.Properties.Item(ProjectConstants.DebugArguments);
                 script = dte2.ActiveDocument.FullName;
             }
 
 
             info.bstrExe = script;
             info.bstrCurDir = Path.GetDirectoryName(info.bstrExe);
-            info.bstrArg = args; 
+            info.bstrArg = _project.GetUnevaluatedProperty(ProjectConstants.DebugArguments); 
             info.bstrRemoteMachine = null; // debug locally
             info.fSendStdoutToOutputWindow = 0; // Let stdout stay with the application.
             info.clsidCustom = new Guid("{43ACAB74-8226-4920-B489-BFCF05372437}");
@@ -149,7 +158,12 @@ namespace PowerShellTools.Project
 
             info.bstrExe = file;
             info.bstrCurDir = Path.GetDirectoryName(info.bstrExe);
-            info.bstrArg = null; // no command line parameters
+
+            if (_project != null)
+            {
+                info.bstrArg = _project.GetUnevaluatedProperty(ProjectConstants.DebugArguments);    
+            }
+            
             info.bstrRemoteMachine = null; // debug locally
             info.fSendStdoutToOutputWindow = 0; // Let stdout stay with the application.
             info.clsidCustom = new Guid("{43ACAB74-8226-4920-B489-BFCF05372437}");
