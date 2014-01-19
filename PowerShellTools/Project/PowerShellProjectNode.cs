@@ -13,6 +13,7 @@ namespace PowerShellTools.Project
             : base(package, Utilities.GetImageList(typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.ProjectIcon.bmp")))
         {
             _package = package;
+            AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
             AddCATIDMapping(typeof (PowerShellModulePropertyPage), typeof (PowerShellModulePropertyPage).GUID);
         }
 
@@ -43,7 +44,7 @@ namespace PowerShellTools.Project
 
         protected override Guid[] GetConfigurationIndependentPropertyPages()
         {
-            return new[] { typeof(PowerShellGeneralPropertyPage).GUID, typeof(PowerShellModulePropertyPage).GUID };
+            return new[] { typeof(PowerShellGeneralPropertyPage).GUID, typeof(PowerShellDebugPropertyPage).GUID, typeof(PowerShellModulePropertyPage).GUID };
         }
 
         public override Type GetLibraryManagerType()

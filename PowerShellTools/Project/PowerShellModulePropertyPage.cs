@@ -51,6 +51,7 @@ namespace PowerShellTools.Project
 
         public override void LoadSettings()
         {
+            _control.LoadingSettings = true;
             _control.ManifestFileName = Project.GetProjectProperty("ManifestFileName");
 
             _control.AliasesToExport = Project.GetProjectProperty("AliasesToExport", true);
@@ -77,6 +78,7 @@ namespace PowerShellTools.Project
             _control.ScriptsToProcess = Project.GetProjectProperty("ScriptsToProcess", true);
             _control.TypesToProcess = Project.GetProjectProperty("TypesToProcess", true);
             _control.VariablesToExport = Project.GetProjectProperty("VariablesToExport", true);
+            _control.LoadingSettings = false;
         }
 
         public override string Name

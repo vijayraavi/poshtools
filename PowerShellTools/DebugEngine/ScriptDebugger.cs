@@ -275,6 +275,9 @@ namespace PowerShellTools.DebugEngine
                     if (node.IsFile)
                     {
                         _currentPowerShell.AddCommand(node.FileName);
+
+                        if (!String.IsNullOrEmpty(node.Arguments))
+                            _currentPowerShell.AddArgument(node.Arguments);
                     }
                     else
                     {

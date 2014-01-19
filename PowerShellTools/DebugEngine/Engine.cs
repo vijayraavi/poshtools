@@ -341,7 +341,8 @@ namespace PowerShellTools.DebugEngine
             else
             {
                 _node.IsFile = true;
-                _node.FileName = pszExe;    
+                _node.FileName = pszExe;
+                _node.Arguments = pszArgs;
             }
             
 

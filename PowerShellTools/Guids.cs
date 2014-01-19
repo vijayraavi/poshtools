@@ -12,6 +12,7 @@ namespace PowerShellTools
         public const string PowerShellToolsProjectPackageGuid = "2F99237E-E34F-4A3D-A337-500E4B3167B8";
         public const string PowerShellGeneralPropertiesPageGuid = "C9619BDD-D1B3-4ACA-ADF3-2323EB62315E";
         public const string PowerShellModulePropertiesPageGuid = "C9619BDD-D1B3-4ACA-ADF3-2323EB623154";
+        public const string PowerShellDebugPropertiesPageGuid = "E6C81F79-910C-4C91-B9DF-321883DC9F44";
         public const string CmdSetGuid = "099073C0-B561-4BC1-A847-92657B89A00E";
         public const uint CmdidExecuteAsScript =  0x0102;
         public const uint CmdidExecuteSelection = 0x0103;

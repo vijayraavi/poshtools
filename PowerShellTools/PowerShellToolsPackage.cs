@@ -49,6 +49,7 @@ namespace PowerShellTools
     [Guid(GuidList.PowerShellToolsPackageGuid)]
     [ProvideObject(typeof (PowerShellGeneralPropertyPage))]
     [ProvideObject(typeof (PowerShellModulePropertyPage))]
+    [ProvideObject(typeof(PowerShellDebugPropertyPage))]
     [Microsoft.VisualStudio.Shell.ProvideDebugEngine("{43ACAB74-8226-4920-B489-BFCF05372437}", "PowerShell",
         PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}",
         ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true,

@@ -25,17 +25,18 @@ namespace PowerShellTools.Project
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
 
-            string script = "";
+            string script = String.Empty, args = String.Empty;
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             if (dte2 != null)
             {
+                dte2.ActiveDocument.ProjectItem.ContainingProject.Properties.Item(ProjectConstants.DebugArguments);
                 script = dte2.ActiveDocument.FullName;
             }
 
 
             info.bstrExe = script;
             info.bstrCurDir = Path.GetDirectoryName(info.bstrExe);
-            info.bstrArg = null; // no command line parameters
+            info.bstrArg = args; 
             info.bstrRemoteMachine = null; // debug locally
             info.fSendStdoutToOutputWindow = 0; // Let stdout stay with the application.
             info.clsidCustom = new Guid("{43ACAB74-8226-4920-B489-BFCF05372437}");

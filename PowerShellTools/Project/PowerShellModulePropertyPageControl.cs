@@ -8,6 +8,8 @@ namespace PowerShellTools.Project
     {
         private readonly CommonPropertyPage _page;
 
+        public bool LoadingSettings { get; set; }
+
         public PowerShellModulePropertyPageControl(CommonPropertyPage propertyPage)
         {
             InitializeComponent();
@@ -39,7 +41,8 @@ namespace PowerShellTools.Project
 
         void Changed(object sender, EventArgs e)
         {
-            _page.IsDirty = true;
+            if (!LoadingSettings)
+                _page.IsDirty = true;
         }
 
         public string ManifestFileName

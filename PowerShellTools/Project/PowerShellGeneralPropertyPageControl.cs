@@ -7,6 +7,8 @@ namespace PowerShellTools.Project
     public partial class PowerShellGeneralPropertyPageControl : UserControl
     {
         private readonly CommonPropertyPage _page;
+        
+        public bool LoadingSettings { get; set; }
 
         public PowerShellGeneralPropertyPageControl(CommonPropertyPage page)
         {
@@ -20,7 +22,8 @@ namespace PowerShellTools.Project
 
         void Changed(object sender, EventArgs e)
         {
-            _page.IsDirty = true;
+            if (!LoadingSettings)
+                _page.IsDirty = true;
         }
 
         private void chkSignOutput_CheckedChanged(object sender, EventArgs e)

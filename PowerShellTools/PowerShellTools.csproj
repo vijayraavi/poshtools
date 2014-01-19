@@ -248,6 +248,13 @@
     <Compile Include="Classification\PowerShellEditorFactory.cs" />
     <Compile Include="Project\LocDisplayNameAttribute.cs" />
     <Compile Include="Project\PowerShellConfigProvider.cs" />
+    <Compile Include="Project\PowerShellDebugPropertyPage.cs" />
+    <Compile Include="Project\PowerShellDebugPropertyPageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Project\PowerShellDebugPropertyPageControl.Designer.cs">
+      <DependentUpon>PowerShellDebugPropertyPageControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\PowerShellFileNode.cs" />
     <Compile Include="Project\PowerShellGeneralPropertyPageControl.cs">
       <SubType>UserControl</SubType>
@@ -437,6 +444,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DebugEngine\ResourceStrings.resx" />
+    <EmbeddedResource Include="Project\PowerShellDebugPropertyPageControl.resx">
+      <DependentUpon>PowerShellDebugPropertyPageControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Project\PowerShellGeneralPropertyPageControl.resx">
       <DependentUpon>PowerShellGeneralPropertyPageControl.cs</DependentUpon>
     </EmbeddedResource>
