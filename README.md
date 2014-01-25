@@ -3,7 +3,7 @@ PowerShell Tools for Visual Studio
 
 PowerShell integration for Visual Studio 2012 and 2013. 
 
-More information on <a href="http://csharpening.net/?p=1697">Adam Driscoll's blog</a>.
+More information on <a href="http://csharpening.net/?p=1697">Adam Driscoll's blog</a>. To download the VSIX, please visit the <a href="http://visualstudiogallery.msdn.microsoft.com/c9eb3ba8-0c59-4944-9a62-6eee37294597">Visual Studio Gallery</a>. 
 
 PowerShell Tools for Visual Studio currently offers the following features. 
 
