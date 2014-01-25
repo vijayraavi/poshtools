@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
+using System.Net.Mime;
 using System.Text;
 using System.Xml.Linq;
 
@@ -24,28 +25,31 @@ namespace PowerShellTools.TestAdapter
 
     class PowerShellTestResult
     {
-        public PowerShellTestResult(PSObject obj)
+        public PowerShellTestResult(PSObject obj, string textFixtureName, string testCaseName)
         {
             var variable = obj.BaseObject as PSVariable;
             var hashTable = variable.Value as Hashtable;
 
-            hashTable = ((object[])hashTable["Cases"])[0] as Hashtable;
-            hashTable = ((object[])hashTable["Cases"])[0] as Hashtable;
-            hashTable = ((object[])hashTable["Cases"])[0] as Hashtable;
+            hashTable = ((object[]) hashTable["Cases"])[0] as Hashtable; //File
+            hashTable = ((object[])hashTable["Cases"]).FirstOrDefault(m => ((Hashtable)m)["Name"].ToString() == textFixtureName) as Hashtable; // TextFixture
+            hashTable = ((object[])hashTable["Cases"]).FirstOrDefault(m => ((Hashtable)m)["Name"].ToString() == testCaseName) as Hashtable; // TestCase
 
             var result = hashTable["Result"] as String;
             var exception = hashTable["Exception"] as ErrorRecord;
             var stackTrace = ((object[]) hashTable["StackTrace"]);
 
-            StringBuilder sb = new StringBuilder();
-            foreach (var frame in stackTrace)
+            if (result == "Failure")
             {
-                sb.Append(frame);
+                var sb = new StringBuilder();
+                foreach (var frame in stackTrace)
+                {
+                    sb.Append(frame);
+                }
+                ErrorMessage = exception.ToString();
+                ErrorStacktrace = sb.ToString();
             }
 
             Passed = result != "Failure";
-            ErrorMessage = exception.ToString();
-            ErrorStacktrace = sb.ToString();
         }
 
         public PowerShellTestResult(string fileName)

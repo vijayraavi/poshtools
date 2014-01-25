@@ -32,46 +32,11 @@ namespace PowerShellTools.TestAdapter
                 {
                     var testCaseAsts = testFixtureAst.FindAll(m => (m is CommandAst) && (m as CommandAst).GetCommandName() == "TestCase", true);
 
+                    var textFixtureName = GetTestFixtureName(testFixtureAst);
+
                     foreach (CommandAst contextAst in testCaseAsts)
                     {
-                        var contextName = String.Empty;
-                        var displayName = String.Empty;
-                        bool nextElementIsName = false;
-                        foreach (var element in contextAst.CommandElements)
-                        {
-                            if (
-                                element is StringConstantExpressionAst &&
-                                !(element as StringConstantExpressionAst).Value.Equals("TestCase", StringComparison.OrdinalIgnoreCase) &&
-                                !(element as StringConstantExpressionAst).Value.Equals("Name", StringComparison.OrdinalIgnoreCase) &&
-                                !(element as StringConstantExpressionAst).Value.Equals("ScriptBlock", StringComparison.OrdinalIgnoreCase))
-                            {
-                                contextName = String.Format("{0},{1}", testFixtureAst.GetCommandName(), (element as StringConstantExpressionAst).Value);
-                                displayName = (element as StringConstantExpressionAst).Value;
-                                break;
-                            }
-
-                            if (nextElementIsName && element is StringConstantExpressionAst)
-                            {
-                                contextName = String.Format("{0},{1}", testFixtureAst.GetCommandName(), (element as StringConstantExpressionAst).Value);
-                                displayName = (element as StringConstantExpressionAst).Value;
-                                break;
-                            }
-
-                            if (element is CommandParameterAst &&
-                               (element as CommandParameterAst).ParameterName.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                            {
-                                nextElementIsName = true;
-                            }
-                        }
-
-                        var testcase = new TestCase(contextName, PsateTestExecutor.ExecutorUri, source)
-                        {
-                            CodeFilePath = source,
-                            DisplayName = displayName
-                            
-                        };
-
-                        testcase.LineNumber = contextAst.Extent.StartLineNumber;
+                        var testcase = GetTestCase(contextAst, textFixtureName, source);
 
 
                         if (discoverySink != null)
@@ -82,10 +47,78 @@ namespace PowerShellTools.TestAdapter
                         tests.Add(testcase);
                     }
                 }
-
-                
             }
             return tests;
+        }
+
+        private static string GetTestFixtureName(CommandAst testFixtureAst)
+        {
+            bool nextElementIsName = false;
+            foreach (var element in testFixtureAst.CommandElements)
+            {
+                if (
+                    element is StringConstantExpressionAst &&
+                    !(element as StringConstantExpressionAst).Value.Equals("TestFixture", StringComparison.OrdinalIgnoreCase) &&
+                    !(element as StringConstantExpressionAst).Value.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    return (element as StringConstantExpressionAst).Value;        
+                }
+
+                if (nextElementIsName && element is StringConstantExpressionAst)
+                {
+                    return (element as StringConstantExpressionAst).Value;
+                }
+
+                if (element is CommandParameterAst &&
+                    (element as CommandParameterAst).ParameterName.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    nextElementIsName = true;
+                }
+            }
+
+            throw new Exception("Failed to find test fixture name!");
+        }
+
+        private static TestCase GetTestCase(CommandAst contextAst, string textFixtureName, string source)
+        {
+            var contextName = String.Empty;
+            var displayName = String.Empty;
+            bool nextElementIsName = false;
+            foreach (var element in contextAst.CommandElements)
+            {
+                if (
+                    element is StringConstantExpressionAst &&
+                    !(element as StringConstantExpressionAst).Value.Equals("TestCase", StringComparison.OrdinalIgnoreCase) &&
+                    !(element as StringConstantExpressionAst).Value.Equals("Name", StringComparison.OrdinalIgnoreCase) &&
+                    !(element as StringConstantExpressionAst).Value.Equals("ScriptBlock", StringComparison.OrdinalIgnoreCase))
+                {
+                    contextName = String.Format("{0},{1}", textFixtureName, (element as StringConstantExpressionAst).Value);
+                    displayName = (element as StringConstantExpressionAst).Value;
+                    break;
+                }
+
+                if (nextElementIsName && element is StringConstantExpressionAst)
+                {
+                    contextName = String.Format("{0},{1}", textFixtureName, (element as StringConstantExpressionAst).Value);
+                    displayName = (element as StringConstantExpressionAst).Value;
+                    break;
+                }
+
+                if (element is CommandParameterAst &&
+                    (element as CommandParameterAst).ParameterName.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    nextElementIsName = true;
+                }
+            }
+
+            var testcase = new TestCase(contextName, PsateTestExecutor.ExecutorUri, source)
+            {
+                CodeFilePath = source,
+                DisplayName = displayName,
+                LineNumber = contextAst.Extent.StartLineNumber
+            };
+
+            return testcase;
         }
     }
 }
