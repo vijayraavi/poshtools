@@ -45,6 +45,10 @@ PowerShell Tools for Visual Studio currently offers the following features.
 
 <img src="http://i.imgur.com/qa0iG0a.png"/>
 
+<h3>Data Tips</h3>
+
+<img src="http://i.imgur.com/BSmR7lE.png"/>
+
 <h2>Testing</h2>
 
 <h3><a href="https://github.com/pester/Pester">Pester</a> and <a href="https://github.com/jonwagner/PSate">PSate</a> Test Adapters</h3>
