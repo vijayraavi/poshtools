@@ -33,6 +33,7 @@ namespace PowerShellTools.DebugEngine
         public event EventHandler<BreakpointUpdatedEventArgs> BreakpointUpdated;
         public event EventHandler<EventArgs<string>> OutputString;
         public event EventHandler DebuggingFinished;
+        public event EventHandler<EventArgs<Exception>> TerminatingException;
 
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
 
@@ -299,6 +300,7 @@ namespace PowerShellTools.DebugEngine
                 {
                     OutputString(this, new EventArgs<string>("Error: " + ex.Message + Environment.NewLine));
                 }
+                OnTerminatingException(ex);
             }
             finally
             {
@@ -375,6 +377,18 @@ namespace PowerShellTools.DebugEngine
                 {
                     _callstack.Add(new ScriptStackFrame(CurrentExecutingNode, frame));
                 }
+            }
+        }
+
+        private void OnTerminatingException(Exception ex)
+        {
+            Log.Debug("OnTerminatingException");
+            _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+            _runspace.StateChanged -= _runspace_StateChanged;
+            if (TerminatingException != null)
+            {
+                TerminatingException(this, new EventArgs<Exception>(ex));
             }
         }
 

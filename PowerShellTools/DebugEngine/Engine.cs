@@ -8,11 +8,14 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
+using EnvDTE80;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using PowerShellTools.DebugEngine.Definitions;
+using Task = System.Threading.Tasks.Task;
 using Thread = System.Threading.Thread;
 
 #endregion
@@ -92,11 +95,28 @@ namespace PowerShellTools.DebugEngine
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
             Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
             Debugger.DebuggerPaused += Debugger_DebuggerPaused;
+            Debugger.TerminatingException += Debugger_TerminatingException;
             _node.Debugger = Debugger;
 
             _initializingRunspace = false;
 
             Debugger.Execute(_node);
+        }
+
+        void Debugger_TerminatingException(object sender, EventArgs<Exception> e)
+        {
+            if (e.Value is RuntimeException)
+            {
+                var re = e.Value as RuntimeException;
+                var scriptLocation = new ScriptLocation();
+                scriptLocation.Column = 0;
+                scriptLocation.File = re.ErrorRecord.InvocationInfo.ScriptName;
+                scriptLocation.Line = re.ErrorRecord.InvocationInfo.ScriptLineNumber;
+
+                //_events.Break(_node);
+            }
+
+            _events.Exception(_node, e.Value);
         }
 
         void Debugger_OutputString(object sender, EventArgs<string> e)

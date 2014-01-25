@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using EnvDTE;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -28,7 +31,7 @@ namespace PowerShellTools.DebugEngine
         void ProgramDestroyed(IDebugProgram2 program);
         void OutputString(string str);
         void Break(ScriptProgramNode program);
-        void Exception(ScriptProgramNode program);
+        void Exception(ScriptProgramNode program, Exception ex);
         void Breakpoint(ScriptProgramNode program, ScriptBreakpoint breakpoint);
         void BreakpointHit(ScriptBreakpoint breakpoint, ScriptProgramNode node);
     }
@@ -129,11 +132,11 @@ namespace PowerShellTools.DebugEngine
             _callback.Event(_engine, null, program, program, new BreakEvent(), ref iid, BreakEvent.Attributes);
         }
 
-        public void Exception(ScriptProgramNode program)
+        public void Exception(ScriptProgramNode program, Exception ex)
         {
             Log.Debug("Exception");
             var iid = new Guid(ExceptionEvent.IID);
-            _callback.Event(_engine, null, program, program, new ExceptionEvent(program), ref iid, ExceptionEvent.Attributes);
+            _callback.Event(_engine, null, program, program, new ExceptionEvent(program, ex), ref iid, ExceptionEvent.Attributes);
         }
 
         public void Breakpoint(ScriptProgramNode program, ScriptBreakpoint breakpoint)
@@ -388,11 +391,13 @@ namespace PowerShellTools.DebugEngine
     {
         public const string IID = "51a94113-8788-4a54-ae15-08b74ff922d0";
 
-        private IDebugProgram2 _program;
+        private readonly IDebugProgram2 _program;
+        private readonly Exception _exception;
 
-        public ExceptionEvent(IDebugProgram2 program)
+        public ExceptionEvent(IDebugProgram2 program, Exception ex)
         {
             _program = program;
+            _exception = ex;
         }
 
         #region Implementation of IDebugExceptionEvent2
@@ -400,12 +405,29 @@ namespace PowerShellTools.DebugEngine
         public int GetException(EXCEPTION_INFO[] pExceptionInfo)
         {
             pExceptionInfo[0].pProgram = _program;
+            pExceptionInfo[0].bstrExceptionName = _exception.GetType().ToString();
+            pExceptionInfo[0].dwState = enum_EXCEPTION_STATE.EXCEPTION_CANNOT_BE_CONTINUED | enum_EXCEPTION_STATE.EXCEPTION_STOP_SECOND_CHANCE;
+            pExceptionInfo[0].guidType = new Guid(GuidList.PowerShellLanguage);
+
+            string name;
+            _program.GetName(out name);
+
+            pExceptionInfo[0].bstrProgramName = name;
+
             return VSConstants.S_OK;
         }
 
         public int GetExceptionDescription(out string pbstrDescription)
         {
-            pbstrDescription = String.Empty;
+            pbstrDescription = _exception.Message;
+
+            if (_exception is RuntimeException)
+            {
+                var runtimeException = _exception as RuntimeException;
+                pbstrDescription += Environment.NewLine;
+                pbstrDescription += runtimeException.ErrorRecord.ScriptStackTrace;
+            }
+
             return VSConstants.S_OK;
         }
 

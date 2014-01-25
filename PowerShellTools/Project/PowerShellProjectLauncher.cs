@@ -45,7 +45,16 @@ namespace PowerShellTools.Project
 
             info.bstrExe = script;
             info.bstrCurDir = Path.GetDirectoryName(info.bstrExe);
-            info.bstrArg = _project.GetUnevaluatedProperty(ProjectConstants.DebugArguments); 
+
+            try
+            {
+                info.bstrArg = _project.GetUnevaluatedProperty(ProjectConstants.DebugArguments);
+            }
+            catch
+            {
+                info.bstrArg = null;
+            }
+
             info.bstrRemoteMachine = null; // debug locally
             info.fSendStdoutToOutputWindow = 0; // Let stdout stay with the application.
             info.clsidCustom = new Guid("{43ACAB74-8226-4920-B489-BFCF05372437}");
@@ -161,7 +170,14 @@ namespace PowerShellTools.Project
 
             if (_project != null)
             {
-                info.bstrArg = _project.GetUnevaluatedProperty(ProjectConstants.DebugArguments);    
+                try
+                {
+                    info.bstrArg = _project.GetUnevaluatedProperty(ProjectConstants.DebugArguments);
+                }
+                catch
+                {
+                    info.bstrArg = null;
+                }
             }
             
             info.bstrRemoteMachine = null; // debug locally
