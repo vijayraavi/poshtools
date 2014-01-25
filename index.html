@@ -18,12 +18,17 @@
 
   </head>
   <body>
+  	  <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" name="paypal">
+			  <input type="hidden" name="cmd" value="_s-xclick">
+			  <input type="hidden" name="hosted_button_id" value="2XL93PX3R3TJL">
+			</form>
+  
       <div id="header">
         <nav>
           <li class="fork"><a href="https://github.com/adamdriscoll/poshtools">View On GitHub</a></li>
+          <li class="downloads"><a href="#" onclick="document.forms['paypal'].submit(); return false;">Donate</a></li>
           <li class="downloads"><a href="https://github.com/adamdriscoll/poshtools/zipball/master">ZIP</a></li>
           <li class="downloads"><a href="https://github.com/adamdriscoll/poshtools/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
         </nav>
       </div><!-- end header -->
 
