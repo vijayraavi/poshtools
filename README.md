@@ -11,41 +11,43 @@ PowerShell Tools for Visual Studio currently offers the following features.
 
 <h3>Syntax Highlighting with customizable fonts and colors</h3>
 
-<img src="http://csharpening.net/wp-content/uploads/2013/07/syntax.png"/>
+<img src="http://i.imgur.com/1B6Xxfx.png"/>
 
-<img src="http://csharpening.net/wp-content/uploads/2013/07/fontandcolors.png"/>
+<h3>IntelliSense for variables, cmdlets and arguments</h3>
+
+<img src="http://i.imgur.com/UDJdql2.png"/>
 
 <h2>Project System</h2>
 
 <h3>PowerShell Project Template</h3>
 
-<img src="http://csharpening.net/wp-content/uploads/2013/07/projects.png"/>
+<img src="http://i.imgur.com/F7Do3ad.png"/>
 
 <h3>PowerShell MSBuild Project Options</h3>
 
-<img src="http://csharpening.net/wp-content/uploads/2013/07/projprops.png"/>
+<img src="http://i.imgur.com/MipNS6T.png"/>
 
 <h2>Debugging</h2>
 
 <h3>Breakpoint and Breakpoint Pane Support</h3>
 
-<img src="http://csharpening.net/wp-content/uploads/2013/07/breakpoints.png"/>
+<img src="http://i.imgur.com/hyG4766.png"/>
 
 <h3>Stepping</h3>
 
-<img src="http://csharpening.net/wp-content/uploads/2013/07/stepping.png"/>
+<img src="http://i.imgur.com/zUr20Ke.png"/>
 
 <h3>Locals Support</h3>
 
-<img src="http://csharpening.net/wp-content/uploads/2013/07/locals.png"/>
+<img src="http://i.imgur.com/4vKQ4CG.png"/>
 
 <h3>Call Stack Support</h3>
 
-<img src="http://csharpening.net/wp-content/uploads/2013/07/callstack.png"/>
+<img src="http://i.imgur.com/qa0iG0a.png"/>
 
-The following features are still in development.
+<h2>Testing</h2>
 
-* Command Pane
-* Watch Pane
-* Error Pane
-* Snippet Support
+<h3><a href="https://github.com/pester/Pester">Pester</a> and <a href="https://github.com/jonwagner/PSate">PSate</a> Test Adapters</h3>
+
+<img src="http://i.imgur.com/eAXaKHV.png"/>
+
