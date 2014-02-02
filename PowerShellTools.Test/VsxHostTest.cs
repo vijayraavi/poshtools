@@ -1,6 +1,5 @@
 ﻿using System.Management.Automation.Runspaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Test

@@ -56,13 +56,13 @@ namespace PowerShellTools.Intellisense
                    
                    if (match.ResultType == CompletionResultType.ParameterName)
                    {
-                       completionText = match.CompletionText.Remove(0, 1);
+                       completionText = match.CompletionText.Remove(0, 1) + " ";
                        displayText = completionText;
                        glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupProperty, StandardGlyphItem.GlyphItemPublic);
                    }
                     if (match.ResultType == CompletionResultType.Command && match.CompletionText.Contains("-"))
                     {
-                        completionText = completionText.Split('-')[1];
+                        completionText = completionText.Split('-')[1] + " ";
                         displayText = completionText;
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupMethod, StandardGlyphItem.GlyphItemPublic);
                     }
@@ -81,7 +81,7 @@ namespace PowerShellTools.Intellisense
                     }
                     if (match.ResultType == CompletionResultType.Variable)
                     {
-                        completionText = completionText.Remove(0, 1);
+                        completionText = completionText.Remove(0, 1) + " ";
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupField, StandardGlyphItem.GlyphItemPublic);
                     }
                    

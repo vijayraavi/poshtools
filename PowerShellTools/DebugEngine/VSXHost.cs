@@ -178,7 +178,13 @@ namespace PowerShellTools.DebugEngine
             
         }
 
-        public bool IsRunspacePushed { get; private set; }
+        public bool IsRunspacePushed
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         public Runspace Runspace
         {

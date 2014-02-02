@@ -82,6 +82,7 @@ namespace PowerShellTools.Intellisense
                     {
                         Log.Debug("Commit");
                         _activeSession.Commit();
+
                         //also, don't add the character to the buffer 
                         return VSConstants.S_OK;
                     }

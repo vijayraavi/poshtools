@@ -4,7 +4,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
-using System.Windows.Threading;
 using log4net;
 
 namespace PowerShellTools.DebugEngine
