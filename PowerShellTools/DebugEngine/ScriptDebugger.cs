@@ -271,19 +271,16 @@ namespace PowerShellTools.DebugEngine
             {
                 using (_currentPowerShell = PowerShell.Create())
                 {
-                    _currentPowerShell.Runspace = _runspace;
+                    string commandLine = node.FileName;
 
                     if (node.IsFile)
                     {
-                        _currentPowerShell.AddCommand(node.FileName);
-
-                        if (!String.IsNullOrEmpty(node.Arguments))
-                            _currentPowerShell.AddArgument(node.Arguments);
+                        commandLine = String.Format("& '{0}' {1}", node.FileName, node.Arguments);    
                     }
-                    else
-                    {
-                        _currentPowerShell.AddScript(node.FileName);
-                    }
+                    
+                    _currentPowerShell.Runspace = _runspace;
+                    _currentPowerShell.AddScript(commandLine);
+                    
                     _currentPowerShell.AddCommand("out-default");
                     _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
 
@@ -462,7 +459,7 @@ namespace PowerShellTools.DebugEngine
 
                 if (psVar != null)
                 {
-                    return psVar;
+                    return psVar.Value;
                 }
             }
 
