@@ -193,6 +193,7 @@
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
     <Compile Include="Commands\GotoDefinitionCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\PrettyPrintCommand.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
     <Compile Include="DebugEngine\Definitions\Enums.cs" />
     <Compile Include="DebugEngine\Definitions\Guids.cs" />
@@ -206,6 +207,7 @@
     <Compile Include="DebugEngine\PendingBreakpoint.cs" />
     <Compile Include="DebugEngine\PInvoke.cs" />
     <Compile Include="DebugEngine\PrivateReflectionDynamicObject.cs" />
+    <Compile Include="DebugEngine\Profiler.cs" />
     <Compile Include="DebugEngine\ResourceStrings.Designer.cs" />
     <Compile Include="DebugEngine\ScirptProgramNode.cs" />
     <Compile Include="DebugEngine\Script.cs" />
@@ -499,6 +501,10 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="ItemTemplates\PowerShell Script Data File.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="PrettyPrint.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>

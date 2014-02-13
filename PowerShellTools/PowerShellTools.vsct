@@ -52,6 +52,17 @@
           <ButtonText>Execute selection</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidPoshToolsCmdSet" id="cmdidPrettyPrint"
+        priority="0x0100" type="Button">
+        <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <LocCanonicalName>PowerShell.FormatScript</LocCanonicalName>
+          <CanonicalName>PowerShell.FormatScript</CanonicalName>
+          <ButtonText>Reformat Script</ButtonText>
+        </Strings>
+      </Button>
       <!--<Button guid="guidPoshToolsCmdSet" id="cmdidGotoDefinition"
         priority="0x0100" type="Button">
         <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
@@ -106,6 +117,7 @@
       <IDSymbol name="cmdidExecuteSelection" value="0x0103"/>
       <IDSymbol name="cmdidGotoDefinition" value="0x0104"/>
       <IDSymbol name="cmdidSnippet" value="0x0105"/>
+      <IDSymbol name="cmdidPrettyPrint" value="0x0106"/>
       <!--Groups-->
       <IDSymbol name="grpidPoshToolsGroup" value="0x01001"/>
     </GuidSymbol>

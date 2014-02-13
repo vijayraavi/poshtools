@@ -173,10 +173,10 @@ namespace PowerShellTools
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            _gotoDefinitionCommand = new GotoDefinitionCommand();
-            RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand(), _gotoDefinitionCommand);
-
             InitializePowerShellHost();
+
+            _gotoDefinitionCommand = new GotoDefinitionCommand();
+            RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand(), _gotoDefinitionCommand, new PrettyPrintCommand(Host.Runspace));
         }
 
         void _visualStudioEvents_SettingsChanged(object sender, DialogPage e)

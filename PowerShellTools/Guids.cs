@@ -18,5 +18,6 @@ namespace PowerShellTools
         public const uint CmdidExecuteSelection = 0x0103;
         public const uint CmdidGotoDefinition = 0x0104;
         public const uint CmdidSnippet = 0x0105;
+        public const uint CmdidPrettyPrint = 0x0106;
     };
 }
