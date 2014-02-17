@@ -19,8 +19,8 @@ namespace PowerShellTools.TestAdapter
 
         public static List<TestCase> GetTests(IEnumerable<string> sources, ITestCaseDiscoverySink discoverySink)
         {
-            List<TestCase> tests = new List<TestCase>();
-            foreach (string source in sources)
+            var tests = new List<TestCase>();
+            foreach (var source in sources)
             {
                 Token[] tokens;
                 ParseError[] errors;
@@ -32,20 +32,28 @@ namespace PowerShellTools.TestAdapter
                 {
                     var testCaseAsts = testFixtureAst.FindAll(m => (m is CommandAst) && (m as CommandAst).GetCommandName() == "TestCase", true);
 
-                    var textFixtureName = GetTestFixtureName(testFixtureAst);
-
-                    foreach (CommandAst contextAst in testCaseAsts)
+                    try
                     {
-                        var testcase = GetTestCase(contextAst, textFixtureName, source);
+                        var textFixtureName = GetTestFixtureName(testFixtureAst);
 
-
-                        if (discoverySink != null)
+                        foreach (CommandAst contextAst in testCaseAsts)
                         {
-                            discoverySink.SendTestCase(testcase);
-                        }
+                            var testcase = GetTestCase(contextAst, textFixtureName, source);
 
-                        tests.Add(testcase);
+
+                            if (discoverySink != null)
+                            {
+                                discoverySink.SendTestCase(testcase);
+                            }
+
+                            tests.Add(testcase);
+                        }
                     }
+                    catch
+                    {
+                        continue;
+                    }
+
                 }
             }
             return tests;

@@ -20,8 +20,8 @@ namespace PowerShellTools.TestAdapter.Pester
 
         public static List<TestCase> GetTests(IEnumerable<string> sources, ITestCaseDiscoverySink discoverySink)
         {
-            List<TestCase> tests = new List<TestCase>();
-            foreach (string source in sources)
+            var tests = new List<TestCase>();
+            foreach (var source in sources)
             {
                 Token[] tokens;
                 ParseError[] errors;
@@ -66,13 +66,17 @@ namespace PowerShellTools.TestAdapter.Pester
                         }
                     }
 
+                    // Didn't find the name for the test. Skip it.
+                    if (String.IsNullOrEmpty(contextName))
+                    {
+                        continue;
+                    }
+
                     var testcase = new TestCase(contextName, PesterTestExecutor.ExecutorUri, source)
                     {
                         CodeFilePath = source,
+                        LineNumber = contextAst.Extent.StartLineNumber
                     };
-
-                    testcase.LineNumber = contextAst.Extent.StartLineNumber;
-
 
                     if (discoverySink != null)
                     {
