@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Xml.Linq;
 using Microsoft.PowerShell;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
@@ -66,6 +67,23 @@ namespace PowerShellTools.TestAdapter
             }
         }
 
+        private string GetPesterModulePath(string root)
+        {
+            // Default packages path for nuget.
+            var packagesRoot = Path.Combine(root, "packages");
+
+            // TODO: Scour for custom nuget packages paths.
+
+            var packagePath = Directory.GetDirectories(packagesRoot, "Pester*", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            if (null != packagePath)
+            {
+                // Needs to be kept up to date with the directory structure.
+                return Path.Combine(packagePath, @"tools\Pester.psm1");
+            }
+
+            return null;
+        }
+
 
         public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext,
                IFrameworkHandle frameworkHandle)
@@ -84,17 +102,18 @@ namespace PowerShellTools.TestAdapter
                 try
                 {
                     Runspace r = RunspaceFactory.CreateRunspace(new TestAdapterHost());
-                    r.Open(); 
+                    r.Open();
 
                     using (var ps = PowerShell.Create())
                     {
                         ps.Runspace = r;
 
-                        ps.AddCommand("Import-Module").AddParameter("Name", "Pester");
+                        var module = GetPesterModulePath(runContext.SolutionDirectory) ?? "Pester";
+                        ps.AddCommand("Import-Module").AddParameter("Name", module);
                         ps.Invoke();
 
                         ps.Commands.Clear();
-
+                        
                         var fi = new FileInfo(test.CodeFilePath);
 
                         var tempFile = Path.GetTempFileName();

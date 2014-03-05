@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -65,6 +66,23 @@ namespace PowerShellTools.TestAdapter
             }
         }
 
+        private static string GetPsateModulePath(string root)
+        {
+            // Default packages path for nuget.
+            var packagesRoot = Path.Combine(root, "packages");
+
+            // TODO: Scour for custom nuget packages paths.
+
+            var packagePath = Directory.GetDirectories(packagesRoot, "PSate*", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            if (null != packagePath)
+            {
+                // Needs to be kept up to date with the directory structure.
+                return Path.Combine(packagePath, @"tools\PSate.psm1");
+            }
+
+            return null;
+        }
+
 
         public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext,
                IFrameworkHandle frameworkHandle)
@@ -78,7 +96,7 @@ namespace PowerShellTools.TestAdapter
 
                 try
                 {
-                    RunTests(frameworkHandle, testFile, testCases);
+                    RunTests(frameworkHandle, runContext, testFile, testCases);
                 }
                 catch (Exception ex)
                 {
@@ -102,7 +120,7 @@ namespace PowerShellTools.TestAdapter
             }
         }
 
-        private static void RunTests(IFrameworkHandle frameworkHandle, string testFile, TestCase[] testCases)
+        private static void RunTests(IFrameworkHandle frameworkHandle, IRunContext runContext, string testFile, TestCase[] testCases)
         {
             Runspace r = RunspaceFactory.CreateRunspace(new TestAdapterHost());
             r.Open();
@@ -111,7 +129,8 @@ namespace PowerShellTools.TestAdapter
             {
                 ps.Runspace = r;
 
-                ps.AddCommand("Import-Module").AddParameter("Name", "PSate");
+                var module = GetPsateModulePath(runContext.SolutionDirectory) ?? "PSate";
+                ps.AddCommand("Import-Module").AddParameter("Name", module);
                 ps.Invoke();
 
                 ps.Commands.Clear();
