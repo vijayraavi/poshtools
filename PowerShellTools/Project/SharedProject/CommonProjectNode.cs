@@ -761,8 +761,10 @@ namespace Microsoft.VisualStudioTools.Project {
         /// </summary>
         private HierarchyNode AddAllFilesFolder(HierarchyNode curParent, string curDir) {
             var folderNode = FindNodeByFullPath(curDir);
-            if (folderNode == null) {
-                folderNode = CreateFolderNode(new AllFilesProjectElement(curDir, "Folder", this));
+            if (folderNode == null)
+            {
+                folderNode = new CommonFolderNode(this, new AllFilesProjectElement(curDir, "Folder", this));
+                //folderNode = CreateFolderNode(new AllFilesProjectElement(curDir, "Folder", this));
                 AddAllFilesNode(curParent, folderNode);
 
                 // Solution Explorer will expand the parent when an item is
