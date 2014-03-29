@@ -81,7 +81,7 @@ namespace PowerShellTools.Intellisense
                     }
                     if (match.ResultType == CompletionResultType.Variable)
                     {
-                        completionText = completionText.Remove(0, 1) + " ";
+                        completionText = completionText.Remove(0, 1);
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupField, StandardGlyphItem.GlyphItemPublic);
                     }
                    
