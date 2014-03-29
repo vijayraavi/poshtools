@@ -5,15 +5,7 @@ PowerShell integration for Visual Studio 2012 and 2013.
 
 More information on <a href="http://csharpening.net/?p=1697">Adam Driscoll's blog</a>. To download the VSIX, please visit the <a href="http://visualstudiogallery.msdn.microsoft.com/c9eb3ba8-0c59-4944-9a62-6eee37294597">Visual Studio Gallery</a>. 
 
-Support this extension's development.
-
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="2XL93PX3R3TJL">
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-</form>
-
+<a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2XL93PX3R3TJL'>Support this extension's development.</a>
 
 PowerShell Tools for Visual Studio currently offers the following features. 
 
