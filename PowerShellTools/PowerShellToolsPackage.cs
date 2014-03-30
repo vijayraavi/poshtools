@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
@@ -11,6 +15,7 @@ using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.Win32;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
 using PowerShellTools.DebugEngine;
@@ -45,7 +50,12 @@ namespace PowerShellTools
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     // This attribute registers a tool window exposed by this package.
-    [ProvideToolWindow(typeof (MyToolWindow))]
+    //[ProvideEditorExtension(typeof(EditorFactory), ".xml", 50,
+    //         ProjectGuid = "{A2FE74E1-B743-11d0-AE1A-00A0C90FFFC3}",
+    //         TemplateDir = "Templates",
+    //         NameResourceID = 105,
+    //         DefaultName = "CustomEditor")]
+    [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
     [Guid(GuidList.PowerShellToolsPackageGuid)]
     [ProvideObject(typeof (PowerShellGeneralPropertyPage))]
     [ProvideObject(typeof (PowerShellModulePropertyPage))]
@@ -175,8 +185,51 @@ namespace PowerShellTools
 
             InitializePowerShellHost();
 
+            ShowDonate();
+
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand(), _gotoDefinitionCommand, new PrettyPrintCommand(Host.Runspace));
+
+
+            //Create Editor Factory. Note that the base Package class will call Dispose on it.
+            //base.RegisterEditorFactory(new EditorFactory(this));
+        }
+
+        static void ShowDonate()
+        {
+            try
+            {
+                using (var key = Registry.CurrentUser.CreateSubKey(@"Software\PowerShell Tools for Visual Studio"))
+                {
+                    if (key != null)
+                    {
+                        DateTime lastNotification;
+                        var lastNotificationString = key.GetValue("LastNotification", "1900-1-1") as string;
+                        DateTime.TryParse(lastNotificationString, out lastNotification);
+                        if (lastNotification < (DateTime.Now.AddDays(-1)))
+                        {
+                            key.SetValue("LastNotification", DateTime.Now.ToString());
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                var item = new NotifyIcon();
+                item.Visible = true;
+                item.Icon = System.Drawing.SystemIcons.Information;
+                item.BalloonTipClicked += (sender, args) => Process.Start(
+                    "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2XL93PX3R3TJL");
+
+                item.ShowBalloonTip(3000, "Support the development of PowerShell Tools",
+                    "Please consider a donation to support the development of PowerShell Tools for Visual Studio.",
+                    ToolTipIcon.Info);
+            }
+            catch
+            {
+            }
         }
 
         void _visualStudioEvents_SettingsChanged(object sender, DialogPage e)

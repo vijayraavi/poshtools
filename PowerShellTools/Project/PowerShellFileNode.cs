@@ -13,8 +13,10 @@ namespace PowerShellTools.Project
         internal PowerShellFileNode(CommonProjectNode root, ProjectElement e)
 			: base(root, e)
 		    {
+            
 		    }
 		#endregion
+
 
 
     }

@@ -35,7 +35,7 @@ namespace PowerShellTools.Project
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
 
-            string script = String.Empty, args = String.Empty;
+            string script = String.Empty;
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             if (dte2 != null)
             {
@@ -44,7 +44,7 @@ namespace PowerShellTools.Project
 
 
             info.bstrExe = script;
-            info.bstrCurDir = Path.GetDirectoryName(info.bstrExe);
+            info.bstrCurDir = Path.GetDirectoryName(info.bstrCurDir);
 
             try
             {
