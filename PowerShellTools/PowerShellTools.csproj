@@ -87,11 +87,16 @@
     <Reference Include="Microsoft.VisualStudio.OLE.Interop" />
     <Reference Include="Microsoft.VisualStudio.Package.LanguageService.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.9.0" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.10.0" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.10.0">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.11.0">
       <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Text.Data, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Text.Logic, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
@@ -197,6 +202,7 @@
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
     <Compile Include="Commands\GotoDefinitionCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
     <Compile Include="DebugEngine\Definitions\Enums.cs" />
@@ -434,6 +440,9 @@
     <Compile Include="RegistrationAttributes.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Repl\PowerShellReplEvaluatorProvider.cs" />
+    <Compile Include="Repl\IPowerShellEvaluator.cs" />
+    <Compile Include="Repl\PowerShellReplEvaluator.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -563,6 +572,12 @@
     <ProjectReference Include="..\PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj">
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>
       <Name>PowerShellTools.TestAdapter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ReplWindow\ReplWindow.csproj">
+      <Project>{20bb6fac-44d2-4d76-abfe-0c1e163a1a4f}</Project>
+      <Name>ReplWindow</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

@@ -85,6 +85,17 @@
           <ButtonText>Insert snippet</ButtonText>
         </Strings>
       </Button>
+
+      <Button guid="guidPoshToolsCmdSet" id="cmdidReplWindow" priority="0x7f00" type="Button">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>TextChanges</CommandFlag>
+        <Strings>
+          <CommandName>cmdidReplWindow</CommandName>
+          <ButtonText>PowerShell Interactive Default</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
    
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -118,6 +129,7 @@
       <IDSymbol name="cmdidGotoDefinition" value="0x0104"/>
       <IDSymbol name="cmdidSnippet" value="0x0105"/>
       <IDSymbol name="cmdidPrettyPrint" value="0x0106"/>
+      <IDSymbol name="cmdidReplWindow" value="0x0107"/>
       <!--Groups-->
       <IDSymbol name="grpidPoshToolsGroup" value="0x01001"/>
     </GuidSymbol>

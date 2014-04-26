@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <BuildRoot>$(MSBuildThisFileDirectory)..\</BuildRoot>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)\Common.Build.settings" />
+</Project>

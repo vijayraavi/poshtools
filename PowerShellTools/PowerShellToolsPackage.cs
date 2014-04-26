@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
 using System.Threading;
@@ -9,8 +10,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Repl;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -23,6 +26,7 @@ using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using log4net;
+using PowerShellTools.Repl;
 using Engine = PowerShellTools.DebugEngine.Engine;
 
 namespace PowerShellTools
@@ -188,11 +192,24 @@ namespace PowerShellTools
             ShowDonate();
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
-            RefreshCommands(new ExecuteSelectionCommand(), new ExecuteAsScriptCommand(), _gotoDefinitionCommand, new PrettyPrintCommand(Host.Runspace));
+            RefreshCommands(new ExecuteSelectionCommand(), 
+                            new ExecuteAsScriptCommand(), 
+                            _gotoDefinitionCommand, 
+                            new PrettyPrintCommand(Host.Runspace), 
+                            new OpenDebugReplCommand());
+        }
 
-
-            //Create Editor Factory. Note that the base Package class will call Dispose on it.
-            //base.RegisterEditorFactory(new EditorFactory(this));
+        private IContentType _contentType;
+        public IContentType ContentType
+        {
+            get
+            {
+                if (_contentType == null)
+                {
+                    _contentType = ComponentModel.GetService<IContentTypeRegistryService>().GetContentType(PowerShellConstants.LanguageName);
+                }
+                return _contentType;
+            }
         }
 
         static void ShowDonate()
@@ -289,6 +306,7 @@ namespace PowerShellTools
             var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
 
             Log.Info("InitializePowerShellHost");
+
             Host = new VSXHost(page.OverrideExecutionPolicyConfiguration);
             Host.HostUi.OutputProgress = (label, percentage) =>
             {

@@ -11,6 +11,7 @@ using System.Security;
 using System.Text;
 using Microsoft.PowerShell;
 using Microsoft.VisualBasic;
+using Microsoft.VisualStudio.Repl;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -25,6 +26,11 @@ namespace PowerShellTools.DebugEngine
             private set;
         }
 
+        public IReplWindow ReplWindow
+        {
+            get { return HostUi.ReplWindow; }
+            set { HostUi.ReplWindow = value; }
+        }
 
 
         /// <summary>
@@ -194,6 +200,8 @@ namespace PowerShellTools.DebugEngine
 
     public class HostUi : PSHostUserInterface
     {
+        public IReplWindow ReplWindow { get; set; }
+
         public override string ReadLine()
         {
             return Interaction.InputBox("Read-Host", "Read-Host");
@@ -223,6 +231,16 @@ namespace PowerShellTools.DebugEngine
 
         private void TryOutputString(string val)
         {
+            if (ReplWindow != null)
+            {
+                if (val.StartsWith("[ERROR]"))
+                {
+                    ReplWindow.WriteError(val);    
+                }
+
+                ReplWindow.WriteOutput(val);
+            }
+
             if (OutputString != null)
                 OutputString(val);
         }

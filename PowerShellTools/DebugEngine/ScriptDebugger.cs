@@ -261,25 +261,17 @@ namespace PowerShellTools.DebugEngine
             _pausedEvent.Set();
         }
 
-        public void Execute(ScriptProgramNode node)
+        public void Execute(string commandLine)
         {
             Log.Info("Execute");
-            CurrentExecutingNode = node;
- 
+
             try
             {
                 using (_currentPowerShell = PowerShell.Create())
                 {
-                    string commandLine = node.FileName;
-
-                    if (node.IsFile)
-                    {
-                        commandLine = String.Format("& '{0}' {1}", node.FileName, node.Arguments);    
-                    }
-                    
                     _currentPowerShell.Runspace = _runspace;
                     _currentPowerShell.AddScript(commandLine);
-                    
+
                     _currentPowerShell.AddCommand("out-default");
                     _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
 
@@ -302,6 +294,18 @@ namespace PowerShellTools.DebugEngine
             {
                 DebuggerFinished();
             }
+        }
+
+        public void Execute(ScriptProgramNode node)
+        {
+            CurrentExecutingNode = node;
+            string commandLine = node.FileName;
+
+            if (node.IsFile)
+            {
+                commandLine = String.Format("& '{0}' {1}", node.FileName, node.Arguments);    
+            }
+            Execute(commandLine);
         }
 
         void objects_DataAdded(object sender, DataAddedEventArgs e)

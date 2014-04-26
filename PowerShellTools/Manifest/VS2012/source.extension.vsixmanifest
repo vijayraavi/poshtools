@@ -28,5 +28,6 @@
     <Asset Type="Microsoft.VisualStudio.ItemTemplate" d:Source="File" Path="ItemTemplates" d:TargetPath="ItemTemplates\PowerShell Script Data File.zip" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%.TestAdapter" Path="|PowerShellTools.TestAdapter|" />
     <Asset Type="UnitTestExtension" d:Source="Project" d:ProjectName="%CurrentProject%.TestAdapter" Path="|PowerShellTools.TestAdapter|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="ReplWindow" Path="|ReplWindow;PkgdefProjectOutputGroup|" />
   </Assets>
 </PackageManifest>
