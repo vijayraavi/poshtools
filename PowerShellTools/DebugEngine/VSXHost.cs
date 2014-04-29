@@ -9,6 +9,7 @@ using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using System.Threading;
 using Microsoft.PowerShell;
 using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.Repl;
@@ -29,7 +30,14 @@ namespace PowerShellTools.DebugEngine
         public IReplWindow ReplWindow
         {
             get { return HostUi.ReplWindow; }
-            set { HostUi.ReplWindow = value; }
+            set
+            {
+                HostUi.ReplWindow = value;
+                if (value != null)
+                {
+                    value.SetOptionValue(ReplOptions.PrimaryPrompt, GetCurrentDirectory() + " >");
+                }
+            }
         }
 
 
@@ -59,8 +67,8 @@ namespace PowerShellTools.DebugEngine
             HostUi = new HostUi();
 
             InitialSessionState iss = InitialSessionState.CreateDefault();
-            //iss.ApartmentState = ApartmentState.MTA;
-            //iss.ThreadOptions = PSThreadOptions.ReuseThread;
+            iss.ApartmentState = ApartmentState.MTA;
+            iss.ThreadOptions = PSThreadOptions.ReuseThread;
 
             _runspace = RunspaceFactory.CreateRunspace(this, iss);
             _runspace.Open();
@@ -70,6 +78,13 @@ namespace PowerShellTools.DebugEngine
                 SetupExecutionPolicy();
             }
         }
+
+        public void RefreshPrompt()
+        {
+            if (HostUi != null && HostUi.ReplWindow != null)
+                this.HostUi.ReplWindow.SetOptionValue(ReplOptions.PrimaryPrompt, GetCurrentDirectory() + " >");
+        }
+
 
         private void SetupExecutionPolicy()
         {
@@ -116,6 +131,21 @@ namespace PowerShellTools.DebugEngine
                 ps.AddCommand("Get-ExecutionPolicy").AddParameter("Scope", scope);
                 return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
             }
+        }
+
+        private string GetCurrentDirectory()
+        {
+            try
+            {
+                if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
+                    return _runspace.SessionStateProxy.Path.CurrentLocation.ProviderPath;
+            }
+            catch
+            {
+                return String.Empty;
+            }
+
+            return String.Empty;
         }
 
         public VSXHost(Runspace runspace)
@@ -235,10 +265,12 @@ namespace PowerShellTools.DebugEngine
             {
                 if (val.StartsWith("[ERROR]"))
                 {
-                    ReplWindow.WriteError(val);    
+                    ReplWindow.WriteError(val);
                 }
-
-                ReplWindow.WriteOutput(val);
+                else
+                {
+                    ReplWindow.WriteOutput(val);
+                }
             }
 
             if (OutputString != null)
@@ -257,7 +289,7 @@ namespace PowerShellTools.DebugEngine
 
         public override void WriteLine(string value)
         {
-            TryOutputString(value + Environment.NewLine);
+            TryOutputString(value + "\n");
         }
 
         public override void WriteErrorLine(string value)

@@ -27,6 +27,9 @@ namespace PowerShellTools.Repl
         public Task<ExecutionResult> Initialize(IReplWindow window)
         {
             PowerShellToolsPackage.Instance.Host.ReplWindow = window;
+
+            window.SetOptionValue(ReplOptions.UseSmartUpDown, true);
+
             return tf.StartNew(() => { Window = window; return new ExecutionResult(true); });
 
         }

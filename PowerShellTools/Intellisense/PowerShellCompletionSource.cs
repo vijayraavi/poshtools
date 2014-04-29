@@ -11,8 +11,6 @@ using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Intellisense
 {
-
-
     internal class PowerShellCompletionSource : ICompletionSource
     {
         private PowerShellCompletionSourceProvider m_sourceProvider;
@@ -37,8 +35,26 @@ namespace PowerShellTools.Intellisense
 
             Log.Debug("AugmentCompletionSession");
 
-            var text = session.TextView.TextBuffer.CurrentSnapshot.GetText();
-            var currentPoint = session.TextView.Caret.Position.BufferPosition;
+            string text;
+            int currentPoint;
+            if (session.TextView.Properties.ContainsProperty("REPL"))
+            {
+                text = session.TextView.TextBuffer.CurrentSnapshot.GetText();
+                 currentPoint = session.TextView.Caret.Position.BufferPosition;
+
+                var indexOfCaret = text.LastIndexOf('>');
+                if (indexOfCaret != -1)
+                {
+                    indexOfCaret++;
+                    text = text.Substring(indexOfCaret);
+                    currentPoint -= indexOfCaret;
+                }
+            }
+            else
+            {
+                text = session.TextView.TextBuffer.CurrentSnapshot.GetText();
+                currentPoint = session.TextView.Caret.Position.BufferPosition;
+            }
 
             using (var ps = PowerShell.Create())
             {
@@ -103,7 +119,7 @@ namespace PowerShellTools.Intellisense
             SnapshotPoint currentPoint = (session.TextView.Caret.Position.BufferPosition) - 1;
             ITextStructureNavigator navigator = m_sourceProvider.NavigatorService.GetTextStructureNavigator(m_textBuffer);
 
-            TextExtent extent = navigator.GetExtentOfWord(currentPoint);
+            //TextExtent extent = navigator.GetExtentOfWord(currentPoint);
             return currentPoint.Snapshot.CreateTrackingSpan(currentPoint.Position + 1, 0, SpanTrackingMode.EdgeInclusive);
         }
 

@@ -395,6 +395,7 @@ namespace PowerShellTools.DebugEngine
         private void DebuggerFinished()
         {
             Log.Debug("DebuggerFinished");
+            VSXHost.Instance.RefreshPrompt();
             _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
             _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
             _runspace.StateChanged -= _runspace_StateChanged;

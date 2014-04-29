@@ -239,6 +239,9 @@
     <Compile Include="GeneralDialogPage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Intellisense\IntellisenseController.cs" />
+    <Compile Include="Intellisense\IntellisenseControllerProvider.cs" />
+    <Compile Include="Intellisense\IntelliSenseManager.cs" />
     <Compile Include="Intellisense\PowerShellCompletionCommandHandler.cs" />
     <Compile Include="Intellisense\PowerShellCompletionHandlerProvider.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSource.cs" />
