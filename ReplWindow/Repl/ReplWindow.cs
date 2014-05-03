@@ -47,6 +47,13 @@ namespace Microsoft.VisualStudio.Repl {
     using IReplWindow = IInteractiveWindow;
     using IReplEvaluator = IInteractiveEngine;
     using IReplWindowCreationListener = IInteractiveWindowCreationListener;
+#elif POWERSHELL
+    using IReplCommand = IPowerShellReplCommand;
+    using IReplWindow = IPowerShellReplWindow;
+    using IReplEvaluator = IPowerShellReplEvaluator;
+    using IReplWindowCreationListener = IPowerShellReplWindowCreationListener;
+    using ReplRoleAttribute = PowerShellReplRoleAttribute;
+    using IReplCommand2 = IPowerShellReplCommand2;
 #endif
 
     /// <summary>

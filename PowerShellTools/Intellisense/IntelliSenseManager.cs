@@ -16,7 +16,7 @@ namespace PowerShellTools.Intellisense
     /// </summary>
     internal class IntelliSenseManager
     {
-        private readonly IOleCommandTarget _nextCommandHandler;
+        internal IOleCommandTarget _nextCommandHandler;
         private readonly ITextView _textView;
         private readonly ICompletionBroker _broker;
         private ICompletionSession _activeSession;

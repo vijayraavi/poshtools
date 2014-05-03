@@ -22,6 +22,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 namespace Microsoft.VisualStudio.Repl {
 #if INTERACTIVE_WINDOW
     using IReplWindowProvider = IInteractiveWindowProvider;
+#elif POWERSHELL
+    using IReplWindowProvider = IPowerShellReplWindowProvider;
 #endif
 
     /// <summary>

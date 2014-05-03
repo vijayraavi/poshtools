@@ -17,6 +17,8 @@ using Microsoft.VisualStudio.Text;
 namespace Microsoft.VisualStudio.Repl {
 #if INTERACTIVE_WINDOW
     using IReplEvaluator = IInteractiveEngine;
+#elif POWERSHELL
+    using IReplEvaluator = IPowerShellReplEvaluator;
 #endif
 
     public static class ReplWindowExtensions {

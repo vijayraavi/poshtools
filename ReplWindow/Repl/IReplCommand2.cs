@@ -19,9 +19,11 @@ using System.Threading.Tasks;
 namespace Microsoft.VisualStudio.Repl {
 #if INTERACTIVE_WINDOW
     using IReplWindow = IInteractiveWindow;
+#elif POWERSHELL
+    using IReplWindow = IPowerShellReplWindow;
 #endif
 
-    /// <summary>
+                                          /// <summary>
     /// Represents a command which can be run from a REPL window.
     /// 
     /// This interface is a MEF contract and can be implemented and exported to add commands to the REPL window.
@@ -29,6 +31,9 @@ namespace Microsoft.VisualStudio.Repl {
     /// </summary>
 #if INTERACTIVE_WINDOW
     public interface IInteractiveWindowCommand2 {
+#elif POWERSHELL
+    public interface IPowerShellReplCommand2 : IPowerShellReplCommand
+    {
 #else
     public interface IReplCommand2 : IReplCommand {
 #endif

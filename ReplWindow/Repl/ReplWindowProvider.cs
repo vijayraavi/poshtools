@@ -28,6 +28,12 @@ namespace Microsoft.VisualStudio.Repl {
     using IReplWindowProvider = IInteractiveWindowProvider;
     using IReplEvaluator = IInteractiveEngine;
     using IReplEvaluatorProvider = IInteractiveEngineProvider;
+#elif POWERSHELL
+    using IReplWindow = IPowerShellReplWindow;
+    using IReplWindowProvider = IPowerShellReplWindowProvider;
+    using IReplEvaluator = IPowerShellReplEvaluator;
+    using IReplEvaluatorProvider = IPowerShellReplEvaluatorProvider;
+    using ReplRoleAttribute = PowerShellReplRoleAttribute;
 #endif
 
     [Export(typeof(IReplWindowProvider))]

@@ -24,6 +24,11 @@ using PowerShellTools.Repl;
 
 namespace PowerShellTools.Commands
 {
+#if POWERSHELL
+    using IReplWindow = IPowerShellReplWindow;
+    using IReplWindowProvider = IPowerShellReplWindowProvider;
+#endif
+
     /// <summary>
     /// Provides the command for starting the Python Debug REPL window.
     /// </summary>

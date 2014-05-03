@@ -19,6 +19,8 @@ using Microsoft.VisualStudio.Text;
 namespace Microsoft.VisualStudio.Repl {
 #if INTERACTIVE_WINDOW
     using IReplWindow = IInteractiveWindow;
+#elif POWERSHELL 
+    using IReplWindow = IPowerShellReplWindow;
 #endif
 
     /// <summary>
@@ -27,6 +29,9 @@ namespace Microsoft.VisualStudio.Repl {
     /// </summary>
 #if INTERACTIVE_WINDOW
     public interface IInteractiveEngine : IDisposable {
+#elif POWERSHELL
+    public interface IPowerShellReplEvaluator : IDisposable
+    {
 #else
     public interface IReplEvaluator : IDisposable {
 #endif

@@ -87,22 +87,22 @@ namespace PowerShellTools.Intellisense {
         // include enter and tab both of which we want to complete.
 
         internal void AttachKeyboardFilter() {
-            if (_intelliSenseManager.m_nextCommandHandler == null) {
+            if (_intelliSenseManager._nextCommandHandler == null) {
                 var viewAdapter = AdaptersFactory.GetViewAdapter(_textView);
                 if (viewAdapter != null)
                 {
                     IOleCommandTarget oldTarget;
                     ErrorHandler.ThrowOnFailure(viewAdapter.AddCommandFilter(this, out oldTarget));
-                    _intelliSenseManager.m_nextCommandHandler = oldTarget;
+                    _intelliSenseManager._nextCommandHandler = oldTarget;
                 }
             }
         }
 
         private void DetachKeyboardFilter() {
-            if (_intelliSenseManager.m_nextCommandHandler != null)
+            if (_intelliSenseManager._nextCommandHandler != null)
             {
                 ErrorHandler.ThrowOnFailure(AdaptersFactory.GetViewAdapter(_textView).RemoveCommandFilter(this));
-                _intelliSenseManager.m_nextCommandHandler = null;
+                _intelliSenseManager._nextCommandHandler = null;
             }
         }
 

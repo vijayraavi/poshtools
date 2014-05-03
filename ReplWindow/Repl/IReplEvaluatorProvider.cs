@@ -15,6 +15,8 @@
 namespace Microsoft.VisualStudio.Repl {
 #if INTERACTIVE_WINDOW
     using IReplEvaluator = IInteractiveEngine;
+#elif POWERSHELL
+    using IReplEvaluator = IPowerShellReplEvaluator;
 #endif
 
     /// <summary>
@@ -25,6 +27,9 @@ namespace Microsoft.VisualStudio.Repl {
     /// </summary>
 #if INTERACTIVE_WINDOW
     public interface IInteractiveEngineProvider {
+#elif POWERSHELL
+    public interface IPowerShellReplEvaluatorProvider
+    {
 #else
     public interface IReplEvaluatorProvider {
 #endif

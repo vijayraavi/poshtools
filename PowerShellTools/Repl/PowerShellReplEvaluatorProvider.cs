@@ -4,6 +4,11 @@ using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Repl
 {
+#if POWERSHELL
+    using IReplEvaluatorProvider = IPowerShellReplEvaluatorProvider;
+    using IReplEvaluator = IPowerShellReplEvaluator;
+#endif
+
     [Export(typeof(IReplEvaluatorProvider))]
     internal class PowerShellReplEvaluatorProvider : IReplEvaluatorProvider
     {

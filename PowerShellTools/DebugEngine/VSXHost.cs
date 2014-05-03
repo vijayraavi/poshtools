@@ -16,6 +16,10 @@ using Microsoft.VisualStudio.Repl;
 
 namespace PowerShellTools.DebugEngine
 {
+#if POWERSHELL
+    using IReplWindow = IPowerShellReplWindow;
+#endif
+
     public class VSXHost : PSHost, IHostSupportsInteractiveSession
     {
         private Runspace _runspace;

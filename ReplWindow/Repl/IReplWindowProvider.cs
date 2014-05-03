@@ -22,6 +22,8 @@ using Microsoft.VisualStudio.Utilities;
 namespace Microsoft.VisualStudio.Repl {
 #if INTERACTIVE_WINDOW
     using IReplWindow = IInteractiveWindow;
+#elif POWERSHELL
+    using IReplWindow = IPowerShellReplWindow;
 #endif
 
     /// <summary>
@@ -29,6 +31,9 @@ namespace Microsoft.VisualStudio.Repl {
     /// </summary>
 #if INTERACTIVE_WINDOW
     public interface IInteractiveWindowProvider {
+#elif POWERSHELL
+    public interface IPowerShellReplWindowProvider
+    {
 #else
     public interface IReplWindowProvider {
 #endif

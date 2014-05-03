@@ -18,6 +18,8 @@ using System.Threading.Tasks;
 namespace Microsoft.VisualStudio.Repl {
 #if INTERACTIVE_WINDOW
     using IReplWindow = IInteractiveWindow;
+#elif POWERSHELL
+    using IReplWindow = IPowerShellReplWindow;
 #endif
 
     /// <summary>
@@ -27,6 +29,8 @@ namespace Microsoft.VisualStudio.Repl {
     /// </summary>
 #if INTERACTIVE_WINDOW
     public interface IInteractiveWindowCommand {
+#elif POWERSHELL
+    public interface IPowerShellReplCommand {
 #else
     public interface IReplCommand {
 #endif

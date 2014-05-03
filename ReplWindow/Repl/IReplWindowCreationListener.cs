@@ -16,10 +16,15 @@
 namespace Microsoft.VisualStudio.Repl {
 #if INTERACTIVE_WINDOW
     using IReplWindow = IInteractiveWindow;
+#elif POWERSHELL
+    using IReplWindow = IPowerShellReplWindow;
 #endif
 
 #if INTERACTIVE_WINDOW
     public interface IInteractiveWindowCreationListener {
+#elif POWERSHELL
+    public interface IPowerShellReplWindowCreationListener
+    {
 #else
     public interface IReplWindowCreationListener {
 #endif

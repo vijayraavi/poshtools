@@ -16,6 +16,10 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Repl;
 
 namespace PowerShellTools.Repl {
+#if POWERSHELL
+    using IReplEvaluator = IPowerShellReplEvaluator;
+#endif
+
     /// <summary>
     /// The Python repl evaluator.  An instance of this can be acquired by creating a REPL window
     /// via PythonToolsPackage.CreatePythonRepl and getting the Evaluator from the resulting

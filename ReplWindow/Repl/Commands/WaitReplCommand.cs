@@ -21,6 +21,9 @@ namespace Microsoft.VisualStudio.Repl {
 #if INTERACTIVE_WINDOW
     using IReplCommand = IInteractiveWindowCommand;
     using IReplWindow = IInteractiveWindow;
+#elif POWERSHELL
+    using IReplCommand = IPowerShellReplCommand;
+    using IReplWindow = IPowerShellReplWindow;
 #endif
 
     [Export(typeof(IReplCommand))]

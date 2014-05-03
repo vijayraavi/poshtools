@@ -7,6 +7,12 @@ using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Repl
 {
+#if POWERSHELL
+    using ReplRoleAttribute = PowerShellReplRoleAttribute;
+    using IReplEvaluator = IPowerShellReplEvaluator;
+    using IReplWindow = IPowerShellReplWindow;
+#endif
+
     [ReplRole("Debug")]
     internal class PowerShellReplEvaluator : IReplEvaluator
     {

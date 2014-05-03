@@ -26,6 +26,9 @@ namespace Microsoft.VisualStudio.Repl {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 #if INTERACTIVE_WINDOW
     public sealed class InteractiveWindowRoleAttribute : Attribute {
+#elif POWERSHELL
+    public sealed class PowerShellReplRoleAttribute : Attribute
+    {
 #else
     public sealed class ReplRoleAttribute : Attribute {
 #endif
@@ -33,6 +36,8 @@ namespace Microsoft.VisualStudio.Repl {
 
 #if INTERACTIVE_WINDOW
         public InteractiveWindowRoleAttribute(string name) {
+#elif POWERSHELL
+        public PowerShellReplRoleAttribute(string name) {
 #else
         public ReplRoleAttribute(string name) {
 #endif
