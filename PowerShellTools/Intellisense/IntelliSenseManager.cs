@@ -10,35 +10,48 @@ using Microsoft.VisualStudio.Text.Editor;
 
 namespace PowerShellTools.Intellisense
 {
+    /// <summary>
+    /// Class that is used for both the editor and the REPL window to manage the completion sources and
+    /// completion session in the ITextBuffers. 
+    /// </summary>
     internal class IntelliSenseManager
     {
-        internal IOleCommandTarget m_nextCommandHandler;
-        private ITextView m_textView;
-        private ICompletionBroker _broker;
+        private readonly IOleCommandTarget _nextCommandHandler;
+        private readonly ITextView _textView;
+        private readonly ICompletionBroker _broker;
         private ICompletionSession _activeSession;
-        private SVsServiceProvider _serviceProvider;
+        private readonly SVsServiceProvider _serviceProvider;
         private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellCompletionCommandHandler));
 
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView)
         {
             _broker = broker;
-            m_nextCommandHandler = commandHandler;
-            m_textView = textView;
+            _nextCommandHandler = commandHandler;
+            _textView = textView;
             _serviceProvider = provider;
         }
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
-            return m_nextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
+            return _nextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
         }
 
+        /// <summary>
+        /// Main method used to determine how to handle keystrokes within a ITextBuffer.
+        /// </summary>
+        /// <param name="pguidCmdGroup"></param>
+        /// <param name="nCmdID"></param>
+        /// <param name="nCmdexecopt"></param>
+        /// <param name="pvaIn"></param>
+        /// <param name="pvaOut"></param>
+        /// <returns></returns>
         public int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider))
             {
-                return m_nextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+                return _nextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             }
             //make a copy of this so we can look at it after forwarding some commands 
-            uint commandID = nCmdID;
+            uint commandId = nCmdID;
             char typedChar = char.MinValue;
             //make sure the input is a char before getting it 
             if (pguidCmdGroup == VSConstants.VSStd2K && nCmdID == (uint) VSConstants.VSStd2KCmdID.TYPECHAR)
@@ -75,7 +88,7 @@ namespace PowerShellTools.Intellisense
             }
 
             //pass along the command so the char is added to the buffer 
-            int retVal = m_nextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+            int retVal = _nextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
             if (!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar))
             {
@@ -93,8 +106,8 @@ namespace PowerShellTools.Intellisense
                         
                 }
             }
-            else if (commandID == (uint) VSConstants.VSStd2KCmdID.BACKSPACE //redo the filter if there is a deletion
-                     || commandID == (uint) VSConstants.VSStd2KCmdID.DELETE)
+            else if (commandId == (uint) VSConstants.VSStd2KCmdID.BACKSPACE //redo the filter if there is a deletion
+                     || commandId == (uint) VSConstants.VSStd2KCmdID.DELETE)
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
                 {
@@ -108,18 +121,32 @@ namespace PowerShellTools.Intellisense
             return retVal;
         }
 
+        /// <summary>
+        /// Determines whether a typed character should cause the completion source list to filter.
+        /// </summary>
+        /// <param name="ch"></param>
+        /// <returns></returns>
         private static bool IsFilterTrigger(char ch)
         {
             Log.DebugFormat("IsFilterTrigger: [{0}]", ch);
             return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
         }
 
+        /// <summary>
+        /// Determines whether a typed character should cause the manager to trigger the intellisense drop down.
+        /// </summary>
+        /// <param name="ch"></param>
+        /// <returns></returns>
         private static bool IsIntellisenseTrigger(char ch)
         {
             Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':';
         }
 
+        /// <summary>
+        /// Triggers the IntelliSense drop down.
+        /// </summary>
+        /// <returns></returns>
         private bool TriggerCompletion()
         {
             if (_activeSession != null) return true;
@@ -128,7 +155,7 @@ namespace PowerShellTools.Intellisense
 
             //the caret must be in a non-projection location 
             SnapshotPoint? caretPoint =
-                m_textView.Caret.Position.Point.GetPoint(
+                _textView.Caret.Position.Point.GetPoint(
                     textBuffer => (!textBuffer.ContentType.IsOfType("projection")), PositionAffinity.Predecessor);
             if (!caretPoint.HasValue)
             {
@@ -136,7 +163,7 @@ namespace PowerShellTools.Intellisense
             }
 
             _activeSession = _broker.CreateCompletionSession
-                (m_textView,
+                (_textView,
                     caretPoint.Value.Snapshot.CreateTrackingPoint(caretPoint.Value.Position, PointTrackingMode.Positive),
                     true);
 
@@ -148,6 +175,11 @@ namespace PowerShellTools.Intellisense
             return true;
         }
 
+        /// <summary>
+        /// Removes event handler when the completion session has been dismissed or committed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnCompletionSessionDismissedOrCommitted(object sender, EventArgs e)
         {
             Log.Debug("Session Dismissed or Committed");

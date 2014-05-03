@@ -18,6 +18,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Repl;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudioTools;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Repl;
 
@@ -31,15 +32,13 @@ namespace PowerShellTools.Commands
 
         internal static IReplWindow/*!*/ EnsureReplWindow()
         {
-            var compModel = PowerShellToolsPackage.ComponentModel;
+            var compModel = CommonPackage.ComponentModel;
             var provider = compModel.GetService<IReplWindowProvider>();
 
             var window = provider.FindReplWindow("PowerShell");
             if (window == null)
             {
                 window = provider.CreateReplWindow(PowerShellToolsPackage.Instance.ContentType, "PowerShell Debug Interactive", typeof(PowerShellLanguageInfo).GUID, "PowerShell");
-
-               // window.SetOptionValue(ReplOptions.UseSmartUpDown, PythonToolsPackage.Instance.InteractiveDebugOptionsPage.Options.ReplSmartHistory);
             }
             return window;
         }
@@ -48,7 +47,7 @@ namespace PowerShellTools.Commands
         {
             get
             {
-                return "PowerShell Interactive Debug";
+                return "PowerShell Debug Interactive";
             }
         }
 

@@ -189,8 +189,6 @@ namespace PowerShellTools
 
             InitializePowerShellHost();
 
-            ShowDonate();
-
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(), 
                             new ExecuteAsScriptCommand(), 
@@ -209,43 +207,6 @@ namespace PowerShellTools
                     _contentType = ComponentModel.GetService<IContentTypeRegistryService>().GetContentType(PowerShellConstants.LanguageName);
                 }
                 return _contentType;
-            }
-        }
-
-        static void ShowDonate()
-        {
-            try
-            {
-                using (var key = Registry.CurrentUser.CreateSubKey(@"Software\PowerShell Tools for Visual Studio"))
-                {
-                    if (key != null)
-                    {
-                        DateTime lastNotification;
-                        var lastNotificationString = key.GetValue("LastNotification", "1900-1-1") as string;
-                        DateTime.TryParse(lastNotificationString, out lastNotification);
-                        if (lastNotification < (DateTime.Now.AddDays(-1)))
-                        {
-                            key.SetValue("LastNotification", DateTime.Now.ToString());
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
-                }
-
-                var item = new NotifyIcon();
-                item.Visible = true;
-                item.Icon = System.Drawing.SystemIcons.Information;
-                item.BalloonTipClicked += (sender, args) => Process.Start(
-                    "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2XL93PX3R3TJL");
-
-                item.ShowBalloonTip(3000, "Support the development of PowerShell Tools",
-                    "Please consider a donation to support the development of PowerShell Tools for Visual Studio.",
-                    ToolTipIcon.Info);
-            }
-            catch
-            {
             }
         }
 

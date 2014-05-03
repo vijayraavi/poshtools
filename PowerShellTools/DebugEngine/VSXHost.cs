@@ -35,11 +35,10 @@ namespace PowerShellTools.DebugEngine
                 HostUi.ReplWindow = value;
                 if (value != null)
                 {
-                    value.SetOptionValue(ReplOptions.PrimaryPrompt, GetCurrentDirectory() + " >");
+                    RefreshPrompt();
                 }
             }
         }
-
 
         /// <summary>
         /// The culture information of the thread that created
@@ -82,7 +81,7 @@ namespace PowerShellTools.DebugEngine
         public void RefreshPrompt()
         {
             if (HostUi != null && HostUi.ReplWindow != null)
-                this.HostUi.ReplWindow.SetOptionValue(ReplOptions.PrimaryPrompt, GetCurrentDirectory() + " >");
+                this.HostUi.ReplWindow.SetOptionValue(ReplOptions.CurrentPrimaryPrompt, GetCurrentDirectory() + "> ");
         }
 
 

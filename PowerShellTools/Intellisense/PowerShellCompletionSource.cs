@@ -11,27 +11,31 @@ using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Intellisense
 {
+    /// <summary>
+    /// Provides the list of possible completion sources for a completion session.
+    /// </summary>
     internal class PowerShellCompletionSource : ICompletionSource
     {
-        private PowerShellCompletionSourceProvider m_sourceProvider;
-        private ITextBuffer m_textBuffer;
-        private List<Completion> m_compList;
-        private VSXHost _host;
-        private IGlyphService _glyphs;
+        private readonly PowerShellCompletionSourceProvider _sourceProvider;
+        private readonly ITextBuffer _textBuffer;
+        private List<Completion> _compList;
+        private readonly VSXHost _host;
+        private readonly IGlyphService _glyphs;
         private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellCompletionSource));
+        private bool _isDisposed;
 
         public PowerShellCompletionSource(PowerShellCompletionSourceProvider sourceProvider, ITextBuffer textBuffer, VSXHost host, IGlyphService glyphService)
         {
             Log.Debug("Constructor");
-            m_sourceProvider = sourceProvider;
-            m_textBuffer = textBuffer;
+            _sourceProvider = sourceProvider;
+            _textBuffer = textBuffer;
             _host = host;
             _glyphs = glyphService;
         }
 
         void ICompletionSource.AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
-            m_compList = new List<Completion>();
+            _compList = new List<Completion>();
 
             Log.Debug("AugmentCompletionSession");
 
@@ -102,7 +106,7 @@ namespace PowerShellTools.Intellisense
                     }
                    
 
-                    m_compList.Add(new Completion(displayText, completionText, match.ToolTip, glyph, null));
+                    _compList.Add(new Completion(displayText, completionText, match.ToolTip, glyph, null));
                 }
             }
 
@@ -110,26 +114,23 @@ namespace PowerShellTools.Intellisense
                 "Tokens",    //the non-localized title of the tab 
                 "Tokens",    //the display title of the tab
                 FindTokenSpanAtPosition(session),
-                m_compList,
+                _compList,
                 null));
         }
 
         private ITrackingSpan FindTokenSpanAtPosition(ICompletionSession session)
         {
             SnapshotPoint currentPoint = (session.TextView.Caret.Position.BufferPosition) - 1;
-            ITextStructureNavigator navigator = m_sourceProvider.NavigatorService.GetTextStructureNavigator(m_textBuffer);
-
-            //TextExtent extent = navigator.GetExtentOfWord(currentPoint);
             return currentPoint.Snapshot.CreateTrackingSpan(currentPoint.Position + 1, 0, SpanTrackingMode.EdgeInclusive);
         }
 
-        private bool m_isDisposed;
+        
         public void Dispose()
         {
-            if (!m_isDisposed)
+            if (!_isDisposed)
             {
                 GC.SuppressFinalize(this);
-                m_isDisposed = true;
+                _isDisposed = true;
             }
         }
     }

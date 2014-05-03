@@ -93,7 +93,7 @@
         <CommandFlag>TextChanges</CommandFlag>
         <Strings>
           <CommandName>cmdidReplWindow</CommandName>
-          <ButtonText>PowerShell Interactive Default</ButtonText>
+          <ButtonText>PowerShell Debug Interactive</ButtonText>
         </Strings>
       </Button>
     </Buttons>
