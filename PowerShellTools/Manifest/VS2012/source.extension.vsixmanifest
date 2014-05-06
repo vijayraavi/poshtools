@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="58dce676-42b0-4dd6-9ee4-afbc8e582b8a" Version="0.7.5" Language="en-US" Publisher="Adam Driscoll" />
+    <Identity Id="58dce676-42b0-4dd6-9ee4-afbc8e582b8a" Version="0.7.6" Language="en-US" Publisher="Adam Driscoll" />
     <DisplayName>PowerShell Tools for Visual Studio</DisplayName>
     <Description xml:space="preserve">PowerShell integration for Visual Studio</Description>
     <MoreInfo>http://adamdriscoll.github.io/poshtools</MoreInfo>
@@ -18,9 +18,9 @@
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="4.5" />
     <Dependency Id="Microsoft.VisualStudio.MPF.11.0" DisplayName="Visual Studio MPF 11.0" d:Source="Installed" Version="11.0" />
+    <Dependency d:Source="Project" d:ProjectName="ReplWindow" d:InstallSource="Embed" Location="|ReplWindow;VSIXContainerProjectOutputGroup|" DisplayName="|ReplWindow;VSIXNameProjectOutputGroup|" Id="|ReplWindow;VSIXIdentifierProjectOutputGroup|" />
   </Dependencies>
   <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
     <Asset Type="Microsoft.VisualStudio.ItemTemplate" d:Source="File" Path="ItemTemplates" d:TargetPath="ItemTemplates\PowerShell Script.zip" />
     <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="File" Path="ProjectTemplates" d:TargetPath="ProjectTemplates\PowerShellProject.zip" />
@@ -28,7 +28,5 @@
     <Asset Type="Microsoft.VisualStudio.ItemTemplate" d:Source="File" Path="ItemTemplates" d:TargetPath="ItemTemplates\PowerShell Script Data File.zip" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%.TestAdapter" Path="|PowerShellTools.TestAdapter|" />
     <Asset Type="UnitTestExtension" d:Source="Project" d:ProjectName="%CurrentProject%.TestAdapter" Path="|PowerShellTools.TestAdapter|" />
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="ReplWindow" Path="|ReplWindow;PkgdefProjectOutputGroup|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="ReplWindow" Path="|ReplWindow|" />
   </Assets>
 </PackageManifest>

@@ -33,6 +33,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.VisualStudio</RootNamespace>
     <AssemblyName Condition="'$(InteractiveWindow)' == ''">Microsoft.VisualStudio.ReplWindow</AssemblyName>
+    <AssemblyName Condition="'$(PowerShellRepl)' != ''">Microsoft.VisualStudio.PowerShellReplWindow</AssemblyName>
     <AssemblyName Condition="'$(InteractiveWindow)' != ''">Microsoft.VisualStudio.InteractiveWindow</AssemblyName>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
@@ -234,10 +235,16 @@
     <RegisterWithCodebase>true</RegisterWithCodebase>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DefineConstants>TRACE;DEBUG;DEV11;DEV11_OR_LATER;POWERSHELL</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DEV11;DEV11_OR_LATER;</DefineConstants>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DeployExtension>False</DeployExtension>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DefineConstants>TRACE;DEV11;DEV11_OR_LATER; POWERSHELL</DefineConstants>
+    <DefineConstants>TRACE;DEV11;DEV11_OR_LATER;</DefineConstants>
+    <DeployExtension>False</DeployExtension>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(PowerShellRepl)' != ''">
+    <DefineConstants>$(DefineConstants);POWERSHELL</DefineConstants>
   </PropertyGroup>
   <Import Project="..\Build\ProjectAfter.settings" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
