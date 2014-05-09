@@ -550,9 +550,6 @@
     <None Include="Templates\Files\Script.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Key.snk" />
-  </ItemGroup>
-  <ItemGroup>
     <VSCTCompile Include="PowerShellTools.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
