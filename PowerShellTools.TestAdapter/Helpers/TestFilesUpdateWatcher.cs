@@ -15,6 +15,15 @@ namespace XmlTestAdapter.EventWatchers
             public FileWatcherInfo(FileSystemWatcher watcher)
             {
                 Watcher = watcher;
+
+                Watcher.NotifyFilter = NotifyFilters.Attributes |
+                                        NotifyFilters.CreationTime |
+                                        NotifyFilters.FileName |
+                                        NotifyFilters.LastAccess |
+                                        NotifyFilters.LastWrite |
+                                        NotifyFilters.Size |
+                                        NotifyFilters.Security;
+
                 LastEventTime = DateTime.MinValue;
             }
 

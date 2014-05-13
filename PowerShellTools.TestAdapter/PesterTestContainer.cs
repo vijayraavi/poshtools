@@ -75,7 +75,8 @@ namespace PowerShellTools.TestAdapter.Pester
                 return result;
             }
 
-            return this.timeStamp.CompareTo(testContainer.timeStamp);
+            var ts =this.timeStamp.CompareTo(testContainer.timeStamp);
+            return ts;
         }
 
         public ITestContainer Snapshot()
