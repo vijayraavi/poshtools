@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]    
     [UserVisible(true)]
     internal class InteractiveBlackFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - Black";
+        public const string Name = "PowerShell Interactive - Black";
 
         [Export]
         [Name(Name)]
@@ -42,7 +42,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveDarkRedFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - DarkRed";
+        public const string Name = "PowerShell Interactive - DarkRed";
 
         [Export]
         [Name(Name)]
@@ -60,7 +60,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveDarkGreenFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - DarkGreen";
+        public const string Name = "PowerShell Interactive - DarkGreen";
 
         [Export]
         [Name(Name)]
@@ -78,7 +78,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveDarkYellowFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - DarkYellow";
+        public const string Name = "PowerShell Interactive - DarkYellow";
 
         [Export]
         [Name(Name)]
@@ -96,7 +96,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveDarkBlueFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - DarkBlue";
+        public const string Name = "PowerShell Interactive - DarkBlue";
 
         [Export]
         [Name(Name)]
@@ -114,7 +114,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveDarkMagentaFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - DarkMagenta";
+        public const string Name = "PowerShell Interactive - DarkMagenta";
 
         [Export]
         [Name(Name)]
@@ -132,7 +132,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveDarkCyanFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - DarkCyan";
+        public const string Name = "PowerShell Interactive - DarkCyan";
 
         [Export]
         [Name(Name)]
@@ -150,7 +150,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveGrayFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - Gray";
+        public const string Name = "PowerShell Interactive - Gray";
 
         [Export]
         [Name(Name)]
@@ -168,7 +168,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveDarkGrayFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - DarkGray";
+        public const string Name = "PowerShell Interactive - DarkGray";
 
         [Export]
         [Name(Name)]
@@ -186,7 +186,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveRedFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - Red";
+        public const string Name = "PowerShell Interactive - Red";
         
         [Export]
         [Name(Name)]
@@ -204,7 +204,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveGreenFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - Green";
+        public const string Name = "PowerShell Interactive - Green";
 
         [Export]
         [Name(Name)]
@@ -222,7 +222,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveYellowFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - Yellow";
+        public const string Name = "PowerShell Interactive - Yellow";
         
         [Export]
         [Name(Name)]
@@ -241,7 +241,7 @@ namespace Microsoft.VisualStudio.Repl {
     [UserVisible(true)]
     [Order(After = Priority.Default, Before = Priority.High)]
     internal class InteractiveBlueFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - Blue";
+        public const string Name = "PowerShell Interactive - Blue";
 
         [Export]
         [Name(Name)]
@@ -259,7 +259,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveMagentaFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - Magenta";
+        public const string Name = "PowerShell Interactive - Magenta";
 
         [Export]
         [Name(Name)]
@@ -277,7 +277,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveCyanFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - Cyan";
+        public const string Name = "PowerShell Interactive - Cyan";
         
         [Export]
         [Name(Name)]
@@ -295,7 +295,7 @@ namespace Microsoft.VisualStudio.Repl {
     [DisplayName(Name)]
     [UserVisible(true)]
     internal class InteractiveWhiteFormatDefinition : ClassificationFormatDefinition {
-        public const string Name = "Interactive - White";
+        public const string Name = "PowerShell Interactive - White";
 
         [Export]
         [Name(Name)]

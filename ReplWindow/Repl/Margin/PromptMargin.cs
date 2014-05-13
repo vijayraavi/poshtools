@@ -40,7 +40,16 @@ namespace Microsoft.VisualStudio.Repl {
         internal IEditorFormatMapService EditorFormatMapService;
 
         public IWpfTextViewMargin CreateMargin(IWpfTextViewHost wpfTextViewHost, IWpfTextViewMargin parent) {
-            return new PromptMargin(wpfTextViewHost, EditorFormatMapService.GetEditorFormatMap(wpfTextViewHost.TextView));
+            try
+            {
+                return new PromptMargin(wpfTextViewHost,
+                    EditorFormatMapService.GetEditorFormatMap(wpfTextViewHost.TextView));
+            }
+            catch
+            {
+                return null;
+            }
+            
         }
     }
 
@@ -48,7 +57,7 @@ namespace Microsoft.VisualStudio.Repl {
     /// Provides glyphs corresponding to GlyphTags in the buffer.
     /// </summary>
     internal sealed class PromptMargin : IWpfTextViewMargin {
-        public const string MarginName = "InteractivePromptMargin";
+        public const string MarginName = "PowerShellInteractivePromptMargin";
 
         private readonly IWpfTextView _textView;
         private readonly IEditorFormatMap _editorFormatMap;
