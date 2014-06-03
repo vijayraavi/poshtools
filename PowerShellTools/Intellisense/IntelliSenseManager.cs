@@ -21,7 +21,7 @@ namespace PowerShellTools.Intellisense
         private readonly ICompletionBroker _broker;
         private ICompletionSession _activeSession;
         private readonly SVsServiceProvider _serviceProvider;
-        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellCompletionCommandHandler));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(IntelliSenseManager));
 
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView)
         {
