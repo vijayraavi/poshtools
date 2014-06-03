@@ -13,8 +13,8 @@ namespace PowerShellTools.Project
             : base(package, Utilities.GetImageList(typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.ProjectIcon.bmp")))
         {
             _package = package;
-            AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
-            AddCATIDMapping(typeof (PowerShellModulePropertyPage), typeof (PowerShellModulePropertyPage).GUID);
+            // TODO: Temporary!! AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
+            //TODO: Temporary!!  AddCATIDMapping(typeof (PowerShellModulePropertyPage), typeof (PowerShellModulePropertyPage).GUID);
         }
 
         public override Type GetProjectFactoryType()
@@ -39,12 +39,14 @@ namespace PowerShellTools.Project
 
         public override Type GetGeneralPropertyPageType()
         {
-            return typeof (PowerShellGeneralPropertyPage);
+            //TODO: Temporary!!  return typeof (PowerShellGeneralPropertyPage);
+            return typeof (PowerShellDebugPropertyPage);
         }
 
         protected override Guid[] GetConfigurationIndependentPropertyPages()
         {
-            return new[] { typeof(PowerShellGeneralPropertyPage).GUID, typeof(PowerShellDebugPropertyPage).GUID, typeof(PowerShellModulePropertyPage).GUID };
+           //TODO: Temporary!! return new[] { typeof(PowerShellGeneralPropertyPage).GUID, typeof(PowerShellDebugPropertyPage).GUID, typeof(PowerShellModulePropertyPage).GUID };
+           return new[] { typeof(PowerShellDebugPropertyPage).GUID };
         }
 
         public override Type GetLibraryManagerType()
