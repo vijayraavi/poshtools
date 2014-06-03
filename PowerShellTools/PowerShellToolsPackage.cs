@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using EnvDTE;
+using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
@@ -260,7 +262,7 @@ namespace PowerShellTools
 
             Log.Info("InitializePowerShellHost");
 
-            Host = new VSXHost(page.OverrideExecutionPolicyConfiguration);
+            Host = new VSXHost(page.OverrideExecutionPolicyConfiguration, (DTE2)GetService(typeof(DTE)));
             Host.HostUi.OutputProgress = (label, percentage) =>
             {
                 Log.DebugFormat("Output progress: {0} {1}", label, percentage);

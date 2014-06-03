@@ -10,15 +10,20 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading;
+using EnvDTE;
+using EnvDTE80;
 using Microsoft.PowerShell;
 using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.Repl;
+using Thread = System.Threading.Thread;
 
 namespace PowerShellTools.DebugEngine
 {
 #if POWERSHELL
     using IReplWindow = IPowerShellReplWindow;
 #endif
+
+
 
     /// <summary>
     ///     The PoshTools PowerShell host
@@ -30,7 +35,7 @@ namespace PowerShellTools.DebugEngine
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
         private readonly Runspace _runspace;
 
-        public VSXHost(bool overrideExecutionPolicy = false)
+        public VSXHost(bool overrideExecutionPolicy, DTE2 dte2)
         {
             if (Instance != null)
             {
@@ -47,6 +52,8 @@ namespace PowerShellTools.DebugEngine
 
             _runspace = RunspaceFactory.CreateRunspace(this, iss);
             _runspace.Open();
+
+            _runspace.SessionStateProxy.PSVariable.Set("dte", dte2);
 
             if (overrideExecutionPolicy)
             {
