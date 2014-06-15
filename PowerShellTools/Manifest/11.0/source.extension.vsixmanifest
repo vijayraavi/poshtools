@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="58dce676-42b0-4dd6-9ee4-afbc8e582b8a" Version="0.7.9" Language="en-US" Publisher="Adam Driscoll" />
-    <DisplayName>PowerShell Tools for Visual Studio</DisplayName>
+    <Identity Id="58dce676-42b0-4dd6-9ee4-afbc8e582b8b" Version="0.8.0" Language="en-US" Publisher="Adam Driscoll" />
+    <DisplayName>PowerShell Tools for Visual Studio 2012</DisplayName>
     <Description xml:space="preserve">PowerShell integration for Visual Studio</Description>
     <MoreInfo>http://adamdriscoll.github.io/poshtools</MoreInfo>
     <License>License.txt</License>
@@ -11,9 +11,9 @@
     <Tags>PowerShell</Tags>
   </Metadata>
   <Installation InstalledByMsi="false">
-    <InstallationTarget Version="[11.0,12.0)" Id="Microsoft.VisualStudio.IntegratedShell" />
-    <InstallationTarget Version="[11.0,12.0)" Id="Microsoft.VisualStudio.Pro" />
-    <InstallationTarget Version="12.0" Id="Microsoft.VisualStudio.Pro" />
+    <InstallationTarget Version="[11.0]" Id="Microsoft.VisualStudio.IntegratedShell" />
+    <InstallationTarget Version="[11.0]" Id="Microsoft.VisualStudio.Pro" />
+    <InstallationTarget Version="11.0" Id="Microsoft.VisualStudio.Pro" />
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="4.5" />

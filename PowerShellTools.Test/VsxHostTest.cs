@@ -12,7 +12,7 @@ namespace PowerShellTools.Test
         [TestInitialize]
         public void Init()
         {
-            _host = new VSXHost();
+            //_host = new VSXHost();
         }
 
         [TestMethod]
