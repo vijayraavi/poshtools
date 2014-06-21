@@ -87,6 +87,8 @@ namespace PowerShellTools.DebugEngine
                 Thread.Sleep(1000);
             }
 
+            VSXHost.Instance.HostUi.OutputString = _events.OutputString;
+
             Debugger = new ScriptDebugger(Runspace, bps);
             Debugger.OutputString += Debugger_OutputString;
             Debugger.BreakpointHit += Debugger_BreakpointHit;

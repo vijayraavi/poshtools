@@ -303,7 +303,7 @@ namespace PowerShellTools.DebugEngine
 
             if (node.IsFile)
             {
-                commandLine = String.Format("& '{0}' {1}", node.FileName, node.Arguments);    
+                commandLine = String.Format(". '{0}' {1}", node.FileName, node.Arguments);    
             }
             Execute(commandLine);
         }
