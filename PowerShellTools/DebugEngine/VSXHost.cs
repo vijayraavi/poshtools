@@ -486,12 +486,15 @@ namespace PowerShellTools.DebugEngine
 
         public override void SetBufferContents(Coordinates origin, BufferCell[,] contents)
         {
-            throw new NotImplementedException();
+           
         }
 
         public override void SetBufferContents(Rectangle rectangle, BufferCell fill)
         {
-            throw new NotImplementedException();
+            if (rectangle.Bottom == -1 || rectangle.Top == -1 || rectangle.Right == -1 || rectangle.Left == -1)
+            {
+                VSXHost.Instance.ReplWindow.ClearScreen();
+            }
         }
 
         public override BufferCell[,] GetBufferContents(Rectangle rectangle)
