@@ -288,6 +288,9 @@ namespace PowerShellTools.DebugEngine
                 {
                     OutputString(this, new EventArgs<string>("Error: " + ex.Message + Environment.NewLine));
                 }
+
+                VSXHost.Instance.ReplWindow.WriteError("Error: " + ex.Message + Environment.NewLine);
+
                 OnTerminatingException(ex);
             }
             finally
