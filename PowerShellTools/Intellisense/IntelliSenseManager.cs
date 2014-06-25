@@ -140,7 +140,7 @@ namespace PowerShellTools.Intellisense
         private static bool IsIntellisenseTrigger(char ch)
         {
             Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
-            return ch == '-' || ch == '$' || ch == '.' || ch == ':';
+            return ch == '-' || ch == '$' || ch == '.' || ch == ':' || ch == '\\';
         }
 
         /// <summary>
