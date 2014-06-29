@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading;
 using EnvDTE;
 using EnvDTE80;
+using log4net;
 using Microsoft.PowerShell;
 using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.Repl;
@@ -30,6 +33,7 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public class VSXHost : PSHost, IHostSupportsInteractiveSession
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (VSXHost));
         private readonly Guid _instanceId = Guid.NewGuid();
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
@@ -47,13 +51,15 @@ namespace PowerShellTools.DebugEngine
             HostUi = new HostUi();
 
             InitialSessionState iss = InitialSessionState.CreateDefault();
-            iss.ApartmentState = ApartmentState.MTA;
+            iss.ApartmentState = ApartmentState.STA;
             iss.ThreadOptions = PSThreadOptions.ReuseThread;
 
             _runspace = RunspaceFactory.CreateRunspace(this, iss);
             _runspace.Open();
 
             _runspace.SessionStateProxy.PSVariable.Set("dte", dte2);
+            ImportPoshToolsModule();
+            LoadProfile();
 
             if (overrideExecutionPolicy)
             {
@@ -144,6 +150,51 @@ namespace PowerShellTools.DebugEngine
         {
             if (HostUi != null && HostUi.ReplWindow != null)
                 HostUi.ReplWindow.SetOptionValue(ReplOptions.CurrentPrimaryPrompt, GetPrompt());
+        }
+
+        private void ImportPoshToolsModule()
+        {
+            using (PowerShell ps = PowerShell.Create())
+            {
+                try
+                {
+                    var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+                    ps.Runspace = _runspace;
+                    ps.AddScript("Import-Module '" + assemblyLocation + "'");
+                    ps.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    Log.Info("Failed to load profile.", ex);
+                }
+            }
+        }
+
+        private void LoadProfile()
+        {
+            using (PowerShell ps = PowerShell.Create())
+            {
+                try
+                {
+                    var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    var windowsPowerShell = Path.Combine(myDocuments, "WindowsPowerShell");
+                    var profile = Path.Combine(windowsPowerShell, "PoshTools_profile.ps1");
+
+                    var fi = new FileInfo(profile);
+                    if (!fi.Exists)
+                    {
+                        return;
+                    }
+
+                    ps.Runspace = _runspace;
+                    ps.AddScript(". '" + profile + "'");
+                    ps.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    Log.Info("Failed to load profile.", ex);
+                }
+            }
         }
 
         private void SetupExecutionPolicy()

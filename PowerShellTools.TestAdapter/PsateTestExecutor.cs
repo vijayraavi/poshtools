@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Text;
 using Microsoft.PowerShell;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
@@ -144,15 +146,20 @@ namespace PowerShellTools.TestAdapter
 
                 ps.Commands.Clear();
                 ps.AddCommand("Get-Variable").AddParameter("Name", "Results");
-
                 var results = ps.Invoke<PSObject>();
 
-                RecordResults(frameworkHandle, testFile, testCases, results);
+                PSDataCollection<ErrorRecord> errors = null;
+                if (ps.HadErrors && (results == null || !results.Any()))
+                {
+                    errors = ps.Streams.Error;
+                }
+
+                RecordResults(frameworkHandle, testFile, testCases, results, errors);
             }
         }
 
         private static void RecordResults(IFrameworkHandle frameworkHandle, string testFile, IEnumerable<TestCase> testCases,
-            Collection<PSObject> results)
+            Collection<PSObject> results, PSDataCollection<ErrorRecord> errorRecords)
         {
             string file = testFile;
             foreach (var testCase in testCases.Where(m => m.CodeFilePath == file))
@@ -165,6 +172,14 @@ namespace PowerShellTools.TestAdapter
                 var testCaseName = testCase.FullyQualifiedName.Split(',')[1];
 
                 var testResultData = new PowerShellTestResult(results.FirstOrDefault(), testFixture, testCaseName);
+
+                if (errorRecords != null)
+                {
+                    foreach (var error in errorRecords)
+                    {
+                        testResult.Messages.Add(new TestResultMessage("Error", error.ToString()));
+                    }
+                }
 
                 if (testResultData.Passed)
                 {

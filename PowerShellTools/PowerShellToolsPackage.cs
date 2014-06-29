@@ -118,6 +118,11 @@ namespace PowerShellTools
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
 
+        public new object GetService(Type type)
+        {
+            return base.GetService(type);
+        }
+
         public override Type GetLibraryManagerType()
         {
             return null;
