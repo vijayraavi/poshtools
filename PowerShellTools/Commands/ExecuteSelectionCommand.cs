@@ -21,7 +21,7 @@ namespace PowerShellTools.Commands
         public void Execute(object sender, EventArgs args)
         {
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null)
+            if (dte2 != null && dte2.ActiveDocument != null)
             {
                 var launcher = new PowerShellProjectLauncher();
 
@@ -44,7 +44,7 @@ namespace PowerShellTools.Commands
             bool bVisible = false;
 
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null && dte2.ActiveDocument.Language == "PowerShell")
+            if (dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == "PowerShell")
             {
                 bVisible = true;
             }

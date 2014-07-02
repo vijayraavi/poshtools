@@ -23,12 +23,16 @@ namespace PowerShellTools.Commands
 
         public void QueryStatus(object sender, EventArgs args)
         {
-            var menuItem = sender as OleMenuCommand;
-            if (menuItem != null)
+            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            if (dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == "PowerShell")
             {
-                menuItem.Visible = true;
-                menuItem.Supported = true;
-                menuItem.Enabled = true;
+                var menuItem = sender as OleMenuCommand;
+                if (menuItem != null)
+                {
+                    menuItem.Visible = true;
+                    menuItem.Supported = true;
+                    menuItem.Enabled = true;
+                }
             }
         }
 
