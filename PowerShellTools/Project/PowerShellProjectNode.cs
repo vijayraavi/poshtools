@@ -15,6 +15,7 @@ namespace PowerShellTools.Project
         {
             _package = package;
             // TODO: Temporary!! AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
+            AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
             AddCATIDMapping(typeof (PowerShellModulePropertyPage), typeof (PowerShellModulePropertyPage).GUID);
         }
 
@@ -41,7 +42,7 @@ namespace PowerShellTools.Project
         public override Type GetGeneralPropertyPageType()
         {
             //TODO: Temporary!!  return typeof (PowerShellGeneralPropertyPage);
-            return typeof (PowerShellDebugPropertyPage);
+            return null;
         }
 
         protected override Guid[] GetConfigurationIndependentPropertyPages()
