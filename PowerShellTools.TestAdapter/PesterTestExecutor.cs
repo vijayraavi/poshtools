@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Text;
 using System.Xml.Linq;
 using Microsoft.PowerShell;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using PowerShellTools.TestAdapter.Pester;
 
 namespace PowerShellTools.TestAdapter
@@ -74,12 +76,16 @@ namespace PowerShellTools.TestAdapter
 
             // TODO: Scour for custom nuget packages paths.
 
-            var packagePath = Directory.GetDirectories(packagesRoot, "Pester*", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (null != packagePath)
+            if (Directory.Exists(packagesRoot))
             {
-                // Needs to be kept up to date with the directory structure.
-                return Path.Combine(packagePath, @"tools\Pester.psm1");
+                var packagePath = Directory.GetDirectories(packagesRoot, "Pester*", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (null != packagePath)
+                {
+                    // Needs to be kept up to date with the directory structure.
+                    return Path.Combine(packagePath, @"tools\Pester.psm1");
+                }
             }
+
 
             return null;
         }
@@ -99,9 +105,16 @@ namespace PowerShellTools.TestAdapter
                 testResult.ErrorMessage = "Unexpected error! Failed to run tests!";
 
                 PowerShellTestResult testResultData = null;
+                var testOutput = new StringBuilder();
+
                 try
                 {
-                    Runspace r = RunspaceFactory.CreateRunspace(new TestAdapterHost());
+                   
+                    var testAdapter = new TestAdapterHost();
+                    testAdapter.HostUi.OutputString = s => testOutput.Append(s);
+                    
+
+                    Runspace r = RunspaceFactory.CreateRunspace(testAdapter);
                     r.Open();
 
                     using (var ps = PowerShell.Create())
@@ -151,6 +164,8 @@ namespace PowerShellTools.TestAdapter
                     }
                 }
                 
+                
+                frameworkHandle.SendMessage(TestMessageLevel.Informational, testOutput.ToString());
                 frameworkHandle.RecordResult(testResult);
             }
 

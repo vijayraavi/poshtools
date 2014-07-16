@@ -2,24 +2,22 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
-using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerShellTools.TestAdapter
 {
     class TestAdapterHost : PSHost, IHostSupportsInteractiveSession
     {
         private Guid _instanceGuid;
+        private HostUi _hostUi;
 
         public TestAdapterHost()
         {
             _instanceGuid = Guid.NewGuid();
+            _hostUi = new HostUi();
         }
 
         public override void SetShouldExit(int exitCode)
@@ -64,7 +62,12 @@ namespace PowerShellTools.TestAdapter
 
         public override PSHostUserInterface UI
         {
-            get { return new HostUi(); }
+            get { return _hostUi; }
+        }
+
+        public HostUi HostUi
+        {
+            get { return _hostUi; }
         }
 
         public override CultureInfo CurrentCulture
@@ -161,8 +164,6 @@ namespace PowerShellTools.TestAdapter
 
         public override Dictionary<string, PSObject> Prompt(string caption, string message, Collection<FieldDescription> descriptions)
         {
-
-
             return null;
         }
 

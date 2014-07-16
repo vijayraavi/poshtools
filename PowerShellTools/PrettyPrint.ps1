@@ -129,7 +129,7 @@ function Indent {
         }
     }
 
-    if ($reprocess) { $AstString = Format-TypeName $NewAstString }
+    if ($reprocess) { $AstString = Indent $NewAstString }
 
 	$AstString
 }
