@@ -281,5 +281,10 @@ namespace PowerShellTools
                 }
             };
         }
+
+        public T GetDialogPage<T>() where T : DialogPage
+        {
+            return (T)GetDialogPage(typeof (T));
+        }
     }
 }

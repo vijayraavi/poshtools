@@ -84,5 +84,9 @@ namespace Microsoft.VisualStudio.Repl {
         /// Otherwise only the currently active input prompt will be updated.
         /// </summary>
         CurrentSecondaryPrompt,
+        /// <summary>
+        /// Determines whether the REPL supports multiline editing.
+        /// </summary>
+        Multiline
     }
 }

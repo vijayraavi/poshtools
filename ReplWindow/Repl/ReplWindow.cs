@@ -165,7 +165,7 @@ namespace Microsoft.VisualStudio.Repl {
         private string _prompt = "» ";        // prompt for primary input
         private string _secondPrompt = "";    // prompt for 2nd and additional lines
         private string _stdInputPrompt = "";  // prompt for standard input
-        private bool _displayPromptInMargin, _formattedPrompts;
+        private bool _displayPromptInMargin, _formattedPrompts, _multiline;
 
         private static readonly char[] _whitespaceChars = new[] { '\r', '\n', ' ', '\t' };
         private const string _boxSelectionCutCopyTag = "MSDEVColumnSelect";
@@ -805,7 +805,9 @@ namespace Microsoft.VisualStudio.Repl {
                                 UpdatePrompts(ReplSpanKind.SecondaryPrompt, null, _secondPrompt);
                             }
                             break;
-
+                        case ReplOptions.Multiline:
+                            _multiline = CheckOption<bool>(option, value);
+                            break;
                         default:
                             throw new InvalidOperationException(String.Format("Unknown option: {0}", option));
                     }
@@ -847,6 +849,7 @@ namespace Microsoft.VisualStudio.Repl {
                 case ReplOptions.UseSmartUpDown: return _useSmartUpDown;
                 case ReplOptions.SupportAnsiColors: return _buffer.ProcessAnsiEscapes;
                 case ReplOptions.FormattedPrompts: return _formattedPrompts;
+                case ReplOptions.Multiline: return _multiline;
                 default:
                     throw new InvalidOperationException(String.Format("Unknown option: {0}", option));
             }
@@ -2271,10 +2274,14 @@ namespace Microsoft.VisualStudio.Repl {
 
             // Ignore any whitespace past the insertion point when determining
             // whether or not we're at the end of the input
-            var pt = GetActiveCodeInsertionPosition();
-            var atEnd = (pt == input.Length) || (pt >= 0 && input.Substring(pt).Trim().Length == 0);
-            if (!atEnd) {
-                return false;
+            if ((bool)GetOptionValue(ReplOptions.Multiline))
+            {
+                var pt = GetActiveCodeInsertionPosition();
+                var atEnd = (pt == input.Length) || (pt >= 0 && input.Substring(pt).Trim().Length == 0);
+                if (!atEnd)
+                {
+                    return false;
+                }
             }
 
             // A command is never multi-line, so always try to execute something which looks like a command

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Repl;
 using Microsoft.VisualStudio.Text;
 using PowerShellTools.DebugEngine;
+using PowerShellTools.Diagnostics;
 
 namespace PowerShellTools.Repl
 {
@@ -34,6 +35,9 @@ namespace PowerShellTools.Repl
         {
             PowerShellToolsPackage.Instance.Host.ReplWindow = window;
 
+            var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
+
+            window.SetOptionValue(ReplOptions.Multiline, page.MutlilineRepl);
             window.SetOptionValue(ReplOptions.UseSmartUpDown, true);
 
             return tf.StartNew(() => { Window = window; return new ExecutionResult(true); });
@@ -74,6 +78,8 @@ namespace PowerShellTools.Repl
         {
             Debugger.Stop();
         }
+
+
     }
  
 }
