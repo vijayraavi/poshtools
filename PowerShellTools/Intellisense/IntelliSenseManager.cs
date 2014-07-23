@@ -22,12 +22,14 @@ namespace PowerShellTools.Intellisense
         private ICompletionSession _activeSession;
         private readonly SVsServiceProvider _serviceProvider;
         private static readonly ILog Log = LogManager.GetLogger(typeof(IntelliSenseManager));
+        private bool _isRepl;
 
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView)
         {
             _broker = broker;
             _nextCommandHandler = commandHandler;
             _textView = textView;
+            _isRepl = _textView.Properties.ContainsProperty("REPL");
             _serviceProvider = provider;
         }
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
@@ -85,6 +87,11 @@ namespace PowerShellTools.Intellisense
                         _activeSession.Dismiss();
                     }
                 }
+                else if (nCmdID == (uint) VSConstants.VSStd2KCmdID.TAB && _isRepl)
+                {
+                    TriggerCompletion();
+                    return VSConstants.S_OK;
+                }
             }
 
             //pass along the command so the char is added to the buffer 
@@ -103,7 +110,6 @@ namespace PowerShellTools.Intellisense
                         Log.Debug("Filter");
                         _activeSession.Filter();
                     }
-                        
                 }
             }
             else if (commandId == (uint) VSConstants.VSStd2KCmdID.BACKSPACE //redo the filter if there is a deletion

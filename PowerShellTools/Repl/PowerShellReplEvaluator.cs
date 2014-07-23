@@ -37,6 +37,8 @@ namespace PowerShellTools.Repl
 
             var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
 
+            window.TextView.Properties.AddProperty("REPL", null);
+
             window.SetOptionValue(ReplOptions.Multiline, page.MutlilineRepl);
             window.SetOptionValue(ReplOptions.UseSmartUpDown, true);
 

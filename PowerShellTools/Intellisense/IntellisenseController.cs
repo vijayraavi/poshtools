@@ -38,7 +38,6 @@ namespace PowerShellTools.Intellisense {
             _textView = textView;
             _provider = provider;
             textView.Properties.AddProperty(typeof(IntellisenseController), this);  // added so our key processors can get back to us
-            textView.Properties.AddProperty("REPL", "REPL");
 
             _intelliSenseManager = new IntelliSenseManager(provider._CompletionBroker, provider.ServiceProvider, null, textView);
         }
