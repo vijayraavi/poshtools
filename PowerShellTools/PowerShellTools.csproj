@@ -519,6 +519,8 @@
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
+    <Resource Include="Templates\Projects\module_project_icon.ico" />
+    <Content Include="Templates\Projects\PowerModuleProject.vstemplate" />
     <Content Include="Templates\Projects\PowerShellProject.vstemplate" />
     <Resource Include="Templates\Projects\project_icon.ico" />
     <Content Include="ItemTemplates\PowerShell Script Module.zip">
@@ -533,8 +535,17 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="ProjectTemplates\PowerShellModuleProject.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\ScriptDataFile.psd1" />
     <None Include="Templates\Files\Script.psm1" />
+    <None Include="Templates\Projects\module.psd1" />
+    <None Include="Templates\Projects\Module.psm1" />
+    <None Include="Templates\Projects\Module.test.ps1" />
+    <None Include="Templates\Projects\PowerShellModuleProject.pssproj" />
     <None Include="Templates\Projects\PowerShellProject.pssproj">
       <SubType>Designer</SubType>
     </None>
@@ -592,6 +603,9 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3bVSIXContainerProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
