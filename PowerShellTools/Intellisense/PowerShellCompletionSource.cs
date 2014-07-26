@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Management.Automation;
 using System.Threading.Tasks;
 using log4net;
@@ -49,8 +50,8 @@ namespace PowerShellTools.Intellisense
                     }
                     else if (match.ResultType == CompletionResultType.Command && match.CompletionText.Contains("-"))
                     {
-                        completionText = completionText.Split('-')[1] + " ";
-                        displayText = completionText;
+                        //completionText = ;
+                        displayText = completionText.Split('-')[1];
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupMethod, StandardGlyphItem.GlyphItemPublic);
                     }
                     else if (match.ResultType == CompletionResultType.Type && match.CompletionText.Contains("."))
@@ -74,11 +75,13 @@ namespace PowerShellTools.Intellisense
                     else if (match.ResultType == CompletionResultType.ProviderContainer || match.ResultType == CompletionResultType.ProviderItem)
                     {
                         completionText = completionText.Substring(completionText.LastIndexOf("\\") + 1);
-
                         glyph = _glyphs.GetGlyph(match.ResultType == CompletionResultType.ProviderContainer ? StandardGlyphGroup.GlyphOpenFolder : StandardGlyphGroup.GlyphLibrary, StandardGlyphItem.GlyphItemPublic);
                     }
 
-                    compList.Add(new Completion(displayText, completionText, match.ToolTip, glyph, null));
+                    var completion = new Completion(displayText, completionText, match.ToolTip, glyph, null);
+                    completion.Properties.AddProperty("Type", match.ResultType);
+
+                    compList.Add(completion);
                 }
 
                 completionSets.Add(new CompletionSet(
@@ -103,8 +106,6 @@ namespace PowerShellTools.Intellisense
                     ps.Runspace = _host.Runspace;
                 }
             
-                Log.Debug("AugmentCompletionSession");
-
                 string text;
                 int currentPoint;
                 if (session.TextView.Properties.ContainsProperty("REPL"))
@@ -125,8 +126,14 @@ namespace PowerShellTools.Intellisense
                     text = session.TextView.TextBuffer.CurrentSnapshot.GetText();
                     currentPoint = session.TextView.Caret.Position.BufferPosition;
                 }
+                Stopwatch sw = new Stopwatch();
+                
+                Log.Debug("Calling CompleteInput...");
+                sw.Start();
+                var output = CommandCompletion.CompleteInput(text, currentPoint, new Hashtable(), ps);
+                Log.DebugFormat("CompleteInput returned in [{0}] seconds.", sw.Elapsed.TotalSeconds);
 
-                return CommandCompletion.CompleteInput(text, currentPoint, new Hashtable(), ps);  
+                return output;
             }
         }
 

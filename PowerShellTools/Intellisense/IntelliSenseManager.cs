@@ -1,4 +1,5 @@
 using System;
+using System.Management.Automation;
 using System.Runtime.InteropServices;
 using log4net;
 using Microsoft.VisualStudio;
@@ -75,6 +76,13 @@ namespace PowerShellTools.Intellisense
                     if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
                     {
                         Log.Debug("Commit");
+                        var selectedCompletion = _activeSession.SelectedCompletionSet.SelectionStatus.Completion;
+                        if (selectedCompletion.Properties
+                            .GetProperty<CompletionResultType>("Type") == CompletionResultType.Command)
+                        {
+                            return CompleteCommand(selectedCompletion);
+                        }
+
                         _activeSession.Commit();
 
                         //also, don't add the character to the buffer 
@@ -125,6 +133,26 @@ namespace PowerShellTools.Intellisense
             }
             if (handled) return VSConstants.S_OK;
             return retVal;
+        }
+
+        private int CompleteCommand(Completion selectedCompletion)
+        {
+            var triggerPoint = _activeSession.GetTriggerPoint(_activeSession.TextView.TextBuffer.CurrentSnapshot);
+            var currentPoint = _activeSession.TextView.Caret.Position.BufferPosition.Position;
+            var insertionText = selectedCompletion.InsertionText;
+            var caretPosition = triggerPoint.Value.Position;
+            var edit = _activeSession.TextView.TextBuffer.CreateEdit();
+            var verb = insertionText.Split('-')[0];
+
+            var deleteStart = triggerPoint - 1 - verb.Length;
+
+            var noun = insertionText.Split('-')[1];
+            edit.Delete(deleteStart.Value, currentPoint - deleteStart.Value);
+            edit.Insert(caretPosition, insertionText + " ");
+            edit.Apply();
+
+            _activeSession.Dismiss();
+            return VSConstants.S_OK;
         }
 
         /// <summary>
