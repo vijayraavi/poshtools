@@ -163,6 +163,8 @@ namespace PowerShellTools.DebugEngine
         {
             Log.InfoFormat("Debugger stopped");
 
+            if (CurrentExecutingNode == null) return;
+
             RefreshScopedVariables();
             RefreshCallStack();
 

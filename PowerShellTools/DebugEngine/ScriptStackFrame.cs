@@ -22,6 +22,10 @@ namespace PowerShellTools.DebugEngine
 
         public ScriptStackFrame(ScriptProgramNode node, CallStackFrame frame)
         {
+            if (node == null)
+            {
+                throw new ArgumentNullException("node");
+            }
             _node = node;
             _debugger = node.Debugger;
             // VS is zero based, PS is 1 based
