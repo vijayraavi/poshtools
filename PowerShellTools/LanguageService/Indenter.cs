@@ -32,9 +32,21 @@ namespace PowerShellTools.LanguageService
 
         public int? GetDesiredIndentation(ITextSnapshotLine line)
         {
+            try
+            {
+                return GetDesiredIndentationImp(line);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private int? GetDesiredIndentationImp(ITextSnapshotLine line)
+        {
             var lineNumber = line.LineNumber;
 
-            if (lineNumber == 1) return 0;
+            if (lineNumber <= 1) return 0;
 
             var previousLine = _textView.TextSnapshot.GetLineFromLineNumber(lineNumber - 1);
             var lineChars = previousLine.GetText().ToCharArray();
