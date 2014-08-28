@@ -24,7 +24,7 @@ namespace PowerShellTools.Intellisense
         public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
         {
             Log.Debug("TryCreateCompletionSource");
-            return new PowerShellCompletionSource(VSXHost.Instance, GlyphService);
+            return new PowerShellCompletionSource(VSXHost.Instance.Runspace, GlyphService);
         }
     }
 }

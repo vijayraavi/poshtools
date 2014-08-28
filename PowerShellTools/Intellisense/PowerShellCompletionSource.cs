@@ -3,33 +3,33 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using System.Threading.Tasks;
 using log4net;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using System.Windows.Media;
-using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Intellisense
 {
     /// <summary>
     /// Provides the list of possible completion sources for a completion session.
     /// </summary>
-    internal class PowerShellCompletionSource : ICompletionSource
+    public class PowerShellCompletionSource : ICompletionSource
     {
-        private readonly VSXHost _host;
+        private readonly Runspace _runspace;
         private readonly IGlyphService _glyphs;
         private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellCompletionSource));
         private bool _isDisposed;
 
-        public PowerShellCompletionSource(VSXHost host, IGlyphService glyphService)
+        public PowerShellCompletionSource(Runspace rs, IGlyphService glyphService)
         {
             Log.Debug("Constructor");
-            _host = host;
+            _runspace = rs;
             _glyphs = glyphService;
         }
 
-        void ICompletionSource.AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
+        public void AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
             var task = new Task<CommandCompletion>(() => GetCompletionList(session));
             task.Start();
@@ -38,9 +38,9 @@ namespace PowerShellTools.Intellisense
                 var compList = new List<Completion>();
                 foreach (var match in task.Result.CompletionMatches)
                 {
-                    string completionText = match.CompletionText;
-                    string displayText = match.ListItemText;
-                    ImageSource glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupUnknown, StandardGlyphItem.GlyphItemPublic);
+                    var completionText = match.CompletionText;
+                    var displayText = match.ListItemText;
+                    var glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupUnknown, StandardGlyphItem.GlyphItemPublic);
 
                     if (match.ResultType == CompletionResultType.ParameterName)
                     {
@@ -50,7 +50,6 @@ namespace PowerShellTools.Intellisense
                     }
                     else if (match.ResultType == CompletionResultType.Command && match.CompletionText.Contains("-"))
                     {
-                        //completionText = ;
                         displayText = completionText.Split('-')[1];
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupMethod, StandardGlyphItem.GlyphItemPublic);
                     }
@@ -101,11 +100,8 @@ namespace PowerShellTools.Intellisense
         {
             using (var ps = PowerShell.Create())
             {
-                if (_host != null)
-                {
-                    ps.Runspace = _host.Runspace;
-                }
-            
+                ps.Runspace = _runspace;
+                
                 string text;
                 int currentPoint;
                 if (session.TextView.Properties.ContainsProperty("REPL"))
@@ -126,12 +122,21 @@ namespace PowerShellTools.Intellisense
                     text = session.TextView.TextBuffer.CurrentSnapshot.GetText();
                     currentPoint = session.TextView.Caret.Position.BufferPosition;
                 }
-                Stopwatch sw = new Stopwatch();
+
+                Stopwatch sw = null;
+                if (Log.IsDebugEnabled)
+                {
+                    sw = new Stopwatch();
+                    Log.Debug("Calling CompleteInput...");
+                    sw.Start();    
+                }
                 
-                Log.Debug("Calling CompleteInput...");
-                sw.Start();
                 var output = CommandCompletion.CompleteInput(text, currentPoint, new Hashtable(), ps);
-                Log.DebugFormat("CompleteInput returned in [{0}] seconds.", sw.Elapsed.TotalSeconds);
+
+                if (Log.IsDebugEnabled)
+                {
+                    Log.DebugFormat("CompleteInput returned in [{0}] seconds.", sw.Elapsed.TotalSeconds);
+                }
 
                 return output;
             }

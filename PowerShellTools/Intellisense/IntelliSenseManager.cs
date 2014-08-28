@@ -144,10 +144,17 @@ namespace PowerShellTools.Intellisense
             var edit = _activeSession.TextView.TextBuffer.CreateEdit();
             var verb = insertionText.Split('-')[0];
 
-            var deleteStart = triggerPoint - 1 - verb.Length;
+            if (!_activeSession.TextView.Properties.ContainsProperty("REPL"))
+            {
+                while (caretPosition > 0 && _activeSession.TextView.TextBuffer.CurrentSnapshot.GetText(caretPosition, 1) != "-")
+                {
+                    caretPosition--;
+                }                
+            }
+             
+            var deleteStart = caretPosition - 1 - verb.Length;
 
-            var noun = insertionText.Split('-')[1];
-            edit.Delete(deleteStart.Value, currentPoint - deleteStart.Value);
+            edit.Delete(deleteStart, currentPoint - deleteStart);
             edit.Insert(caretPosition, insertionText + " ");
             edit.Apply();
 
