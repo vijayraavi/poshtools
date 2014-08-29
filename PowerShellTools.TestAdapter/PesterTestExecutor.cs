@@ -69,6 +69,22 @@ namespace PowerShellTools.TestAdapter
             }
         }
 
+        private string FindPesterModule(IRunContext runContext)
+        {
+            var pesterPath = GetPesterModulePath(runContext.TestRunDirectory);
+            if (String.IsNullOrEmpty(pesterPath))
+            {
+                pesterPath = GetPesterModulePath(runContext.SolutionDirectory);
+            }
+
+            if (String.IsNullOrEmpty(pesterPath))
+            {
+                pesterPath = "Pester";
+            }
+
+            return pesterPath;
+        }
+
         private string GetPesterModulePath(string root)
         {
             // Default packages path for nuget.
@@ -109,11 +125,9 @@ namespace PowerShellTools.TestAdapter
 
                 try
                 {
-                   
                     var testAdapter = new TestAdapterHost();
                     testAdapter.HostUi.OutputString = s => testOutput.Append(s);
                     
-
                     Runspace r = RunspaceFactory.CreateRunspace(testAdapter);
                     r.Open();
 
@@ -121,7 +135,7 @@ namespace PowerShellTools.TestAdapter
                     {
                         ps.Runspace = r;
 
-                        var module = GetPesterModulePath(runContext.SolutionDirectory) ?? "Pester";
+                        var module = FindPesterModule(runContext);
                         ps.AddCommand("Import-Module").AddParameter("Name", module);
                         ps.Invoke();
 
