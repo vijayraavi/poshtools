@@ -76,12 +76,21 @@ namespace PowerShellTools.Intellisense
                     if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
                     {
                         Log.Debug("Commit");
+                        /* TODO: This is no quite right. Need to revisit
                         var selectedCompletion = _activeSession.SelectedCompletionSet.SelectionStatus.Completion;
                         if (selectedCompletion.Properties
                             .GetProperty<CompletionResultType>("Type") == CompletionResultType.Command)
                         {
-                            return CompleteCommand(selectedCompletion);
-                        }
+                            try
+                            {
+                                return CompleteCommand(selectedCompletion);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error("Failed to complete command.", ex);
+                                return VSConstants.S_OK;
+                            }
+                        }*/
 
                         _activeSession.Commit();
 
@@ -146,18 +155,31 @@ namespace PowerShellTools.Intellisense
 
             if (!_activeSession.TextView.Properties.ContainsProperty("REPL"))
             {
-                while (caretPosition > 0 && _activeSession.TextView.TextBuffer.CurrentSnapshot.GetText(caretPosition, 1) != "-")
+                while (caretPosition > 0 &&
+                       _activeSession.TextView.TextBuffer.CurrentSnapshot.GetText(caretPosition, 1) != "-")
                 {
                     caretPosition--;
-                }                
+                }
+            }
+            else
+            {
+                caretPosition--;
             }
              
-            var deleteStart = caretPosition - 1 - verb.Length;
+            var deleteStart = caretPosition - verb.Length;
 
-            edit.Delete(deleteStart, currentPoint - deleteStart);
-            edit.Insert(caretPosition, insertionText + " ");
-            edit.Apply();
-
+            try
+            {
+                edit.Delete(deleteStart, currentPoint - deleteStart);
+                edit.Insert(caretPosition, insertionText + " ");
+                edit.Apply();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to edit buffer.", ex);
+                edit.Cancel();
+            }
+            
             _activeSession.Dismiss();
             return VSConstants.S_OK;
         }

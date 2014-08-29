@@ -50,7 +50,8 @@ namespace PowerShellTools.Intellisense
                     }
                     else if (match.ResultType == CompletionResultType.Command && match.CompletionText.Contains("-"))
                     {
-                        displayText = completionText.Split('-')[1];
+                        completionText = completionText.Split('-')[1]; //TODO: Remove this when you fix IntellisenseManager.CompleteCommand
+                        displayText = completionText;
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupMethod, StandardGlyphItem.GlyphItemPublic);
                     }
                     else if (match.ResultType == CompletionResultType.Type && match.CompletionText.Contains("."))
