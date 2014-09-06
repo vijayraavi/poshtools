@@ -85,7 +85,7 @@ function Format-TypeName {
         $extent = $type.TypeName.Extent
 		$FullTypeName = Invoke-Expression "$type.FullName"
 
-        if ($FullTypeName -ne $null -and $typeName -cne $fullTypeName)
+        if ($FullTypeName -ne $null -and $typeName -cne $fullTypeName -and $typeName -ne 'PSCustomObject')
         {
             $astString = $ast.ToString()
 
