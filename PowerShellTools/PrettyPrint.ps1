@@ -19,7 +19,7 @@ function Expand-Alias
     {
 		$alias = Get-Alias -Name $command.GetCommandName() -ErrorAction SilentlyContinue
 
-        if ($alias -ne $null)
+        if ($alias -ne $null -and $alias.count -eq 1)
         {
             $astString = $ast.ToString()
 
@@ -49,7 +49,14 @@ function Format-CommandName {
 	$NewAstString = $AstString
     foreach ($command in $commands)
     {
-		$commandInfo = Get-Command -Name $command.GetCommandName() -ErrorAction SilentlyContinue
+        if ($command.GetCommandName() -ne $null)
+        {
+		    $commandInfo = Get-Command -Name $command.GetCommandName() -ErrorAction SilentlyContinue
+        }
+        else
+        {
+            $commandInfo = $null
+        }
 
         if ($commandInfo -ne $null -and $commandInfo.Name -cne $command.GetCommandName())
         {
