@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
@@ -15,22 +16,33 @@ namespace PowerShellTools.TestAdapter.Pester
         public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext,
             IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
         {
-            GetTests(sources, discoverySink);
+            GetTests(sources, discoverySink, logger);
         }
 
-        public static List<TestCase> GetTests(IEnumerable<string> sources, ITestCaseDiscoverySink discoverySink)
+        public static List<TestCase> GetTests(IEnumerable<string> sources, ITestCaseDiscoverySink discoverySink, IMessageLogger logger = null)
         {
             var tests = new List<TestCase>();
             foreach (var source in sources)
             {
+                SendMessage(TestMessageLevel.Informational, String.Format("Searching for tests in [{0}].", source), logger);
                 Token[] tokens;
                 ParseError[] errors;
                 var ast = Parser.ParseFile(source, out tokens, out errors);
+
+                if (errors.Any())
+                {
+                    foreach (var error in errors)
+                    {
+                        SendMessage(TestMessageLevel.Error, String.Format("Parser error. {0}", error.Message), logger);
+                        //TODO: should we continue here?
+                    }
+                }
 
                 var testAsts = ast.FindAll(m => (m is CommandAst) && (m as CommandAst).GetCommandName() == "Describe", true);
 
                 foreach (CommandAst contextAst in testAsts)
                 {
+                    SendMessage(TestMessageLevel.Informational, "Found describe block.", logger);
                     var contextName = String.Empty;
                     bool nextElementIsName = false, lastElementWasTags = false;
                     foreach (var element in contextAst.CommandElements)
@@ -69,6 +81,7 @@ namespace PowerShellTools.TestAdapter.Pester
                     // Didn't find the name for the test. Skip it.
                     if (String.IsNullOrEmpty(contextName))
                     {
+                        SendMessage(TestMessageLevel.Informational, "Context name was empty. Skipping test.", logger);
                         continue;
                     }
 
@@ -78,8 +91,11 @@ namespace PowerShellTools.TestAdapter.Pester
                         LineNumber = contextAst.Extent.StartLineNumber
                     };
 
+                    SendMessage(TestMessageLevel.Informational, String.Format("Adding test {0} in {1} at {2}.", contextName, source, testcase.LineNumber), logger);
+
                     if (discoverySink != null)
                     {
+                        SendMessage(TestMessageLevel.Informational, "Sending test to sync.", logger);
                         discoverySink.SendTestCase(testcase);
                     }
 
@@ -87,6 +103,14 @@ namespace PowerShellTools.TestAdapter.Pester
                 }
             }
             return tests;
+        }
+
+        private static void SendMessage(TestMessageLevel level, string message, IMessageLogger logger)
+        {
+            if (logger != null)
+            {
+                logger.SendMessage(level, message);
+            }
         }
     }
 }
