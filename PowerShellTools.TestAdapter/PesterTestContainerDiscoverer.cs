@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.TestWindow;
 using Microsoft.VisualStudio.TestWindow.Extensibility;
 using XmlTestAdapter;
 using XmlTestAdapter.EventWatchers;
@@ -46,6 +47,7 @@ namespace PowerShellTools.TestAdapter.Pester
             this.testFilesUpdateWatcher = testFilesUpdateWatcher;
             this.testFilesAddRemoveListener = testFilesAddRemoveListener;
 
+            logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer Constructor Entering");
 
             this.testFilesAddRemoveListener.TestFileChanged += OnProjectItemChanged;
             this.testFilesAddRemoveListener.StartListeningForTestFileChanges();
@@ -59,8 +61,10 @@ namespace PowerShellTools.TestAdapter.Pester
 
         private void OnTestContainersChanged()
         {
+            logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnTestContainersChanged");
             if (TestContainersUpdated != null && !initialContainerSearch)
             {
+                logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:Triggering on TestContainersUpdated");
                 TestContainersUpdated(this, EventArgs.Empty);
             }
         }
@@ -72,15 +76,18 @@ namespace PowerShellTools.TestAdapter.Pester
 
         private void OnSolutionProjectChanged(object sender, SolutionEventsListenerEventArgs e)
         {
+            logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnSolutionProjectChanged");
             if (e != null)
             {
                 var files = FindPs1Files(e.Project);
                 if (e.ChangedReason == SolutionChangedReason.Load)
                 {
+                    logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnTestContainersChanged - Change reason is load");
                     UpdateFileWatcher(files, true);
                 }
                 else if (e.ChangedReason == SolutionChangedReason.Unload)
                 {
+                    logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnTestContainersChanged - Change reason is unload");
                     UpdateFileWatcher(files, false);
                 }
             }
@@ -96,11 +103,13 @@ namespace PowerShellTools.TestAdapter.Pester
             {
                 if (isAdd)
                 {
+                    logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:UpdateFileWatcher - AddWatch:" + file);
                     testFilesUpdateWatcher.AddWatch(file);
                     AddTestContainerIfTestFile(file);
                 }
                 else
                 {
+                    logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:UpdateFileWatcher - RemoveWatch:" + file);
                     testFilesUpdateWatcher.RemoveWatch(file);
                     RemoveTestContainer(file);
                 }
@@ -110,24 +119,30 @@ namespace PowerShellTools.TestAdapter.Pester
 
         private void OnProjectItemChanged(object sender, TestFileChangedEventArgs e)
         {
+            logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnProjectItemChanged");
             if (e != null)
             {
                 // Don't do anything for files we are sure can't be test files
                 if (!IsPs1File(e.File)) return;
 
+                logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnProjectItemChanged - IsPs1File");
+
                 switch (e.ChangedReason)
                 {
                     case TestFileChangedReason.Added:
+                        logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnProjectItemChanged - Added");
                         testFilesUpdateWatcher.AddWatch(e.File);
                         AddTestContainerIfTestFile(e.File);
 
                         break;
                     case TestFileChangedReason.Removed:
+                        logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnProjectItemChanged - Removed");
                         testFilesUpdateWatcher.RemoveWatch(e.File);
                         RemoveTestContainer(e.File);
 
                         break;
                     case TestFileChangedReason.Changed:
+                        logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnProjectItemChanged - Changed");
                         AddTestContainerIfTestFile(e.File);
                         break;
                 }
@@ -144,6 +159,7 @@ namespace PowerShellTools.TestAdapter.Pester
             // If this is a test file
             if (isTestFile)
             {
+                logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:AddTestContainerIfTestFile - Is a test file. Adding to cached containers.");
                 var container = new PesterTestContainer(this, file, ExecutorUri);
                 cachedContainers.Add(container);
             }
@@ -154,6 +170,7 @@ namespace PowerShellTools.TestAdapter.Pester
             var index = cachedContainers.FindIndex(x => x.Source.Equals(file, StringComparison.OrdinalIgnoreCase));
             if (index >= 0)
             {
+                logger.Log(MessageLevel.Diagnostic, String.Format("PesterTestContainerDiscoverer:RemoveTestContainer - Removing [{0}] from cached containers.", file));
                 cachedContainers.RemoveAt(index);
             }
         }
@@ -181,6 +198,7 @@ namespace PowerShellTools.TestAdapter.Pester
 
         private IEnumerable<string> FindPs1Files(IVsProject project)
         {
+            logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:OnTestContainersChanged - FindPs1Files");
             return from item in VsSolutionHelper.GetProjectItems(project)
                    where IsTestFile(item)
                    select item;
@@ -195,6 +213,7 @@ namespace PowerShellTools.TestAdapter.Pester
         {
             try
             {
+                logger.Log(MessageLevel.Diagnostic, "PesterTestContainerDiscoverer:IsTestFile - " + path);
                 return IsPs1File(path);
             }
             catch (IOException e)
