@@ -21,9 +21,9 @@ namespace PowerShellTools.DebugEngine
     public class ScriptDebugger 
     {
         public event Action<string> DocumentChanged;
-        private readonly Runspace _runspace;
+        private Runspace _runspace;
 
-        private readonly List<ScriptBreakpoint> _breakpoints;
+        private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
         private PowerShell _currentPowerShell;
 
@@ -37,7 +37,6 @@ namespace PowerShellTools.DebugEngine
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
 
         private DebuggerResumeAction _resumeAction;
-
 
         public IDictionary<string, object> Variables { get; private set; }
         public IEnumerable<ScriptStackFrame> CallStack { get { return _callstack; } }
@@ -55,9 +54,14 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-        public ScriptDebugger(Runspace runspace, IEnumerable<ScriptBreakpoint> initialBreakpoints )
+        public void SetRunspace(Runspace runspace, IEnumerable<ScriptBreakpoint> initialBreakpoints = null)
         {
-            Log.InfoFormat("ScriptDebugger: Initial Breakpoints: {0}", initialBreakpoints.Count());
+            if (_runspace != null)
+            {
+                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+                _runspace.StateChanged -= _runspace_StateChanged;
+            }
 
             _runspace = runspace;
             _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
@@ -65,15 +69,91 @@ namespace PowerShellTools.DebugEngine
             _runspace.StateChanged += _runspace_StateChanged;
             _breakpoints = new List<ScriptBreakpoint>();
 
-            ClearBreakpoints();
-
-            foreach (var bp in initialBreakpoints)
+            if (initialBreakpoints != null)
             {
-                SetBreakpoint(bp);
-                _breakpoints.Add(bp);
-                bp.Bind();
+                Log.InfoFormat("ScriptDebugger: Initial Breakpoints: {0}", initialBreakpoints.Count());
+                ClearBreakpoints();
+
+                foreach (var bp in initialBreakpoints)
+                {
+                    SetBreakpoint(bp);
+                    _breakpoints.Add(bp);
+                    bp.Bind();
+                }
             }
         }
+
+        public void RegisterRemoteFileOpenEvent(Runspace remoteRunspace)
+        {
+            remoteRunspace.Events.ReceivedEvents.PSEventReceived += new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
+            if (remoteRunspace.RunspaceStateInfo.State != RunspaceState.Opened || remoteRunspace.RunspaceAvailability != RunspaceAvailability.Available)
+            {
+                return;
+            }
+            using (PowerShell powerShell = PowerShell.Create())
+            {
+                powerShell.Runspace = remoteRunspace;
+                powerShell.AddScript("\r\n            param (\r\n                [string] $PSEditFunction\r\n            )\r\n\r\n            Register-EngineEvent -SourceIdentifier PSISERemoteSessionOpenFile -Forward\r\n\r\n            if ((Test-Path -Path 'function:\\global:PSEdit') -eq $false)\r\n            {\r\n                Set-Item -Path 'function:\\global:PSEdit' -Value $PSEditFunction\r\n            }\r\n        ").AddParameter("PSEditFunction", "\r\n            param (\r\n                [Parameter(Mandatory=$true)] [String[]] $FileNames\r\n            )\r\n\r\n            foreach ($fileName in $FileNames)\r\n            {\r\n                dir $fileName | where { ! $_.PSIsContainer } | foreach {\r\n                    $filePathName = $_.FullName\r\n\r\n                    # Get file contents\r\n                    $contentBytes = Get-Content -Path $filePathName -Raw -Encoding Byte\r\n\r\n                    # Notify client for file open.\r\n                    New-Event -SourceIdentifier PSISERemoteSessionOpenFile -EventArguments @($filePathName, $contentBytes) > $null\r\n                }\r\n            }\r\n        ");
+                try
+                {
+                    powerShell.Invoke();
+                }
+                catch (RemoteException)
+                {
+                }
+            }
+        }
+
+        public void UnregisterRemoteFileOpenEvent(Runspace remoteRunspace)
+        {
+            remoteRunspace.Events.ReceivedEvents.PSEventReceived -= new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
+            if (remoteRunspace.RunspaceStateInfo.State != RunspaceState.Opened || remoteRunspace.RunspaceAvailability != RunspaceAvailability.Available)
+            {
+                return;
+            }
+            using (PowerShell powerShell = PowerShell.Create())
+            {
+                powerShell.Runspace = remoteRunspace;
+                powerShell.AddScript("\r\n            if ((Test-Path -Path 'function:\\global:PSEdit') -eq $true)\r\n            {\r\n                Remove-Item -Path 'function:\\global:PSEdit' -Force\r\n            }\r\n\r\n            Get-EventSubscriber -SourceIdentifier PSISERemoteSessionOpenFile -EA Ignore | Remove-Event\r\n        ");
+                try
+                {
+                    powerShell.Invoke();
+                }
+                catch (RemoteException)
+                {
+                }
+            }
+        }
+
+
+        private void HandleRemoteSessionForwardedEvent(object sender, PSEventArgs args)
+        {
+            if (args.SourceIdentifier.Equals("PSISERemoteSessionOpenFile", StringComparison.OrdinalIgnoreCase))
+            {
+                Exception ex = null;
+                string text = null;
+                byte[] array = null;
+                try
+                {
+                    if (args.SourceArgs.Length == 2)
+                    {
+                        text = (args.SourceArgs[0] as string);
+                        array = (byte[])(args.SourceArgs[1] as PSObject).BaseObject;
+                    }
+                    if (!string.IsNullOrEmpty(text) && array != null)
+                    {
+                        bool flag;
+                       // this.LoadFile(text, array, out flag);
+                    }
+                }
+                catch (Exception ex2)
+                {
+                    
+                }
+            }
+        }
+
+
 
         private void ClearBreakpoints()
         {
@@ -304,13 +384,23 @@ namespace PowerShellTools.DebugEngine
         public void Execute(ScriptProgramNode node)
         {
             CurrentExecutingNode = node;
-            string commandLine = node.FileName;
 
-            if (node.IsFile)
+            if (node.IsAttachedProgram)
             {
-                commandLine = String.Format(". '{0}' {1}", node.FileName, node.Arguments);    
+                Execute(String.Format("Enter-PSHostProcess -Id {0};", node.Process.ProcessId));
+                Execute("Debug-Runspace 1");
             }
-            Execute(commandLine);
+            else
+            {
+                string commandLine = node.FileName;
+
+                if (node.IsFile)
+                {
+                    commandLine = String.Format(". '{0}' {1}", node.FileName, node.Arguments);
+                }
+                Execute(commandLine);
+            }
+
         }
 
         void objects_DataAdded(object sender, DataAddedEventArgs e)
@@ -401,9 +491,15 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Debug("DebuggerFinished");
             VSXHost.Instance.RefreshPrompt();
-            _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-            _runspace.StateChanged -= _runspace_StateChanged;
+
+            if (_runspace != null)
+            {
+                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+                _runspace.StateChanged -= _runspace_StateChanged;
+            }
+
+
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());

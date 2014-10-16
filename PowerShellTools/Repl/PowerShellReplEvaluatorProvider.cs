@@ -20,7 +20,7 @@ namespace PowerShellTools.Repl
 
             if (psEval == null)
             {
-                psEval = new PowerShellReplEvaluator(new ScriptDebugger(PowerShellToolsPackage.Instance.Host.Runspace, new ScriptBreakpoint[]{}));
+                psEval = new PowerShellReplEvaluator(PowerShellToolsPackage.Instance.Host.Debugger);
             }
 
             return psEval;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
@@ -10,6 +11,12 @@ namespace PowerShellTools.DebugEngine
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugProcess));
 
         private readonly IDebugPort2 _port;
+
+        public ScriptDebugProcess(IDebugPort2 debugPort, uint processId) : this(debugPort)
+        {
+            ProcessId = processId;
+        }
+
         public ScriptDebugProcess(IDebugPort2 debugPort)
         {
             Log.Debug("Process: Constructor");
@@ -17,6 +24,8 @@ namespace PowerShellTools.DebugEngine
             _port = debugPort;
             Node = new ScriptProgramNode(this);
         }
+
+        public uint ProcessId { get; set; }
 
         public Guid Id { get; set; }
 

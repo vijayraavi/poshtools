@@ -69,6 +69,13 @@ namespace PowerShellTools.DebugEngine {
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result) {
+
+            if (binder.Name == "RealObject")
+            {
+                result = RealObject;
+                return true;
+            }
+
             IProperty prop = GetProperty(binder.Name);
 
             // Get the property value
@@ -132,7 +139,6 @@ namespace PowerShellTools.DebugEngine {
         }
 
         private IProperty GetProperty(string propertyName) {
-
             // Get the list of properties and fields for this type
             IDictionary<string, IProperty> typeProperties = GetTypeProperties(RealObject.GetType());
 

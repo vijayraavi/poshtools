@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,7 @@ using EnvDTE;
 using EnvDTE80;
 using log4net;
 using Microsoft.PowerShell;
+using Microsoft.PowerShell.Commands;
 using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.Repl;
 using Thread = System.Threading.Thread;
@@ -38,6 +40,8 @@ namespace PowerShellTools.DebugEngine
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
         private readonly Runspace _runspace;
+        
+        private dynamic RunspaceRef;
 
         public VSXHost(bool overrideExecutionPolicy, DTE2 dte2)
         {
@@ -54,9 +58,16 @@ namespace PowerShellTools.DebugEngine
             iss.ApartmentState = ApartmentState.STA;
             iss.ThreadOptions = PSThreadOptions.ReuseThread;
 
+            var runspaceRefType = typeof (Runspace).Assembly.GetType("System.Management.Automation.Remoting.RunspaceRef");
+
             _runspace = RunspaceFactory.CreateRunspace(this, iss);
             _runspace.Open();
 
+            var constructor = runspaceRefType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] {typeof (Runspace)}, null);
+            RunspaceRef = constructor.Invoke(new []{_runspace}).AsDynamic();
+
+            RunspaceRef.Runspace.Debugger.SetDebugMode(DebugModes.LocalScript | DebugModes.RemoteScript);
+            
             _runspace.SessionStateProxy.PSVariable.Set("dte", dte2);
             ImportPoshToolsModule();
             LoadProfile();
@@ -65,14 +76,13 @@ namespace PowerShellTools.DebugEngine
             {
                 SetupExecutionPolicy();
             }
-        }
 
-        public VSXHost(Runspace runspace)
-        {
-            _runspace = runspace;
+            Debugger = new ScriptDebugger();
+            Debugger.SetRunspace(Runspace);
         }
 
         public HostUi HostUi { get; private set; }
+        public ScriptDebugger Debugger { get; private set; }
 
         /// <summary>
         ///     The main PowerShell host for the extension.
@@ -122,17 +132,26 @@ namespace PowerShellTools.DebugEngine
             get { return _originalUiCultureInfo; }
         }
 
-        public void PushRunspace(Runspace runspace)
+        public void PushRunspace(Runspace newRunspace)
         {
+            Pipeline runningCmd = EnterPSSessionCommandWrapper.ConnectRunningPipeline(newRunspace);
+            RunspaceRef.Override(newRunspace);
+            Debugger.SetRunspace(newRunspace);
+            var oldRunspace = RunspaceRef.OldRunspace.RealObject as Runspace;
+            EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, Instance, true, oldRunspace);
+            Debugger.RegisterRemoteFileOpenEvent(newRunspace);
         }
 
         public void PopRunspace()
         {
+            Debugger.UnregisterRemoteFileOpenEvent(Runspace);
+            RunspaceRef.Revert();
+            Debugger.SetRunspace(Runspace);
         }
 
         public bool IsRunspacePushed
         {
-            get { return true; }
+            get { return RunspaceRef.IsRunspaceOverriden; }
         }
 
         /// <summary>
@@ -140,7 +159,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public Runspace Runspace
         {
-            get { return _runspace; }
+            get { return RunspaceRef.Runspace.RealObject as Runspace; }
         }
 
         /// <summary>

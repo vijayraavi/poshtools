@@ -77,19 +77,24 @@ namespace PowerShellTools.DebugEngine
         {
             _initializingRunspace = true;
 
-            if (!_runspaceSet.WaitOne())
+            if (!_node.IsAttachedProgram)
             {
-                throw new Exception("Runspace not set!");
-            }
+                if (!_runspaceSet.WaitOne())
+                {
+                    throw new Exception("Runspace not set!");
+                }
 
-            while (PendingBreakpoints.Count() > bps.Count)
-            {
-                Thread.Sleep(1000);
+                while (PendingBreakpoints.Count() > bps.Count)
+                {
+                    Thread.Sleep(1000);
+                }    
             }
-
+            
             VSXHost.Instance.HostUi.OutputString = _events.OutputString;
 
-            Debugger = new ScriptDebugger(Runspace, bps);
+            Debugger = VSXHost.Instance.Debugger;
+            Debugger.SetRunspace(VSXHost.Instance.Runspace, bps);
+
             Debugger.OutputString += Debugger_OutputString;
             Debugger.BreakpointHit += Debugger_BreakpointHit;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
@@ -199,6 +204,12 @@ namespace PowerShellTools.DebugEngine
 
             Guid id;
             rgpPrograms[0].GetProgramId(out id);
+
+            if (_node == null)
+            {
+                _node = rgpProgramNodes[0] as ScriptProgramNode;
+                _node.IsAttachedProgram = dwReason == enum_ATTACH_REASON.ATTACH_REASON_USER;
+            }
 
             _node.Id = id;
 
