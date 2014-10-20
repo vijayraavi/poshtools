@@ -20,6 +20,7 @@
     <CodeCoverageEnabled Condition="'$(CodeCoverageEnabled)'==''">true</CodeCoverageEnabled>
 
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSTarget Condition="$(VSTarget)=='' and '$(VisualStudioVersion)'=='14.0'">14.0</VSTarget>
     <VSTarget Condition="$(VSTarget)=='' and '$(VisualStudioVersion)'=='12.0'">12.0</VSTarget>
     <VSTarget Condition="$(VSTarget)=='' and '$(VisualStudioVersion)'=='11.0'">11.0</VSTarget>
     <VSTarget Condition="$(VSTarget)==''">10.0</VSTarget>
@@ -59,10 +60,12 @@
     <DevEnvDir Condition="'$(VSTarget)'=='10.0'">$(VS100COMNTOOLS)..\IDE\</DevEnvDir>
     <DevEnvDir Condition="'$(VSTarget)'=='11.0'">$(VS110COMNTOOLS)..\IDE\</DevEnvDir>
     <DevEnvDir Condition="'$(VSTarget)'=='12.0'">$(VS120COMNTOOLS)..\IDE\</DevEnvDir>
+    <DevEnvDir Condition="'$(VSTarget)'=='14.0'">$(VS140COMNTOOLS)..\IDE\</DevEnvDir>
 
     <VSSDKDir Condition="'$(VSTarget)'=='10.0'">$(VSSDK100Install)</VSSDKDir>
     <VSSDKDir Condition="'$(VSTarget)'=='11.0'">$(VSSDK110Install)</VSSDKDir>
     <VSSDKDir Condition="'$(VSTarget)'=='12.0'">$(VSSDK120Install)</VSSDKDir>
+    <VSSDKDir Condition="'$(VSTarget)'=='14.0'">$(VSSDK140Install)</VSSDKDir>
 
   </PropertyGroup>
 
