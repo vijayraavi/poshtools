@@ -65,7 +65,7 @@ namespace PowerShellTools.Project
             IntPtr pInfo = Marshal.AllocCoTaskMem((int)info.cbSize);
             Marshal.StructureToPtr(info, pInfo, false);
 
-            var eventManager = new DebugEventManager(PowerShellToolsPackage.Instance.Host.Runspace);
+            var eventManager = new DebugEventManager(PowerShellToolsPackage.Debugger.Runspace);
 
             if (debugger.AdviseDebugEventCallback(eventManager) != VSConstants.S_OK)
             {
@@ -122,7 +122,7 @@ namespace PowerShellTools.Project
             IntPtr pInfo = Marshal.AllocCoTaskMem((int)info.cbSize);
             Marshal.StructureToPtr(info, pInfo, false);
 
-            var eventManager = new DebugEventManager(PowerShellToolsPackage.Instance.Host.Runspace);
+            var eventManager = new DebugEventManager(PowerShellToolsPackage.Debugger.Runspace);
 
             if (debugger.AdviseDebugEventCallback(eventManager) != VSConstants.S_OK)
             {
@@ -190,7 +190,7 @@ namespace PowerShellTools.Project
             IntPtr pInfo = Marshal.AllocCoTaskMem((int)info.cbSize);
             Marshal.StructureToPtr(info, pInfo, false);
 
-            var eventManager = new DebugEventManager(PowerShellToolsPackage.Instance.Host.Runspace);
+            var eventManager = new DebugEventManager(PowerShellToolsPackage.Debugger.Runspace);
 
             if (debugger.AdviseDebugEventCallback(eventManager) != VSConstants.S_OK)
             {

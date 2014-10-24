@@ -33,26 +33,17 @@ namespace PowerShellTools.DebugEngine
     /// <summary>
     ///     The PoshTools PowerShell host
     /// </summary>
-    public class VSXHost : PSHost, IHostSupportsInteractiveSession
-    {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (VSXHost));
+    public partial class ScriptDebugger : PSHost, IHostSupportsInteractiveSession
+    {   
         private readonly Guid _instanceId = Guid.NewGuid();
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
-        private readonly Runspace _runspace;
-        
+        private Runspace _runspace;
         private dynamic RunspaceRef;
 
-        public VSXHost(bool overrideExecutionPolicy, DTE2 dte2)
+        public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2)
         {
-            if (Instance != null)
-            {
-                throw new ArgumentException("Host already set!!");
-            }
-
-            Instance = this;
-
-            HostUi = new HostUi();
+            HostUi = new HostUi(this);
 
             InitialSessionState iss = InitialSessionState.CreateDefault();
             iss.ApartmentState = ApartmentState.STA;
@@ -77,17 +68,10 @@ namespace PowerShellTools.DebugEngine
                 SetupExecutionPolicy();
             }
 
-            Debugger = new ScriptDebugger();
-            Debugger.SetRunspace(Runspace);
+            SetRunspace(Runspace);
         }
 
         public HostUi HostUi { get; private set; }
-        public ScriptDebugger Debugger { get; private set; }
-
-        /// <summary>
-        ///     The main PowerShell host for the extension.
-        /// </summary>
-        public static VSXHost Instance { get; private set; }
 
         public IReplWindow ReplWindow
         {
@@ -136,17 +120,17 @@ namespace PowerShellTools.DebugEngine
         {
             Pipeline runningCmd = EnterPSSessionCommandWrapper.ConnectRunningPipeline(newRunspace);
             RunspaceRef.Override(newRunspace);
-            Debugger.SetRunspace(newRunspace);
+            SetRunspace(newRunspace);
             var oldRunspace = RunspaceRef.OldRunspace.RealObject as Runspace;
-            EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, Instance, true, oldRunspace);
-            Debugger.RegisterRemoteFileOpenEvent(newRunspace);
+            EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, this, true, oldRunspace);
+            RegisterRemoteFileOpenEvent(newRunspace);
         }
 
         public void PopRunspace()
         {
-            Debugger.UnregisterRemoteFileOpenEvent(Runspace);
+            UnregisterRemoteFileOpenEvent(Runspace);
             RunspaceRef.Revert();
-            Debugger.SetRunspace(Runspace);
+            SetRunspace(Runspace);
         }
 
         public bool IsRunspacePushed
@@ -305,6 +289,13 @@ namespace PowerShellTools.DebugEngine
 
     public class HostUi : PSHostUserInterface
     {
+        private ScriptDebugger _scriptDebugger;
+
+        public HostUi(ScriptDebugger scriptDebugger)
+        {
+            _scriptDebugger = scriptDebugger;
+        }
+
         public IReplWindow ReplWindow { get; set; }
         public Action<String, int> OutputProgress { get; set; }
 
@@ -312,7 +303,7 @@ namespace PowerShellTools.DebugEngine
 
         public override PSHostRawUserInterface RawUI
         {
-            get { return new RawHostUi(); }
+            get { return new RawHostUi(_scriptDebugger); }
         }
 
         public override string ReadLine()
@@ -514,6 +505,14 @@ namespace PowerShellTools.DebugEngine
 
     public class RawHostUi : PSHostRawUserInterface
     {
+
+        private ScriptDebugger _debugger;
+
+        public RawHostUi(ScriptDebugger debugger)
+        {
+            _debugger = debugger;
+        }
+
         public override ConsoleColor ForegroundColor { get; set; }
         public override ConsoleColor BackgroundColor { get; set; }
         public override Coordinates CursorPosition { get; set; }
@@ -563,7 +562,7 @@ namespace PowerShellTools.DebugEngine
         {
             if (rectangle.Bottom == -1 || rectangle.Top == -1 || rectangle.Right == -1 || rectangle.Left == -1)
             {
-                VSXHost.Instance.ReplWindow.ClearScreen();
+                _debugger.ReplWindow.ClearScreen();
             }
         }
 

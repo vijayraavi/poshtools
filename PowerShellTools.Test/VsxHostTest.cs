@@ -7,12 +7,12 @@ namespace PowerShellTools.Test
     [TestClass]
     public class VsxHostTest
     {
-        private VSXHost _host;
+        private ScriptDebugger _host;
 
         [TestInitialize]
         public void Init()
         {
-            //_host = new VSXHost();
+            _host = new ScriptDebugger(true, null);
         }
 
         [TestMethod]

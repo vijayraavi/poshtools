@@ -33,7 +33,7 @@ namespace PowerShellTools.Repl
 
         public Task<ExecutionResult> Initialize(IReplWindow window)
         {
-            PowerShellToolsPackage.Instance.Host.ReplWindow = window;
+            PowerShellToolsPackage.Debugger.ReplWindow = window;
 
             var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
 

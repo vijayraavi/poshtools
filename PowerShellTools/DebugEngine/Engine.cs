@@ -51,10 +51,8 @@ namespace PowerShellTools.DebugEngine
         #endregion
 
         #region Properties
-
-        internal ScriptDebugger Debugger { get; private set; }
-
-        public Runspace Runspace { get { return VSXHost.Instance.Runspace; } }
+        public ScriptDebugger Debugger { get { return PowerShellToolsPackage.Debugger; } }
+        public Runspace Runspace { get { return Debugger.Runspace; } }
 
         private IEnumerable<PendingBreakpoint> _pendingBreakpoints;
         public IEnumerable<PendingBreakpoint> PendingBreakpoints
@@ -89,11 +87,9 @@ namespace PowerShellTools.DebugEngine
                     Thread.Sleep(1000);
                 }    
             }
-            
-            VSXHost.Instance.HostUi.OutputString = _events.OutputString;
 
-            Debugger = VSXHost.Instance.Debugger;
-            Debugger.SetRunspace(VSXHost.Instance.Runspace, bps);
+            Debugger.HostUi.OutputString = _events.OutputString;
+            Debugger.SetBreakpoints(bps);
 
             Debugger.OutputString += Debugger_OutputString;
             Debugger.BreakpointHit += Debugger_BreakpointHit;

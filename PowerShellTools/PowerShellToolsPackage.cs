@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
@@ -111,7 +112,7 @@ namespace PowerShellTools
         /// <summary>
         /// Returns the PowerShell host for the package.
         /// </summary>
-        internal VSXHost Host { get; private set; }
+        internal static ScriptDebugger Debugger { get; private set; }
 
         /// <summary>
         /// Returns the current package instance.
@@ -192,7 +193,7 @@ namespace PowerShellTools
             RefreshCommands(new ExecuteSelectionCommand(), 
                             new ExecuteAsScriptCommand(), 
                             _gotoDefinitionCommand, 
-                            new PrettyPrintCommand(Host.Runspace), 
+                            new PrettyPrintCommand(Debugger.Runspace), 
                             new OpenDebugReplCommand());
         }
 
@@ -267,8 +268,8 @@ namespace PowerShellTools
 
             Log.Info("InitializePowerShellHost");
 
-            Host = new VSXHost(page.OverrideExecutionPolicyConfiguration, (DTE2)GetService(typeof(DTE)));
-            Host.HostUi.OutputProgress = (label, percentage) =>
+            Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration, (DTE2)GetService(typeof(DTE)));
+            Debugger.HostUi.OutputProgress = (label, percentage) =>
             {
                 Log.DebugFormat("Output progress: {0} {1}", label, percentage);
                 var statusBar = (IVsStatusbar) GetService(typeof (SVsStatusbar));

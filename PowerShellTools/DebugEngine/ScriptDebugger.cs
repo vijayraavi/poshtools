@@ -18,10 +18,10 @@ namespace PowerShellTools.DebugEngine
         public T Value { get; private set; }
     }
 
-    public class ScriptDebugger 
+    public partial class ScriptDebugger 
     {
         public event Action<string> DocumentChanged;
-        private Runspace _runspace;
+
 
         private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
@@ -41,7 +41,6 @@ namespace PowerShellTools.DebugEngine
         public IDictionary<string, object> Variables { get; private set; }
         public IEnumerable<ScriptStackFrame> CallStack { get { return _callstack; } }
         public ScriptProgramNode CurrentExecutingNode { get; private set; }
-        public Runspace Runspace { get { return _runspace; }}
 
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptDebugger));
 
@@ -54,19 +53,8 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-        public void SetRunspace(Runspace runspace, IEnumerable<ScriptBreakpoint> initialBreakpoints = null)
+        public void SetBreakpoints(IEnumerable<ScriptBreakpoint> initialBreakpoints)
         {
-            if (_runspace != null)
-            {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
-            }
-
-            _runspace = runspace;
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
             _breakpoints = new List<ScriptBreakpoint>();
 
             if (initialBreakpoints != null)
@@ -81,6 +69,21 @@ namespace PowerShellTools.DebugEngine
                     bp.Bind();
                 }
             }
+        }
+
+        public void SetRunspace(Runspace runspace)
+        {
+            if (_runspace != null)
+            {
+                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+                _runspace.StateChanged -= _runspace_StateChanged;
+            }
+
+            _runspace = runspace;
+            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            _runspace.StateChanged += _runspace_StateChanged;
         }
 
         public void RegisterRemoteFileOpenEvent(Runspace remoteRunspace)
@@ -371,7 +374,7 @@ namespace PowerShellTools.DebugEngine
                     OutputString(this, new EventArgs<string>("Error: " + ex.Message + Environment.NewLine));
                 }
 
-                VSXHost.Instance.ReplWindow.WriteError("Error: " + ex.Message + Environment.NewLine);
+                ReplWindow.WriteError("Error: " + ex.Message + Environment.NewLine);
 
                 OnTerminatingException(ex);
             }
@@ -490,7 +493,7 @@ namespace PowerShellTools.DebugEngine
         private void DebuggerFinished()
         {
             Log.Debug("DebuggerFinished");
-            VSXHost.Instance.RefreshPrompt();
+            RefreshPrompt();
 
             if (_runspace != null)
             {

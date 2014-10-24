@@ -41,7 +41,9 @@ namespace PowerShellTools.Test
                 pipe.Invoke();
             }
 
-            _debugger = new ScriptDebugger(_runspace, new List<ScriptBreakpoint>());
+            _debugger = new ScriptDebugger(true, null);
+            _debugger.SetRunspace(_runspace);
+            _debugger.SetBreakpoints(new List<ScriptBreakpoint>());
 
             using (var pipe = _runspace.CreatePipeline())
             {
@@ -55,7 +57,8 @@ namespace PowerShellTools.Test
         [TestMethod]
         public void ShouldNotDieIfNoBreakpoints()
         {
-            _debugger = new ScriptDebugger(_runspace, new List<ScriptBreakpoint>());
+            _debugger = new ScriptDebugger(true, null);
+            _debugger.SetRunspace(_runspace);
 
             using (var pipe = _runspace.CreatePipeline())
             {
@@ -77,7 +80,9 @@ namespace PowerShellTools.Test
                                new ScriptBreakpoint(null, ".\\TestFile.ps1", 1, 0, engineEvents.Object, _runspace)
                            };
 
-            _debugger = new ScriptDebugger(_runspace, sbps);
+            _debugger = new ScriptDebugger(true, null);
+            _debugger.SetRunspace(_runspace);
+            _debugger.SetBreakpoints(sbps);
 
             using (var pipe = _runspace.CreatePipeline())
             {
@@ -104,7 +109,9 @@ namespace PowerShellTools.Test
                                new ScriptBreakpoint(null, fi.FullName, 3, 0, engineEvents.Object, _runspace)
                            };
 
-            _debugger = new ScriptDebugger(_runspace, sbps);
+            _debugger = new ScriptDebugger(true, null);
+            _debugger.SetRunspace(_runspace);
+            _debugger.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
             node.IsFile = true;
@@ -127,7 +134,9 @@ namespace PowerShellTools.Test
             var fi = new FileInfo(".\\TestFile.ps1");
 
             var sbps = new List<ScriptBreakpoint>();
-            _debugger = new ScriptDebugger(_runspace, sbps);
+            _debugger = new ScriptDebugger(true, null);
+            _debugger.SetRunspace(_runspace);
+            _debugger.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
             node.FileName = fi.FullName;
@@ -152,7 +161,9 @@ namespace PowerShellTools.Test
         public void ShouldExecuteSnippet()
         {
             var sbps = new List<ScriptBreakpoint>();
-            _debugger = new ScriptDebugger(_runspace, sbps);
+            _debugger = new ScriptDebugger(true, null);
+            _debugger.SetRunspace(_runspace);
+            _debugger.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
             node.FileName = "$Global:MyVariable = 'Test'";
