@@ -4,7 +4,6 @@ using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
-using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Intellisense
 {
@@ -24,7 +23,7 @@ namespace PowerShellTools.Intellisense
         public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
         {
             Log.Debug("TryCreateCompletionSource");
-            return new PowerShellCompletionSource(PowerShellToolsPackage.Debugger.Runspace, GlyphService);
+            return new PowerShellCompletionSource(GlyphService);
         }
     }
 }

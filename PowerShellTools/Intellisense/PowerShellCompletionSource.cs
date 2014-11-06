@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
-using System.Threading.Tasks;
 using log4net;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
@@ -17,139 +15,78 @@ namespace PowerShellTools.Intellisense
     /// </summary>
     public class PowerShellCompletionSource : ICompletionSource
     {
-        private readonly Runspace _runspace;
         private readonly IGlyphService _glyphs;
         private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellCompletionSource));
         private bool _isDisposed;
 
-        public PowerShellCompletionSource(Runspace rs, IGlyphService glyphService)
+        public PowerShellCompletionSource(IGlyphService glyphService)
         {
             Log.Debug("Constructor");
-            _runspace = rs;
             _glyphs = glyphService;
         }
 
         public void AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
-            var task = new Task<CommandCompletion>(() => GetCompletionList(session));
-            task.Start();
-            if (task.Wait(2000))
+            if (!session.Properties.ContainsProperty("SessionOrigin_Intellisense") || !session.TextView.TextBuffer.Properties.ContainsProperty(typeof(IList<CompletionResult>)))
             {
-                var compList = new List<Completion>();
-                foreach (var match in task.Result.CompletionMatches)
-                {
-                    var completionText = match.CompletionText;
-                    var displayText = match.ListItemText;
-                    var glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupUnknown, StandardGlyphItem.GlyphItemPublic);
+                return;
+            }
 
-                    if (match.ResultType == CompletionResultType.ParameterName)
-                    {
-                        completionText = match.CompletionText.Remove(0, 1) + " ";
-                        displayText = completionText;
+            var textBuffer = session.TextView.TextBuffer;
+
+            var trackingSpan = (ITrackingSpan)textBuffer.Properties.GetProperty("LastWordReplacementSpan");
+            var list = (IList<CompletionResult>)textBuffer.Properties.GetProperty(typeof(IList<CompletionResult>));
+            var currentSnapshot = textBuffer.CurrentSnapshot;
+            var filterSpan = currentSnapshot.CreateTrackingSpan(trackingSpan.GetEndPoint(currentSnapshot).Position, 0, SpanTrackingMode.EdgeInclusive);
+            var lineStartToApplicableTo = (ITrackingSpan)textBuffer.Properties.GetProperty("LineUpToReplacementSpan");
+            var selectOnEmptyFilter = (bool)textBuffer.Properties.GetProperty("SelectOnEmptyFilter");
+
+            Log.DebugFormat("TrackingSpan: {0}", trackingSpan.GetText(currentSnapshot));
+            Log.DebugFormat("FilterSpan: {0}", filterSpan.GetText(currentSnapshot));
+
+            var compList = new List<Completion>();
+            foreach (var match in list)
+            {
+                var glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupUnknown, StandardGlyphItem.GlyphItemPublic);
+                switch (match.ResultType)
+                {
+                    case CompletionResultType.ParameterName:
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupProperty, StandardGlyphItem.GlyphItemPublic);
-                    }
-                    else if (match.ResultType == CompletionResultType.Command && match.CompletionText.Contains("-"))
-                    {
-                        completionText = completionText.Split('-')[1]; //TODO: Remove this when you fix IntellisenseManager.CompleteCommand
-                        displayText = completionText;
+                        break;
+                    case CompletionResultType.Command:
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupMethod, StandardGlyphItem.GlyphItemPublic);
-                    }
-                    else if (match.ResultType == CompletionResultType.Type && match.CompletionText.Contains("."))
-                    {
-                        completionText = completionText.Substring(completionText.LastIndexOf('.') + 1);
+                        break;
+                    case CompletionResultType.Type:
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupClass, StandardGlyphItem.GlyphItemPublic);
-                    }
-                    else if (match.ResultType == CompletionResultType.Property || match.ResultType == CompletionResultType.Method)
-                    {
-                        if (match.ResultType == CompletionResultType.Property)
-                            glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupProperty, StandardGlyphItem.GlyphItemPublic);
-
-                        if (match.ResultType == CompletionResultType.Method)
-                            glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupMethod, StandardGlyphItem.GlyphItemPublic);
-                    }
-                    else if (match.ResultType == CompletionResultType.Variable)
-                    {
-                        completionText = completionText.Remove(0, 1);
+                        break;
+                    case CompletionResultType.Property:
+                        glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupProperty, StandardGlyphItem.GlyphItemPublic);
+                        break;
+                    case CompletionResultType.Method:
+                        glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupMethod, StandardGlyphItem.GlyphItemPublic);
+                        break;
+                    case CompletionResultType.Variable:
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupField, StandardGlyphItem.GlyphItemPublic);
-                    }
-                    else if (match.ResultType == CompletionResultType.ProviderContainer || match.ResultType == CompletionResultType.ProviderItem)
-                    {
-                        completionText = completionText.Substring(completionText.LastIndexOf("\\") + 1);
+                        break;
+                    case  CompletionResultType.ProviderContainer:
+                    case  CompletionResultType.ProviderItem:
                         glyph = _glyphs.GetGlyph(match.ResultType == CompletionResultType.ProviderContainer ? StandardGlyphGroup.GlyphOpenFolder : StandardGlyphGroup.GlyphLibrary, StandardGlyphItem.GlyphItemPublic);
-                    }
-
-                    var completion = new Completion(displayText, completionText, match.ToolTip, glyph, null);
-                    completion.Properties.AddProperty("Type", match.ResultType);
-
-                    compList.Add(completion);
+                        break;
                 }
 
-                completionSets.Add(new CompletionSet(
-                    "Tokens", //the non-localized title of the tab 
-                    "Tokens", //the display title of the tab
-                    FindTokenSpanAtPosition(session),
-                    compList,
-                    null));
+                var completion = new Completion();
+                completion.Description = match.ToolTip;
+                completion.DisplayText = match.ListItemText;
+                completion.InsertionText = match.CompletionText;
+                completion.IconSource = glyph;
+                completion.IconAutomationText = completion.Description;
+
+                compList.Add(completion);
             }
-            else
-            {
-                session.Dismiss();
-            }
+
+            completionSets.Add(new ISECompletionSet(string.Empty, string.Empty, trackingSpan, compList, null, filterSpan, lineStartToApplicableTo, selectOnEmptyFilter));
         }
 
-        private CommandCompletion GetCompletionList(ICompletionSession session)
-        {
-            using (var ps = PowerShell.Create())
-            {
-                ps.Runspace = _runspace;
-                
-                string text;
-                int currentPoint;
-                if (session.TextView.Properties.ContainsProperty("REPL"))
-                {
-                    text = session.TextView.TextBuffer.CurrentSnapshot.GetText();
-                    currentPoint = session.TextView.Caret.Position.BufferPosition;
-
-                    var indexOfCaret = text.LastIndexOf('>');
-                    if (indexOfCaret != -1)
-                    {
-                        indexOfCaret++;
-                        text = text.Substring(indexOfCaret);
-                        currentPoint -= indexOfCaret;
-                    }
-                }
-                else
-                {
-                    text = session.TextView.TextBuffer.CurrentSnapshot.GetText();
-                    currentPoint = session.TextView.Caret.Position.BufferPosition;
-                }
-
-                Stopwatch sw = null;
-                if (Log.IsDebugEnabled)
-                {
-                    sw = new Stopwatch();
-                    Log.Debug("Calling CompleteInput...");
-                    sw.Start();    
-                }
-                
-                var output = CommandCompletion.CompleteInput(text, currentPoint, new Hashtable(), ps);
-
-                if (Log.IsDebugEnabled)
-                {
-                    Log.DebugFormat("CompleteInput returned in [{0}] seconds.", sw.Elapsed.TotalSeconds);
-                }
-
-                return output;
-            }
-        }
-
-        private ITrackingSpan FindTokenSpanAtPosition(ICompletionSession session)
-        {
-            SnapshotPoint currentPoint = (session.TextView.Caret.Position.BufferPosition) - 1;
-            return currentPoint.Snapshot.CreateTrackingSpan(currentPoint.Position + 1, 0, SpanTrackingMode.EdgeInclusive);
-        }
-
-        
         public void Dispose()
         {
             if (!_isDisposed)
@@ -160,4 +97,77 @@ namespace PowerShellTools.Intellisense
         }
     }
 
+    internal class ISECompletionSet : CompletionSet
+    {
+        private FilteredObservableCollection<Completion> completions;
+        private bool selectOnEmptyFilter;
+        public override IList<Completion> Completions
+        {
+            get
+            {
+                return completions;
+            }
+        }
+
+        internal ITrackingSpan FilterSpan { get; private set; }
+
+        internal ITrackingSpan LineStartToApplicableTo { get; private set; }
+
+        internal string InitialApplicableTo { get; private set; }
+
+        internal ISECompletionSet(string moniker, string displayName, ITrackingSpan applicableTo, IEnumerable<Completion> completions, IEnumerable<Completion> completionBuilders, ITrackingSpan filterSpan, ITrackingSpan lineStartToApplicableTo, bool selectOnEmptyFilter)
+            : base(moniker, displayName, applicableTo, completions, completionBuilders)
+        {
+            if (filterSpan == null)
+            {
+                throw new ArgumentNullException("filterSpan");
+            }
+            this.completions = new FilteredObservableCollection<Completion>(new ObservableCollection<Completion>(completions));
+            FilterSpan = filterSpan;
+            LineStartToApplicableTo = lineStartToApplicableTo;
+            InitialApplicableTo = applicableTo.GetText(applicableTo.TextBuffer.CurrentSnapshot);
+            this.selectOnEmptyFilter = selectOnEmptyFilter;
+        }
+        public override void Filter()
+        {
+            var filterText = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
+            Predicate<Completion> predicate = delegate(Completion completion)
+            {
+                var startIndex = completion.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? InitialApplicableTo.Length : 0;
+                return completion.DisplayText.IndexOf(filterText, startIndex, StringComparison.OrdinalIgnoreCase) != -1;
+            };
+
+            if (Completions.Any(current => predicate(current)))
+            {
+                completions.Filter(predicate);
+            }
+        }
+        public override void SelectBestMatch()
+        {
+            string text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
+            if (!selectOnEmptyFilter && text.Length == 0)
+            {
+                SelectionStatus = new CompletionSelectionStatus(null, false, false);
+                return;
+            }
+            int num = 2147483647;
+            Completion completion = null;
+            foreach (var current in Completions)
+            {
+                int startIndex = current.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? this.InitialApplicableTo.Length : 0;
+                int num2 = current.DisplayText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
+                if (num2 != -1 && num2 < num)
+                {
+                    completion = current;
+                    num = num2;
+                }
+            }
+            if (completion == null)
+            {
+                SelectionStatus = new CompletionSelectionStatus(null, false, false);
+                return;
+            }
+            SelectionStatus = new CompletionSelectionStatus(completion, true, true);
+        }
+    }
 }

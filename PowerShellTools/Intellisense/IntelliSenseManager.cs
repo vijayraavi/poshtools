@@ -1,13 +1,22 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Language;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Windows;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Intellisense
 {
@@ -24,6 +33,10 @@ namespace PowerShellTools.Intellisense
         private readonly SVsServiceProvider _serviceProvider;
         private static readonly ILog Log = LogManager.GetLogger(typeof(IntelliSenseManager));
         private bool _isRepl;
+
+        private bool intellisenseRunning;
+
+        private int? intellisenseTriggerPosition;
 
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView)
         {
@@ -76,22 +89,6 @@ namespace PowerShellTools.Intellisense
                     if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
                     {
                         Log.Debug("Commit");
-                        /* TODO: This is no quite right. Need to revisit
-                        var selectedCompletion = _activeSession.SelectedCompletionSet.SelectionStatus.Completion;
-                        if (selectedCompletion.Properties
-                            .GetProperty<CompletionResultType>("Type") == CompletionResultType.Command)
-                        {
-                            try
-                            {
-                                return CompleteCommand(selectedCompletion);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error("Failed to complete command.", ex);
-                                return VSConstants.S_OK;
-                            }
-                        }*/
-
                         _activeSession.Commit();
 
                         //also, don't add the character to the buffer 
@@ -144,44 +141,181 @@ namespace PowerShellTools.Intellisense
             return retVal;
         }
 
-        private int CompleteCommand(Completion selectedCompletion)
+        private void TriggerCompletion()
         {
-            var triggerPoint = _activeSession.GetTriggerPoint(_activeSession.TextView.TextBuffer.CurrentSnapshot);
-            var currentPoint = _activeSession.TextView.Caret.Position.BufferPosition.Position;
-            var insertionText = selectedCompletion.InsertionText;
-            var caretPosition = triggerPoint.Value.Position;
-            var edit = _activeSession.TextView.TextBuffer.CreateEdit();
-            var verb = insertionText.Split('-')[0];
-
-            if (!_activeSession.TextView.Properties.ContainsProperty("REPL"))
+            var caretPosition = (int) _textView.Caret.Position.BufferPosition;
+            var thread = new Thread(() =>
             {
-                while (caretPosition > 0 &&
-                       _activeSession.TextView.TextBuffer.CurrentSnapshot.GetText(caretPosition, 1) != "-")
+                var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
+                var caretInLine = (caretPosition - line.Start);
+
+                var text = line.GetText().Substring(0, caretInLine);
+
+                StartIntelliSense(line.Start, caretPosition, text, null, false);
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+        }
+
+        private void GetCommandCompletionParameters(int caretPosition, out Ast ast, out Token[] tokens, out IScriptPosition cursorPosition)
+        {
+            _textView.TextBuffer.Properties.TryGetProperty("PSAst", out ast);
+            _textView.TextBuffer.Properties.TryGetProperty("PSTokens", out tokens);
+            ITrackingSpan trackingSpan;
+            _textView.TextBuffer.Properties.TryGetProperty("PSSpanTokenized", out trackingSpan);
+            if (ast == null || tokens == null)
+            {
+                int inputStartPosition = 0;//(int)_textView.Caret.Position.BufferPosition;
+                ITrackingSpan trackingSpan2 = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(inputStartPosition, _textView.TextBuffer.CurrentSnapshot.Length - inputStartPosition, SpanTrackingMode.EdgeInclusive);
+                string text = trackingSpan2.GetText(_textView.TextBuffer.CurrentSnapshot);
+                ParseError[] array;
+                ast = Tokenize(text, out tokens, out array);
+            }
+            if (ast != null)
+            {
+                var inputStartPosition = 0;//(int) _textView.Caret.Position.BufferPosition;
+
+                var type = ast.Extent.StartScriptPosition.GetType();
+                var method = type.GetMethod("CloneWithNewOffset", BindingFlags.Instance | BindingFlags.NonPublic, null,
+                    new[] {typeof (int)}, null);
+
+                cursorPosition = (IScriptPosition)method.Invoke(ast.Extent.StartScriptPosition, new object[]{caretPosition - inputStartPosition});
+                return;
+            }
+            cursorPosition = null;
+        }
+
+        internal static Ast Tokenize(string script, out Token[] tokens, out ParseError[] errors)
+        {
+            Ast result;
+            try
+            {
+                Token[] array;
+                Ast ast = Parser.ParseInput(script, out array, out errors);
+                tokens = new Token[array.Length - 1];
+                Array.Copy(array, tokens, tokens.Length);
+                result = ast;
+            }
+            catch (RuntimeException ex)
+            {
+                ParseError parseError = new ParseError(new EmptyScriptExtent(), ex.ErrorRecord.FullyQualifiedErrorId, ex.Message);
+                errors = new []{parseError};
+                tokens = new Token[0];
+                result = null;
+            }
+            return result;
+        }
+
+        private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret, CompletionResultType[] mandatoryResultTypeFilter, bool selectOnEmptyFilter)
+        {
+            if (intellisenseRunning) return;
+
+            intellisenseRunning = true;
+            var statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
+            statusBar.SetText("Running IntelliSense...");
+            var sw = new Stopwatch();
+            sw.Start();
+
+            Ast ast;
+            Token[] tokens;
+            IScriptPosition cursorPosition;
+            GetCommandCompletionParameters(caretPosition, out ast, out tokens, out cursorPosition);
+            if (ast == null)
+            {
+                return;
+            }
+
+            var ps = PowerShell.Create();
+            ps.Runspace = PowerShellToolsPackage.Debugger.Runspace;
+
+            var commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps); 
+            
+            var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
+            var caretInLine = (caretPosition - line.Start);
+
+            var text = line.GetText().Substring(0, caretInLine);
+
+            IList<CompletionResult> list = commandCompletion.CompletionMatches;
+            if (string.Equals(lineTextUpToCaret, text, StringComparison.Ordinal) && list.Count != 0)
+            {
+                if (mandatoryResultTypeFilter != null)
                 {
-                    caretPosition--;
+                    list = list.Where(current => mandatoryResultTypeFilter.Any(completionResultType => completionResultType == current.ResultType)).ToList();
                 }
+                if (list.Count != 0)
+                {
+                    try
+                    {
+                        IntellisenseDone(commandCompletion.CompletionMatches, lineStartPosition,
+                            commandCompletion.ReplacementIndex + 0, commandCompletion.ReplacementLength, caretPosition,
+                            selectOnEmptyFilter);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Debug("Failed to start IntelliSense.", ex);
+                    }
+                }
+            }
+
+            statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
+            intellisenseRunning = false;
+        }
+
+        internal void IntellisenseDone(IList<CompletionResult> completionResults, int lineStartPosition, int replacementIndex, int replacementLength, int startCaretPosition, bool selectOnEmptyFilter)
+        {
+            var textBuffer = _textView.TextBuffer;
+            var length = replacementIndex - lineStartPosition;
+            if (!SpanArgumentsAreValid(textBuffer.CurrentSnapshot, replacementIndex, replacementLength) || !SpanArgumentsAreValid(textBuffer.CurrentSnapshot, lineStartPosition, length))
+            {
+                return;
+            }
+            var property = textBuffer.CurrentSnapshot.CreateTrackingSpan(replacementIndex, replacementLength, SpanTrackingMode.EdgeInclusive);
+            var property2 = textBuffer.CurrentSnapshot.CreateTrackingSpan(lineStartPosition, length, SpanTrackingMode.EdgeExclusive);
+            var triggerPoint = textBuffer.CurrentSnapshot.CreateTrackingPoint(startCaretPosition, PointTrackingMode.Positive);
+            textBuffer.Properties.AddProperty(typeof(IList<CompletionResult>), completionResults);
+            textBuffer.Properties.AddProperty("LastWordReplacementSpan", property);
+            textBuffer.Properties.AddProperty("LineUpToReplacementSpan", property2);
+            textBuffer.Properties.AddProperty("SelectOnEmptyFilter", selectOnEmptyFilter);
+
+            Log.Debug("Dismissing all sessions...");
+            _broker.DismissAllSessions(_textView);
+
+            if (Application.Current.Dispatcher.Thread == Thread.CurrentThread)
+            {
+                StartSession(startCaretPosition, triggerPoint);
             }
             else
             {
-                caretPosition--;
+                Application.Current.Dispatcher.Invoke(() => StartSession(startCaretPosition, triggerPoint));
             }
-             
-            var deleteStart = caretPosition - verb.Length;
 
-            try
-            {
-                edit.Delete(deleteStart, currentPoint - deleteStart);
-                edit.Insert(caretPosition, insertionText + " ");
-                edit.Apply();
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Failed to edit buffer.", ex);
-                edit.Cancel();
-            }
-            
-            _activeSession.Dismiss();
-            return VSConstants.S_OK;
+            textBuffer.Properties.RemoveProperty(typeof(IList<CompletionResult>));
+            textBuffer.Properties.RemoveProperty("LastWordReplacementSpan");
+            textBuffer.Properties.RemoveProperty("LineUpToReplacementSpan");
+            textBuffer.Properties.RemoveProperty("SelectOnEmptyFilter");
+        }
+
+        private void StartSession(int startCaretPosition, ITrackingPoint triggerPoint)
+        {
+            Log.Debug("Creating new completion session...");
+            _activeSession = _broker.CreateCompletionSession(_textView, triggerPoint, true);
+            _activeSession.Properties.AddProperty("SessionOrigin_Intellisense", "Intellisense");
+            intellisenseTriggerPosition = startCaretPosition;
+            _activeSession.Dismissed += CompletionSession_Dismissed;
+            _activeSession.Start();
+        }
+
+
+        private void CompletionSession_Dismissed(object sender, EventArgs e)
+        {
+            Log.Debug("Session Dismissed.");
+            _activeSession = null;
+            intellisenseTriggerPosition = null;
+        }
+
+        internal static bool SpanArgumentsAreValid(ITextSnapshot snapshot, int start, int length)
+        {
+            return start >= 0 && length >= 0 && start + length <= snapshot.Length;
         }
 
         /// <summary>
@@ -205,49 +339,133 @@ namespace PowerShellTools.Intellisense
             Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':' || ch == '\\';
         }
+    }
 
-        /// <summary>
-        /// Triggers the IntelliSense drop down.
-        /// </summary>
-        /// <returns></returns>
-        private bool TriggerCompletion()
+    [Serializable]
+    internal sealed class EmptyScriptExtent : IScriptExtent
+    {
+        public string File
         {
-            if (_activeSession != null) return true;
-
-            Log.Debug("TriggerCompletion");
-
-            //the caret must be in a non-projection location 
-            SnapshotPoint? caretPoint =
-                _textView.Caret.Position.Point.GetPoint(
-                    textBuffer => (!textBuffer.ContentType.IsOfType("projection")), PositionAffinity.Predecessor);
-            if (!caretPoint.HasValue)
+            get
             {
-                return false;
+                return null;
             }
-
-            _activeSession = _broker.CreateCompletionSession
-                (_textView,
-                    caretPoint.Value.Snapshot.CreateTrackingPoint(caretPoint.Value.Position, PointTrackingMode.Positive),
-                    true);
-
-            //subscribe to the Dismissed event on the session 
-            Log.Debug("Start Session");
-            _activeSession.Dismissed += this.OnCompletionSessionDismissedOrCommitted;
-            _activeSession.Start();
-
-            return true;
         }
-
-        /// <summary>
-        /// Removes event handler when the completion session has been dismissed or committed.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnCompletionSessionDismissedOrCommitted(object sender, EventArgs e)
+        public IScriptPosition StartScriptPosition
         {
-            Log.Debug("Session Dismissed or Committed");
-            _activeSession.Dismissed -= this.OnCompletionSessionDismissedOrCommitted;
-            _activeSession = null;
+            get
+            {
+                return new EmptyScriptPosition();
+            }
+        }
+        public IScriptPosition EndScriptPosition
+        {
+            get
+            {
+                return new EmptyScriptPosition();
+            }
+        }
+        public int StartLineNumber
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        public int StartColumnNumber
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        public int EndLineNumber
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        public int EndColumnNumber
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        public int StartOffset
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        public int EndOffset
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        public string Text
+        {
+            get
+            {
+                return "";
+            }
+        }
+        public override bool Equals(object obj)
+        {
+            IScriptExtent scriptExtent = obj as IScriptExtent;
+            return scriptExtent != null && (string.IsNullOrEmpty(scriptExtent.File) && scriptExtent.StartLineNumber == this.StartLineNumber && scriptExtent.StartColumnNumber == this.StartColumnNumber && scriptExtent.EndLineNumber == this.EndLineNumber && scriptExtent.EndColumnNumber == this.EndColumnNumber && string.IsNullOrEmpty(scriptExtent.Text));
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+    }
+
+    [Serializable]
+    internal sealed class EmptyScriptPosition : IScriptPosition
+    {
+        public string File
+        {
+            get
+            {
+                return null;
+            }
+        }
+        public int LineNumber
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        public int ColumnNumber
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        public int Offset
+        {
+            get
+            {
+                return 0;
+            }
+        }
+        public string Line
+        {
+            get
+            {
+                return "";
+            }
+        }
+        public string GetFullScript()
+        {
+            return null;
         }
     }
 }
