@@ -5,6 +5,10 @@ using Microsoft.VisualStudio.Utilities;
 
 namespace PowerShellTools.Classification
 {
+    /// <summary>
+    /// Classifier Provider that exposes the classification of PowerShell scripts via
+    /// the PowerShell classifier.
+    /// </summary>
 	[ContentType("PowerShell"), Export(typeof(IClassifierProvider))]
 	internal sealed class PowerShellClassifierProvider : IClassifierProvider
 	{

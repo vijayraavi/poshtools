@@ -6,6 +6,13 @@ using Microsoft.VisualStudio.Text.Tagging;
 
 namespace PowerShellTools.Classification
 {
+    /// <summary>
+    /// Provides error tagging for PowerShell scripts. 
+    /// </summary>
+    /// <remarks>
+    /// This code takes advantage of the already parsed AST to gather any errors while parsing
+    /// and to tag the spans that are in an error state.
+    /// </remarks>
 	internal class PowerShellErrorTagger : ITagger<ErrorTag>
 	{
 		public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
@@ -28,11 +35,11 @@ namespace PowerShellTools.Classification
 		}
 		public IEnumerable<ITagSpan<ErrorTag>> GetTags(NormalizedSnapshotSpanCollection spans)
 		{
-			ITextSnapshot currentSnapshot = this.Buffer.CurrentSnapshot;
+			ITextSnapshot currentSnapshot = Buffer.CurrentSnapshot;
 			if (currentSnapshot.Length != 0)
 			{
 				List<PowerShellTokenizationService.TagInformation<ErrorTag>> list;
-				this.Buffer.Properties.TryGetProperty<List<PowerShellTokenizationService.TagInformation<ErrorTag>>>("PSTokenErrorTags", out list);
+				Buffer.Properties.TryGetProperty("PSTokenErrorTags", out list);
 				foreach (PowerShellTokenizationService.TagInformation<ErrorTag> current in list)
 				{
 					PowerShellTokenizationService.TagInformation<ErrorTag> tagInformation = current;
@@ -47,7 +54,7 @@ namespace PowerShellTools.Classification
 		}
 		internal void OnTagsChanged(SnapshotSpan span)
 		{
-			EventHandler<SnapshotSpanEventArgs> tagsChanged = this.TagsChanged;
+			EventHandler<SnapshotSpanEventArgs> tagsChanged = TagsChanged;
 			if (tagsChanged != null)
 			{
 				tagsChanged(this, new SnapshotSpanEventArgs(span));

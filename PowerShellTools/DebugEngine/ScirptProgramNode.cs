@@ -25,10 +25,23 @@ namespace PowerShellTools.DebugEngine
         }
 
         public Guid Id { get; set; }
+        /// <summary>
+        /// This is either the file name or the contents of the script. IsFile determines which it is. 
+        /// TODO: Rename.
+        /// </summary>
         public string FileName { get; set; }
+        /// <summary>
+        /// Arguments that will be passed to the script.
+        /// </summary>
         public string Arguments { get; set; }
+        /// <summary>
+        /// Whether or not this program node represents a file or a command being debugged.
+        /// </summary>
         public bool IsFile { get; set; }
-
+        /// <summary>
+        /// Whether or not this program node represents a runspace that is being debugged that has been
+        /// attached to.
+        /// </summary>
         public bool IsAttachedProgram { get; set; }
 
         public ScriptProgramNode(ScriptDebugProcess process)

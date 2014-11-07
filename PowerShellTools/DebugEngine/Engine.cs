@@ -22,6 +22,12 @@ using Thread = System.Threading.Thread;
 
 namespace PowerShellTools.DebugEngine
 {
+    /// <summary>
+    /// The core debug engine for PowerShell.
+    /// </summary>
+    /// <remarks>
+    /// This class is repsonsible for all interactions with the Visual Studio debugger.
+    /// </remarks>
     [ComVisible(true)]
     [Guid("C7F9F131-53AB-4FD0-8517-E54D124EA393")]
     public class Engine : IDebugEngine2, IDebugEngineLaunch2
@@ -70,7 +76,13 @@ namespace PowerShellTools.DebugEngine
         {
             _runspaceSet = new ManualResetEvent(false);
         }
-
+        /// <summary>
+        /// Initiates the execute of the debug engine.
+        /// </summary>
+        /// <remarks>
+        /// The debug engine works in two different ways. The first is by executing a script file. The second
+        /// is by executing a string of text.
+        /// </remarks>
         public void Execute()
         {
             _initializingRunspace = true;
@@ -104,6 +116,16 @@ namespace PowerShellTools.DebugEngine
             Debugger.Execute(_node);
         }
 
+        /// <summary>
+        ///     This event occurs when a terminating execption is thrown from the 
+        ///     PowerShell debugger.
+        /// </summary>
+        /// <remarks>
+        ///     This event triggers a Visual Studio Excecption event so that 
+        ///     Visual Studio displays the exception window accordingly. 
+        /// </remarks>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Debugger_TerminatingException(object sender, EventArgs<Exception> e)
         {
             if (e.Value is RuntimeException)
@@ -120,16 +142,33 @@ namespace PowerShellTools.DebugEngine
             _events.Exception(_node, e.Value);
         }
 
+        /// <summary>
+        /// This event triggers a Visaul Studio OutputString event so that the string
+        /// provided is written to the Output Pane.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Debugger_OutputString(object sender, EventArgs<string> e)
         {
             _events.OutputString(e.Value);
         }
 
+        /// <summary>
+        /// This event triggers a Visual Stujdio Break event, causing the debugger to
+        /// break.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Debugger_DebuggerPaused(object sender, EventArgs<ScriptLocation> e)
         {
             _events.Break(_node);
         }
 
+        /// <summary>
+        /// This event handler adds or removes breakpoints monitored by Visual Studio.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
             if (_initializingRunspace) return;
@@ -170,6 +209,11 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
+        /// <summary>
+        /// This event handler reports to Visual Studio that the debugger has finished and destroys the program.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Debugger_DebuggingFinished(object sender, EventArgs e)
         {
             bps.Clear();
@@ -177,6 +221,11 @@ namespace PowerShellTools.DebugEngine
             _events.ProgramDestroyed(_node);
         }
 
+        /// <summary>
+        /// This event handler notifies Visual Studio that a breakbpoint has been hit.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Debugger_BreakpointHit(object sender, EventArgs<ScriptBreakpoint> e)
         {
             _events.BreakpointHit(e.Value, _node);
@@ -185,8 +234,12 @@ namespace PowerShellTools.DebugEngine
         #region Implementation of IDebugEngine2
 
         /// <summary>
-        /// Attaches to the specified program nodes.
+        ///     Attaches to the specified program nodes. This is the main entry point to debugging.
         /// </summary>
+        /// <remarks>
+        ///     This method is responsible for firing the correct Visual Studio events to begin debugging
+        ///     and then to start the actual PowerShell execution.
+        /// </remarks>
         /// <param name="rgpPrograms">The programs.</param>
         /// <param name="rgpProgramNodes">The program nodes.</param>
         /// <param name="celtPrograms">The celt programs.</param>

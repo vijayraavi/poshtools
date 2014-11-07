@@ -6,6 +6,9 @@
         Command
     }
 
+    /// <summary>
+    /// A breakpoint that has yet to be bound by Visual Studio.
+    /// </summary>
     public class PendingBreakpoint
     {
         public string Context { get; set; }

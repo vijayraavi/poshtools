@@ -12,19 +12,6 @@ namespace PowerShellTools.Classification
 {
 	internal class PowerShellClassifier : ISEClassifier
 	{
-        //internal delegate bool ClassifyTokenInBreakpointDelegate(ITextSnapshot snapshot, IClassificationType tokenInBreakpointClassification, List<ClassificationSpan> classifications, List<Span> breakpointSpans, ClassificationSpan classification);
-        //[Name("PSBreakpoint"), Export(typeof(EditorFormatDefinition))]
-        //internal sealed class BreakpointMarkerDefinition : MarkerFormatDefinition
-        //{
-        //    internal BreakpointMarkerDefinition()
-        //    {
-        //        base.ZOrder = 2;
-        //        base.Fill = new SolidColorBrush(Color.FromArgb(255, 171, 97, 107));
-        //        base.Border = new Pen(new SolidColorBrush(Colors.DarkGray), 0.5);
-        //        base.Fill.Freeze();
-        //        base.Border.Freeze();
-        //    }
-        //}
 		internal const double FromPointsToPixelsMultiplyer = 1.3333333333333333;
 		private static double characterWidth;
         [BaseDefinition(PredefinedClassificationTypeNames.SymbolDefinition), Name(Classifications.PowerShellAttribute), Export(typeof(ClassificationTypeDefinition))]
@@ -237,45 +224,5 @@ namespace PowerShellTools.Classification
 			PowerShellClassifier.FillBeginningAndEnd(span, list, base.Buffer.CurrentSnapshot, ISEClassifier.ScriptGaps);
 			return list;
 		}
-        //private static bool ClassifyTokenInBreakpoint(ITextSnapshot snapshot, IClassificationType tokenInBreakpointClassification, List<ClassificationSpan> classifications, List<Span> breakpointSpans, ClassificationSpan classification)
-        //{
-        //    foreach (Span current in breakpointSpans)
-        //    {
-        //        SnapshotSpan? snapshotSpan = classification.Span.Intersection(current);
-        //        Span? span = snapshotSpan.HasValue ? new Span?(snapshotSpan.GetValueOrDefault()) : null;
-        //        if (span.HasValue && span.Value.Length != 0)
-        //        {
-        //            classifications.Add(new ClassificationSpan(new SnapshotSpan(snapshot, span.Value.Start, span.Value.Length), tokenInBreakpointClassification));
-        //            if (classification.Span != span.Value)
-        //            {
-        //                if (classification.Span.Start < span.Value.Start)
-        //                {
-        //                    classifications.Add(new ClassificationSpan(new SnapshotSpan(snapshot, classification.Span.Start, span.Value.Start - classification.Span.Start), classification.ClassificationType));
-        //                }
-        //                if (classification.Span.End > span.Value.End)
-        //                {
-        //                    classifications.Add(new ClassificationSpan(new SnapshotSpan(snapshot, span.Value.End, classification.Span.End - span.Value.End), classification.ClassificationType));
-        //                }
-        //            }
-        //            return true;
-        //        }
-        //    }
-        //    return false;
-        //}
-        //private List<Span> GetBreakpointSpans(Span span)
-        //{
-        //    List<Span> list = new List<Span>();
-        //    SimpleTagger<TextMarkerTag> property = base.Buffer.Properties.GetProperty<SimpleTagger<TextMarkerTag>>("TextMarkerProvider");
-        //    SnapshotSpan span2 = new SnapshotSpan(base.Buffer.CurrentSnapshot, 0, base.Buffer.CurrentSnapshot.Length);
-        //    foreach (TrackingTagSpan<TextMarkerTag> current in property.GetTaggedSpans(span2))
-        //    {
-        //        Span item = current.Span.GetSpan(base.Buffer.CurrentSnapshot);
-        //        if (item.IntersectsWith(span) && current.Tag.Type.Equals("PSBreakpoint", StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            list.Add(item);
-        //        }
-        //    }
-        //    return list;
-        //}
 	}
 }

@@ -7,6 +7,12 @@ using PowerShellTools.Project;
 
 namespace PowerShellTools.Commands
 {
+    /// <summary>
+    ///     Command for executing a script.
+    /// </summary>
+    /// <remarks>
+    ///     This command appears in the right-click context menu inside a PowerShell script.
+    /// </remarks>
     internal class ExecuteAsScriptCommand : ICommand
     {
         public CommandID CommandId

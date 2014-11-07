@@ -12,7 +12,7 @@ using PowerShellTools.DebugEngine;
 namespace PowerShellTools
 {
     /// <summary>
-    /// Manages events coming from the debug engine.
+    ///     Manages events coming from the debug engine.
     /// </summary>
     public class DebugEventManager : IVsDebuggerEvents, IDebugEventCallback2
     {

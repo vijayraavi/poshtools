@@ -12,6 +12,9 @@ using Microsoft.VisualStudio.Utilities;
 
 namespace PowerShellTools
 {
+    /// <summary>
+    /// Defines classifications for the output pane.
+    /// </summary>
     public class OutputPaneClassifier
     {
         public const string LogError = "PowerShellLogError";
@@ -88,10 +91,11 @@ namespace PowerShellTools
         }
     }
 
-       public class OutputClassifier : IClassifier
+    /// <summary>
+    /// Responsbile for classifying the output pane.
+    /// </summary>
+    public class OutputClassifier : IClassifier
     {
-        // private bool _settingsLoaded;
-        // private IEnumerable<Classifier> _classifiers;
         private readonly IClassificationTypeRegistryService _classificationTypeRegistry;
         public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
 
@@ -103,12 +107,15 @@ namespace PowerShellTools
             var temp = this.ClassificationChanged;
         }   
 
-        private struct Classifier
-        {
-            public string Type { get; set; }
-            public Predicate<string> Test { get; set; }
-        }
-
+        /// <summary>
+        /// Returns classifications for the given span.
+        /// </summary>
+        /// <remarks>
+        /// This method looks for lines that start with the standard tags for various types of output.
+        /// These include [DEBUG], [ERROR], [WARNING] and [VERBOSE]
+        /// </remarks>
+        /// <param name="span"></param>
+        /// <returns></returns>
         public IList<ClassificationSpan> GetClassificationSpans(SnapshotSpan span)
         {
             var spans = new List<ClassificationSpan>();

@@ -141,17 +141,28 @@ namespace PowerShellTools.Intellisense
             return retVal;
         }
 
+        /// <summary>
+        /// Triggers an IntelliSense session. This is done in a seperate thread than the UI to allow
+        /// the user to continue typing. 
+        /// </summary>
         private void TriggerCompletion()
         {
             var caretPosition = (int) _textView.Caret.Position.BufferPosition;
             var thread = new Thread(() =>
             {
-                var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
-                var caretInLine = (caretPosition - line.Start);
+                try
+                {
+                    var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
+                    var caretInLine = (caretPosition - line.Start);
+                    var text = line.GetText().Substring(0, caretInLine);
+                    StartIntelliSense(line.Start, caretPosition, text, null, false);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn("Failed to start IntelliSense", ex);
+                    intellisenseRunning = false;
+                }
 
-                var text = line.GetText().Substring(0, caretInLine);
-
-                StartIntelliSense(line.Start, caretPosition, text, null, false);
             });
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();

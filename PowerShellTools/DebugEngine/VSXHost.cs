@@ -31,7 +31,7 @@ namespace PowerShellTools.DebugEngine
 
 
     /// <summary>
-    ///     The PoshTools PowerShell host
+    ///     The PoshTools PowerShell host and debugger.
     /// </summary>
     public partial class ScriptDebugger : PSHost, IHostSupportsInteractiveSession
     {   

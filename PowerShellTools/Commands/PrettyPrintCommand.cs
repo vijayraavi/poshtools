@@ -11,6 +11,13 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace PowerShellTools.Commands
 {
+    /// <summary>
+    ///     This command is used to reformat the currently selected PowerShell script.
+    /// </summary>
+    /// <remarks>
+    ///     This command appears in the right-click context menu of a PowerShell script.
+    ///     This command executes the PrettyPrint.ps1 script inside this project.
+    /// </remarks>
     public class PrettyPrintCommand : ICommand
     {
         public CommandID CommandId

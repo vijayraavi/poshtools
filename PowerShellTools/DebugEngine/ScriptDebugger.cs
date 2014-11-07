@@ -350,6 +350,11 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Info("Execute");
 
+            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
+            {
+                throw new InvalidPipelineStateException("Runspace is not available for execution.");
+            }
+
             try
             {
                 using (_currentPowerShell = PowerShell.Create())

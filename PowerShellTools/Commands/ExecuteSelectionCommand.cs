@@ -8,6 +8,12 @@ using PowerShellTools.Project;
 
 namespace PowerShellTools.Commands
 {
+    /// <summary>
+    ///     This command executes the currently selected code in a PowerShell script.
+    /// </summary>
+    /// <remarks>
+    ///     This command appears in the right-click context menu of a PowerShell script.
+    /// </remarks>
     internal class ExecuteSelectionCommand : ICommand
     {
         public CommandID CommandId

@@ -7,6 +7,9 @@ using Microsoft.VisualStudio.Debugger.Interop;
 
 namespace PowerShellTools.DebugEngine
 {
+    /// <summary>
+    /// Visual Studio implementation of a stack frame. This is needed for call stack support.
+    /// </summary>
     public class ScriptStackFrame : IDebugStackFrame2, IDebugExpressionContext2
     {
         private readonly ScriptDebugger _debugger;
@@ -151,6 +154,17 @@ namespace PowerShellTools.DebugEngine
             return VSConstants.E_NOTIMPL;
         }
 
+        /// <summary>
+        /// This method returns the collection of variables that are exposed at this current call stack. This
+        /// is used for the locals and watch windows.
+        /// </summary>
+        /// <param name="dwFields"></param>
+        /// <param name="nRadix"></param>
+        /// <param name="guidFilter"></param>
+        /// <param name="dwTimeout"></param>
+        /// <param name="pcelt"></param>
+        /// <param name="ppEnum"></param>
+        /// <returns></returns>
         public int EnumProperties(enum_DEBUGPROP_INFO_FLAGS dwFields, uint nRadix, ref Guid guidFilter, uint dwTimeout, out uint pcelt, out IEnumDebugPropertyInfo2 ppEnum)
         {
             Log.Debug("ScriptStackFrame: EnumProperties");
@@ -168,6 +182,16 @@ namespace PowerShellTools.DebugEngine
 
         #endregion
 
+        /// <summary>
+        /// This method allows us to hover variables and view their values when stopped in the debugger.
+        /// </summary>
+        /// <param name="pszCode"></param>
+        /// <param name="dwFlags"></param>
+        /// <param name="nRadix"></param>
+        /// <param name="ppExpr"></param>
+        /// <param name="pbstrError"></param>
+        /// <param name="pichError"></param>
+        /// <returns></returns>
         public int ParseText(string pszCode, enum_PARSEFLAGS dwFlags, uint nRadix, out IDebugExpression2 ppExpr, out string pbstrError,
             out uint pichError)
         {

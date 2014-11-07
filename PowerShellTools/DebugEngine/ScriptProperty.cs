@@ -40,6 +40,9 @@ namespace PowerShellTools.DebugEngine
         }
     }
 
+    /// <summary>
+    /// Script property for enumerable types such as lists and arrays.
+    /// </summary>
     public class EnumerableScriptProperty : ScriptProperty
     {
         private readonly IEnumerable _enumerable;
@@ -65,6 +68,9 @@ namespace PowerShellTools.DebugEngine
         }
     }
 
+    /// <summary>
+    /// Script property for PSObjects.
+    /// </summary>
     public class PSObjectScriptProperty : ScriptProperty
     {
         private readonly PSObject _psObject;
@@ -112,6 +118,9 @@ namespace PowerShellTools.DebugEngine
         }
     }
 
+    /// <summary>
+    /// An implementation of IDebugProperty2 used to display variables in the local and watch windows.
+    /// </summary>
     public class ScriptProperty : IDebugProperty2
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptProperty));
@@ -245,6 +254,9 @@ namespace PowerShellTools.DebugEngine
         #endregion
     }
 
+    /// <summary>
+    /// A list of variables for a particular stack frame.
+    /// </summary>
     public class ScriptPropertyCollection : List<ScriptProperty>, IEnumDebugPropertyInfo2
     {
         private uint _count;

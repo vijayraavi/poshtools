@@ -6,6 +6,9 @@ using System.Runtime.InteropServices;
 
 namespace PowerShellTools.DebugEngine
 {
+    /// <summary>
+    /// The Visual Studio implmentation of a breakpoint for PowerShell.
+    /// </summary>
     public class ScriptBreakpoint : IDebugBoundBreakpoint2, IEnumDebugBoundBreakpoints2, IDebugPendingBreakpoint2, IDebugBreakpointResolution2
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptBreakpoint));

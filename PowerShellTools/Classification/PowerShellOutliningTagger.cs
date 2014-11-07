@@ -5,6 +5,9 @@ using Microsoft.VisualStudio.Text.Tagging;
 
 namespace PowerShellTools.Classification
 {
+    /// <summary>
+    /// Provides matching for regions.
+    /// </summary>
 	internal class PowerShellOutliningTagger : ITagger<IOutliningRegionTag>
 	{
 		public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
