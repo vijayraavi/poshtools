@@ -43,7 +43,7 @@ namespace PowerShellTools.Test
             _textView.Setup(m => m.Caret).Returns(_textCaret.Object);
             _textBuffer.Setup(m => m.CurrentSnapshot).Returns(_textSnapshot.Object);
 
-            _source = new PowerShellCompletionSource(_runspace, _glyphService.Object);   
+            _source = new PowerShellCompletionSource(_glyphService.Object);   
         }
 
         public void Cleanup()

@@ -19,44 +19,40 @@ namespace PowerShellTools.Classification
     /// </remarks>
     internal class PowerShellTokenizationService : PSBufferTokenizationService
     {
-        private const string PoundRegion = "#region";
-        private const string PoundEndRegion = "#endregion";
-        private static char[] openChars;
-        private static readonly Token[] emptyTokens = new Token[0];
-        private static readonly Dictionary<int, int> emptyDictionary = new Dictionary<int, int>();
+        private static char[] _openChars;
+        private static readonly Token[] EmptyTokens = new Token[0];
+        private static readonly Dictionary<int, int> EmptyDictionary = new Dictionary<int, int>();
 
-        private static readonly List<TagInformation<IOutliningRegionTag>> emptyRegions =
+        private static readonly List<TagInformation<IOutliningRegionTag>> EmptyRegions =
             new List<TagInformation<IOutliningRegionTag>>();
 
-        private static readonly List<ClassificationInformation> emptyTokenSpans = new List<ClassificationInformation>();
-        private static readonly List<TagInformation<ErrorTag>> emptyErrorTags = new List<TagInformation<ErrorTag>>();
-        private static bool workflowLoaded;
-        private Dictionary<int, int> endBraces;
-        private List<TagInformation<ErrorTag>> errorTags;
-        private Ast generatedAst;
-        private Token[] generatedTokens;
-        private List<TagInformation<IOutliningRegionTag>> regions;
-        private Dictionary<int, int> startBraces;
-        private List<ClassificationInformation> tokenSpans;
-        private bool useConsoleTokens;
+        private static readonly List<ClassificationInformation> EmptyTokenSpans = new List<ClassificationInformation>();
+        private static readonly List<TagInformation<ErrorTag>> EmptyErrorTags = new List<TagInformation<ErrorTag>>();
+        private static bool _workflowLoaded;
+        private Dictionary<int, int> _endBraces;
+        private List<TagInformation<ErrorTag>> _errorTags;
+        private Ast _generatedAst;
+        private Token[] _generatedTokens;
+        private List<TagInformation<IOutliningRegionTag>> _regions;
+        private Dictionary<int, int> _startBraces;
+        private List<ClassificationInformation> _tokenSpans;
 
-        internal PowerShellTokenizationService(ITextBuffer buffer, bool useConsoleTokens) : base(buffer)
+        internal PowerShellTokenizationService(ITextBuffer buffer) : base(buffer)
         {
-            this.useConsoleTokens = useConsoleTokens;
         }
 
         private static char[] OpenChars
         {
             get
             {
-                if (openChars == null)
+                if (_openChars == null)
                 {
-                    openChars = new char[255];
-                    openChars[125] = '{';
-                    openChars[41] = '(';
-                    openChars[93] = '[';
+                    _openChars = new char[255];
+                    _openChars[125] = '{';
+                    _openChars[41] = '(';
+                    _openChars[93] = '[';
                 }
-                return openChars;
+                return _openChars;
             }
         }
 
@@ -67,13 +63,13 @@ namespace PowerShellTools.Classification
             endBraces = new Dictionary<int, int>();
             startBraces = new Dictionary<int, int>();
             regions = new List<TagInformation<IOutliningRegionTag>>();
-            var list = new List<BraceInformation>();
+            var braceInformations = new List<BraceInformation>();
             var poundRegionStart = new Stack<Token>();
-            int num = 0;
-            int num2 = 0;
-            while (num < spanText.Length && num2 < generatedTokens.Length)
+            int tokenOffset = 0;
+            int tokenIndex = 0;
+            while (tokenOffset < spanText.Length && tokenIndex < generatedTokens.Length)
             {
-                Token token = generatedTokens[num2];
+                Token token = generatedTokens[tokenIndex];
                 if (token.Kind == TokenKind.Comment)
                 {
                     string text = token.Text;
@@ -84,8 +80,8 @@ namespace PowerShellTools.Classification
                         AddMatch(spanStart, startBraces, endBraces, startOffset, endOffset - 1);
                     }
                     AddOutlinesForComment(spanStart, regions, spanText, poundRegionStart, token);
-                    num = token.Extent.EndOffset;
-                    num2++;
+                    tokenOffset = token.Extent.EndOffset;
+                    tokenIndex++;
                 }
                 else
                 {
@@ -94,58 +90,57 @@ namespace PowerShellTools.Classification
                     {
                         AddBraceMatchingAndOutlinesForString(spanStart, startBraces, endBraces, regions, spanText,
                             stringToken);
-                        num = token.Extent.EndOffset;
-                        num2++;
+                        tokenOffset = token.Extent.EndOffset;
+                        tokenIndex++;
                     }
                     else
                     {
-                        char c = spanText[num];
-                        char c2 = c;
-                        switch (c2)
+                        char c = spanText[tokenOffset];
+                        switch (c)
                         {
                             case '(':
-                                goto IL_143;
+                                goto OpenBrace;
                             case ')':
-                                goto IL_153;
+                                goto CloseBrace;
                             default:
-                                switch (c2)
+                                switch (c)
                                 {
                                     case '[':
-                                        goto IL_143;
+                                        goto OpenBrace;
                                     case '\\':
                                         break;
                                     case ']':
-                                        goto IL_153;
+                                        goto CloseBrace;
                                     default:
-                                        switch (c2)
+                                        switch (c)
                                         {
                                             case '{':
-                                                goto IL_143;
+                                                goto OpenBrace;
                                             case '}':
-                                                goto IL_153;
+                                                goto CloseBrace;
                                         }
                                         break;
                                 }
                                 break;
                         }
-                        IL_19D:
-                        num++;
-                        if (num > token.Extent.EndOffset)
+                        NextCharacter:
+                        tokenOffset++;
+                        if (tokenOffset > token.Extent.EndOffset)
                         {
-                            num2++;
+                            tokenIndex++;
                         }
                         continue;
-                        IL_143:
-                        list.Add(new BraceInformation(c, num));
-                        goto IL_19D;
-                        IL_153:
-                        BraceInformation? braceInformation = FindAndRemove(OpenChars[c], list);
+                        OpenBrace:
+                        braceInformations.Add(new BraceInformation(c, tokenOffset));
+                        goto NextCharacter;
+                        CloseBrace:
+                        BraceInformation? braceInformation = FindAndRemove(OpenChars[c], braceInformations);
                         if (braceInformation.HasValue)
                         {
-                            AddMatch(spanStart, startBraces, endBraces, braceInformation.Value.Position, num);
-                            AddRegion(spanStart, spanText, regions, braceInformation.Value.Position + 1, num);
+                            AddMatch(spanStart, startBraces, endBraces, braceInformation.Value.Position, tokenOffset);
+                            AddRegion(spanStart, spanText, regions, braceInformation.Value.Position + 1, tokenOffset);
                         }
-                        goto IL_19D;
+                        goto NextCharacter;
                     }
                 }
             }
@@ -153,27 +148,26 @@ namespace PowerShellTools.Classification
 
         internal override void SetEmptyTokenizationProperties()
         {
-            base.SetBufferProperty("PSTokens", emptyTokens);
-            base.SetBufferProperty("PSAst", null);
-            base.SetBufferProperty("PSTokenErrorTags", emptyErrorTags);
-            base.SetBufferProperty("PSEndBrace", emptyDictionary);
-            base.SetBufferProperty("PSStartBrace", emptyDictionary);
-            base.SetBufferProperty("PSTokenSpans", emptyTokenSpans);
-            base.SetBufferProperty("PSSpanTokenized",
-                base.Buffer.CurrentSnapshot.CreateTrackingSpan(0, 0, SpanTrackingMode.EdgeInclusive));
-            base.SetBufferProperty("PSRegions", emptyRegions);
+            SetBufferProperty("PSTokens", EmptyTokens);
+            SetBufferProperty("PSAst", null);
+            SetBufferProperty("PSTokenErrorTags", EmptyErrorTags);
+            SetBufferProperty("PSEndBrace", EmptyDictionary);
+            SetBufferProperty("PSStartBrace", EmptyDictionary);
+            SetBufferProperty("PSTokenSpans", EmptyTokenSpans);
+            SetBufferProperty("PSSpanTokenized",
+            Buffer.CurrentSnapshot.CreateTrackingSpan(0, 0, SpanTrackingMode.EdgeInclusive));
+            SetBufferProperty("PSRegions", EmptyRegions);
         }
 
         protected override void Tokenize(ITrackingSpan spanToTokenize, string spanText)
         {
             ParseError[] errors;
-            generatedAst = Parser.ParseInput(spanText, out generatedTokens, out errors);
-            tokenSpans = new List<ClassificationInformation>();
-            int position = spanToTokenize.GetStartPoint(base.Buffer.CurrentSnapshot).Position;
-            Token[] array = generatedTokens;
-            for (int i = 0; i < array.Length; i++)
+            _generatedAst = Parser.ParseInput(spanText, out _generatedTokens, out errors);
+            _tokenSpans = new List<ClassificationInformation>();
+            var position = spanToTokenize.GetStartPoint(Buffer.CurrentSnapshot).Position;
+            var array = _generatedTokens;
+            foreach (var token in array)
             {
-                Token token = array[i];
                 AddSpanForToken(token, position);
                 if (token.Kind == TokenKind.Workflow)
                 {
@@ -181,25 +175,25 @@ namespace PowerShellTools.Classification
                 }
             }
             AddErrorTagSpans(position, errors);
-            GetRegionsAndBraceMatchingInformation(spanText, position, generatedTokens, out startBraces, out endBraces,
-                out regions);
+            GetRegionsAndBraceMatchingInformation(spanText, position, _generatedTokens, out _startBraces, out _endBraces,
+                out _regions);
         }
 
         protected override void SetTokenizationProperties()
         {
-            base.SetBufferProperty("PSTokens", generatedTokens);
-            base.SetBufferProperty("PSAst", generatedAst);
-            base.SetBufferProperty("PSSpanTokenized", null);
-            base.SetBufferProperty("PSTokenErrorTags", errorTags);
-            base.SetBufferProperty("PSEndBrace", endBraces);
-            base.SetBufferProperty("PSStartBrace", startBraces);
-            base.SetBufferProperty("PSRegions", regions);
-            base.SetBufferProperty("PSTokenSpans", tokenSpans);
+            SetBufferProperty("PSTokens", _generatedTokens);
+            SetBufferProperty("PSAst", _generatedAst);
+            SetBufferProperty("PSSpanTokenized", null);
+            SetBufferProperty("PSTokenErrorTags", _errorTags);
+            SetBufferProperty("PSEndBrace", _endBraces);
+            SetBufferProperty("PSStartBrace", _startBraces);
+            SetBufferProperty("PSRegions", _regions);
+            SetBufferProperty("PSTokenSpans", _tokenSpans);
         }
 
         protected override void RemoveCachedTokenizationProperties()
         {
-            base.Buffer.Properties.RemoveProperty("PSRegionTags");
+            Buffer.Properties.RemoveProperty("PSRegionTags");
         }
 
         private static void AddOutlinesForComment(int spanStart, List<TagInformation<IOutliningRegionTag>> regions,
@@ -244,40 +238,41 @@ namespace PowerShellTools.Classification
             {
                 return;
             }
+
             IScriptExtent extent = stringToken.Extent;
-            int num = extent.StartOffset;
-            int num2 = extent.EndOffset;
-            int length = num2 - num;
-            string text2 = text.Substring(num, length);
+            int startOffset = extent.StartOffset;
+            int endOffset = extent.EndOffset;
+            int length = endOffset - startOffset;
+            string text2 = text.Substring(startOffset, length);
             int length2 = text2.Length;
             if (length2 > 1 && text2[0] == text2[length2 - 1])
             {
-                AddMatch(spanStart, startBraces, endBraces, num, num2 - 1);
+                AddMatch(spanStart, startBraces, endBraces, startOffset, endOffset - 1);
             }
             if (text2.StartsWith("\"", StringComparison.Ordinal))
             {
-                num++;
+                startOffset++;
             }
             else
             {
                 if (text2.StartsWith("@\"", StringComparison.Ordinal))
                 {
-                    num += 2;
+                    startOffset += 2;
                 }
             }
             if (text2.EndsWith("\"", StringComparison.Ordinal))
             {
-                num2--;
+                endOffset--;
             }
             else
             {
                 if (text2.EndsWith("\"@", StringComparison.Ordinal))
                 {
-                    num2 -= 2;
+                    endOffset -= 2;
                 }
             }
-            int num3 = num;
-            int num4 = num2;
+            int num3 = startOffset;
+            int num4 = endOffset;
             if (text2.StartsWith("@\"\r\n", StringComparison.Ordinal))
             {
                 num3 += 2;
@@ -305,7 +300,7 @@ namespace PowerShellTools.Classification
                 num4 = num3;
             }
             string collapsedTooltip = text.Substring(num3, num4 - num3);
-            AddRegion(spanStart, text, regions, num, num2, null, collapsedTooltip);
+            AddRegion(spanStart, text, regions, startOffset, endOffset, null, collapsedTooltip);
         }
 
         private static BraceInformation? FindAndRemove(char c, List<BraceInformation> braces)
@@ -326,19 +321,19 @@ namespace PowerShellTools.Classification
             return null;
         }
 
-        private static void AddRegion(int spanStart, string text, List<TagInformation<IOutliningRegionTag>> regions,
+        private static void AddRegion(int spanStart, string text, ICollection<TagInformation<IOutliningRegionTag>> regions,
             int start, int end)
         {
             AddRegion(spanStart, text, regions, start, end, null, null);
         }
 
-        private static void AddRegion(int spanStart, string text, List<TagInformation<IOutliningRegionTag>> regions,
+        private static void AddRegion(int spanStart, string text, ICollection<TagInformation<IOutliningRegionTag>> regions,
             int start, int end, string collapsedText)
         {
             AddRegion(spanStart, text, regions, start, end, collapsedText, null);
         }
 
-        private static void AddRegion(int spanStart, string text, List<TagInformation<IOutliningRegionTag>> regions,
+        private static void AddRegion(int spanStart, string text, ICollection<TagInformation<IOutliningRegionTag>> regions,
             int start, int end, string collapsedText, string collapsedTooltip)
         {
             if (collapsedText == null)
@@ -369,11 +364,11 @@ namespace PowerShellTools.Classification
 
         private static void EnsureWorkflowAssemblyLoaded()
         {
-            if (workflowLoaded)
+            if (_workflowLoaded)
             {
                 return;
             }
-            workflowLoaded = true;
+            _workflowLoaded = true;
             InitialSessionState initialSessionState = InitialSessionState.Create();
             PowerShell.Create(initialSessionState)
                 .AddCommand(new CmdletInfo("Import-Module", typeof (ImportModuleCommand)))
@@ -419,32 +414,31 @@ namespace PowerShellTools.Classification
         {
             if (classificationType != null && length > 0)
             {
-                tokenSpans.Add(new ClassificationInformation(start, length, classificationType));
+                _tokenSpans.Add(new ClassificationInformation(start, length, classificationType));
             }
         }
 
-        private void AddErrorTagSpans(int spanStart, ParseError[] errors)
+        private void AddErrorTagSpans(int spanStart, IEnumerable<ParseError> errors)
         {
-            errorTags = new List<TagInformation<ErrorTag>>();
-            ITextSnapshot currentSnapshot = base.Buffer.CurrentSnapshot;
-            for (int i = 0; i < errors.Length; i++)
+            _errorTags = new List<TagInformation<ErrorTag>>();
+            var currentSnapshot = Buffer.CurrentSnapshot;
+            foreach (var parseError in errors)
             {
-                ParseError parseError = errors[i];
-                int num = parseError.Extent.StartOffset + spanStart;
-                int num2 = parseError.Extent.EndOffset - parseError.Extent.StartOffset;
-                if (num <= currentSnapshot.Length && num + num2 <= currentSnapshot.Length)
+                var errorSpanStart = parseError.Extent.StartOffset + spanStart;
+                var errorSpanLength = parseError.Extent.EndOffset - parseError.Extent.StartOffset;
+                if (errorSpanStart > currentSnapshot.Length || errorSpanStart + errorSpanLength > currentSnapshot.Length) continue;
+
+                if (errorSpanLength == 0)
                 {
-                    if (num2 == 0)
+                    errorSpanLength = 1;
+                    if (errorSpanStart == currentSnapshot.Length)
                     {
-                        num2 = 1;
-                        if (num == currentSnapshot.Length)
-                        {
-                            num = currentSnapshot.Length - 1;
-                        }
+                        errorSpanStart = currentSnapshot.Length - 1;
                     }
-                    errorTags.Add(new TagInformation<ErrorTag>(num, num2,
-                        new ErrorTag("syntax error", parseError.Message)));
                 }
+
+                _errorTags.Add(new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength,
+                    new ErrorTag("syntax error", parseError.Message)));
             }
         }
 
@@ -462,44 +456,44 @@ namespace PowerShellTools.Classification
 
         internal struct ClassificationInformation
         {
-            private readonly IClassificationType classificationType;
-            private readonly int length;
-            private readonly int start;
+            private readonly IClassificationType _classificationType;
+            private readonly int _length;
+            private readonly int _start;
 
             internal ClassificationInformation(int start, int length, IClassificationType classificationType)
             {
-                this.classificationType = classificationType;
-                this.start = start;
-                this.length = length;
+                _classificationType = classificationType;
+                _start = start;
+                _length = length;
             }
 
             internal int Length
             {
-                get { return length; }
+                get { return _length; }
             }
 
             internal int Start
             {
-                get { return start; }
+                get { return _start; }
             }
 
             internal IClassificationType ClassificationType
             {
-                get { return classificationType; }
+                get { return _classificationType; }
             }
         }
 
         internal struct TagInformation<T> where T : ITag
         {
-            private readonly int length;
-            private readonly int start;
-            private readonly T tag;
+            private readonly int _length;
+            private readonly int _start;
+            private readonly T _tag;
 
             internal TagInformation(int start, int length, T tag)
             {
-                this.tag = tag;
-                this.start = start;
-                this.length = length;
+                _tag = tag;
+                _start = start;
+                _length = length;
             }
 
             internal TagSpan<T> GetTagSpan(ITextSnapshot snapshot)
@@ -508,7 +502,7 @@ namespace PowerShellTools.Classification
                 //{
                 //    return null;
                 //}
-                return new TagSpan<T>(new SnapshotSpan(snapshot, start, length), tag);
+                return new TagSpan<T>(new SnapshotSpan(snapshot, _start, _length), _tag);
             }
         }
     }

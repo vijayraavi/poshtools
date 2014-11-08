@@ -232,7 +232,7 @@ namespace PowerShellTools
 
             if (e.TextBuffer.ContentType.IsOfType("PowerShell"))
             {
-                var psts = new PowerShellTokenizationService(e.TextBuffer, false);
+                var psts = new PowerShellTokenizationService(e.TextBuffer);
                 _gotoDefinitionCommand.AddTextBuffer(e.TextBuffer);
                 psts.Initialize();
                 psts.SetEmptyTokenizationProperties();
@@ -249,7 +249,7 @@ namespace PowerShellTools
 
             if (e.AfterContentType.IsOfType("PowerShell") && !buffer.Properties.ContainsProperty("HasTokenizer"))
             {
-                var psts = new PowerShellTokenizationService(buffer, false);
+                var psts = new PowerShellTokenizationService(buffer);
                 _gotoDefinitionCommand.AddTextBuffer(buffer);
                 psts.Initialize();
                 psts.SetEmptyTokenizationProperties();

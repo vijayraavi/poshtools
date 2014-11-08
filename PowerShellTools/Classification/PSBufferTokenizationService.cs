@@ -15,25 +15,25 @@ namespace PowerShellTools.Classification
 		{
 			get
 			{
-				return this.spanToTokenize;
+				return spanToTokenize;
 			}
 			set
 			{
-				this.spanToTokenize = value;
+				spanToTokenize = value;
 			}
 		}
 		internal ManualResetEvent PauseTokenization
 		{
 			get
 			{
-				return this.pauseTokenization;
+				return pauseTokenization;
 			}
 		}
 		protected ITextBuffer Buffer
 		{
 			get
 			{
-				return this.buffer;
+				return buffer;
 			}
 		}
 		protected PSBufferTokenizationService(ITextBuffer buffer)
@@ -42,60 +42,60 @@ namespace PowerShellTools.Classification
 		}
 		~PSBufferTokenizationService()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 		internal void Initialize()
 		{
-			this.SetEmptyTokenizationProperties();
-			this.SpanToTokenize = this.Buffer.CurrentSnapshot.CreateTrackingSpan(0, this.Buffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
-			this.StartTokenizeBuffer();
+			SetEmptyTokenizationProperties();
+			SpanToTokenize = Buffer.CurrentSnapshot.CreateTrackingSpan(0, Buffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
+			StartTokenizeBuffer();
 		}
 		internal void StartTokenizeBuffer()
 		{
-			ITrackingSpan spanToTokenizeCache = this.SpanToTokenize;
+			ITrackingSpan spanToTokenizeCache = SpanToTokenize;
 			if (spanToTokenizeCache == null)
 			{
 				return;
 			}
-			if (this.isBufferTokenizing)
+			if (isBufferTokenizing)
 			{
 				return;
 			}
-			this.isBufferTokenizing = true;
-			this.SetEmptyTokenizationProperties();
-			if (this.buffer.CurrentSnapshot.Length == 0)
+			isBufferTokenizing = true;
+			SetEmptyTokenizationProperties();
+			if (buffer.CurrentSnapshot.Length == 0)
 			{
-				this.RemoveCachedTokenizationProperties();
-				this.OnTokenizationComplete();
-				this.isBufferTokenizing = false;
+				RemoveCachedTokenizationProperties();
+				OnTokenizationComplete();
+				isBufferTokenizing = false;
 				return;
 			}
-			string tokenizationText = spanToTokenizeCache.GetText(this.Buffer.CurrentSnapshot);
+			string tokenizationText = spanToTokenizeCache.GetText(Buffer.CurrentSnapshot);
 		    
 			ThreadPool.QueueUserWorkItem(delegate
 			{
 				bool done = false;
 				while (!done)
 				{
-					this.Tokenize(spanToTokenizeCache, tokenizationText);
-					this.PauseTokenization.WaitOne();
-						ITrackingSpan trackingSpan = this.SpanToTokenize;
-						if (!object.ReferenceEquals(trackingSpan, spanToTokenizeCache))
+					Tokenize(spanToTokenizeCache, tokenizationText);
+					PauseTokenization.WaitOne();
+						ITrackingSpan trackingSpan = SpanToTokenize;
+						if (!ReferenceEquals(trackingSpan, spanToTokenizeCache))
 						{
 							spanToTokenizeCache = trackingSpan;
-							tokenizationText = spanToTokenizeCache.GetText(this.Buffer.CurrentSnapshot);
+							tokenizationText = spanToTokenizeCache.GetText(Buffer.CurrentSnapshot);
 							return;
 						}
-						this.SetTokenizationProperties();
-						this.RemoveCachedTokenizationProperties();
-						this.SetBufferProperty("PSSpanTokenized", spanToTokenizeCache);
-						this.OnTokenizationComplete();
-						this.isBufferTokenizing = false;
+						SetTokenizationProperties();
+						RemoveCachedTokenizationProperties();
+						SetBufferProperty("PSSpanTokenized", spanToTokenizeCache);
+						OnTokenizationComplete();
+						isBufferTokenizing = false;
 						done = true;
 
                     // 
@@ -103,7 +103,7 @@ namespace PowerShellTools.Classification
                     //
 				    if (Buffer.Properties.ContainsProperty("ISEClassifier"))
 				    {
-				        var classifier = Buffer.Properties.GetProperty<ISEClassifier>("ISEClassifier");
+				        var classifier = Buffer.Properties.GetProperty<Classifier>("ISEClassifier");
 				        if (classifier != null)
 				        {
                             classifier.OnClassificationChanged(spanToTokenize.GetSpan(Buffer.CurrentSnapshot));
@@ -127,15 +127,15 @@ namespace PowerShellTools.Classification
 		protected abstract void Tokenize(ITrackingSpan tokenizationSpan, string spanToTokenizeText);
 		protected void SetBufferProperty(object key, object propertyValue)
 		{
-			if (this.buffer.Properties.ContainsProperty(key))
+			if (buffer.Properties.ContainsProperty(key))
 			{
-				this.buffer.Properties.RemoveProperty(key);
+				buffer.Properties.RemoveProperty(key);
 			}
-			this.buffer.Properties.AddProperty(key, propertyValue);
+			buffer.Properties.AddProperty(key, propertyValue);
 		}
 		private void OnTokenizationComplete()
 		{
-			EventHandler<EventArgs> tokenizationComplete = this.TokenizationComplete;
+			EventHandler<EventArgs> tokenizationComplete = TokenizationComplete;
 			if (tokenizationComplete != null)
 			{
 				tokenizationComplete(this, new EventArgs());
@@ -145,7 +145,7 @@ namespace PowerShellTools.Classification
 		{
 			if (isDisposing)
 			{
-				this.pauseTokenization.Dispose();
+				pauseTokenization.Dispose();
 			}
 		}
 	}
