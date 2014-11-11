@@ -133,7 +133,6 @@ namespace PowerShellTools.DebugEngine
         {
             if (args.SourceIdentifier.Equals("PSISERemoteSessionOpenFile", StringComparison.OrdinalIgnoreCase))
             {
-                Exception ex = null;
                 string text = null;
                 byte[] array = null;
                 try
@@ -145,11 +144,11 @@ namespace PowerShellTools.DebugEngine
                     }
                     if (!string.IsNullOrEmpty(text) && array != null)
                     {
-                        bool flag;
+                       // bool flag;
                        // this.LoadFile(text, array, out flag);
                     }
                 }
-                catch (Exception ex2)
+                catch 
                 {
                     
                 }
