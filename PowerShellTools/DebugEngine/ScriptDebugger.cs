@@ -416,7 +416,7 @@ namespace PowerShellTools.DebugEngine
             if (OutputString != null)
             {
                 var list =  sender as PSDataCollection<PSObject>;
-                OutputString(this, new EventArgs<string>(list[e.Index].ToString() + Environment.NewLine));
+                OutputString(this, new EventArgs<string>(list[e.Index] + Environment.NewLine));
             }
         }
 

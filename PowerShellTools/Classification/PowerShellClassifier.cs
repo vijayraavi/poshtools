@@ -11,9 +11,8 @@ namespace PowerShellTools.Classification
 {
 	internal class PowerShellClassifier : Classifier
 	{
-		internal const double FromPointsToPixelsMultiplyer = 1.3333333333333333;
-
-	    [BaseDefinition(PredefinedClassificationTypeNames.SymbolDefinition), Name(Classifications.PowerShellAttribute), Export(typeof(ClassificationTypeDefinition))]
+#pragma warning disable 649
+        [BaseDefinition(PredefinedClassificationTypeNames.SymbolDefinition), Name(Classifications.PowerShellAttribute), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition attributeTypeDefinition;
         [BaseDefinition(PredefinedClassificationTypeNames.SymbolDefinition), Name(Classifications.PowerShellCommand), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition commandFormatTypeDefinition;
@@ -54,8 +53,8 @@ namespace PowerShellTools.Classification
 		[BaseDefinition("text"), Name("PowerShell TokenInBreakpoint"), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition tokenInBreakpoinTypeDefinition;
 		private static Dictionary<PSTokenType, IClassificationType> tokenClassificationTypeMap;
-
-	    static PowerShellClassifier()
+#pragma warning restore 649
+        static PowerShellClassifier()
 	    {
             tokenClassificationTypeMap = new Dictionary<PSTokenType, IClassificationType>();
             tokenClassificationTypeMap[PSTokenType.Attribute] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellAttribute);

@@ -25,9 +25,6 @@ namespace PowerShellTools.Intellisense {
     internal sealed class IntellisenseController : IIntellisenseController, IOleCommandTarget {
         private readonly ITextView _textView;
         private readonly IntellisenseControllerProvider _provider;
-        private ICompletionSession _activeSession;
-        private ISignatureHelpSession _sigHelpSession;
-        private IQuickInfoSession _quickInfoSession;
         private readonly IntelliSenseManager _intelliSenseManager;
 
 

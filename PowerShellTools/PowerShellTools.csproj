@@ -57,7 +57,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
     <CreateVsixContainer>True</CreateVsixContainer>
-    <DeployExtension>False</DeployExtension>
+    <DeployExtension>True</DeployExtension>
     <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
@@ -73,6 +73,7 @@
     <Prefer32Bit>false</Prefer32Bit>
     <CreateVsixContainer>True</CreateVsixContainer>
     <DeployExtension>False</DeployExtension>
+    <NoWarn>436;649</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net">
@@ -474,6 +475,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PowerShellToolsPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RunspaceRef.cs" />
     <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>
   <ItemGroup>

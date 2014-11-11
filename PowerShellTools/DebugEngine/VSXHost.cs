@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,11 +12,8 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading;
-using EnvDTE;
 using EnvDTE80;
-using log4net;
 using Microsoft.PowerShell;
-using Microsoft.PowerShell.Commands;
 using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.Repl;
 using Thread = System.Threading.Thread;
@@ -39,7 +35,7 @@ namespace PowerShellTools.DebugEngine
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
         private Runspace _runspace;
-        private dynamic RunspaceRef;
+        private readonly RunspaceRef _runspaceRef;
 
         public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2)
         {
@@ -49,15 +45,12 @@ namespace PowerShellTools.DebugEngine
             iss.ApartmentState = ApartmentState.STA;
             iss.ThreadOptions = PSThreadOptions.ReuseThread;
 
-            var runspaceRefType = typeof (Runspace).Assembly.GetType("System.Management.Automation.Remoting.RunspaceRef");
 
             _runspace = RunspaceFactory.CreateRunspace(this, iss);
             _runspace.Open();
 
-            var constructor = runspaceRefType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] {typeof (Runspace)}, null);
-            RunspaceRef = constructor.Invoke(new []{_runspace}).AsDynamic();
-
-            RunspaceRef.Runspace.Debugger.SetDebugMode(DebugModes.LocalScript | DebugModes.RemoteScript);
+            _runspaceRef = new RunspaceRef(_runspace);
+            _runspaceRef.Runspace.Debugger.SetDebugMode(DebugModes.LocalScript | DebugModes.RemoteScript);
             
             _runspace.SessionStateProxy.PSVariable.Set("dte", dte2);
             ImportPoshToolsModule();
@@ -119,23 +112,23 @@ namespace PowerShellTools.DebugEngine
         public void PushRunspace(Runspace newRunspace)
         {
             Pipeline runningCmd = EnterPSSessionCommandWrapper.ConnectRunningPipeline(newRunspace);
-            RunspaceRef.Override(newRunspace);
+            _runspaceRef.Override(newRunspace);
             SetRunspace(newRunspace);
-            var oldRunspace = RunspaceRef.OldRunspace.RealObject as Runspace;
-            EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, this, true, oldRunspace);
+            var oldRunspace = _runspaceRef.OldRunspace;
+           // EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, this, true, oldRunspace);
             RegisterRemoteFileOpenEvent(newRunspace);
         }
 
         public void PopRunspace()
         {
             UnregisterRemoteFileOpenEvent(Runspace);
-            RunspaceRef.Revert();
+            _runspaceRef.Revert();
             SetRunspace(Runspace);
         }
 
         public bool IsRunspacePushed
         {
-            get { return RunspaceRef.IsRunspaceOverriden; }
+            get { return _runspaceRef.IsRunspaceOverridden; }
         }
 
         /// <summary>
@@ -143,7 +136,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public Runspace Runspace
         {
-            get { return RunspaceRef.Runspace.RealObject as Runspace; }
+            get { return _runspaceRef.Runspace; }
         }
 
         /// <summary>
@@ -289,7 +282,7 @@ namespace PowerShellTools.DebugEngine
 
     public class HostUi : PSHostUserInterface
     {
-        private ScriptDebugger _scriptDebugger;
+        private readonly ScriptDebugger _scriptDebugger;
 
         public HostUi(ScriptDebugger scriptDebugger)
         {
@@ -313,10 +306,10 @@ namespace PowerShellTools.DebugEngine
 
         public override SecureString ReadLineAsSecureString()
         {
-            string str = Interaction.InputBox("Read-Host", "Read-Host");
+            var str = Interaction.InputBox("Read-Host", "Read-Host");
 
             var s = new SecureString();
-            foreach (char ch in str.ToCharArray())
+            foreach (var ch in str)
             {
                 s.AppendChar(ch);
             }
@@ -396,7 +389,7 @@ namespace PowerShellTools.DebugEngine
         public override PSCredential PromptForCredential(string caption, string message, string userName,
             string targetName)
         {
-            return CredUIPromptForCredential(caption, message, userName, targetName, PSCredentialTypes.Default,
+            return CredUiPromptForCredential(caption, message, userName, targetName, PSCredentialTypes.Default,
                 PSCredentialUIOptions.Default, IntPtr.Zero);
         }
 
@@ -404,7 +397,7 @@ namespace PowerShellTools.DebugEngine
             string targetName,
             PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
-            return CredUIPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes, options,
+            return CredUiPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes, options,
                 IntPtr.Zero);
         }
 
@@ -416,9 +409,9 @@ namespace PowerShellTools.DebugEngine
 
 
         // System.Management.Automation.HostUtilities
-        internal static PSCredential CredUIPromptForCredential(string caption, string message, string userName,
+        internal static PSCredential CredUiPromptForCredential(string caption, string message, string userName,
             string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
-            IntPtr parentHWND)
+            IntPtr parentHwnd)
         {
             if (string.IsNullOrEmpty(caption))
             {
@@ -444,56 +437,44 @@ namespace PowerShellTools.DebugEngine
                     ResourceStrings.PromptForCredential_InvalidUserName, new object[] {513}));
             }
 
-            CredUI.CREDUI_INFO cREDUI_INFO = default(CredUI.CREDUI_INFO);
-            cREDUI_INFO.pszCaptionText = caption;
-            cREDUI_INFO.pszMessageText = message;
+            CredUI.CREDUI_INFO cReduiInfo = default(CredUI.CREDUI_INFO);
+            cReduiInfo.pszCaptionText = caption;
+            cReduiInfo.pszMessageText = message;
             var stringBuilder = new StringBuilder(userName, 513);
             var stringBuilder2 = new StringBuilder(256);
-            bool value = false;
-            int num = Convert.ToInt32(value);
-            cREDUI_INFO.cbSize = Marshal.SizeOf(cREDUI_INFO);
-            cREDUI_INFO.hwndParent = parentHWND;
-            var cREDUI_FLAGS = CredUI.CREDUI_FLAGS.DO_NOT_PERSIST;
+            int num = Convert.ToInt32(false);
+            cReduiInfo.cbSize = Marshal.SizeOf(cReduiInfo);
+            cReduiInfo.hwndParent = parentHwnd;
+            var cReduiFlags = CredUI.CREDUI_FLAGS.DO_NOT_PERSIST;
             if ((allowedCredentialTypes & PSCredentialTypes.Domain) != PSCredentialTypes.Domain)
             {
-                cREDUI_FLAGS |= CredUI.CREDUI_FLAGS.GENERIC_CREDENTIALS;
+                cReduiFlags |= CredUI.CREDUI_FLAGS.GENERIC_CREDENTIALS;
                 if ((options & PSCredentialUIOptions.AlwaysPrompt) == PSCredentialUIOptions.AlwaysPrompt)
                 {
-                    cREDUI_FLAGS |= CredUI.CREDUI_FLAGS.ALWAYS_SHOW_UI;
+                    cReduiFlags |= CredUI.CREDUI_FLAGS.ALWAYS_SHOW_UI;
                 }
             }
-            var credUIReturnCodes = CredUI.CredUIReturnCodes.ERROR_INVALID_PARAMETER;
+            var credUiReturnCodes = CredUI.CredUIReturnCodes.ERROR_INVALID_PARAMETER;
             if (stringBuilder.Length <= 513 && stringBuilder2.Length <= 256)
             {
-                credUIReturnCodes = CredUI.CredUIPromptForCredentials(ref cREDUI_INFO, targetName, IntPtr.Zero, 0,
-                    stringBuilder, 513, stringBuilder2, 256, ref num, cREDUI_FLAGS);
+                credUiReturnCodes = CredUI.CredUIPromptForCredentials(ref cReduiInfo, targetName, IntPtr.Zero, 0,
+                    stringBuilder, 513, stringBuilder2, 256, ref num, cReduiFlags);
             }
             PSCredential result;
-            if (credUIReturnCodes == CredUI.CredUIReturnCodes.NO_ERROR)
+            if (credUiReturnCodes == CredUI.CredUIReturnCodes.NO_ERROR)
             {
-                string text = null;
-                if (stringBuilder != null)
-                {
-                    text = stringBuilder.ToString();
-                }
+                var text = stringBuilder.ToString();
                 text = text.TrimStart(new[]
                 {
                     '\\'
                 });
                 var secureString = new SecureString();
-                for (int i = 0; i < stringBuilder2.Length; i++)
+                for (var i = 0; i < stringBuilder2.Length; i++)
                 {
                     secureString.AppendChar(stringBuilder2[i]);
                     stringBuilder2[i] = '\0';
                 }
-                if (!string.IsNullOrEmpty(text))
-                {
-                    result = new PSCredential(text, secureString);
-                }
-                else
-                {
-                    result = null;
-                }
+                result = !string.IsNullOrEmpty(text) ? new PSCredential(text, secureString) : null;
             }
             else
             {
@@ -506,7 +487,7 @@ namespace PowerShellTools.DebugEngine
     public class RawHostUi : PSHostRawUserInterface
     {
 
-        private ScriptDebugger _debugger;
+        private readonly ScriptDebugger _debugger;
 
         public RawHostUi(ScriptDebugger debugger)
         {
