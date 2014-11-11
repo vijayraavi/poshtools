@@ -102,7 +102,10 @@ namespace PowerShellTools.Test
 
             var errorTags = _propertyCollection.GetProperty("PSTokenErrorTags") as List<PowerShellTokenizationService.TagInformation<ErrorTag>>;
 
-            Assert.IsTrue(errorTags.Any(m => m.GetTagSpan(_bufferCurrentSnapshot.Object).Tag.ErrorType == "syntax error" && m.GetTagSpan(_bufferCurrentSnapshot.Object).Tag.ToolTipContent == "Test"));
+            var errorTag = errorTags.First().GetTagSpan(_bufferCurrentSnapshot.Object);
+
+            Assert.AreEqual(errorTag.Tag.ErrorType, "syntax error");
+            Assert.AreEqual(errorTag.Tag.ToolTipContent, "The string is missing the terminator: '.");
         }
 
         void _tokenizationService_TokenizationComplete(object sender, EventArgs e)
