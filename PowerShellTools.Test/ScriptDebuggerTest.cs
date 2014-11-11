@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -178,6 +181,39 @@ namespace PowerShellTools.Test
             var myVariable = _runspace.SessionStateProxy.GetVariable("MyVariable");
 
             Assert.AreEqual("Test", myVariable);
+        }
+
+        [TestMethod]
+        [Ignore]
+        public void ShouldSupportRemoteSession()
+        {
+            var sbps = new List<ScriptBreakpoint>();
+            _debugger = new ScriptDebugger(true, null);
+
+            _runspace.Dispose();
+            _runspace = RunspaceFactory.CreateRunspace(_debugger);
+            _runspace.Open();
+            _debugger.SetRunspace(_runspace);
+            _debugger.SetBreakpoints(sbps);
+
+            var node = new ScriptProgramNode(null);
+            node.FileName = "Enter-PSSession localhost";
+
+            var mre = new ManualResetEvent(false);
+            string outputString = null;
+            _debugger.DebuggingFinished += (sender, args) => mre.Set();
+            _debugger.OutputString += (sender, args) => outputString = args.Value;
+            _debugger.Execute(node);
+
+            Assert.IsTrue(mre.WaitOne(5000));
+
+            mre.Reset();
+            node = new ScriptProgramNode(null);
+            node.FileName = "$host.Name";
+            _debugger.Execute(node);
+            Assert.IsTrue(mre.WaitOne(5000));
+
+            Assert.AreEqual("ServerRemoteHost", outputString);
         }
     }
 }

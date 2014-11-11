@@ -17,11 +17,9 @@ namespace PowerShellTools.Classification
 		};
 		[BaseDefinition("text"), Name("PS1ScriptGaps"), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition scriptGapsTypeDefinition;
-		[BaseDefinition("text"), Name("PS1HighContrast"), Export(typeof(ClassificationTypeDefinition))]
-		private static ClassificationTypeDefinition ps1HighContrastDefinition;
 		private static IClassificationType scriptGaps;
-		private static IClassificationType ps1HighContrast;
-		private ITextBuffer buffer;
+		private readonly ITextBuffer buffer;
+
 		public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
 		protected static IClassificationType ScriptGaps
 		{
@@ -108,11 +106,9 @@ namespace PowerShellTools.Classification
 			Classifier classifier;
 			if (buffer.Properties.TryGetProperty(typeof(Classifier).Name, out classifier))
 			{
-				if (classifier != this)
-				{
-					buffer.Properties.RemoveProperty(typeof(Classifier).Name);
-					buffer.Properties.AddProperty(typeof(Classifier).Name, this);
-				}
+			    if (classifier == this) return;
+			    buffer.Properties.RemoveProperty(typeof(Classifier).Name);
+			    buffer.Properties.AddProperty(typeof(Classifier).Name, this);
 			}
 			else
 			{

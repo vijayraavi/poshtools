@@ -29,14 +29,13 @@ namespace PowerShellTools.DebugEngine
         public static void ContinueCommand(Runspace remoteRunspace, Pipeline cmd, PSHost host, bool inDebugMode,
             Runspace oldRunspace)
         {
-            var executionContext = oldRunspace.AsDynamic().ExecutionContext;
-
             var remoteRunspaceType = typeof(EnterPSSessionCommand).Assembly.GetType("System.Management.Automation.RemoteRunspace");
             var executionContextType = typeof(EnterPSSessionCommand).Assembly.GetType("System.Management.Automation.ExecutionContext");
+            var executionContext = typeof (Runspace).GetProperty("ExecutionContext", BindingFlags.Instance | BindingFlags.NonPublic).GetGetMethod(true).Invoke(remoteRunspace, new object[]{});
             var method = typeof(EnterPSSessionCommand).GetMethod("ContinueCommand",
                 BindingFlags.NonPublic | BindingFlags.Static, null, new[] { remoteRunspaceType, typeof(Pipeline), typeof(PSHost), typeof(bool), executionContextType }, null);
 
-            method.Invoke(null, new[] {remoteRunspace, cmd, host, inDebugMode, executionContext.RealObject});
+            method.Invoke(null, new[] { remoteRunspace, cmd, host, inDebugMode, executionContext});
         }
     }
 }
