@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using System.Windows;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft;
@@ -155,13 +156,9 @@ namespace PowerShellTools
             }
         }
 
-        /// <summary>
-        /// Initialization of the package; this method is called right after the package is sited, so this is the place
-        /// where you can put all the initialization code that rely on services provided by VisualStudio.
-        /// </summary>
-        protected override void Initialize()
+        private void InitializeInternal()
         {
-            var page = (DiagnosticsDialogPage) GetDialogPage(typeof (DiagnosticsDialogPage));
+            var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
 
             if (page.EnableDiagnosticLogging)
             {
@@ -172,9 +169,9 @@ namespace PowerShellTools
             base.Initialize();
 
             var langService = new PowerShellLanguageInfo(this);
-            ((IServiceContainer) this).AddService(langService.GetType(), langService, true);
+            ((IServiceContainer)this).AddService(langService.GetType(), langService, true);
 
-            var componentModel = (IComponentModel) GetGlobalService(typeof (SComponentModel));
+            var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
             _textBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
             EditorImports.ClassificationTypeRegistryService = componentModel.GetService<IClassificationTypeRegistryService>();
             EditorImports.ClassificationFormatMap = componentModel.GetService<IClassificationFormatMapService>();
@@ -190,11 +187,28 @@ namespace PowerShellTools
             InitializePowerShellHost();
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
-            RefreshCommands(new ExecuteSelectionCommand(), 
-                            new ExecuteAsScriptCommand(), 
-                            _gotoDefinitionCommand, 
-                            new PrettyPrintCommand(Debugger.Runspace), 
+            RefreshCommands(new ExecuteSelectionCommand(),
+                            new ExecuteAsScriptCommand(),
+                            _gotoDefinitionCommand,
+                            new PrettyPrintCommand(Debugger.Runspace),
                             new OpenDebugReplCommand());
+        }
+
+        /// <summary>
+        /// Initialization of the package; this method is called right after the package is sited, so this is the place
+        /// where you can put all the initialization code that rely on services provided by VisualStudio.
+        /// </summary>
+        protected override void Initialize()
+        {
+            try
+            {
+                InitializeInternal();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to initialize PowerShell Tools for Visual Studio." + ex,
+                    "PowerShell Tools for Visual Studio Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private IContentType _contentType;

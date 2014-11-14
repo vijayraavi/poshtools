@@ -50,7 +50,7 @@ namespace PowerShellTools.DebugEngine
             _runspace.Open();
 
             _runspaceRef = new RunspaceRef(_runspace);
-            _runspaceRef.Runspace.Debugger.SetDebugMode(DebugModes.LocalScript | DebugModes.RemoteScript);
+            //_runspaceRef.Runspace.Debugger.SetDebugMode(DebugModes.LocalScript | DebugModes.RemoteScript);
             
             _runspace.SessionStateProxy.PSVariable.Set("dte", dte2);
             ImportPoshToolsModule();
