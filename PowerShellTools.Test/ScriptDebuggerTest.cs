@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,6 +9,7 @@ using PowerShellTools.DebugEngine;
 namespace PowerShellTools.Test
 {
     [TestClass]
+    [DeploymentItem("TestFile.ps1")]
     public class ScriptDebuggerTest
     {
         private ScriptDebugger _debugger;

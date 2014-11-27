@@ -1,209 +1,109 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
+using System.Collections;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using System.Text;
-using Microsoft.PowerShell;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 
 namespace PowerShellTools.TestAdapter
 {
-    [ExtensionUri(ExecutorUriString)]
-    public class PsateTestExecutor : ITestExecutor
+    internal class PsateTestExecutor : PowerShellTestExecutorBase
     {
-        public void RunTests(IEnumerable<string> sources, IRunContext runContext,
-            IFrameworkHandle frameworkHandle)
+        public override string TestFramework
         {
-            SetupExecutionPolicy();
-            IEnumerable<TestCase> tests = PsateTestDiscoverer.GetTests(sources, null);
-            RunTests(tests, runContext, frameworkHandle);
+            get { return "PSate"; }
         }
 
-        private void SetupExecutionPolicy()
+        public override PowerShellTestResult RunTest(PowerShell powerShell, TestCase testCase, IRunContext runContext)
         {
-            ExecutionPolicy policy = GetExecutionPolicy();
-            if (policy != ExecutionPolicy.Unrestricted &&
-                policy != ExecutionPolicy.RemoteSigned &&
-                policy != ExecutionPolicy.Bypass)
-            {
-                ExecutionPolicy machinePolicy = GetExecutionPolicy(ExecutionPolicyScope.MachinePolicy);
-                ExecutionPolicy userPolicy = GetExecutionPolicy(ExecutionPolicyScope.UserPolicy);
+            var module = FindModule("PSate", runContext);
+            powerShell.AddCommand("Import-Module").AddParameter("Name", module);
+            powerShell.Invoke();
 
-                if (machinePolicy == ExecutionPolicy.Undefined && userPolicy == ExecutionPolicy.Undefined)
+            powerShell.Commands.Clear();
+
+            powerShell.AddCommand("Invoke-Tests")
+                .AddParameter("Path", testCase.CodeFilePath)
+                .AddParameter("Output", "Results")
+                .AddParameter("ResultsVariable", "Results");
+
+            powerShell.Invoke();
+
+            powerShell.Commands.Clear();
+            powerShell.AddCommand("Get-Variable").AddParameter("Name", "Results");
+            var results = powerShell.Invoke<PSObject>();
+
+            PSDataCollection<ErrorRecord> errors = null;
+            if (powerShell.HadErrors && (results == null || !results.Any()))
+            {
+                errors = powerShell.Streams.Error;
+            }
+
+            var testFixture = testCase.FullyQualifiedName.Split(',')[0];
+            var testCaseName = testCase.FullyQualifiedName.Split(',')[1];
+
+            return ParseTestResult(results.FirstOrDefault(), testFixture, testCaseName);
+        }
+
+        public PowerShellTestResult ParseTestResult(PSObject obj,  string textFixtureName, string testCaseName)
+        {
+            if (obj == null)
+            {
+                return new PowerShellTestResult(false);
+            }
+
+            var variable = obj.BaseObject as PSVariable;
+            if (variable == null)
+            {
+                throw new ArgumentException("Argument was not a variable!", "obj");
+            }
+
+            var hashTable = variable.Value as Hashtable;
+            if (hashTable == null)
+            {
+                throw new ArgumentException("Argument was not a hashtable!", "obj");
+            }
+
+            hashTable = ((object[]) hashTable["Cases"])[0] as Hashtable; //File
+
+            if (hashTable == null)
+            {
+                throw new ArgumentException("Hashtable did not contain the file cases!");
+            }
+
+            hashTable = ((object[])hashTable["Cases"]).FirstOrDefault(m => ((Hashtable)m)["Name"].ToString() == textFixtureName) as Hashtable; // TextFixture
+
+            if (hashTable == null)
+            {
+                throw new ArgumentException("Hashtable did not contain the test fixture cases!");
+            }
+
+            hashTable = ((object[])hashTable["Cases"]).FirstOrDefault(m => ((Hashtable)m)["Name"].ToString() == testCaseName) as Hashtable; // TestCase
+
+            if (hashTable == null)
+            {
+                throw new ArgumentException("Hashtable did not contain the test cases!");
+            }
+
+            var result = hashTable["Result"] as String;
+            var exception = hashTable["Exception"] as ErrorRecord;
+            var stackTrace = ((object[]) hashTable["StackTrace"]);
+
+            if (result == "Failure")
+            {
+                var sb = new StringBuilder();
+                foreach (var frame in stackTrace)
                 {
-                    SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
-                }
-            }
-        }
-
-        private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
-        {
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Set-ExecutionPolicy").AddParameter("ExecutionPolicy", policy).AddParameter("Scope", scope);
-                ps.Invoke();
-            }
-        }
-
-        private ExecutionPolicy GetExecutionPolicy()
-        {
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Get-ExecutionPolicy");
-                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
-            }
-        }
-
-        private ExecutionPolicy GetExecutionPolicy(ExecutionPolicyScope scope)
-        {
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Get-ExecutionPolicy").AddParameter("Scope", scope);
-                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
-            }
-        }
-
-        private static string GetPsateModulePath(string root)
-        {
-            // Default packages path for nuget.
-            var packagesRoot = Path.Combine(root, "packages");
-
-            // TODO: Scour for custom nuget packages paths.
-
-            var packagePath = Directory.GetDirectories(packagesRoot, "PSate*", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (null != packagePath)
-            {
-                // Needs to be kept up to date with the directory structure.
-                return Path.Combine(packagePath, @"tools\PSate.psm1");
-            }
-
-            return null;
-        }
-
-
-        public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext,
-               IFrameworkHandle frameworkHandle)
-        {
-            _mCancelled = false;
-
-            var testCases = tests as TestCase[] ?? tests.ToArray();
-            foreach (string testFile in testCases.Select(m => m.CodeFilePath).Distinct())
-            {
-                if (_mCancelled) break;
-
-                try
-                {
-                    RunTests(frameworkHandle, runContext, testFile, testCases);
-                }
-                catch (Exception ex)
-                {
-                    RecordTestFailures(frameworkHandle, testFile, testCases, ex);
-                }
-            }
-
-        }
-
-        private static void RecordTestFailures(IFrameworkHandle frameworkHandle, string testFile, IEnumerable<TestCase> testCases,
-            Exception ex)
-        {
-            var file = testFile;
-            foreach (var testCase in testCases.Where(m => m.CodeFilePath == file))
-            {
-                var testResult = new TestResult(testCase);
-                testResult.Outcome = TestOutcome.Failed;
-                testResult.ErrorMessage = ex.Message;
-                testResult.ErrorStackTrace = ex.StackTrace;
-                frameworkHandle.RecordResult(testResult);
-            }
-        }
-
-        private static void RunTests(IFrameworkHandle frameworkHandle, IRunContext runContext, string testFile, TestCase[] testCases)
-        {
-            Runspace r = RunspaceFactory.CreateRunspace(new TestAdapterHost());
-            r.Open();
-
-            using (var ps = PowerShell.Create())
-            {
-                ps.Runspace = r;
-
-                var module = GetPsateModulePath(runContext.SolutionDirectory) ?? "PSate";
-                ps.AddCommand("Import-Module").AddParameter("Name", module);
-                ps.Invoke();
-
-                ps.Commands.Clear();
-
-                ps.AddCommand("Invoke-Tests")
-                    .AddParameter("Path", testFile)
-                    .AddParameter("Output", "Results")
-                    .AddParameter("ResultsVariable", "Results");
-
-                ps.Invoke();
-
-                ps.Commands.Clear();
-                ps.AddCommand("Get-Variable").AddParameter("Name", "Results");
-                var results = ps.Invoke<PSObject>();
-
-                PSDataCollection<ErrorRecord> errors = null;
-                if (ps.HadErrors && (results == null || !results.Any()))
-                {
-                    errors = ps.Streams.Error;
+                    sb.Append(frame);
                 }
 
-                RecordResults(frameworkHandle, testFile, testCases, results, errors);
+                var message = exception == null ? "Unknown exception" : exception.ToString();
+                var stacktrace = sb.ToString();
+                return new PowerShellTestResult(false, message, stacktrace);
             }
+
+            return new PowerShellTestResult(true);
         }
-
-        private static void RecordResults(IFrameworkHandle frameworkHandle, string testFile, IEnumerable<TestCase> testCases,
-            Collection<PSObject> results, PSDataCollection<ErrorRecord> errorRecords)
-        {
-            string file = testFile;
-            foreach (var testCase in testCases.Where(m => m.CodeFilePath == file))
-            {
-                var testResult = new TestResult(testCase);
-                testResult.Outcome = TestOutcome.Failed;
-                testResult.ErrorMessage = "Unexpected error! Failed to run tests!";
-
-                var testFixture = testCase.FullyQualifiedName.Split(',')[0];
-                var testCaseName = testCase.FullyQualifiedName.Split(',')[1];
-
-                var testResultData = new PowerShellTestResult(results.FirstOrDefault(), testFixture, testCaseName);
-
-                if (errorRecords != null)
-                {
-                    foreach (var error in errorRecords)
-                    {
-                        testResult.Messages.Add(new TestResultMessage("Error", error.ToString()));
-                    }
-                }
-
-                if (testResultData.Passed)
-                {
-                    testResult.Outcome = TestOutcome.Passed;
-                    testResult.ErrorMessage = null;
-                }
-                else
-                {
-                    testResult.Outcome = TestOutcome.Failed;
-                    testResult.ErrorMessage = testResultData.ErrorMessage;
-                    testResult.ErrorStackTrace = testResultData.ErrorStacktrace;
-                }
-
-                frameworkHandle.RecordResult(testResult);
-            }
-        }
-
-        public void Cancel()
-        {
-            _mCancelled = true;
-        }
-
-        public const string ExecutorUriString = "executor://PsateTestExecutor/v1";
-        public static readonly Uri ExecutorUri = new Uri(ExecutorUriString);
-        private bool _mCancelled;
     }
 }

@@ -53,6 +53,9 @@
     <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Debugger.InteropA, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="Microsoft.VisualStudio.Language.Intellisense, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\CommonExtensions\Microsoft\TestWindow\Microsoft.VisualStudio.TestPlatform.ObjectModel.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.Text.Data, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Text.Logic, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Text.UI, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
@@ -81,9 +84,16 @@
     <Compile Include="PowerShellTokenizationService.Test.cs" />
     <Compile Include="ScriptDebuggerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestAdapter\PesterTestExecutor.Test.cs" />
+    <Compile Include="TestAdapter\PowerShellTestDiscoverer.Test.cs" />
+    <Compile Include="TestAdapter\PSateTestExecutor.Test.cs" />
     <Compile Include="VsxHostTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj">
+      <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>
+      <Name>PowerShellTools.TestAdapter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowerShellTools\PowerShellTools.csproj">
       <Project>{456d66a8-e05e-496d-bdce-af24bbc12e0d}</Project>
       <Name>PowerShellTools</Name>
@@ -93,6 +103,76 @@
     <None Include="..\Build\FinalPublicKey.snk">
       <Link>FinalPublicKey.snk</Link>
     </None>
+    <None Include="Modules\Pester\.gitattributes" />
+    <None Include="Modules\Pester\.gitignore" />
+    <None Include="Modules\Pester\bin\pester.bat" />
+    <None Include="Modules\Pester\Build.bat" />
+    <None Include="Modules\Pester\build.psake.ps1" />
+    <None Include="Modules\Pester\CHANGELOG.md" />
+    <None Include="Modules\Pester\Functions\Assertions\Be.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Be.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\BeGreaterThan.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\BeGreaterThan.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\BeLessThan.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\BeLessThan.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\BeNullOrEmpty.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\BeNullOrEmpty.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Contain.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Contain.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\ContainExactly.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\ContainExactly.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Exist.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Exist.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Match.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Match.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\MatchExactly.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\MatchExactly.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\PesterThrow.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\PesterThrow.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Should.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Should.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Assertions\Test-Assertion.ps1" />
+    <None Include="Modules\Pester\Functions\Context.ps1" />
+    <None Include="Modules\Pester\Functions\Context.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Coverage.ps1" />
+    <None Include="Modules\Pester\Functions\Coverage.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Describe.ps1" />
+    <None Include="Modules\Pester\Functions\Describe.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\In.ps1" />
+    <None Include="Modules\Pester\Functions\In.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\InModuleScope.ps1" />
+    <None Include="Modules\Pester\Functions\InModuleScope.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\It.ps1" />
+    <None Include="Modules\Pester\Functions\It.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\Mock.ps1" />
+    <None Include="Modules\Pester\Functions\Mock.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\New-Fixture.ps1" />
+    <None Include="Modules\Pester\Functions\New-Fixture.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\PesterState.ps1" />
+    <None Include="Modules\Pester\Functions\PesterState.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\SetupTeardown.ps1" />
+    <None Include="Modules\Pester\Functions\SetupTeardown.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\TestDrive.ps1" />
+    <None Include="Modules\Pester\Functions\TestDrive.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\TestResults.ps1" />
+    <None Include="Modules\Pester\Functions\TestResults.Tests.ps1" />
+    <None Include="Modules\Pester\Functions\TestsRunningInCleanRunspace.Tests.ps1" />
+    <None Include="Modules\Pester\LICENSE" />
+    <None Include="Modules\Pester\nunit_schema_2.5.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Modules\Pester\Pester.nuspec" />
+    <None Include="Modules\Pester\Pester.psd1" />
+    <None Include="Modules\Pester\Pester.psm1" />
+    <None Include="Modules\Pester\README.md" />
+    <None Include="Modules\PSate\.gitignore" />
+    <None Include="Modules\PSate\Build.ps1" />
+    <None Include="Modules\PSate\Build.psake.ps1" />
+    <None Include="Modules\PSate\init.ps1" />
+    <None Include="Modules\PSate\LICENSE" />
+    <None Include="Modules\PSate\PSate.nuspec" />
+    <None Include="Modules\PSate\PSate.psm1" />
+    <None Include="Modules\PSate\README.md" />
     <None Include="packages.config" />
     <None Include="Pretty.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -103,6 +183,13 @@
     <None Include="Ugly.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Modules\Pester\en-US\about_BeforeEach_AfterEach.help.txt" />
+    <Content Include="Modules\Pester\en-US\about_Mocking.help.txt" />
+    <Content Include="Modules\Pester\en-US\about_Pester.help.txt" />
+    <Content Include="Modules\Pester\en-US\about_should.help.txt" />
+    <Content Include="Modules\Pester\en-US\about_TestDrive.help.txt" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
@@ -124,6 +211,9 @@
   </Choose>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Y /S "$(ProjectDir)Modules" "$(TargetDir)"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

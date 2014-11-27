@@ -1,197 +1,90 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using System.Text;
 using System.Xml.Linq;
-using Microsoft.PowerShell;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using PowerShellTools.TestAdapter.Pester;
 
 namespace PowerShellTools.TestAdapter
 {
-    [ExtensionUri(ExecutorUriString)]
-    public class PesterTestExecutor : ITestExecutor
+    internal class PesterTestExecutor : PowerShellTestExecutorBase
     {
-        public void RunTests(IEnumerable<string> sources, IRunContext runContext,
-            IFrameworkHandle frameworkHandle)
+        public override string TestFramework
         {
-            SetupExecutionPolicy();
-            IEnumerable<TestCase> tests = PesterTestDiscoverer.GetTests(sources, null);
-            RunTests(tests, runContext, frameworkHandle);
+            get { return "Pester"; }
         }
 
-        private void SetupExecutionPolicy()
+        public override PowerShellTestResult RunTest(PowerShell powerShell, TestCase testCase, IRunContext runContext)
         {
-            ExecutionPolicy policy = GetExecutionPolicy();
-            if (policy != ExecutionPolicy.Unrestricted &&
-                policy != ExecutionPolicy.RemoteSigned &&
-                policy != ExecutionPolicy.Bypass)
-            {
-                ExecutionPolicy machinePolicy = GetExecutionPolicy(ExecutionPolicyScope.MachinePolicy);
-                ExecutionPolicy userPolicy = GetExecutionPolicy(ExecutionPolicyScope.UserPolicy);
+            var module = FindModule("Pester", runContext);
+            powerShell.AddCommand("Import-Module").AddParameter("Name", module);
+            powerShell.Invoke();
 
-                if (machinePolicy == ExecutionPolicy.Undefined && userPolicy == ExecutionPolicy.Undefined)
+            powerShell.Commands.Clear();
+
+            var fi = new FileInfo(testCase.CodeFilePath);
+
+            var tempFile = Path.GetTempFileName();
+
+            powerShell.AddCommand("Invoke-Pester")
+                .AddParameter("relative_path", fi.Directory.FullName)
+                .AddParameter("TestName", testCase.FullyQualifiedName)
+                .AddParameter("OutputXml", tempFile);
+
+            powerShell.Invoke();
+
+            return ParseResultFile(tempFile);
+        }
+
+        private PowerShellTestResult ParseResultFile(string file)
+        {
+            bool passed = false;
+            string error = string.Empty, stackTrace = string.Empty;
+
+            using (var s = new FileStream(file, FileMode.Open))
+            {
+                var root = XDocument.Load(s).Root;
+                foreach (var suite in root.Elements("test-suite"))
                 {
-                    SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
-                }
-            }
-        }
-
-        private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
-        {
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Set-ExecutionPolicy").AddParameter("ExecutionPolicy", policy).AddParameter("Scope", scope);
-                ps.Invoke();
-            }
-        }
-
-        private ExecutionPolicy GetExecutionPolicy()
-        {
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Get-ExecutionPolicy");
-                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
-            }
-        }
-
-        private ExecutionPolicy GetExecutionPolicy(ExecutionPolicyScope scope)
-        {
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Get-ExecutionPolicy").AddParameter("Scope", scope);
-                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
-            }
-        }
-
-        private string FindPesterModule(IRunContext runContext)
-        {
-            var pesterPath = GetPesterModulePath(runContext.TestRunDirectory);
-            if (String.IsNullOrEmpty(pesterPath))
-            {
-                pesterPath = GetPesterModulePath(runContext.SolutionDirectory);
-            }
-
-            if (String.IsNullOrEmpty(pesterPath))
-            {
-                pesterPath = "Pester";
-            }
-
-            return pesterPath;
-        }
-
-        private string GetPesterModulePath(string root)
-        {
-            // Default packages path for nuget.
-            var packagesRoot = Path.Combine(root, "packages");
-
-            // TODO: Scour for custom nuget packages paths.
-
-            if (Directory.Exists(packagesRoot))
-            {
-                var packagePath = Directory.GetDirectories(packagesRoot, "Pester*", SearchOption.TopDirectoryOnly).FirstOrDefault();
-                if (null != packagePath)
-                {
-                    // Needs to be kept up to date with the directory structure.
-                    return Path.Combine(packagePath, @"tools\Pester.psm1");
-                }
-            }
-
-
-            return null;
-        }
-
-
-        public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext,
-               IFrameworkHandle frameworkHandle)
-        {
-            _mCancelled = false;
-
-            foreach (TestCase test in tests)
-            {
-                if (_mCancelled) break;
-
-                var testResult = new TestResult(test);
-                testResult.Outcome = TestOutcome.Failed;
-                testResult.ErrorMessage = "Unexpected error! Failed to run tests!";
-
-                PowerShellTestResult testResultData = null;
-                var testOutput = new StringBuilder();
-
-                try
-                {
-                    var testAdapter = new TestAdapterHost();
-                    testAdapter.HostUi.OutputString = s => testOutput.Append(s);
-                    
-                    Runspace r = RunspaceFactory.CreateRunspace(testAdapter);
-                    r.Open();
-
-                    using (var ps = PowerShell.Create())
+                    passed = ((TestResultsEnum)Enum.Parse(typeof(TestResultsEnum), suite.Attribute("result").Value) == TestResultsEnum.Success);
+                    if (!passed)
                     {
-                        ps.Runspace = r;
+                        var sb = new StringBuilder();
+                        foreach (var res in suite.Descendants("results"))
+                        {
+                            foreach (var testcase in res.Elements("test-case"))
+                            {
+                                var name = testcase.Attribute("name").Value;
+                                var result = testcase.Attribute("result").Value;
 
-                        var module = FindPesterModule(runContext);
-                        ps.AddCommand("Import-Module").AddParameter("Name", module);
-                        ps.Invoke();
+                                if (result != "Success")
+                                {
+                                    var messageNode = testcase.Descendants("message").FirstOrDefault();
+                                    var stacktraceNode = testcase.Descendants("stack-trace").FirstOrDefault();
 
-                        ps.Commands.Clear();
-                        
-                        var fi = new FileInfo(test.CodeFilePath);
+                                    sb.AppendLine(String.Format("{1} [{0}]", name, result));
+                                    if (messageNode != null)
+                                    {
+                                        sb.AppendLine(messageNode.Value);
+                                    }
 
-                        var tempFile = Path.GetTempFileName();
+                                    if (stacktraceNode != null)
+                                    {
+                                        stackTrace = stacktraceNode.Value;
+                                    }
+                                }
+                            }
+                        }
 
-                        ps.AddCommand("Invoke-Pester")
-                            .AddParameter("relative_path", fi.Directory.FullName)
-                            .AddParameter("TestName", test.FullyQualifiedName)
-                            .AddParameter("OutputXml", tempFile);
-
-                        ps.Invoke();
-
-                        testResultData = new PowerShellTestResult(tempFile);
-                        File.Delete(tempFile);
+                        error = sb.ToString();
                     }
                 }
-                catch (Exception ex)
-                {
-                    testResult.Outcome = TestOutcome.Failed;
-                    testResult.ErrorMessage = ex.Message;
-                    testResult.ErrorStackTrace = ex.StackTrace;
-                }
-
-                if (testResultData != null)
-                {
-                    if (testResultData.Passed)
-                    {
-                        testResult.Outcome = TestOutcome.Passed;
-                        testResult.ErrorMessage = null;
-                    }
-                    else
-                    {
-                        testResult.Outcome = TestOutcome.Failed;
-                        testResult.ErrorMessage = testResultData.ErrorMessage;
-                        testResult.ErrorStackTrace = testResultData.ErrorStacktrace;
-                    }
-                }
-                
-                
-                frameworkHandle.SendMessage(TestMessageLevel.Informational, testOutput.ToString());
-                frameworkHandle.RecordResult(testResult);
             }
 
+            File.Delete(file);
+            return new PowerShellTestResult(passed,error, stackTrace);
         }
-
-        public void Cancel()
-        {
-            _mCancelled = true;
-        }
-
-        public const string ExecutorUriString = "executor://PesterTestExecutor/v1";
-        public static readonly Uri ExecutorUri = new Uri(ExecutorUriString);
-        private bool _mCancelled;
     }
 }
