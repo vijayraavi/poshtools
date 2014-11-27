@@ -152,6 +152,7 @@ namespace PowerShellTools.Test.TestAdapter
             Assert.AreEqual(PowerShellTestExecutor.ExecutorUri, testCases[0].ExecutorUri);
             Assert.AreEqual(tempFile, testCases[0].CodeFilePath);
             Assert.AreEqual(3, testCases[0].LineNumber);
+            Assert.AreEqual("PSate||BuildIfChanged||ThisIsATest", testCases[0].FullyQualifiedName);
         }
 
         [TestMethod]
@@ -172,6 +173,7 @@ namespace PowerShellTools.Test.TestAdapter
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
             Assert.AreEqual("ThisIsATest", testCases[0].DisplayName);
+            Assert.AreEqual("PSate||BuildIfChanged||ThisIsATest", testCases[0].FullyQualifiedName);
         }
     }
 }

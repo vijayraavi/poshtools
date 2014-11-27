@@ -2,9 +2,7 @@
 
 namespace PowerShellTools.TestAdapter
 {
-
-
-    class PowerShellTestResult
+    public class PowerShellTestResult
     {
         public PowerShellTestResult(TestOutcome outcome)
         {

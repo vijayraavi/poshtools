@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,7 +20,8 @@ namespace PowerShellTools.Test.TestAdapter
         private string _tempFile;
         private string _pesterTestDir;
         private Mock<IRunContext> _runContext;
-        private Mock<IFrameworkHandle> _frameworkHandle;
+        private Runspace _runspace;
+        private PowerShell _powerShell;
 
         public TestContext TestContext { get; set; }
 
@@ -29,7 +32,11 @@ namespace PowerShellTools.Test.TestAdapter
             _executor = new PsateTestExecutor();
 
             _runContext = new Mock<IRunContext>();
-            _frameworkHandle = new Mock<IFrameworkHandle>();
+
+            _runspace = RunspaceFactory.CreateRunspace(new TestAdapterHost());
+            _runspace.Open();
+            _powerShell = PowerShell.Create();
+            _powerShell.Runspace = _runspace;
         }
 
         [TestCleanup]
@@ -44,9 +51,14 @@ namespace PowerShellTools.Test.TestAdapter
             {
                 Directory.Delete(_pesterTestDir);
             }
+
+            if (_runspace != null)
+            {
+                _runspace.Dispose();
+            }
         }
 
-        private string WriteTestFile(string contents)
+        private TestCase WriteTestFile(string testName, string contents)
         {
             _pesterTestDir = Path.Combine(Path.GetTempPath(), DateTime.Now.Ticks.ToString());
 
@@ -54,11 +66,13 @@ namespace PowerShellTools.Test.TestAdapter
 
             _tempFile = Path.Combine(_pesterTestDir, "MyTests.Tests.ps1");
             File.WriteAllText(_tempFile, contents);
-            return _tempFile;
+
+            var testCase = new TestCase(testName, new Uri("http://something.com"), _tempFile);
+            testCase.CodeFilePath = _tempFile;
+            return testCase;
         }
 
         [TestMethod]
-        [Ignore]
         public void ShouldReturnSuccessfulTestResults()
         {
             const string testScript = @"#psate
@@ -68,22 +82,17 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            var results = new List<TestResult>();
-
             _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
             _runContext.Setup(m => m.SolutionDirectory).Returns(TestContext.TestDeploymentDir);
-            _frameworkHandle.Setup(m => m.RecordResult(It.IsAny<TestResult>())).Callback<TestResult>(results.Add);
 
-            var testFile = WriteTestFile(testScript);
+            var testFile = WriteTestFile("PSate||Test||Blah", testScript);
 
-            //TODO:_executor.RunTests(new[] { testFile }, _runContext.Object, _frameworkHandle.Object);
+            var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
 
-            Assert.IsTrue(results.Any());
-            Assert.AreEqual(TestOutcome.Passed, results[0].Outcome);
+            Assert.AreEqual(TestOutcome.Passed, result.Outcome);
         }
 
         [TestMethod]
-        [Ignore]
         public void ShouldReturnUnsuccessfulTestResultIfExceptionThrown()
         {
             const string testScript = @"#psate
@@ -94,19 +103,15 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            var results = new List<TestResult>();
-
             _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
             _runContext.Setup(m => m.SolutionDirectory).Returns(TestContext.TestDeploymentDir);
-            _frameworkHandle.Setup(m => m.RecordResult(It.IsAny<TestResult>())).Callback<TestResult>(results.Add);
 
-            var testFile = WriteTestFile(testScript);
+            var testFile = WriteTestFile("PSate||Test||Blah", testScript);
 
-            //TODO:_executor.RunTests(new[] { testFile }, _runContext.Object, _frameworkHandle.Object);
+            var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
 
-            Assert.IsTrue(results.Any());
-            Assert.AreEqual("Boom!", results[0].ErrorMessage);
-            Assert.AreEqual(TestOutcome.Failed, results[0].Outcome);
+            Assert.AreEqual("Boom!", result.ErrorMessage);
+            Assert.AreEqual(TestOutcome.Failed, result.Outcome);
         }
     }
 }

@@ -239,14 +239,14 @@ namespace PowerShellTools.TestAdapter
                     !(element as StringConstantExpressionAst).Value.Equals("Name", StringComparison.OrdinalIgnoreCase) &&
                     !(element as StringConstantExpressionAst).Value.Equals("ScriptBlock", StringComparison.OrdinalIgnoreCase))
                 {
-                    contextName = String.Format("{0},{1}", textFixtureName, (element as StringConstantExpressionAst).Value);
+                    contextName = String.Format("PSate||{0}||{1}", textFixtureName, (element as StringConstantExpressionAst).Value);
                     displayName = (element as StringConstantExpressionAst).Value;
                     break;
                 }
 
                 if (nextElementIsName && element is StringConstantExpressionAst)
                 {
-                    contextName = String.Format("{0},{1}", textFixtureName, (element as StringConstantExpressionAst).Value);
+                    contextName = String.Format("PSate||{0}||{1}", textFixtureName, (element as StringConstantExpressionAst).Value);
                     displayName = (element as StringConstantExpressionAst).Value;
                     break;
                 }

@@ -87,7 +87,7 @@ namespace PowerShellTools.TestAdapter
                IFrameworkHandle frameworkHandle)
         {
             _mCancelled = false;
-
+            SetupExecutionPolicy();
             foreach (var test in tests)
             {
                 if (_mCancelled) break;
@@ -139,7 +139,11 @@ namespace PowerShellTools.TestAdapter
                     testResult.ErrorStackTrace = testResultData.ErrorStacktrace;
                 }
 
-                frameworkHandle.SendMessage(TestMessageLevel.Informational, testOutput.ToString());
+                if (testOutput.Length > 0)
+                {
+                    frameworkHandle.SendMessage(TestMessageLevel.Informational, testOutput.ToString());    
+                }
+                
                 frameworkHandle.RecordResult(testResult);
             }
 
@@ -155,7 +159,7 @@ namespace PowerShellTools.TestAdapter
         private bool _mCancelled;
     }
 
-    internal abstract class PowerShellTestExecutorBase
+    public abstract class PowerShellTestExecutorBase
     {
         public abstract string TestFramework { get; }
 

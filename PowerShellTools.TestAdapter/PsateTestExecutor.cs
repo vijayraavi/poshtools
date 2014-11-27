@@ -34,14 +34,20 @@ namespace PowerShellTools.TestAdapter
             powerShell.AddCommand("Get-Variable").AddParameter("Name", "Results");
             var results = powerShell.Invoke<PSObject>();
 
-            PSDataCollection<ErrorRecord> errors = null;
             if (powerShell.HadErrors && (results == null || !results.Any()))
             {
-                errors = powerShell.Streams.Error;
+                var errors = powerShell.Streams.Error;
+                var sb = new StringBuilder();
+                foreach (var error in errors)
+                {
+                    sb.AppendLine(error.ToString());
+                }
+
+                return new PowerShellTestResult(TestOutcome.Failed, sb.ToString(), errors.FirstOrDefault().ScriptStackTrace);
             }
 
-            var testFixture = testCase.FullyQualifiedName.Split(',')[0];
-            var testCaseName = testCase.FullyQualifiedName.Split(',')[1];
+            var testFixture = testCase.FullyQualifiedName.Split(new []{"||"}, StringSplitOptions.None)[1];
+            var testCaseName = testCase.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[2];
 
             return ParseTestResult(results.FirstOrDefault(), testFixture, testCaseName);
         }
