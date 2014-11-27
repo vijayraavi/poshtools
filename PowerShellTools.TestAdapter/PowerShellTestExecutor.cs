@@ -92,7 +92,8 @@ namespace PowerShellTools.TestAdapter
             {
                 if (_mCancelled) break;
 
-                var testFramework = test.LocalExtensionData as string;
+                var testFramework = test.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[0];
+
                 var executor = _testExecutors.FirstOrDefault(
                     m => m.TestFramework.Equals(testFramework, StringComparison.OrdinalIgnoreCase));
 
@@ -133,17 +134,9 @@ namespace PowerShellTools.TestAdapter
 
                 if (testResultData != null)
                 {
-                    if (testResultData.Passed)
-                    {
-                        testResult.Outcome = TestOutcome.Passed;
-                        testResult.ErrorMessage = null;
-                    }
-                    else
-                    {
-                        testResult.Outcome = TestOutcome.Failed;
-                        testResult.ErrorMessage = testResultData.ErrorMessage;
-                        testResult.ErrorStackTrace = testResultData.ErrorStacktrace;
-                    }
+                    testResult.Outcome = testResultData.Outcome;
+                    testResult.ErrorMessage = testResultData.ErrorMessage;
+                    testResult.ErrorStackTrace = testResultData.ErrorStacktrace;
                 }
 
                 frameworkHandle.SendMessage(TestMessageLevel.Informational, testOutput.ToString());

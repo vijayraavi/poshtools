@@ -50,7 +50,7 @@ namespace PowerShellTools.TestAdapter
         {
             if (obj == null)
             {
-                return new PowerShellTestResult(false);
+                return new PowerShellTestResult(TestOutcome.NotFound);
             }
 
             var variable = obj.BaseObject as PSVariable;
@@ -100,10 +100,10 @@ namespace PowerShellTools.TestAdapter
 
                 var message = exception == null ? "Unknown exception" : exception.ToString();
                 var stacktrace = sb.ToString();
-                return new PowerShellTestResult(false, message, stacktrace);
+                return new PowerShellTestResult(TestOutcome.Failed, message, stacktrace);
             }
 
-            return new PowerShellTestResult(true);
+            return new PowerShellTestResult(TestOutcome.Passed);
         }
     }
 }

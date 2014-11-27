@@ -15,7 +15,6 @@ namespace PowerShellTools.TestAdapter
     [Export(typeof (ITestContainerDiscoverer))]
     public class PowerShellTestContainerDiscoverer : ITestContainerDiscoverer
     {
-        public const string ExecutorUriString = "executor://PowerShellTestExecutor/v1";
         private readonly List<ITestContainer> _cachedContainers;
 
         private readonly ILogger _logger;
@@ -62,7 +61,7 @@ namespace PowerShellTools.TestAdapter
 
         public Uri ExecutorUri
         {
-            get { return new Uri(ExecutorUriString); }
+            get { return PowerShellTestExecutor.ExecutorUri; }
         }
 
         public IEnumerable<ITestContainer> TestContainers

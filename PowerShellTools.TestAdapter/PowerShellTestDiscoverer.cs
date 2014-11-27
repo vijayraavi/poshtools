@@ -64,76 +64,99 @@ namespace PowerShellTools.TestAdapter
                 return;
             }
 
-            var testAsts =
+            var testSuites =
                 ast.FindAll(
                     m =>
                         (m is CommandAst) &&
                         (m as CommandAst).GetCommandName().Equals("describe", StringComparison.OrdinalIgnoreCase), true);
 
-            foreach (var ast1 in testAsts)
+
+            foreach (var ast1 in testSuites)
             {
-                var contextAst = (CommandAst) ast1;
-                SendMessage(TestMessageLevel.Informational, "Found describe block.", logger);
-                var contextName = String.Empty;
-                bool nextElementIsName = false, lastElementWasTags = false;
-                foreach (var element in contextAst.CommandElements)
+                var describeName = GetFunctionName(logger, ast1, "describe");
+
+                var contextes = ast1.FindAll(
+                    m =>
+                        (m is CommandAst) &&
+                        (m as CommandAst).GetCommandName().Equals("context", StringComparison.OrdinalIgnoreCase), true);
+
+                foreach(var context in contextes)
                 {
-                    if (!lastElementWasTags &&
-                        element is StringConstantExpressionAst &&
-                        !(element as StringConstantExpressionAst).Value.Equals("describe", StringComparison.OrdinalIgnoreCase))
-                    {
-                        contextName = (element as StringConstantExpressionAst).Value;
-                        break;
-                    }
+                    var contextName = GetFunctionName(logger, context, "context");
 
-                    if (nextElementIsName && element is StringConstantExpressionAst)
-                    {
-                        contextName = (element as StringConstantExpressionAst).Value;
-                        break;
-                    }
+                    var its = context.FindAll(
+                    m =>
+                        (m is CommandAst) &&
+                        (m as CommandAst).GetCommandName().Equals("it", StringComparison.OrdinalIgnoreCase), true);
 
-                    if (element is CommandParameterAst &&
-                        (element as CommandParameterAst).ParameterName.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                    foreach (var test in its)
                     {
-                        nextElementIsName = true;
-                    }
+                        var itAst = (CommandAst)test;
+                        var itName = GetFunctionName(logger, test, "it");
 
-                    if (element is CommandParameterAst &&
-                        (element as CommandParameterAst).ParameterName.Equals("Tags", StringComparison.OrdinalIgnoreCase))
-                    {
-                        lastElementWasTags = true;
-                    }
-                    else
-                    {
-                        lastElementWasTags = false;
+                        // Didn't find the name for the test. Skip it.
+                        if (String.IsNullOrEmpty(itName))
+                        {
+                            SendMessage(TestMessageLevel.Informational, "Test name was empty. Skipping test.", logger);
+                            continue;
+                        }
+
+                        var displayName = String.Format("{0} It {1}", contextName, itName);
+                        var fullName = String.Format("{0}||{1}||{2}||{3}", "Pester", describeName, contextName, itName);
+
+                        var testcase = new TestCase(fullName, PowerShellTestExecutor.ExecutorUri, source)
+                        {
+                            DisplayName = displayName,
+                            CodeFilePath = source,
+                            LineNumber = itAst.Extent.StartLineNumber
+                        };
+
+                        SendMessage(TestMessageLevel.Informational,
+                            String.Format("Adding test [{0}] in {1} at {2}.", displayName, source, testcase.LineNumber), logger);
+
+                        if (discoverySink != null)
+                        {
+                            SendMessage(TestMessageLevel.Informational, "Sending test to sync.", logger);
+                            discoverySink.SendTestCase(testcase);
+                        }
+
+                        tests.Add(testcase);
                     }
                 }
-
-                // Didn't find the name for the test. Skip it.
-                if (String.IsNullOrEmpty(contextName))
-                {
-                    SendMessage(TestMessageLevel.Informational, "Context name was empty. Skipping test.", logger);
-                    continue;
-                }
-
-                var testcase = new TestCase(contextName, PowerShellTestExecutor.ExecutorUri, source)
-                {
-                    CodeFilePath = source,
-                    LineNumber = contextAst.Extent.StartLineNumber,
-                    LocalExtensionData = "Pester"
-                };
-
-                SendMessage(TestMessageLevel.Informational,
-                    String.Format("Adding test {0} in {1} at {2}.", contextName, source, testcase.LineNumber), logger);
-
-                if (discoverySink != null)
-                {
-                    SendMessage(TestMessageLevel.Informational, "Sending test to sync.", logger);
-                    discoverySink.SendTestCase(testcase);
-                }
-
-                tests.Add(testcase);
             }
+        }
+
+        private static string GetFunctionName(IMessageLogger logger, Ast context, string functionName)
+        {
+            var contextAst = (CommandAst) context;
+            SendMessage(TestMessageLevel.Informational, String.Format("Found {0} block.", functionName), logger);
+            var contextName = String.Empty;
+            bool nextElementIsName1 = false;
+            foreach (var element in contextAst.CommandElements)
+            {
+                if (element is StringConstantExpressionAst &&
+                    !(element as StringConstantExpressionAst).Value.Equals(functionName,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    contextName = (element as StringConstantExpressionAst).Value;
+                    break;
+                }
+
+                if (nextElementIsName1 && element is StringConstantExpressionAst)
+                {
+                    contextName = (element as StringConstantExpressionAst).Value;
+                    break;
+                }
+
+                if (element is CommandParameterAst &&
+                    (element as CommandParameterAst).ParameterName.Equals("Name",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    nextElementIsName1 = true;
+                }
+            }
+
+            return contextName;
         }
 
         private static void DiscoverPsateTests(ITestCaseDiscoverySink discoverySink, string source, List<TestCase> tests)

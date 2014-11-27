@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -69,7 +66,10 @@ namespace PowerShellTools.Test.TestAdapter
         {
             const string testScript = @"
             Describe 'BuildIfChanged' {
-                Context 'ThisIsATest' {
+                Context 'When there are changes' {
+                    It 'Builds next version' {
+
+                    }
                 }
             }";
 
@@ -81,10 +81,10 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new []{tempFile}, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("BuildIfChanged", testCases[0].DisplayName);
+            Assert.AreEqual("When there are changes It Builds next version", testCases[0].DisplayName);
             Assert.AreEqual(PowerShellTestExecutor.ExecutorUri, testCases[0].ExecutorUri);
             Assert.AreEqual(tempFile, testCases[0].CodeFilePath);
-            Assert.AreEqual(2, testCases[0].LineNumber);
+            Assert.AreEqual(4, testCases[0].LineNumber);
         }
 
         [TestMethod]
@@ -93,6 +93,8 @@ namespace PowerShellTools.Test.TestAdapter
             const string testScript = @"
             Describe -Name 'BuildIfChanged' {
                 Context 'ThisIsATest' {
+                    It -Name 'Something' {
+                    }
                 }
             }";
 
@@ -104,7 +106,29 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("BuildIfChanged", testCases[0].DisplayName);
+            Assert.AreEqual("ThisIsATest It Something", testCases[0].DisplayName);
+        }
+
+        [TestMethod]
+        public void ShouldReturnCorrectFdqn()
+        {
+            const string testScript = @"
+            Describe -Name 'BuildIfChanged' {
+                Context 'ThisIsATest' {
+                    It -Name 'Something' {
+                    }
+                }
+            }";
+
+            var tempFile = WriteTestFile(testScript);
+
+            var testCases = new List<TestCase>();
+            _sink.Setup(m => m.SendTestCase(It.IsAny<TestCase>())).Callback<TestCase>(testCases.Add);
+
+            _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
+
+            Assert.IsTrue(testCases.Any(), "No test cases found.");
+            Assert.AreEqual("Pester||BuildIfChanged||ThisIsATest||Something", testCases[0].FullyQualifiedName);
         }
 
         [TestMethod]

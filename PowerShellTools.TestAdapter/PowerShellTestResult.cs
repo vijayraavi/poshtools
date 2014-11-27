@@ -1,34 +1,24 @@
-﻿namespace PowerShellTools.TestAdapter
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+
+namespace PowerShellTools.TestAdapter
 {
-    /// <summary>
-    /// Test results
-    /// </summary>
-    public enum TestResultsEnum
-    {  
-        Success,
-        Failure,
-        Inconclusive,
-        Ignored,
-        Skipped,
-        Invalid,
-        Error,
-    }
+
 
     class PowerShellTestResult
     {
-        public PowerShellTestResult(bool passed)
+        public PowerShellTestResult(TestOutcome outcome)
         {
-            Passed = passed;
+            Outcome = outcome;
         }
 
-        public PowerShellTestResult(bool passed, string errorMessage, string errorStacktrace)
+        public PowerShellTestResult(TestOutcome outcome, string errorMessage, string errorStacktrace)
         {
-            Passed = passed;
+            Outcome = outcome;
             ErrorMessage = errorMessage;
             ErrorStacktrace = errorStacktrace;
         }
 
-        public bool Passed { get; private set; }
+        public TestOutcome Outcome { get; private set; }
         public string ErrorMessage { get; private set; }
         public string ErrorStacktrace { get; private set; }
     }
