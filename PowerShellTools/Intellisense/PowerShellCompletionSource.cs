@@ -6,7 +6,6 @@ using System.Management.Automation;
 using log4net;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
-using System.Windows.Media;
 
 namespace PowerShellTools.Intellisense
 {
@@ -84,7 +83,7 @@ namespace PowerShellTools.Intellisense
                 compList.Add(completion);
             }
 
-            completionSets.Add(new ISECompletionSet(string.Empty, string.Empty, trackingSpan, compList, null, filterSpan, lineStartToApplicableTo, selectOnEmptyFilter));
+            completionSets.Add(new PoshCompletionSet(string.Empty, string.Empty, trackingSpan, compList, null, filterSpan, lineStartToApplicableTo, selectOnEmptyFilter));
         }
 
         public void Dispose()
@@ -97,10 +96,10 @@ namespace PowerShellTools.Intellisense
         }
     }
 
-    internal class ISECompletionSet : CompletionSet
+    internal class PoshCompletionSet : CompletionSet
     {
-        private FilteredObservableCollection<Completion> completions;
-        private bool selectOnEmptyFilter;
+        private readonly FilteredObservableCollection<Completion> completions;
+        private readonly bool _selectOnEmptyFilter;
         public override IList<Completion> Completions
         {
             get
@@ -115,7 +114,7 @@ namespace PowerShellTools.Intellisense
 
         internal string InitialApplicableTo { get; private set; }
 
-        internal ISECompletionSet(string moniker, string displayName, ITrackingSpan applicableTo, IEnumerable<Completion> completions, IEnumerable<Completion> completionBuilders, ITrackingSpan filterSpan, ITrackingSpan lineStartToApplicableTo, bool selectOnEmptyFilter)
+        internal PoshCompletionSet(string moniker, string displayName, ITrackingSpan applicableTo, IEnumerable<Completion> completions, IEnumerable<Completion> completionBuilders, ITrackingSpan filterSpan, ITrackingSpan lineStartToApplicableTo, bool selectOnEmptyFilter)
             : base(moniker, displayName, applicableTo, completions, completionBuilders)
         {
             if (filterSpan == null)
@@ -126,7 +125,7 @@ namespace PowerShellTools.Intellisense
             FilterSpan = filterSpan;
             LineStartToApplicableTo = lineStartToApplicableTo;
             InitialApplicableTo = applicableTo.GetText(applicableTo.TextBuffer.CurrentSnapshot);
-            this.selectOnEmptyFilter = selectOnEmptyFilter;
+            this._selectOnEmptyFilter = selectOnEmptyFilter;
         }
         public override void Filter()
         {
@@ -144,18 +143,18 @@ namespace PowerShellTools.Intellisense
         }
         public override void SelectBestMatch()
         {
-            string text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
-            if (!selectOnEmptyFilter && text.Length == 0)
+            var text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
+            if (!_selectOnEmptyFilter && text.Length == 0)
             {
                 SelectionStatus = new CompletionSelectionStatus(null, false, false);
                 return;
             }
-            int num = 2147483647;
+            var num = int.MaxValue;
             Completion completion = null;
             foreach (var current in Completions)
             {
-                int startIndex = current.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? this.InitialApplicableTo.Length : 0;
-                int num2 = current.DisplayText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
+                var startIndex = current.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? this.InitialApplicableTo.Length : 0;
+                var num2 = current.DisplayText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
                 if (num2 != -1 && num2 < num)
                 {
                     completion = current;

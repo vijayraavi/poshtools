@@ -1,10 +1,8 @@
-﻿using System.ComponentModel.Composition;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudioTools.Project;
-using PowerShellTools.DebugEngine;
-using PowerShellTools.LanguageService;
+using PowerShellTools.Classification;
 
 namespace PowerShellTools.Project
 {

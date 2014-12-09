@@ -12,7 +12,7 @@ namespace PowerShellTools.Classification
 		public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
 		{
 			Func<ITagger<T>> creator = () => new PowerShellOutliningTagger(buffer) as ITagger<T>;
-			return buffer.Properties.GetOrCreateSingletonProperty<ITagger<T>>(typeof(PowerShellOutliningTagger), creator);
+			return buffer.Properties.GetOrCreateSingletonProperty(typeof(PowerShellOutliningTagger), creator);
 		}
 	}
 }

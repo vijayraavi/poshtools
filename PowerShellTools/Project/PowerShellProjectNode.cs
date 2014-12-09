@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using Microsoft.VisualStudioTools.Project;
-using PowerShellTools.LanguageService;
+using PowerShellTools.Classification;
 
 namespace PowerShellTools.Project
 {

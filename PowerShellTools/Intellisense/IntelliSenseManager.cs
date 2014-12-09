@@ -217,7 +217,7 @@ namespace PowerShellTools.Intellisense
             return result;
         }
 
-        private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret, CompletionResultType[] mandatoryResultTypeFilter, bool selectOnEmptyFilter)
+        private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret, IEnumerable<CompletionResultType> mandatoryResultTypeFilter, bool selectOnEmptyFilter)
         {
             if (intellisenseRunning) return;
 

@@ -206,6 +206,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Classification\Classifier.cs" />
+    <Compile Include="Classification\ClassifierService.cs" />
     <Compile Include="Classification\PowerShellClassifier.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -217,7 +218,6 @@
     <Compile Include="Classification\PowerShellOutliningTagger.cs" />
     <Compile Include="Classification\PowerShellOutliningTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
-    <Compile Include="Classification\PSBufferTokenizationService.cs" />
     <Compile Include="Cmdlets\GetVisualStudioServiceCommand.cs" />
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
@@ -554,7 +554,9 @@
     <None Include="Templates\Projects\module.psd1" />
     <None Include="Templates\Projects\Module.psm1" />
     <None Include="Templates\Projects\Module.test.ps1" />
-    <None Include="Templates\Projects\PowerShellModuleProject.pssproj" />
+    <None Include="Templates\Projects\PowerShellModuleProject.pssproj">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Templates\Projects\PowerShellProject.pssproj">
       <SubType>Designer</SubType>
     </None>

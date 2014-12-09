@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.Utilities;
 
 namespace PowerShellTools.Classification
 {
-    static class Classifications
+    public static class Classifications
     {
         public const string PowerShellAttribute = "PowerShellAttribute";
         public const string PowerShellCommand = "PowerShellCommand";

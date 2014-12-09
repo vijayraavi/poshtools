@@ -3,16 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using System.Management.Automation.Language;
-using System.Net.Mime;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudioTools;
 using PowerShellTools.Classification;
@@ -76,7 +72,7 @@ namespace PowerShellTools.Commands
             }
         }
 
-        private FunctionDefinitionAst FindDefinition(CommandAst ast, Ast parentAst)
+        private static FunctionDefinitionAst FindDefinition(CommandAst ast, Ast parentAst)
         {
             if (ast == null) throw new ArgumentNullException("ast");
             if (parentAst == null) return null;
@@ -105,9 +101,9 @@ namespace PowerShellTools.Commands
                         m.GetFilePath() != null && m.GetFilePath().Equals(fileName, StringComparison.OrdinalIgnoreCase));
                 if (buffer != null) 
                 {
-                    if (buffer.Properties.ContainsProperty("PSTokenSpans"))
+                    if (buffer.Properties.ContainsProperty(BufferProperties.TokenSpans))
                     {
-                        var classificationInfos = buffer.Properties["PSTokenSpans"] as List<PowerShellTokenizationService.ClassificationInformation>;
+                        var classificationInfos = buffer.Properties[BufferProperties.TokenSpans] as List<ClassificationInfo>;
                         if (classificationInfos != null)
                         {
                             var textSelection = dte2.ActiveDocument.Selection as TextSelection;
@@ -122,9 +118,9 @@ namespace PowerShellTools.Commands
                                 {
                                     _fileName = fileName;
                                     _offset = textSelection.ActivePoint.AbsoluteCharOffset;
-                                    buffer.Properties.ContainsProperty("PSAst");
+                                    buffer.Properties.ContainsProperty(BufferProperties.Ast);
                                     {
-                                        _ast = buffer.Properties["PSAst"] as Ast;
+                                        _ast = buffer.Properties[BufferProperties.Ast] as Ast;
                                     }
                                     bVisible = true;
                                 }

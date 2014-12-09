@@ -130,8 +130,8 @@ namespace PowerShellTools.Classification
 
 		internal static void AddTokenClassifications(ITextBuffer buffer, SnapshotSpan span, List<ClassificationSpan> classifications, Span? lastClassificationSpan, IClassificationType gapType)
 		{
-			var list = (List<PowerShellTokenizationService.ClassificationInformation>)buffer.Properties.GetProperty("PSTokenSpans");
-			foreach (var current in list)
+			var spans = (List<ClassificationInfo>)buffer.Properties.GetProperty(BufferProperties.TokenSpans);
+			foreach (var current in spans)
 			{
 			    if (current.Start + current.Length < span.Start) continue;
 

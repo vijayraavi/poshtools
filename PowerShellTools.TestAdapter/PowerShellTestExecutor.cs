@@ -41,17 +41,7 @@ namespace PowerShellTools.TestAdapter
 
         private static void SetupExecutionPolicy()
         {
-            var policy = GetExecutionPolicy();
-            if (policy == ExecutionPolicy.Unrestricted || policy == ExecutionPolicy.RemoteSigned ||
-                policy == ExecutionPolicy.Bypass) return;
-
-            var machinePolicy = GetExecutionPolicy(ExecutionPolicyScope.MachinePolicy);
-            var userPolicy = GetExecutionPolicy(ExecutionPolicyScope.UserPolicy);
-
-            if (machinePolicy == ExecutionPolicy.Undefined && userPolicy == ExecutionPolicy.Undefined)
-            {
-                SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
-            }
+            SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);   
         }
 
         private static void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
@@ -62,26 +52,6 @@ namespace PowerShellTools.TestAdapter
                 ps.Invoke();
             }
         }
-
-        private static ExecutionPolicy GetExecutionPolicy()
-        {
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Get-ExecutionPolicy");
-                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
-            }
-        }
-
-        private static ExecutionPolicy GetExecutionPolicy(ExecutionPolicyScope scope)
-        {
-            using (var ps = PowerShell.Create())
-            {
-                ps.AddCommand("Get-ExecutionPolicy").AddParameter("Scope", scope);
-                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
-            }
-        }
-
-        
 
         public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext,
                IFrameworkHandle frameworkHandle)

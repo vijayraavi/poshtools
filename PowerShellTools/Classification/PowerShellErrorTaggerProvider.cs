@@ -11,7 +11,7 @@ namespace PowerShellTools.Classification
 	{
 		public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
 		{
-			return buffer.Properties.GetOrCreateSingletonProperty<ITagger<T>>(typeof(PowerShellErrorTagger), () => new PowerShellErrorTagger(textView, buffer) as ITagger<T>);
+			return buffer.Properties.GetOrCreateSingletonProperty(typeof(PowerShellErrorTagger), () => new PowerShellErrorTagger(buffer) as ITagger<T>);
 		}
 	}
 }

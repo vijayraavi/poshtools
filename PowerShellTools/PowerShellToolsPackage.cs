@@ -248,10 +248,7 @@ namespace PowerShellTools
             {
                 var psts = new PowerShellTokenizationService(e.TextBuffer);
                 _gotoDefinitionCommand.AddTextBuffer(e.TextBuffer);
-                psts.Initialize();
-                psts.SetEmptyTokenizationProperties();
-                psts.StartTokenizeBuffer();
-                e.TextBuffer.ChangedLowPriority += (o, args) => psts.StartTokenizeBuffer();
+                e.TextBuffer.ChangedLowPriority += (o, args) => psts.StartTokenization();
                 e.TextBuffer.Properties.AddProperty("HasTokenizer", true);
             }
         }
@@ -265,10 +262,7 @@ namespace PowerShellTools
             {
                 var psts = new PowerShellTokenizationService(buffer);
                 _gotoDefinitionCommand.AddTextBuffer(buffer);
-                psts.Initialize();
-                psts.SetEmptyTokenizationProperties();
-                psts.StartTokenizeBuffer();
-                buffer.ChangedLowPriority += (o, args) => psts.StartTokenizeBuffer();
+                buffer.ChangedLowPriority += (o, args) => psts.StartTokenization();
                 buffer.Properties.AddProperty("HasTokenizer", true);
             }
         }

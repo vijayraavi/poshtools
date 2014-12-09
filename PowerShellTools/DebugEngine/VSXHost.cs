@@ -195,19 +195,7 @@ namespace PowerShellTools.DebugEngine
 
         private void SetupExecutionPolicy()
         {
-            ExecutionPolicy policy = GetExecutionPolicy();
-            if (policy != ExecutionPolicy.Unrestricted &&
-                policy != ExecutionPolicy.RemoteSigned &&
-                policy != ExecutionPolicy.Bypass)
-            {
-                ExecutionPolicy machinePolicy = GetExecutionPolicy(ExecutionPolicyScope.MachinePolicy);
-                ExecutionPolicy userPolicy = GetExecutionPolicy(ExecutionPolicyScope.UserPolicy);
-
-                if (machinePolicy == ExecutionPolicy.Undefined && userPolicy == ExecutionPolicy.Undefined)
-                {
-                    SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
-                }
-            }
+            SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
         }
 
         private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
