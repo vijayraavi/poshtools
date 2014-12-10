@@ -268,6 +268,11 @@ namespace PowerShellTools.Classification
         public const string RegionTags = "PSRegionTags";
         public const string Classifier = "PowerShellClassifier";
         public const string ErrorTagger = "PowerShellErrorTagger";
+        public const string FromRepl = "REPL";
+        public const string LastWordReplacementSpan = "LastWordReplacementSpan";
+        public const string LineUpToReplacementSpan = "LineUpToReplacementSpan";
+        public const string SessionOriginIntellisense = "SessionOrigin_Intellisense";
     }
 }
+
 

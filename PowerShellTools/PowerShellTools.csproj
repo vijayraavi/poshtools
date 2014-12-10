@@ -206,7 +206,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Classification\Classifier.cs" />
-    <Compile Include="Classification\ClassifierService.cs" />
+    <Compile Include="Classification\ClassifierServices.cs" />
     <Compile Include="Classification\PowerShellClassifier.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -11,10 +11,6 @@ namespace PowerShellTools.Classification
 {
 	internal abstract class Classifier : IClassifier
 	{
-		private static readonly string[] EditorCategories = new string[]
-		{
-			"PowerShell"
-		};
 		[BaseDefinition("text"), Name("PS1ScriptGaps"), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition scriptGapsTypeDefinition;
 		private static IClassificationType scriptGaps;
@@ -52,32 +48,28 @@ namespace PowerShellTools.Classification
 
 		internal static void SetClassificationTypeColors<T>(IDictionary<T, Color> tokenColors, IDictionary<T, Color> defaultTokenColors, string prefix, string sufix)
 		{
-		    foreach (var category in EditorCategories)
-		    {
-		        var classificationFormatMap = EditorImports.ClassificationFormatMap.GetClassificationFormatMap(category);
-		        foreach (var current in defaultTokenColors)
-		        {
-		            var classificationTypeRegistryService = EditorImports.ClassificationTypeRegistryService;
-		            var key = current.Key;
-		            var classificationType = classificationTypeRegistryService.GetClassificationType(prefix + key + sufix);
-		            if (classificationType != null)
-		            {
-		                var textFormattingRunProperties = classificationFormatMap.GetTextProperties(classificationType);
-		                Color foreground;
-		                if (tokenColors.TryGetValue(current.Key, out foreground))
-		                {
-		                    textFormattingRunProperties = textFormattingRunProperties.SetForeground(foreground);
-		                }
-		                else
-		                {
-		                    textFormattingRunProperties = textFormattingRunProperties.ClearForegroundBrush();
-		                }
-		                textFormattingRunProperties = textFormattingRunProperties.ClearFontRenderingEmSize();
-		                textFormattingRunProperties = textFormattingRunProperties.ClearTypeface();
-		                classificationFormatMap.SetTextProperties(classificationType, textFormattingRunProperties);
-		            }
-		        }
-		    }
+            var classificationFormatMap = EditorImports.ClassificationFormatMap.GetClassificationFormatMap("PowerShell");
+            foreach (var current in defaultTokenColors)
+            {
+                var classificationTypeRegistryService = EditorImports.ClassificationTypeRegistryService;
+                var key = current.Key;
+                var classificationType = classificationTypeRegistryService.GetClassificationType(prefix + key + sufix);
+                if (classificationType == null) continue;
+
+                var textFormattingRunProperties = classificationFormatMap.GetTextProperties(classificationType);
+                Color foreground;
+                if (tokenColors.TryGetValue(current.Key, out foreground))
+                {
+                    textFormattingRunProperties = textFormattingRunProperties.SetForeground(foreground);
+                }
+                else
+                {
+                    textFormattingRunProperties = textFormattingRunProperties.ClearForegroundBrush();
+                }
+                textFormattingRunProperties = textFormattingRunProperties.ClearFontRenderingEmSize();
+                textFormattingRunProperties = textFormattingRunProperties.ClearTypeface();
+                classificationFormatMap.SetTextProperties(classificationType, textFormattingRunProperties);
+            }
 		}
 
 	    internal static void SetFontColor(Color color, IClassificationType classificationType, string category)

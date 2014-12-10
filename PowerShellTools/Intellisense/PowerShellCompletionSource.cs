@@ -6,6 +6,7 @@ using System.Management.Automation;
 using log4net;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
+using PowerShellTools.Classification;
 
 namespace PowerShellTools.Intellisense
 {
@@ -26,19 +27,18 @@ namespace PowerShellTools.Intellisense
 
         public void AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
-            if (!session.Properties.ContainsProperty("SessionOrigin_Intellisense") || !session.TextView.TextBuffer.Properties.ContainsProperty(typeof(IList<CompletionResult>)))
+            if (!session.Properties.ContainsProperty(BufferProperties.SessionOriginIntellisense) || !session.TextView.TextBuffer.Properties.ContainsProperty(typeof(IList<CompletionResult>)))
             {
                 return;
             }
 
             var textBuffer = session.TextView.TextBuffer;
 
-            var trackingSpan = (ITrackingSpan)textBuffer.Properties.GetProperty("LastWordReplacementSpan");
+            var trackingSpan = (ITrackingSpan)textBuffer.Properties.GetProperty(BufferProperties.LastWordReplacementSpan);
             var list = (IList<CompletionResult>)textBuffer.Properties.GetProperty(typeof(IList<CompletionResult>));
             var currentSnapshot = textBuffer.CurrentSnapshot;
             var filterSpan = currentSnapshot.CreateTrackingSpan(trackingSpan.GetEndPoint(currentSnapshot).Position, 0, SpanTrackingMode.EdgeInclusive);
-            var lineStartToApplicableTo = (ITrackingSpan)textBuffer.Properties.GetProperty("LineUpToReplacementSpan");
-            var selectOnEmptyFilter = (bool)textBuffer.Properties.GetProperty("SelectOnEmptyFilter");
+            var lineStartToApplicableTo = (ITrackingSpan)textBuffer.Properties.GetProperty(BufferProperties.LineUpToReplacementSpan);
 
             Log.DebugFormat("TrackingSpan: {0}", trackingSpan.GetText(currentSnapshot));
             Log.DebugFormat("FilterSpan: {0}", filterSpan.GetText(currentSnapshot));
@@ -83,7 +83,7 @@ namespace PowerShellTools.Intellisense
                 compList.Add(completion);
             }
 
-            completionSets.Add(new PoshCompletionSet(string.Empty, string.Empty, trackingSpan, compList, null, filterSpan, lineStartToApplicableTo, selectOnEmptyFilter));
+            completionSets.Add(new PowerShellCompletionSet(string.Empty, string.Empty, trackingSpan, compList, null, filterSpan, lineStartToApplicableTo));
         }
 
         public void Dispose()
@@ -96,10 +96,9 @@ namespace PowerShellTools.Intellisense
         }
     }
 
-    internal class PoshCompletionSet : CompletionSet
+    internal class PowerShellCompletionSet : CompletionSet
     {
         private readonly FilteredObservableCollection<Completion> completions;
-        private readonly bool _selectOnEmptyFilter;
         public override IList<Completion> Completions
         {
             get
@@ -114,7 +113,7 @@ namespace PowerShellTools.Intellisense
 
         internal string InitialApplicableTo { get; private set; }
 
-        internal PoshCompletionSet(string moniker, string displayName, ITrackingSpan applicableTo, IEnumerable<Completion> completions, IEnumerable<Completion> completionBuilders, ITrackingSpan filterSpan, ITrackingSpan lineStartToApplicableTo, bool selectOnEmptyFilter)
+        internal PowerShellCompletionSet(string moniker, string displayName, ITrackingSpan applicableTo, IEnumerable<Completion> completions, IEnumerable<Completion> completionBuilders, ITrackingSpan filterSpan, ITrackingSpan lineStartToApplicableTo)
             : base(moniker, displayName, applicableTo, completions, completionBuilders)
         {
             if (filterSpan == null)
@@ -125,7 +124,6 @@ namespace PowerShellTools.Intellisense
             FilterSpan = filterSpan;
             LineStartToApplicableTo = lineStartToApplicableTo;
             InitialApplicableTo = applicableTo.GetText(applicableTo.TextBuffer.CurrentSnapshot);
-            this._selectOnEmptyFilter = selectOnEmptyFilter;
         }
         public override void Filter()
         {
@@ -144,7 +142,7 @@ namespace PowerShellTools.Intellisense
         public override void SelectBestMatch()
         {
             var text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
-            if (!_selectOnEmptyFilter && text.Length == 0)
+            if (text.Length == 0)
             {
                 SelectionStatus = new CompletionSelectionStatus(null, false, false);
                 return;

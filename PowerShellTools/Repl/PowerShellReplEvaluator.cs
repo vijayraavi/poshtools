@@ -3,6 +3,7 @@ using System.Management.Automation.Runspaces;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Repl;
 using Microsoft.VisualStudio.Text;
+using PowerShellTools.Classification;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 
@@ -37,7 +38,7 @@ namespace PowerShellTools.Repl
 
             var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
 
-            window.TextView.Properties.AddProperty("REPL", null);
+            window.TextView.Properties.AddProperty(BufferProperties.FromRepl, null);
 
             window.SetOptionValue(ReplOptions.Multiline, page.MutlilineRepl);
             window.SetOptionValue(ReplOptions.UseSmartUpDown, true);
@@ -53,7 +54,7 @@ namespace PowerShellTools.Repl
 
         public Task<ExecutionResult> Reset()
         {
-            return tf.StartNew(() => { return new ExecutionResult(true); });
+            return tf.StartNew(() => new ExecutionResult(true));
         }
 
         public bool CanExecuteText(string text)

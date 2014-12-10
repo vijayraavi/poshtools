@@ -9,8 +9,17 @@ using Microsoft.VisualStudio.Text.Tagging;
 
 namespace PowerShellTools.Classification
 {
+    /// <summary>
+    /// Classifies tokens for syntax highlighting.
+    /// </summary>
     internal class ClassifierService 
     {
+        /// <summary>
+        /// Classifies the specified tokens.
+        /// </summary>
+        /// <param name="tokens"></param>
+        /// <param name="spanStart"></param>
+        /// <returns></returns>
         internal IEnumerable<ClassificationInfo> ClassifyTokens(IEnumerable<Token> tokens, int spanStart)
         {
             var info = new List<ClassificationInfo>();
@@ -62,8 +71,18 @@ namespace PowerShellTools.Classification
         }
     }
 
+    /// <summary>
+    /// Tags spans for error squiggles. 
+    /// </summary>
     internal class ErrorTagSpanService
     {
+        /// <summary>
+        /// Returns tag information about the errors in the buffer provided. 
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="spanStart"></param>
+        /// <param name="errors"></param>
+        /// <returns></returns>
         internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextBuffer buffer, int spanStart, IEnumerable<ParseError> errors)
         {
             var currentSnapshot = buffer.CurrentSnapshot;
@@ -87,6 +106,9 @@ namespace PowerShellTools.Classification
         }
     }
 
+    /// <summary>
+    /// Matches braces and regions for code folding.
+    /// </summary>
     internal class RegionAndBraceMatchingService 
     {
         private static char[] OpenChars { get; set; }
@@ -141,7 +163,7 @@ namespace PowerShellTools.Classification
 
                         if (c == '(' || c == '[' || c == '{')
                         {
-                            OpenBrace(braceInformations, c, tokenIndex);
+                            OpenBrace(braceInformations, c, tokenOffset);
                             NextCharacter(ref tokenOffset, token, ref tokenIndex);
                             continue;
                         }

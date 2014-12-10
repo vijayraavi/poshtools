@@ -100,5 +100,21 @@ namespace PowerShellTools.Test
             Assert.AreEqual(script.IndexOf(")") - 1, _regionTags.FirstOrDefault().Length);
             Assert.AreEqual("...", _regionTags.FirstOrDefault().Tag.CollapsedForm);
         }
+
+        [TestMethod]
+        public void ShouldCollapseFunctionCorrectly()
+        {
+            var script = "function Test \r\n{\t\r\nGet-Process\r\n}";
+
+            Token[] tokens;
+            ParseError[] errors;
+            Parser.ParseInput(script, out tokens, out errors);
+
+            _service.GetRegionsAndBraceMatchingInformation(script, 0, tokens, out _startBraces, out _endBraces, out _regionTags);
+
+            Assert.AreEqual(script.IndexOf("{") + 1, _regionTags.FirstOrDefault().Start);
+            Assert.AreEqual(16, _regionTags.FirstOrDefault().Length);
+            Assert.AreEqual("...", _regionTags.FirstOrDefault().Tag.CollapsedForm);
+        }
     }
 }
