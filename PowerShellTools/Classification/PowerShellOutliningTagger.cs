@@ -10,7 +10,7 @@ namespace PowerShellTools.Classification
     /// <summary>
     /// Provides matching for regions.
     /// </summary>
-	internal class PowerShellOutliningTagger : ITagger<IOutliningRegionTag>
+    internal class PowerShellOutliningTagger : ITagger<IOutliningRegionTag>, INotifyTagsChanged
 	{
 		public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
@@ -48,7 +48,7 @@ namespace PowerShellTools.Classification
 		    return regionTagSpans;
 		}
 
-		internal void OnTagsChanged(SnapshotSpan span)
+		public void OnTagsChanged(SnapshotSpan span)
 		{
             Log.Debug("OnTagsChanged");
             if (TagsChanged != null)

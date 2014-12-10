@@ -13,39 +13,31 @@ namespace PowerShellTools.DebugEngine
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptBreakpoint));
 
-        private IEngineEvents _callback;
-        private ScriptProgramNode _node;
-        private Runspace _runspace;
-        private string _file;
-        private int _line;
+        private readonly IEngineEvents _callback;
+        private readonly ScriptProgramNode _node;
 
-        public int Line
-        {
-            get { return _line; }
-        }
+        /// <summary>
+        /// Line where this breakpoint is set.
+        /// </summary>
+        public int Line { get; private set; }
+        /// <summary>
+        /// Column where this breakpoint is set.
+        /// </summary>
+        public int Column { get; private set; }
+        /// <summary>
+        /// Full path to the file this breakpoint is set within.
+        /// </summary>
+        public string File { get; private set; }
 
-        public int Column
-        {
-            get { return _column; }
-        }
-
-        public string File
-        {
-            get { return _file; }
-        }
-
-        private int _column;
-
-        public ScriptBreakpoint(ScriptProgramNode node, string file, int line, int column, IEngineEvents callback, Runspace runspace)
+        public ScriptBreakpoint(ScriptProgramNode node, string file, int line, int column, IEngineEvents callback)
         {
             Log.InfoFormat("ScriptBreakPoint: {0} {1} {2}", file, line, column);
 
             _node = node;
             _callback = callback;
-            _runspace = runspace;
-            _line = line;
-            _column = column;
-            _file = file;
+            Line = line;
+            Column = column;
+            File = file;
         }
 
         #region Implementation of IDebugBoundBreakpoint2

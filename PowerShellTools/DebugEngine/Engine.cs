@@ -178,7 +178,7 @@ namespace PowerShellTools.DebugEngine
                 var lbp = e.Breakpoint as LineBreakpoint;
                 if (lbp != null)
                 {
-                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.Script, lbp.Line, lbp.Column, _events, Runspace);
+                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.Script, lbp.Line, lbp.Column, _events);
                     breakpoint.Bind();
 
                     var bp = bps.FirstOrDefault(
@@ -318,7 +318,7 @@ namespace PowerShellTools.DebugEngine
                 position.GetFileName(out fileName);
 
                 //VS has a 0 based line\column value. PowerShell starts at 1
-                var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events, Runspace);
+                var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events);
                 ppPendingBP = breakpoint;
 
                 bps.Add(breakpoint);

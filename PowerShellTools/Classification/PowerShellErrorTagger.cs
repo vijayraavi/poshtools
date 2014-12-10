@@ -13,7 +13,7 @@ namespace PowerShellTools.Classification
     /// This code takes advantage of the already parsed AST to gather any errors while parsing
     /// and to tag the spans that are in an error state.
     /// </remarks>
-	internal class PowerShellErrorTagger : ITagger<ErrorTag>
+    internal class PowerShellErrorTagger : ITagger<ErrorTag>, INotifyTagsChanged
 	{
 		public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 		private ITextBuffer Buffer { get;set; }
@@ -39,7 +39,7 @@ namespace PowerShellTools.Classification
 		    }
 		}
 
-		internal void OnTagsChanged(SnapshotSpan span)
+		public void OnTagsChanged(SnapshotSpan span)
 		{
 			var tagsChanged = TagsChanged;
 			if (tagsChanged != null)

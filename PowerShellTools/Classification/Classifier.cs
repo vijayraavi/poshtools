@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.Utilities;
 
 namespace PowerShellTools.Classification
 {
-	internal abstract class Classifier : IClassifier
+    internal abstract class Classifier : IClassifier, INotifyTagsChanged
 	{
 		[BaseDefinition("text"), Name("PS1ScriptGaps"), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition scriptGapsTypeDefinition;
@@ -84,7 +84,8 @@ namespace PowerShellTools.Classification
 			var classificationFormatMap = EditorImports.ClassificationFormatMap.GetClassificationFormatMap(category);
 			return classificationFormatMap.GetTextProperties(type);
 		}
-		internal void OnClassificationChanged(SnapshotSpan notificationSpan)
+
+		public void OnTagsChanged(SnapshotSpan notificationSpan)
 		{
 			var classificationChanged = ClassificationChanged;
 			if (classificationChanged != null)
@@ -92,6 +93,7 @@ namespace PowerShellTools.Classification
 				classificationChanged(this, new ClassificationChangedEventArgs(notificationSpan));
 			}
 		}
+
 		protected abstract IList<ClassificationSpan> VirtualGetClassificationSpans(SnapshotSpan span);
 		private void UpdateClassifierBufferProperty()
 		{

@@ -50,8 +50,11 @@ namespace PowerShellTools.DebugEngine
             _runspace.Open();
 
             _runspaceRef = new RunspaceRef(_runspace);
+            //TODO: I think this is a v4 thing. Probably need to look into it.
             //_runspaceRef.Runspace.Debugger.SetDebugMode(DebugModes.LocalScript | DebugModes.RemoteScript);
             
+            //Provide access to the DTE via PowerShell. 
+            //This also allows PoshTools to support StudioShell.
             _runspace.SessionStateProxy.PSVariable.Set("dte", dte2);
             ImportPoshToolsModule();
             LoadProfile();

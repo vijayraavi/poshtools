@@ -5,15 +5,15 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
-using System.Windows.Documents;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
-using Microsoft.VisualStudio.Debugger.SampleEngine.Impl;
 
 namespace PowerShellTools.DebugEngine
 {
-
+    /// <summary>
+    /// Returns a <see cref="ScriptProperty"/> based on the type of the variable specified by <paramref name="name"/>
+    /// </summary>
     public class ScriptPropertyFactory
     {
         public static ScriptProperty MakeProperty(ScriptDebugger debugger, string name, object value)
@@ -267,8 +267,8 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("debugger");
             foreach (var keyVal in debugger.Variables)
             {
-                var val = keyVal.Value != null ? keyVal.Value : null;
-                this.Add(ScriptPropertyFactory.MakeProperty(debugger, keyVal.Key, val));
+                var val = keyVal.Value;
+                Add(ScriptPropertyFactory.MakeProperty(debugger, keyVal.Key, val));
             }
         }
 
@@ -277,7 +277,7 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("children");
             foreach (var scriptProperty in children)
             {
-                this.Add(scriptProperty);
+                Add(scriptProperty);
             }
         }
 

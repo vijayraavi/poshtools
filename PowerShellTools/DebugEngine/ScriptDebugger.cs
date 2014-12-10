@@ -18,59 +18,95 @@ namespace PowerShellTools.DebugEngine
         public T Value { get; private set; }
     }
 
+    /// <summary>
+    /// This is the main debugger for PowerShell Tools for Visual Studio
+    /// </summary>
     public partial class ScriptDebugger 
     {
         public event Action<string> DocumentChanged;
-
 
         private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
         private PowerShell _currentPowerShell;
 
+        /// <summary>
+        /// Event is fired when a breakpoint is hit.
+        /// </summary>
         public event EventHandler<EventArgs<ScriptBreakpoint>> BreakpointHit;
+
+        /// <summary>
+        /// Event is fired when a debugger is paused.
+        /// </summary>
         public event EventHandler<EventArgs<ScriptLocation>> DebuggerPaused;
+
+        /// <summary>
+        /// Event is fired when a breakpoint is updated.
+        /// </summary>
         public event EventHandler<BreakpointUpdatedEventArgs> BreakpointUpdated;
+
+        /// <summary>
+        /// Event is fired when a string is output from the PowerShell host.
+        /// </summary>
         public event EventHandler<EventArgs<string>> OutputString;
+
+        /// <summary>
+        /// Event is fired when the debugger has finished.
+        /// </summary>
         public event EventHandler DebuggingFinished;
+
+        /// <summary>
+        /// Event is fired when a terminating exception is thrown.
+        /// </summary>
         public event EventHandler<EventArgs<Exception>> TerminatingException;
 
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
-
         private DebuggerResumeAction _resumeAction;
 
+        /// <summary>
+        /// The current set of variables for the current runspace.
+        /// </summary>
         public IDictionary<string, object> Variables { get; private set; }
+
+        /// <summary>
+        /// The current call stack for the runspace.
+        /// </summary>
         public IEnumerable<ScriptStackFrame> CallStack { get { return _callstack; } }
+
+        /// <summary>
+        /// The currently executing <see cref="ScriptProgramNode"/>
+        /// </summary>
         public ScriptProgramNode CurrentExecutingNode { get; private set; }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptDebugger));
 
-        public void OnDocumentChanged(string fileName)
-        {
-            Log.InfoFormat("OnDocumentChanged: {0}", fileName);
-            if (DocumentChanged != null)
-            {
-                DocumentChanged(fileName);
-            }
-        }
-
+        /// <summary>
+        /// Sets breakpoints for the current runspace.
+        /// </summary>
+        /// <remarks>
+        /// This method clears any existing breakpoints.
+        /// </remarks>
+        /// <param name="initialBreakpoints"></param>
         public void SetBreakpoints(IEnumerable<ScriptBreakpoint> initialBreakpoints)
         {
             _breakpoints = new List<ScriptBreakpoint>();
 
-            if (initialBreakpoints != null)
-            {
-                Log.InfoFormat("ScriptDebugger: Initial Breakpoints: {0}", initialBreakpoints.Count());
-                ClearBreakpoints();
+            if (initialBreakpoints == null) return;
 
-                foreach (var bp in initialBreakpoints)
-                {
-                    SetBreakpoint(bp);
-                    _breakpoints.Add(bp);
-                    bp.Bind();
-                }
+            Log.InfoFormat("ScriptDebugger: Initial Breakpoints: {0}", initialBreakpoints.Count());
+            ClearBreakpoints();
+
+            foreach (var bp in initialBreakpoints)
+            {
+                SetBreakpoint(bp);
+                _breakpoints.Add(bp);
+                bp.Bind();
             }
         }
 
+        /// <summary>
+        /// Sets the current runspace for this debugger.
+        /// </summary>
+        /// <param name="runspace"></param>
         public void SetRunspace(Runspace runspace)
         {
             if (_runspace != null)
@@ -86,6 +122,10 @@ namespace PowerShellTools.DebugEngine
             _runspace.StateChanged += _runspace_StateChanged;
         }
 
+        /// <summary>
+        /// Unused at the moment. Will be used for remote debugging scripts.
+        /// </summary>
+        /// <param name="remoteRunspace"></param>
         public void RegisterRemoteFileOpenEvent(Runspace remoteRunspace)
         {
             remoteRunspace.Events.ReceivedEvents.PSEventReceived += new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
@@ -107,6 +147,10 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
+        /// <summary>
+        /// Unused at the moment. Will be used for remote debugging scripts.
+        /// </summary>
+        /// <param name="remoteRunspace"></param>
         public void UnregisterRemoteFileOpenEvent(Runspace remoteRunspace)
         {
             remoteRunspace.Events.ReceivedEvents.PSEventReceived -= new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
@@ -128,7 +172,11 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-
+        /// <summary>
+        /// Unused at the moment. Will be used for remote debugging scripts.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void HandleRemoteSessionForwardedEvent(object sender, PSEventArgs args)
         {
             if (args.SourceIdentifier.Equals("PSISERemoteSessionOpenFile", StringComparison.OrdinalIgnoreCase))
@@ -155,8 +203,9 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-
-
+        /// <summary>
+        /// Clears existing breakpoints for the current runspace.
+        /// </summary>
         private void ClearBreakpoints()
         {
             Log.Info("ClearBreakpoints");
@@ -298,6 +347,9 @@ namespace PowerShellTools.DebugEngine
             return false;
         }
 
+        /// <summary>
+        /// Stops execution of the current script.
+        /// </summary>
         public void Stop()
         {
             Log.Info("Stop");
@@ -317,6 +369,9 @@ namespace PowerShellTools.DebugEngine
             DebuggerFinished();
         }
 
+        /// <summary>
+        /// Stop over block. 
+        /// </summary>
         public void StepOver()
         {
             Log.Info("StepOver");
@@ -324,6 +379,9 @@ namespace PowerShellTools.DebugEngine
             _pausedEvent.Set();
         }
 
+        /// <summary>
+        /// Step into block.
+        /// </summary>
         public void StepInto()
         {
             Log.Info("StepInto");
@@ -331,6 +389,9 @@ namespace PowerShellTools.DebugEngine
             _pausedEvent.Set();
         }
 
+        /// <summary>
+        /// Step out of block.
+        /// </summary>
         public void StepOut()
         {
             Log.Info("StepOut");
@@ -338,6 +399,9 @@ namespace PowerShellTools.DebugEngine
             _pausedEvent.Set();
         }
 
+        /// <summary>
+        /// Continue execution.
+        /// </summary>
         public void Continue()
         {
             Log.Info("Continue");
@@ -345,6 +409,10 @@ namespace PowerShellTools.DebugEngine
             _pausedEvent.Set();
         }
 
+        /// <summary>
+        /// Execute the specified command line.
+        /// </summary>
+        /// <param name="commandLine">Command line to execute.</param>
         public void Execute(string commandLine)
         {
             Log.Info("Execute");
@@ -388,6 +456,14 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
+        /// <summary>
+        /// Execute the current program node.
+        /// </summary>
+        /// <remarks>
+        /// The node will either be a script file or script content; depending on the node 
+        /// passed to this function.
+        /// </remarks>
+        /// <param name="node"></param>
         public void Execute(ScriptProgramNode node)
         {
             CurrentExecutingNode = node;
@@ -459,7 +535,7 @@ namespace PowerShellTools.DebugEngine
             {
                 using (var pipeline = (_runspace.CreateNestedPipeline()))
                 {
-                    Command command = new Command("Get-PSCallstack");
+                    var command = new Command("Get-PSCallstack");
                     pipeline.Commands.Add(command);
                     result = pipeline.Invoke();
                 }
@@ -579,10 +655,22 @@ namespace PowerShellTools.DebugEngine
         }
     }
 
+    /// <summary>
+    /// Location within a script.
+    /// </summary>
     public class ScriptLocation
     {
+        /// <summary>
+        /// The full path to the file.
+        /// </summary>
         public string File { get; set; }
+        /// <summary>
+        /// Line number within the file.
+        /// </summary>
         public int Line { get; set; }
+        /// <summary>
+        /// Column within the file.
+        /// </summary>
         public int Column { get; set; }
     }
 }

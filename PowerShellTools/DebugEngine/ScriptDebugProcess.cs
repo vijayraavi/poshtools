@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;

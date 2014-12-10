@@ -242,7 +242,6 @@
     <Compile Include="DebugEngine\Profiler.cs" />
     <Compile Include="DebugEngine\ResourceStrings.Designer.cs" />
     <Compile Include="DebugEngine\ScirptProgramNode.cs" />
-    <Compile Include="DebugEngine\Script.cs" />
     <Compile Include="DebugEngine\ScriptBreakpoint.cs" />
     <Compile Include="DebugEngine\ScriptDebugger.cs" />
     <Compile Include="DebugEngine\ScriptDebugProcess.cs" />

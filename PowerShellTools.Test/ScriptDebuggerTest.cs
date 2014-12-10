@@ -78,7 +78,7 @@ namespace PowerShellTools.Test
 
             var sbps = new List<ScriptBreakpoint>
                            {
-                               new ScriptBreakpoint(null, ".\\TestFile.ps1", 1, 0, engineEvents.Object, _runspace)
+                               new ScriptBreakpoint(null, ".\\TestFile.ps1", 1, 0, engineEvents.Object)
                            };
 
             _debugger = new ScriptDebugger(true, null);
@@ -107,7 +107,7 @@ namespace PowerShellTools.Test
 
             var sbps = new List<ScriptBreakpoint>
                            {
-                               new ScriptBreakpoint(null, fi.FullName, 3, 0, engineEvents.Object, _runspace)
+                               new ScriptBreakpoint(null, fi.FullName, 3, 0, engineEvents.Object)
                            };
 
             _debugger = new ScriptDebugger(true, null);

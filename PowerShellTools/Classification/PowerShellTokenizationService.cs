@@ -99,34 +99,21 @@ namespace PowerShellTools.Classification
 	                _isBufferTokenizing = false;
 	                done = true;
 
-	                if (Buffer.Properties.ContainsProperty(BufferProperties.Classifier))
-	                {
-	                    var classifier = Buffer.Properties.GetProperty<Classifier>(BufferProperties.Classifier);
-	                    if (classifier != null)
-	                    {
-	                        classifier.OnClassificationChanged(SpanToTokenize.GetSpan(Buffer.CurrentSnapshot));
-	                    }
-	                }
-
-	                if (Buffer.Properties.ContainsProperty(BufferProperties.ErrorTagger))
-	                {
-	                    var classifier = Buffer.Properties.GetProperty<PowerShellErrorTagger>(BufferProperties.ErrorTagger);
-	                    if (classifier != null)
-	                    {
-	                        classifier.OnTagsChanged(SpanToTokenize.GetSpan(Buffer.CurrentSnapshot));
-	                    }
-	                }
-
-                    if (Buffer.Properties.ContainsProperty(typeof(PowerShellOutliningTagger).Name))
-                    {
-                        var classifier = Buffer.Properties.GetProperty<PowerShellOutliningTagger>(typeof(PowerShellOutliningTagger).Name);
-                        if (classifier != null)
-                        {
-                            classifier.OnTagsChanged(SpanToTokenize.GetSpan(Buffer.CurrentSnapshot));
-                        }
-                    }
+	                NotifyOnTagsChanged(BufferProperties.Classifier);
+                    NotifyOnTagsChanged(BufferProperties.ErrorTagger);
+                    NotifyOnTagsChanged(typeof(PowerShellOutliningTagger).Name);
 	            }
 	        }, this);
+	    }
+
+	    private void NotifyOnTagsChanged(string name)
+	    {
+	        if (!Buffer.Properties.ContainsProperty(name)) return;
+	        var classifier = Buffer.Properties.GetProperty<INotifyTagsChanged>(name);
+	        if (classifier != null)
+	        {
+	            classifier.OnTagsChanged(SpanToTokenize.GetSpan(Buffer.CurrentSnapshot));
+	        }
 	    }
 
 	    private void SetBufferProperty(object key, object propertyValue)
@@ -272,6 +259,11 @@ namespace PowerShellTools.Classification
         public const string LastWordReplacementSpan = "LastWordReplacementSpan";
         public const string LineUpToReplacementSpan = "LineUpToReplacementSpan";
         public const string SessionOriginIntellisense = "SessionOrigin_Intellisense";
+    }
+
+    public interface INotifyTagsChanged
+    {
+        void OnTagsChanged(SnapshotSpan span);
     }
 }
 
