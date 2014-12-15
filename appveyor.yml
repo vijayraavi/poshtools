@@ -1,0 +1,8 @@
+version: 1.0.{build}
+configuration: Release
+platform: x86
+build:
+  verbosity: minimal
+artifacts:
+- path: Binaries\Release12.0\PowerShellTools.vsix
+  name: PowerShellTools.vsix
