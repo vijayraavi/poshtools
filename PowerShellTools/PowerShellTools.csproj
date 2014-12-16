@@ -88,7 +88,7 @@
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Microsoft.VisualStudio.CommandBars1">
-      <HintPath>$(ProgramFiles)\..\Program Files (x86)\Common Files\Microsoft Shared\MSEnv\PublicAssemblies\Microsoft.VisualStudio.CommandBars.dll</HintPath>
+      <HintPath>$(MSBuildProgramFiles32)\Common Files\Microsoft Shared\MSEnv\PublicAssemblies\Microsoft.VisualStudio.CommandBars.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=$(VSTarget).0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
@@ -128,7 +128,7 @@
     <Reference Include="Microsoft.VisualStudio.Shell.Immutable.$(VSTarget)" />
     <Reference Include="Microsoft.VisualStudio.TextManager.Interop.8.0, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="Microsoft.Windows.Design.Host">
-      <HintPath>$(ProgramFiles)\..\Program Files (x86)\Microsoft Visual Studio $(VSTarget)\Common7\IDE\PrivateAssemblies\Microsoft.Windows.Design.Host.dll</HintPath>
+      <HintPath>$(MSBuildProgramFiles32)\Microsoft Visual Studio $(VSTarget)\Common7\IDE\PrivateAssemblies\Microsoft.Windows.Design.Host.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
