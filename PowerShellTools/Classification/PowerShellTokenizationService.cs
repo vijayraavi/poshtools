@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Threading;
 using log4net;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
@@ -43,18 +41,13 @@ namespace PowerShellTools.Classification
 	    private readonly ErrorTagSpanService _errorTagService;
 	    private readonly RegionAndBraceMatchingService _regionAndBraceMatchingService;
 
-        private IVsStatusbar _statusBar;
-        private double _parseTime;
-        private double _totalTime;
-       
-
 	    public PowerShellTokenizationService(ITextBuffer buffer)
 		{
 			Buffer = buffer;
             _classifierService = new ClassifierService();
             _errorTagService = new ErrorTagSpanService();
             _regionAndBraceMatchingService = new RegionAndBraceMatchingService();
-            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
+
             SetEmptyTokenizationProperties();
             SpanToTokenize = Buffer.CurrentSnapshot.CreateTrackingSpan(0, Buffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
             StartTokenization();
@@ -91,7 +84,6 @@ namespace PowerShellTools.Classification
 	            var done = false;
 	            while (!done)
 	            {
-                    var sw = Stopwatch.StartNew();
 	                Tokenize(spanToTokenizeCache, tokenizationText);
 	                var trackingSpan = SpanToTokenize;
 	                if (!ReferenceEquals(trackingSpan, spanToTokenizeCache))
@@ -110,8 +102,6 @@ namespace PowerShellTools.Classification
 	                NotifyOnTagsChanged(BufferProperties.Classifier);
                     NotifyOnTagsChanged(BufferProperties.ErrorTagger);
                     NotifyOnTagsChanged(typeof(PowerShellOutliningTagger).Name);
-                    sw.Stop();
-                    _statusBar.SetText(String.Format("Parse time: {0:0.00} seconds... Total time: {1:0.00} seconds...", _parseTime, sw.Elapsed.TotalSeconds));
 	            }
 	        }, this);
 	    }
@@ -159,12 +149,7 @@ namespace PowerShellTools.Classification
 	    {
             Log.Debug("Parsing input.");
 	        ParseError[] errors;
-
-           
-            var stopWatch = Stopwatch.StartNew();
 	        _generatedAst = Parser.ParseInput(spanText, out _generatedTokens, out errors);
-            stopWatch.Stop();
-            _parseTime = stopWatch.Elapsed.TotalSeconds;
 	        
 	        var position = spanToTokenize.GetStartPoint(Buffer.CurrentSnapshot).Position;
 	        var array = _generatedTokens;
