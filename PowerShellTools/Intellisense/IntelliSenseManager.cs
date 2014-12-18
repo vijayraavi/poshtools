@@ -218,8 +218,7 @@ namespace PowerShellTools.Intellisense
             _intellisenseRunning = true;
             var statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
             statusBar.SetText("Running IntelliSense...");
-            var sw = new Stopwatch();
-            sw.Start();
+            var sw = Stopwatch.StartNew();
 
             Ast ast;
             Token[] tokens;
@@ -256,7 +255,10 @@ namespace PowerShellTools.Intellisense
                 }
             }
 
-            statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
+            sw.Stop();
+            string parseText;
+            statusBar.GetText(out parseText);
+            statusBar.SetText(String.Format(parseText + " IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
             _intellisenseRunning = false;
         }
 
