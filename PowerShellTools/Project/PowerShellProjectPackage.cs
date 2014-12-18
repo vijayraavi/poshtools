@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
@@ -10,7 +9,10 @@ namespace PowerShellTools.Project
     [Guid(GuidList.PowerShellToolsProjectPackageGuid)]
     [ProvideProjectFactory(typeof(PowerShellProjectFactory), "PowerShell", "PowerShell Project Files (*.pssproj);*.pssproj", "pssproj", "pssproj", @"\ProjectTemplates\PowerShell", LanguageVsTemplate = "PowerShell", NewProjectRequireNewFolderVsTemplate = false)]
     [ProvideProjectItem(typeof(PowerShellProjectFactory), "PowerShell", @"Templates", 500)]
-    [ProvideEditorExtension(typeof(PowerShellEditorFactory), PowerShellConstants.PS1File, 50, ProjectGuid = VSConstants.CLSID.MiscellaneousFilesProject_string, NameResourceID = 3004, DefaultName = "module", TemplateDir = "NewItemTemplates")]
+    [ProvideEditorExtension(typeof(PowerShellEditorFactory), PowerShellConstants.PS1File, 1000)]
+    [ProvideEditorExtension(typeof(PowerShellEditorFactory), PowerShellConstants.PSM1File, 1000)]
+    [ProvideEditorLogicalView(typeof(PowerShellEditorFactory), "{7651a702-06e5-11d1-8ebd-00a0c90f26ea}")]  //LOGVIEWID_Designer
+    [ProvideEditorLogicalView(typeof(PowerShellEditorFactory), "{7651a701-06e5-11d1-8ebd-00a0c90f26ea}")]  //LOGVIEWID_Code
     public class PowerShellProjectPackage : CommonProjectPackage
     {
         public override ProjectFactory CreateProjectFactory()

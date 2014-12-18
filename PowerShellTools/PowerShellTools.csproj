@@ -277,6 +277,7 @@
     <Compile Include="PackageProperties.cs" />
     <Compile Include="PowerShellConstants.cs" />
     <Compile Include="Classification\PowerShellEditorFactory.cs" />
+    <Compile Include="Project\PowerShellCodeDomProvider.cs" />
     <Compile Include="Project\LocDisplayNameAttribute.cs" />
     <Compile Include="Project\PowerShellConfigProvider.cs" />
     <Compile Include="Project\PowerShellDebugPropertyPage.cs" />

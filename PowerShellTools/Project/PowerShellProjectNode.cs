@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
 
@@ -83,7 +84,19 @@ namespace PowerShellTools.Project
 
         public override CommonFileNode CreateCodeFileNode(ProjectElement item)
         {
-            return new PowerShellFileNode(this, item);
+            var node = new PowerShellFileNode(this, item);
+
+            node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
+
+            return node;
+        }
+
+        public override CommonFileNode CreateNonCodeFileNode(ProjectElement item)
+        {
+            var node = new PowerShellFileNode(this, item);
+            node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
+
+            return node;
         }
 
         protected override ConfigProvider CreateConfigProvider()
@@ -95,5 +108,20 @@ namespace PowerShellTools.Project
         {
             return new PowerShellProjectNodeProperties(this);
         }
+
+        /// <summary>
+        /// Creates the services exposed by this project.
+        /// </summary>
+        protected object CreateServices(Type serviceType)
+        {
+            object service = null;
+            if (typeof(SVSMDCodeDomProvider) == serviceType)
+            {
+                service = new PowerShellCodeDomProvider();
+            }
+
+            return service;
+        }
+
     }
 }

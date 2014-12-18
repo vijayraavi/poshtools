@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudioTools.Project;
+﻿using System;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudioTools.Project;
 
 namespace PowerShellTools.Project
 {
@@ -17,7 +19,19 @@ namespace PowerShellTools.Project
 		    }
 		#endregion
 
+        internal override int QueryStatusOnNode(Guid guidCmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result)
+        {
+            if (guidCmdGroup == VsMenus.guidStandardCommandSet97 && IsFormSubType)
+            {
+                switch ((VSConstants.VSStd97CmdID)cmd)
+                {
+                    case VSConstants.VSStd97CmdID.ViewForm:
+                        result |= QueryStatusResult.SUPPORTED | QueryStatusResult.ENABLED;
+                        return VSConstants.S_OK;
+                }
+            }
 
-
+            return base.QueryStatusOnNode(guidCmdGroup, cmd, pCmdText, ref result);
+        }
     }
 }
