@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
@@ -123,5 +124,13 @@ namespace PowerShellTools.Project
             return service;
         }
 
+        public override bool IsCodeFile(string fileName)
+        {
+            if (String.IsNullOrEmpty(fileName)) return false;
+
+            var fi = new FileInfo(fileName);
+
+            return CodeFileExtensions.Select(m => m.ToUpper()).Contains(fi.Extension.ToUpper());
+        }
     }
 }
