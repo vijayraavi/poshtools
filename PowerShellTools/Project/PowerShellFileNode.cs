@@ -14,15 +14,9 @@ namespace PowerShellTools.Project
 		/// <param name="e">The project element node.</param>
         internal PowerShellFileNode(CommonProjectNode root, ProjectElement e)
 			: base(root, e)
-		    {
-            
-		    }
+		{
+		}
 		#endregion
-
-        public override int ImageIndex
-        {
-            get { return 1; }
-        }
 
         internal override int QueryStatusOnNode(Guid guidCmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result)
         {

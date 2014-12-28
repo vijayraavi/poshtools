@@ -72,13 +72,8 @@ namespace PowerShellTools.Project
         {
             get
             {
-                return typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.ImageList.bmp");
+                return typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.CommonImageList.bmp");
             }
-        }
-
-        public override int ImageIndex
-        {
-            get { return 0; } 
         }
 
         public override string[] CodeFileExtensions
