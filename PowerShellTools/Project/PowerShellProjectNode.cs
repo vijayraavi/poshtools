@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
@@ -11,8 +12,13 @@ namespace PowerShellTools.Project
     {
         private readonly CommonProjectPackage _package;
 
+        private static ImageList projectImageList =
+            Utilities.GetImageList(
+                typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream(
+                    "PowerShellTools.Project.Resources.ImageList.bmp"));
+
         public PowerShellProjectNode(CommonProjectPackage package)
-            : base(package, Utilities.GetImageList(typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.ProjectIcon.bmp")))
+            : base(package, projectImageList)
         {
             _package = package;
             // TODO: Temporary!! AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
@@ -66,13 +72,13 @@ namespace PowerShellTools.Project
         {
             get
             {
-                return typeof(ProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.imagelis.bmp");
+                return typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.ImageList.bmp");
             }
         }
 
         public override int ImageIndex
         {
-            get { return 52; } //TODO: Fix image index
+            get { return 0; } 
         }
 
         public override string[] CodeFileExtensions

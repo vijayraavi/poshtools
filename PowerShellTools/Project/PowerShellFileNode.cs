@@ -19,6 +19,11 @@ namespace PowerShellTools.Project
 		    }
 		#endregion
 
+        public override int ImageIndex
+        {
+            get { return 1; }
+        }
+
         internal override int QueryStatusOnNode(Guid guidCmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result)
         {
             if (guidCmdGroup == VsMenus.guidStandardCommandSet97 && IsFormSubType)
