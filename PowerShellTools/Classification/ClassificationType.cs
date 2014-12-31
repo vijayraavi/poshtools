@@ -21,7 +21,7 @@ namespace PowerShellTools.Classification
         public const string PowerShellMember = "PowerShellMember";
         public const string PowerShellGroupStart = "PowerShellGroupStart";
         public const string PowerShellGroupEnd = "PowerShellGroupEnd";
-        public const string PowerShellLineCotinuation = "PowerShellLineCotinuation";
+        public const string PowerShellLineContinuation = "PowerShellLineContinuation";
         public const string PowerShellLoopLabel = "PowerShellLoopLabel";
         public const string PowerShellNewLine = "PowerShellNewLine";
         public const string PowerShellPosition = "PowerShellPosition";
