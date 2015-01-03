@@ -28,7 +28,7 @@ namespace PowerShellTools.Classification
 		private static ClassificationTypeDefinition groupStartTypeDefinition;
         [BaseDefinition(PredefinedClassificationTypeNames.Keyword), Name(Classifications.PowerShellKeyword), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition keywordTypeDefinition;
-        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellLineCotinuation), Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellLineContinuation), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition lineContinuationTypeDefinition;
         [BaseDefinition(PredefinedClassificationTypeNames.Operator), Name(Classifications.PowerShellLoopLabel), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition loopLabelTypeDefinition;
@@ -65,7 +65,7 @@ namespace PowerShellTools.Classification
             tokenClassificationTypeMap[PSTokenType.GroupEnd] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellGroupEnd);
             tokenClassificationTypeMap[PSTokenType.GroupStart] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellGroupStart);
             tokenClassificationTypeMap[PSTokenType.Keyword] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellKeyword);
-            tokenClassificationTypeMap[PSTokenType.LineContinuation] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellLineCotinuation);
+            tokenClassificationTypeMap[PSTokenType.LineContinuation] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellLineContinuation);
             tokenClassificationTypeMap[PSTokenType.LoopLabel] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellLoopLabel);
             tokenClassificationTypeMap[PSTokenType.Member] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellMember);
             tokenClassificationTypeMap[PSTokenType.NewLine] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellNewLine);
