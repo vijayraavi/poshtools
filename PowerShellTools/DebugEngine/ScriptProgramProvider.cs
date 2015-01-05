@@ -23,6 +23,9 @@ namespace PowerShellTools.DebugEngine
         public int GetProviderProcessData(enum_PROVIDER_FLAGS Flags, IDebugDefaultPort2 pPort, AD_PROCESS_ID ProcessId, CONST_GUID_ARRAY EngineFilter, PROVIDER_PROCESS_DATA[] pProcess)
         {
             Log.Debug("ProgramProvider: GetProviderProcessData");
+            return VSConstants.E_NOTIMPL;
+
+#if FALSE
 
             if (Flags.HasFlag(enum_PROVIDER_FLAGS.PFLAG_GET_PROGRAM_NODES))
             {
@@ -48,6 +51,7 @@ namespace PowerShellTools.DebugEngine
             }
 
             return VSConstants.S_FALSE;
+#endif
         }
 
         public int GetProviderProgramNode(enum_PROVIDER_FLAGS Flags, IDebugDefaultPort2 pPort, AD_PROCESS_ID ProcessId, ref Guid guidEngine, ulong programId, out IDebugProgramNode2 ppProgramNode)
