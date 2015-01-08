@@ -115,8 +115,15 @@ namespace PowerShellTools.Intellisense
                 {
                     if (_activeSession.IsStarted)
                     {
-                        Log.Debug("Filter");
-                        _activeSession.Filter();
+                        try
+                        {
+                            Log.Debug("Filter");
+                            _activeSession.Filter();
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Debug("Failed to filter session.", ex);
+                        }
                     }
                 }
             }
@@ -125,8 +132,15 @@ namespace PowerShellTools.Intellisense
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
                 {
-                    Log.Debug("Filter");
-                    _activeSession.Filter();
+                    try
+                    {
+                        Log.Debug("Filter");
+                        _activeSession.Filter();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Debug("Failed to filter session.", ex);
+                    }
                 }
                     
                 handled = true;
@@ -277,7 +291,7 @@ namespace PowerShellTools.Intellisense
             textBuffer.Properties.AddProperty(BufferProperties.LineUpToReplacementSpan, lineUpToReplacementSpan);
 
             Log.Debug("Dismissing all sessions...");
-            _broker.DismissAllSessions(_textView);
+            
 
             if (Application.Current.Dispatcher.Thread == Thread.CurrentThread)
             {
@@ -296,6 +310,7 @@ namespace PowerShellTools.Intellisense
         private void StartSession(ITrackingPoint triggerPoint)
         {
             Log.Debug("Creating new completion session...");
+            _broker.DismissAllSessions(_textView);
             _activeSession = _broker.CreateCompletionSession(_textView, triggerPoint, true);
             _activeSession.Properties.AddProperty(BufferProperties.SessionOriginIntellisense, "Intellisense");
             _activeSession.Dismissed += CompletionSession_Dismissed;
