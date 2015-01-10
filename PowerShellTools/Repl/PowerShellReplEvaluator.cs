@@ -40,7 +40,7 @@ namespace PowerShellTools.Repl
 
             window.TextView.Properties.AddProperty(BufferProperties.FromRepl, null);
 
-            window.SetOptionValue(ReplOptions.Multiline, page.MutlilineRepl);
+            window.SetOptionValue(ReplOptions.Multiline, page.MultilineRepl);
             window.SetOptionValue(ReplOptions.UseSmartUpDown, true);
 
             return tf.StartNew(() => { Window = window; return new ExecutionResult(true); });
