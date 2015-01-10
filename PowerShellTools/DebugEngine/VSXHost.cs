@@ -208,8 +208,7 @@ namespace PowerShellTools.DebugEngine
                 ps.Runspace = _runspace;
                 ps.AddCommand("Set-ExecutionPolicy")
                     .AddParameter("ExecutionPolicy", policy)
-                    .AddParameter("Scope", scope)
-                    .AddParameter("Force");
+                    .AddParameter("Scope", scope);
                 ps.Invoke();
             }
         }
