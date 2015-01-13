@@ -110,7 +110,7 @@ namespace PowershellTools.ProcessManager.Services
  
             _powershellServiceHost.AddServiceEndpoint(typeof(PowershellService),
                 binding,
-                baseAddress);
+                Constants.ProcessManagerHostRelativeUri);
 
             _powershellServiceHost.Open();
         }

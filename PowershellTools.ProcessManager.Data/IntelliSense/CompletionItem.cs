@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace PowershellTools.ProcessManager.Data.IntelliSense
 {
-    class CompletionItem
+    public sealed class CompletionItem
     {
+        //TODO: in case searilization failure using default class, we need to create this customized serializable object
     }
 }

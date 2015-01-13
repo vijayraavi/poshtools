@@ -49,6 +49,7 @@
     <Compile Include="ProcessManagement\PowershellHostProcessFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceManagement\ClientFactory.cs" />
+    <Compile Include="ServiceManagement\ConnectionManager.cs" />
     <Compile Include="ServiceManagement\IClientFactory.cs" />
   </ItemGroup>
   <ItemGroup>

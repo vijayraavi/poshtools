@@ -8,11 +8,9 @@ namespace PowershellTools.ProcessManager.Data.Common
 {
     internal static class Constants
     {
-        public const string ProcessManagerHostUri = "net.pipe://localhost";
+        public const string ProcessManagerHostUri = "net.pipe://localhost/";
 
-        public const string ProcessManagerHostAddress = "NamedPipePowershellProcess";
-
-        public const string ProcessManagerEndPointAddress = ProcessManagerHostUri + "/" + ProcessManagerHostAddress;
+        public const string ProcessManagerHostRelativeUri = "NamedPipePowershellProcess";
 
         public const string ProcessManagerDataNamespace = "https://github.com/Microsoft/poshtools";
 

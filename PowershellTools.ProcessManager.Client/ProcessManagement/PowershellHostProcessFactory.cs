@@ -14,7 +14,7 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
     internal static class PowershellHostProcessFactory
     {
         private static string _hostedServiceRelativePath = @"";
-        private static Lazy<Process> _powershellHostProcess;
+        private static Lazy<PowershellHostProcess> _powershellHostProcess;
         private static string _hostedServicePath;
         private static object _syncObject = new object();
 
@@ -31,7 +31,8 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
             }
         }
 
-        internal static Process HostProcess { get; set; }
+        internal static PowershellHostProcess HostProcess { get; set; }
+
 
         internal static void SignalProcessTerminated()
         {
@@ -41,21 +42,22 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
             }
         }
 
-        internal static Process EnsurePowershellHostProcess()
+        internal static PowershellHostProcess EnsurePowershellHostProcess()
         {
             return _powershellHostProcess.Value;
         }
 
-        private static Process CreatePowershellHostProcess()
+        private static PowershellHostProcess CreatePowershellHostProcess()
         {
             Process powershellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
             string exeName = Constants.PowershellHostExeName;
             string path = Path.Combine(HostedServiceDirectory, exeName);
+            Guid endPointGuid = Guid.NewGuid();
 
             string hostArgs = String.Format(CultureInfo.InvariantCulture,
                                             "{0}{1} {2}{3} {4}{5}",
-                                            Constants.UniqueEndpointArg, Guid.NewGuid(), // For generating a unique endpoint address 
+                                            Constants.UniqueEndpointArg, endPointGuid, // For generating a unique endpoint address 
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
                                             Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName); 
 
@@ -91,7 +93,12 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
                 throw new Exception();
             }
 
-            return powershellHostProcess;
+            return new PowershellHostProcess
+            {
+                Process = powershellHostProcess,
+                EndpointGuid = endPointGuid
+            };
+
         }
 
         private static void PowershellHostProcess_Exited(object sender, EventArgs e)
@@ -101,7 +108,7 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
             lock (_syncObject)
             {
                 if (_powershellHostProcess.IsValueCreated &&
-                    _powershellHostProcess.Value == p)
+                    _powershellHostProcess.Value.Process == p)
                 {
                     LazyCreatePowershellHostProcess();
                 }
@@ -110,7 +117,13 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
 
         private static void LazyCreatePowershellHostProcess()
         {
-            _powershellHostProcess = new Lazy<Process>(CreatePowershellHostProcess);
+            _powershellHostProcess = new Lazy<PowershellHostProcess>(CreatePowershellHostProcess);
+        }
+
+        internal struct PowershellHostProcess
+        {
+            public Process Process { get; set; }
+            public Guid EndpointGuid { get; set; }
         }
     }
 }
