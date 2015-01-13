@@ -66,16 +66,16 @@ namespace PowerShellTools.Intellisense
             var commandId = nCmdId;
             var typedChar = char.MinValue;
             //make sure the input is a char before getting it 
-            if (pguidCmdGroup == VSConstants.VSStd2K && nCmdId == (uint) VSConstants.VSStd2KCmdID.TYPECHAR)
+            if (pguidCmdGroup == VSConstants.VSStd2K && nCmdId == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
             {
-                typedChar = (char) (ushort) Marshal.GetObjectForNativeVariant(pvaIn);
+                typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
             }
 
             Log.DebugFormat("Typed Character: {0}", typedChar);
 
             //check for a commit character 
-            if (nCmdId == (uint) VSConstants.VSStd2KCmdID.RETURN
-                || nCmdId == (uint) VSConstants.VSStd2KCmdID.TAB
+            if (nCmdId == (uint)VSConstants.VSStd2KCmdID.RETURN
+                || nCmdId == (uint)VSConstants.VSStd2KCmdID.TAB
                 || (char.IsWhiteSpace(typedChar)))
             {
                 //check for a a selection 
@@ -90,12 +90,12 @@ namespace PowerShellTools.Intellisense
                         //also, don't add the character to the buffer 
                         return VSConstants.S_OK;
                     }
-                    
+
                     Log.Debug("Dismiss");
                     //if there is no selection, dismiss the session
                     _activeSession.Dismiss();
                 }
-                else if (nCmdId == (uint) VSConstants.VSStd2KCmdID.TAB && _isRepl)
+                else if (nCmdId == (uint)VSConstants.VSStd2KCmdID.TAB && _isRepl)
                 {
                     TriggerCompletion();
                     return VSConstants.S_OK;
@@ -134,15 +134,15 @@ namespace PowerShellTools.Intellisense
                     }
                 }
             }
-            else if (commandId == (uint) VSConstants.VSStd2KCmdID.BACKSPACE //redo the filter if there is a deletion
-                     || commandId == (uint) VSConstants.VSStd2KCmdID.DELETE)
+            else if (commandId == (uint)VSConstants.VSStd2KCmdID.BACKSPACE //redo the filter if there is a deletion
+                     || commandId == (uint)VSConstants.VSStd2KCmdID.DELETE)
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
                 {
                     Log.Debug("Filter");
                     _activeSession.Filter();
                 }
-                    
+
                 handled = true;
             }
             if (handled) return VSConstants.S_OK;
@@ -155,7 +155,7 @@ namespace PowerShellTools.Intellisense
         /// </summary>
         private void TriggerCompletion()
         {
-            var caretPosition = (int) _textView.Caret.Position.BufferPosition;
+            var caretPosition = (int)_textView.Caret.Position.BufferPosition;
             var thread = new Thread(() =>
             {
                 try
@@ -196,9 +196,9 @@ namespace PowerShellTools.Intellisense
                 //HACK: Clone with a new offset using private method... 
                 var type = ast.Extent.StartScriptPosition.GetType();
                 var method = type.GetMethod("CloneWithNewOffset", BindingFlags.Instance | BindingFlags.NonPublic, null,
-                    new[] {typeof (int)}, null);
+                    new[] { typeof(int) }, null);
 
-                cursorPosition = (IScriptPosition)method.Invoke(ast.Extent.StartScriptPosition, new object[]{caretPosition});
+                cursorPosition = (IScriptPosition)method.Invoke(ast.Extent.StartScriptPosition, new object[] { caretPosition });
                 return;
             }
             cursorPosition = null;
@@ -218,7 +218,7 @@ namespace PowerShellTools.Intellisense
             catch (RuntimeException ex)
             {
                 var parseError = new ParseError(new EmptyScriptExtent(), ex.ErrorRecord.FullyQualifiedErrorId, ex.Message);
-                errors = new []{parseError};
+                errors = new[] { parseError };
                 tokens = new Token[0];
                 result = null;
             }
@@ -247,8 +247,8 @@ namespace PowerShellTools.Intellisense
             var ps = PowerShell.Create();
             ps.Runspace = PowerShellToolsPackage.Debugger.Runspace;
 
-            var commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps); 
-            
+            var commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps);
+
             var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
             var caretInLine = (caretPosition - line.Start);
             var text = line.GetText().Substring(0, caretInLine);
@@ -320,6 +320,7 @@ namespace PowerShellTools.Intellisense
         private void CompletionSession_Dismissed(object sender, EventArgs e)
         {
             Log.Debug("Session Dismissed.");
+            _activeSession.Dismissed -= CompletionSession_Dismissed;
             _activeSession = null;
         }
 
