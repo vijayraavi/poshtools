@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Security;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,7 +42,9 @@ namespace PowershellTools.ProcessManager.Client.ServiceManagement
 
         private NetNamedPipeBinding CreateBinding()
         {
-            var binding = new NetNamedPipeBinding();
+            var binding = new NetNamedPipeBinding(NetNamedPipeSecurityMode.None);
+            binding.ReceiveTimeout = TimeSpan.MaxValue;
+            binding.Security.Transport.ProtectionLevel = ProtectionLevel.None;
             binding.MaxReceivedMessageSize = Constants.BindingMaxReceivedMessageSize;
             return binding;
         }

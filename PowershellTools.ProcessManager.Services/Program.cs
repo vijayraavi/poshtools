@@ -60,6 +60,7 @@ namespace PowershellTools.ProcessManager.Services
             
             binding.ReceiveTimeout = TimeSpan.MaxValue;
             binding.Security.Transport.ProtectionLevel = ProtectionLevel.None;
+            binding.MaxReceivedMessageSize = Constants.BindingMaxReceivedMessageSize;
 
             CreatePowershellServiceHost(baseAddress, binding);
 
@@ -117,17 +118,6 @@ namespace PowershellTools.ProcessManager.Services
                 Constants.ProcessManagerHostRelativeUri);
 
             _powershellServiceHost.Open();
-        }
-        
-        private void OnParentProcessExit(object sender, EventArgs eventArgs)
-        {
-            if (_powershellServiceHost != null)
-            {
-                _powershellServiceHost.Close();
-                _powershellServiceHost = null;
-            }
-
-            _processExitEvent.Set();
-        }
+        }        
     }
 }

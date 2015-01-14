@@ -271,6 +271,7 @@ namespace PowerShellTools.Intellisense
             }
 
             statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
+            statusBar.SetText(PowerShellToolsPackage.PowershellService.TestWcf("Test client"));
             _intellisenseRunning = false;
         }
 
