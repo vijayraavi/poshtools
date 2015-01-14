@@ -24,6 +24,8 @@ using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using log4net;
 using Engine = PowerShellTools.DebugEngine.Engine;
+using PowershellTools.ProcessManager.Data;
+using PowershellTools.ProcessManager.Client.ServiceManagement;
 
 namespace PowerShellTools
 {
@@ -120,6 +122,8 @@ namespace PowerShellTools
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
 
+        public static IPowershellService PowershellService { get; private set; }
+
         public new object GetService(Type type)
         {
             return base.GetService(type);
@@ -185,6 +189,7 @@ namespace PowerShellTools
             }
 
             InitializePowerShellHost();
+            EstablishProcessConnection();
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
@@ -289,6 +294,12 @@ namespace PowerShellTools
                     statusBar.Progress(ref cookie, 1, "", 0, 0);
                 }
             };
+        }
+
+        private void EstablishProcessConnection()
+        {
+            var connectionManager = new ConnectionManager();
+            PowershellService = connectionManager.PowershellServiceChannel;
         }
 
         public T GetDialogPage<T>() where T : DialogPage

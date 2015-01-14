@@ -31,5 +31,8 @@
     <Asset Type="UnitTestExtension" d:Source="Project" d:ProjectName="%CurrentProject%.TestAdapter" Path="|PowerShellTools.TestAdapter|" />
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="ReplWindow" Path="|ReplWindow;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="ReplWindow" Path="|ReplWindow|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="PowershellTools.ProcessManager.Data" Path="|PowershellTools.ProcessManager.Data|" AssemblyName="|PowershellTools.ProcessManager.Data;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="PowershellTools.ProcessManager.Client" Path="|PowershellTools.ProcessManager.Client|" AssemblyName="|PowershellTools.ProcessManager.Client;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="PowershellTools.ProcessManager.Services" Path="|PowershellTools.ProcessManager.Services|" AssemblyName="|PowershellTools.ProcessManager.Services;AssemblyName|" />
   </Assets>
 </PackageManifest>

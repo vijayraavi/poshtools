@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,22 +14,12 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
 {
     internal static class PowershellHostProcessFactory
     {
-        private static string _hostedServiceRelativePath = @"";
         private static Lazy<PowershellHostProcess> _powershellHostProcess;
-        private static string _hostedServicePath;
         private static object _syncObject = new object();
 
         static PowershellHostProcessFactory()
         {
             LazyCreatePowershellHostProcess();
-        }
-
-        internal static string HostedServiceDirectory
-        {
-            get
-            {
-                return _hostedServicePath;
-            }
         }
 
         internal static PowershellHostProcess HostProcess { get; set; }
@@ -51,21 +42,23 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
         {
             Process powershellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
-            string exeName = Constants.PowershellHostExeName;
-            string path = Path.Combine(HostedServiceDirectory, exeName);
             Guid endPointGuid = Guid.NewGuid();
 
+            string exeName = Constants.PowershellHostExeName;
+            string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string path = Path.Combine(currentPath, exeName);
             string hostArgs = String.Format(CultureInfo.InvariantCulture,
                                             "{0}{1} {2}{3} {4}{5}",
                                             Constants.UniqueEndpointArg, endPointGuid, // For generating a unique endpoint address 
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
                                             Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName); 
 
+            // TODO: uncomment the two lines below later
             powershellHostProcess.StartInfo.Arguments = hostArgs;
             powershellHostProcess.StartInfo.FileName = path;
-            powershellHostProcess.StartInfo.CreateNoWindow = true;
+            //powershellHostProcess.StartInfo.CreateNoWindow = true; 
             powershellHostProcess.StartInfo.UseShellExecute = true;
-            powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            //powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, hostProcessReadyEventName);
 

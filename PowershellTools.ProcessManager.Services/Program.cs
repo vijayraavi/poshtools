@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PowershellTools.ProcessManager.Services.IntelliSenseService;
 using PowershellTools.ProcessManager.Data.Common;
+using PowershellTools.ProcessManager.Data;
 
 namespace PowershellTools.ProcessManager.Services
 {
@@ -48,7 +49,7 @@ namespace PowershellTools.ProcessManager.Services
                 return 1;
             }
 
-            string readyEventName = args[3].Remove(0, Constants.ReadyEventUniqueNameArg.Length);
+            string readyEventName = args[2].Remove(0, Constants.ReadyEventUniqueNameArg.Length);
             if (readyEventName.Length < 36)
             {
                 return 1;
@@ -61,6 +62,9 @@ namespace PowershellTools.ProcessManager.Services
             binding.Security.Transport.ProtectionLevel = ProtectionLevel.None;
 
             CreatePowershellServiceHost(baseAddress, binding);
+
+            // TODO: used for debugging, remove later
+            Console.WriteLine("Powershell host is ready...");
 
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, readyEventName);
             readyEvent.Set();
@@ -108,7 +112,7 @@ namespace PowershellTools.ProcessManager.Services
         {
             _powershellServiceHost = new ServiceHost(typeof(PowershellService), baseAddress);
  
-            _powershellServiceHost.AddServiceEndpoint(typeof(PowershellService),
+            _powershellServiceHost.AddServiceEndpoint(typeof(IPowershellService),
                 binding,
                 Constants.ProcessManagerHostRelativeUri);
 
