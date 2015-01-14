@@ -30,8 +30,8 @@ namespace PowerShellTools.Commands
             if (dte2 != null && dte2.ActiveDocument != null)
             {
                 var launcher = new PowerShellProjectLauncher();
-
                 TextSelection sel = (TextSelection)dte2.ActiveDocument.Selection;
+                dte2.ActiveDocument.Save();
                 if (sel.TopPoint.EqualTo(sel.ActivePoint))
                 {
                     sel.SelectLine();

@@ -28,6 +28,7 @@ namespace PowerShellTools.Commands
             if (dte2 != null && dte2.ActiveDocument != null)
             {
                 var launcher = new PowerShellProjectLauncher();
+                dte2.ActiveDocument.Save();
                 launcher.LaunchFile(dte2.ActiveDocument.FullName, true);
             }
         }
