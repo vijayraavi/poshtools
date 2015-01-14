@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PowershellTools.ProcessManager.Services.IntelliSenseService;
 using PowershellTools.ProcessManager.Data.Common;
+using PowershellTools.ProcessManager.Data;
 
 namespace PowershellTools.ProcessManager.Services
 {
@@ -48,7 +49,7 @@ namespace PowershellTools.ProcessManager.Services
                 return 1;
             }
 
-            string readyEventName = args[3].Remove(0, Constants.ReadyEventUniqueNameArg.Length);
+            string readyEventName = args[2].Remove(0, Constants.ReadyEventUniqueNameArg.Length);
             if (readyEventName.Length < 36)
             {
                 return 1;
@@ -59,8 +60,12 @@ namespace PowershellTools.ProcessManager.Services
             
             binding.ReceiveTimeout = TimeSpan.MaxValue;
             binding.Security.Transport.ProtectionLevel = ProtectionLevel.None;
+            binding.MaxReceivedMessageSize = Constants.BindingMaxReceivedMessageSize;
 
             CreatePowershellServiceHost(baseAddress, binding);
+
+            // TODO: used for debugging, remove later
+            Console.WriteLine("Powershell host is ready...");
 
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, readyEventName);
             readyEvent.Set();
@@ -108,22 +113,11 @@ namespace PowershellTools.ProcessManager.Services
         {
             _powershellServiceHost = new ServiceHost(typeof(PowershellService), baseAddress);
  
-            _powershellServiceHost.AddServiceEndpoint(typeof(PowershellService),
+            _powershellServiceHost.AddServiceEndpoint(typeof(IPowershellService),
                 binding,
                 Constants.ProcessManagerHostRelativeUri);
 
             _powershellServiceHost.Open();
-        }
-        
-        private void OnParentProcessExit(object sender, EventArgs eventArgs)
-        {
-            if (_powershellServiceHost != null)
-            {
-                _powershellServiceHost.Close();
-                _powershellServiceHost = null;
-            }
-
-            _processExitEvent.Set();
-        }
+        }        
     }
 }

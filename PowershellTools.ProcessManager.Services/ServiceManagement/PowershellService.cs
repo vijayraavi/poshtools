@@ -19,5 +19,11 @@ namespace PowershellTools.ProcessManager.Services.IntelliSenseService
         }
 
         #endregion
+
+
+        public string TestWcf(string input)
+        {
+            return input + " from server";
+        }
     }
 }
