@@ -78,6 +78,10 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Management.Automation">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ServiceManagement\PowershellService.cs" />
@@ -85,6 +89,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PowershellTools.Common\PowershellTools.Common.csproj">
+      <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
+      <Name>PowershellTools.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowershellTools.ProcessManager.Data\PowershellTools.ProcessManager.Data.csproj">
       <Project>{9d6eeff8-395d-4ee0-9db5-5a891a64ea64}</Project>
       <Name>PowershellTools.ProcessManager.Data</Name>

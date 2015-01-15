@@ -1,3 +1,5 @@
+#define SUPPORT64BIT
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +17,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using PowershellTools.Common.IntelliSense;
 using PowerShellTools.Classification;
 
 namespace PowerShellTools.Intellisense
@@ -176,55 +179,6 @@ namespace PowerShellTools.Intellisense
             thread.Start();
         }
 
-        private void GetCommandCompletionParameters(int caretPosition, out Ast ast, out Token[] tokens, out IScriptPosition cursorPosition)
-        {
-            ITrackingSpan trackingSpan;
-            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.Ast, out ast);
-            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.Tokens, out tokens);
-            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.SpanTokenized, out trackingSpan);
-
-            // No ast or tokens available on the buffer. Re-tokenize.
-            if (ast == null || tokens == null)
-            {
-                var trackingSpan2 = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
-                var text = trackingSpan2.GetText(_textView.TextBuffer.CurrentSnapshot);
-                ParseError[] array;
-                ast = Tokenize(text, out tokens, out array);
-            }
-            if (ast != null)
-            {
-                //HACK: Clone with a new offset using private method... 
-                var type = ast.Extent.StartScriptPosition.GetType();
-                var method = type.GetMethod("CloneWithNewOffset", BindingFlags.Instance | BindingFlags.NonPublic, null,
-                    new[] { typeof(int) }, null);
-
-                cursorPosition = (IScriptPosition)method.Invoke(ast.Extent.StartScriptPosition, new object[] { caretPosition });
-                return;
-            }
-            cursorPosition = null;
-        }
-
-        internal static Ast Tokenize(string script, out Token[] tokens, out ParseError[] errors)
-        {
-            Ast result;
-            try
-            {
-                Token[] array;
-                Ast ast = Parser.ParseInput(script, out array, out errors);
-                tokens = new Token[array.Length - 1];
-                Array.Copy(array, tokens, tokens.Length);
-                result = ast;
-            }
-            catch (RuntimeException ex)
-            {
-                var parseError = new ParseError(new EmptyScriptExtent(), ex.ErrorRecord.FullyQualifiedErrorId, ex.Message);
-                errors = new[] { parseError };
-                tokens = new Token[0];
-                result = null;
-            }
-            return result;
-        }
-
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
         {
             if (_intellisenseRunning) return;
@@ -235,19 +189,17 @@ namespace PowerShellTools.Intellisense
             var sw = new Stopwatch();
             sw.Start();
 
-            Ast ast;
-            Token[] tokens;
-            IScriptPosition cursorPosition;
-            GetCommandCompletionParameters(caretPosition, out ast, out tokens, out cursorPosition);
-            if (ast == null)
+#if SUPPORT64BIT
+            var trackingSpan = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
+            var script = trackingSpan.GetText(_textView.TextBuffer.CurrentSnapshot);
+            var commandCompletion = PowerShellToolsPackage.IntelliSenseService.GetCompletionResults(script, caretPosition);
+#else
+            var commandCompletion = GetCommandCompletionList(caretPosition);
+#endif
+            if (commandCompletion == null)
             {
                 return;
             }
-
-            var ps = PowerShell.Create();
-            ps.Runspace = PowerShellToolsPackage.Debugger.Runspace;
-
-            var commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps);
 
             var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
             var caretInLine = (caretPosition - line.Start);
@@ -271,8 +223,53 @@ namespace PowerShellTools.Intellisense
             }
 
             statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
-            statusBar.SetText(PowerShellToolsPackage.PowershellService.TestWcf("Test client"));
+            statusBar.SetText(PowerShellToolsPackage.IntelliSenseService.TestWcf("Test client"));
             _intellisenseRunning = false;
+        }
+
+        private CommandCompletion GetCommandCompletionList(int caretPosition)
+        {
+            Ast ast;
+            Token[] tokens;
+            IScriptPosition cursorPosition;
+            GetCommandCompletionParameters(caretPosition, out ast, out tokens, out cursorPosition);
+            if (ast == null)
+            {
+                return null;
+            }
+
+            var ps = PowerShell.Create();
+            ps.Runspace = PowerShellToolsPackage.Debugger.Runspace;
+
+            return CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps);
+        }
+
+        private void GetCommandCompletionParameters(int caretPosition, out Ast ast, out Token[] tokens, out IScriptPosition cursorPosition)
+        {
+            ITrackingSpan trackingSpan;
+            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.Ast, out ast);
+            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.Tokens, out tokens);
+            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.SpanTokenized, out trackingSpan);
+
+            // No ast or tokens available on the buffer. Re-tokenize.
+            if (ast == null || tokens == null)
+            {
+                var trackingSpan2 = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
+                var text = trackingSpan2.GetText(_textView.TextBuffer.CurrentSnapshot);
+                ParseError[] array;
+                ast = CommandCompletionHelper.Tokenize(text, out tokens, out array);
+            }
+            if (ast != null)
+            {
+                //HACK: Clone with a new offset using private method... 
+                var type = ast.Extent.StartScriptPosition.GetType();
+                var method = type.GetMethod("CloneWithNewOffset", BindingFlags.Instance | BindingFlags.NonPublic, null,
+                    new[] { typeof(int) }, null);
+
+                cursorPosition = (IScriptPosition)method.Invoke(ast.Extent.StartScriptPosition, new object[] { caretPosition });
+                return;
+            }
+            cursorPosition = null;
         }
 
         internal void IntellisenseDone(IList<CompletionResult> completionResults, int lineStartPosition, int replacementIndex, int replacementLength, int startCaretPosition)
@@ -350,130 +347,6 @@ namespace PowerShellTools.Intellisense
         {
             Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':' || ch == '\\';
-        }
-    }
-
-    [Serializable]
-    internal sealed class EmptyScriptExtent : IScriptExtent
-    {
-        public string File
-        {
-            get
-            {
-                return null;
-            }
-        }
-        public IScriptPosition StartScriptPosition
-        {
-            get
-            {
-                return new EmptyScriptPosition();
-            }
-        }
-        public IScriptPosition EndScriptPosition
-        {
-            get
-            {
-                return new EmptyScriptPosition();
-            }
-        }
-        public int StartLineNumber
-        {
-            get
-            {
-                return 0;
-            }
-        }
-        public int StartColumnNumber
-        {
-            get
-            {
-                return 0;
-            }
-        }
-        public int EndLineNumber
-        {
-            get
-            {
-                return 0;
-            }
-        }
-        public int EndColumnNumber
-        {
-            get
-            {
-                return 0;
-            }
-        }
-        public int StartOffset
-        {
-            get
-            {
-                return 0;
-            }
-        }
-        public int EndOffset
-        {
-            get
-            {
-                return 0;
-            }
-        }
-        public string Text
-        {
-            get
-            {
-                return "";
-            }
-        }
-        public override bool Equals(object obj)
-        {
-            var scriptExtent = obj as IScriptExtent;
-            return scriptExtent != null && (string.IsNullOrEmpty(scriptExtent.File) && scriptExtent.StartLineNumber == StartLineNumber && scriptExtent.StartColumnNumber == StartColumnNumber && scriptExtent.EndLineNumber == EndLineNumber && scriptExtent.EndColumnNumber == EndColumnNumber && string.IsNullOrEmpty(scriptExtent.Text));
-        }
-    }
-
-    [Serializable]
-    internal sealed class EmptyScriptPosition : IScriptPosition
-    {
-        public string File
-        {
-            get
-            {
-                return null;
-            }
-        }
-        public int LineNumber
-        {
-            get
-            {
-                return 0;
-            }
-        }
-        public int ColumnNumber
-        {
-            get
-            {
-                return 0;
-            }
-        }
-        public int Offset
-        {
-            get
-            {
-                return 0;
-            }
-        }
-        public string Line
-        {
-            get
-            {
-                return "";
-            }
-        }
-        public string GetFullScript()
-        {
-            return null;
         }
     }
 }

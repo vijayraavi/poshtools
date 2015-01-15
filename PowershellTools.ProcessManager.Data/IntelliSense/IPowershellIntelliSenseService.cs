@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
-using PowershellTools.ProcessManager.Data.IntelliSense;
+﻿using System.ServiceModel;
 
-namespace PowershellTools.ProcessManager.Data
+namespace PowershellTools.ProcessManager.Data.IntelliSense
 {
     /// <summary>
     /// Powershell service.
     /// </summary>
     [ServiceContract]
-    public interface IPowershellService
+    public interface IPowershellIntelliSenseService
     {
         [OperationContract]
         CompletionResultList GetCompletionResults(string scriptUpToCaret, int carePosition);

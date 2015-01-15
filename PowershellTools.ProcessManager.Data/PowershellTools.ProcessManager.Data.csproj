@@ -86,7 +86,7 @@
     <Compile Include="Common\Constants.cs" />
     <Compile Include="IntelliSense\CompletionItem.cs" />
     <Compile Include="IntelliSense\CompletionResultList.cs" />
-    <Compile Include="IPowershellService.cs" />
+    <Compile Include="IntelliSense\IPowershellIntelliSenseService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="..\Build\ProjectAfter.settings" />

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PowershellTools.ProcessManager.Client.ProcessManagement;
-using PowershellTools.ProcessManager.Data;
+﻿using PowershellTools.ProcessManager.Client.ProcessManagement;
 using PowershellTools.ProcessManager.Data.Common;
+using PowershellTools.ProcessManager.Data.IntelliSense;
 
 namespace PowershellTools.ProcessManager.Client.ServiceManagement
 {
@@ -14,7 +9,7 @@ namespace PowershellTools.ProcessManager.Client.ServiceManagement
     /// </summary>
     internal sealed class ConnectionManager
     {
-        private IPowershellService _powershellServiceChannel;
+        private IPowershellIntelliSenseService _powershellServiceChannel;
         private int _hostProcessId;
 
         public ConnectionManager()
@@ -25,8 +20,8 @@ namespace PowershellTools.ProcessManager.Client.ServiceManagement
         /// <summary>
         /// The service channel we need.
         /// </summary>
-        public IPowershellService PowershellServiceChannel 
-        { 
+        public IPowershellIntelliSenseService PowershellServiceChannel
+        {
             get
             {
                 return _powershellServiceChannel;
@@ -40,12 +35,12 @@ namespace PowershellTools.ProcessManager.Client.ServiceManagement
 
             // net.pipe://localhost/UniqueEndpointGuid/NamedPipePowershellProcess
             string clientEndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.ProcessManagerHostRelativeUri;
-            
+
             try
             {
                 if (_powershellServiceChannel == null)
                 {
-                    var factory = ClientFactory<IPowershellService>.ClientInstance;
+                    var factory = ClientFactory<IPowershellIntelliSenseService>.ClientInstance;
                     _powershellServiceChannel = factory.CreateServiceClient(clientEndPointAddress);
                 }
             }

@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net.Security;
 using System.ServiceModel;
-using System.ServiceModel.Description;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using PowershellTools.ProcessManager.Services.IntelliSenseService;
 using PowershellTools.ProcessManager.Data.Common;
-using PowershellTools.ProcessManager.Data;
+using PowershellTools.ProcessManager.Data.IntelliSense;
+using PowershellTools.ProcessManager.Services.IntelliSenseService;
 
 namespace PowershellTools.ProcessManager.Services
 {
@@ -115,9 +110,9 @@ namespace PowershellTools.ProcessManager.Services
 
         private static void CreatePowershellServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
-            _powershellServiceHost = new ServiceHost(typeof(PowershellService), baseAddress);
+            _powershellServiceHost = new ServiceHost(typeof(PowershellIntelliSenseService), baseAddress);
 
-            _powershellServiceHost.AddServiceEndpoint(typeof(IPowershellService),
+            _powershellServiceHost.AddServiceEndpoint(typeof(IPowershellIntelliSenseService),
                                                       binding,
                                                       Constants.ProcessManagerHostRelativeUri);
 

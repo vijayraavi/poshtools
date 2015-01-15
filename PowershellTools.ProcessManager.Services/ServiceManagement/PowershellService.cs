@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PowershellTools.ProcessManager.Data;
+﻿using System.Management.Automation.Runspaces;
+using PowershellTools.Common.IntelliSense;
 using PowershellTools.ProcessManager.Data.IntelliSense;
 
 namespace PowershellTools.ProcessManager.Services.IntelliSenseService
 {
-    public sealed class PowershellService : IPowershellService
+    public sealed class PowershellIntelliSenseService : IPowershellIntelliSenseService
     {
         #region IAutoCompletionService Members
 
-        public CompletionResultList GetCompletionResults(string scriptUpToCaret, int caretPosition)
+        public CompletionResultList GetCompletionResults(string script, int caretPosition)
         {
-            //TODO: Implement the real logic of computing completion list
-            throw new NotImplementedException();
+            var runspace = RunspaceFactory.CreateRunspace();
+            runspace.Open();
+            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(script, caretPosition, runspace);
+            return CompletionResultList.FromCommandCompletion(commandCompletion);
         }
 
         #endregion
