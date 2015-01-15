@@ -1,1 +1,1 @@
-msbuild "%POSHTOOLROOT%\PowerShellTools.sln" /m /filelogger /verbosity:normal
+msbuild "%POSHTOOLROOT%\PowerShellTools.sln" /m /filelogger /verbosity:normal /p:Configuration=Release

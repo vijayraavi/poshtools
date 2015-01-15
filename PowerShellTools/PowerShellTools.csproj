@@ -600,26 +600,32 @@
     <Folder Include="Project\SharedProject\Debugger\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PowershellTools.Common\PowershellTools.Common.csproj">
+      <Project>{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}</Project>
+      <Name>PowershellTools.Common</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\PowershellTools.ProcessManager.Client\PowershellTools.ProcessManager.Client.csproj">
       <Project>{1FABDB16-B1FB-4EAA-AA27-EE851E1E793D}</Project>
       <Name>PowershellTools.ProcessManager.Client</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
-	  <ReferenceOutputAssembly>true</ReferenceOutputAssembly> 
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\PowershellTools.ProcessManager.Data\PowershellTools.ProcessManager.Data.csproj">
       <Project>{9D6EEFF8-395D-4EE0-9DB5-5A891A64EA64}</Project>
       <Name>PowershellTools.ProcessManager.Data</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
-	  <ReferenceOutputAssembly>true</ReferenceOutputAssembly> 
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\PowershellTools.ProcessManager.Services\PowershellTools.ProcessManager.Services.csproj">
       <Project>{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}</Project>
       <Name>PowershellTools.ProcessManager.Services</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
-	  <ReferenceOutputAssembly>true</ReferenceOutputAssembly> 
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj">
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>

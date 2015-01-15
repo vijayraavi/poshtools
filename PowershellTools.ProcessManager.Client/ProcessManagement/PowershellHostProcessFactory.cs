@@ -12,6 +12,9 @@ using PowershellTools.ProcessManager.Data.Common;
 
 namespace PowershellTools.ProcessManager.Client.ProcessManagement
 {
+    /// <summary>
+    /// Initilize a process for hosting the WCF service.
+    /// </summary>
     internal static class PowershellHostProcessFactory
     {
         private static Lazy<PowershellHostProcess> _powershellHostProcess;
@@ -22,9 +25,14 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
             LazyCreatePowershellHostProcess();
         }
 
+        /// <summary>
+        /// The host process we want.
+        /// </summary>
         internal static PowershellHostProcess HostProcess { get; set; }
 
-
+        /// <summary>
+        /// In case we need to change host process at some point. What we need to do is signal the termination of the process and then create a new one. 
+        /// </summary>
         internal static void SignalProcessTerminated()
         {
             lock (_syncObject)
@@ -94,6 +102,11 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
 
         }
 
+        /// <summary>
+        /// In case the process is terminated somehow, such as manually ended by users, we need to re-create the process as long as VS process is still running.
+        /// </summary>
+        /// <param name="sender">The scource of the event.</param>
+        /// <param name="e">An System.EventArgs that contains no event data.</param>
         private static void PowershellHostProcess_Exited(object sender, EventArgs e)
         {
             Process p = sender as Process;
@@ -113,6 +126,9 @@ namespace PowershellTools.ProcessManager.Client.ProcessManagement
             _powershellHostProcess = new Lazy<PowershellHostProcess>(CreatePowershellHostProcess);
         }
 
+        /// <summary>
+        /// The structure containing the process we want and a guid used for the WCF client to establish connection to the service.
+        /// </summary>
         internal struct PowershellHostProcess
         {
             public Process Process { get; set; }

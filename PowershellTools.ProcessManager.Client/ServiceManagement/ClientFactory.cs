@@ -9,12 +9,19 @@ using PowershellTools.ProcessManager.Data.Common;
 
 namespace PowershellTools.ProcessManager.Client.ServiceManagement
 {
+    /// <summary>
+    /// Represents a factory of service clients.
+    /// </summary>
+    /// <typeparam name="ServiceType">The type of service client to return.</typeparam>
     internal sealed class ClientFactory<ServiceType> : IClientFactory<ServiceType> where ServiceType : class
     {
         private static ClientFactory<ServiceType> clientInstance;
 
         private ClientFactory() { }
 
+        /// <summary>
+        /// Gets a singleton instance of the client. 
+        /// </summary>
         public static ClientFactory<ServiceType> ClientInstance
         {
             get
@@ -29,6 +36,11 @@ namespace PowershellTools.ProcessManager.Client.ServiceManagement
 
         #region IClientFactory members
 
+        /// <summary>
+        /// Create channel over the address provided.
+        /// </summary>
+        /// <param name="endPointAddress">The channel end point address.</param>
+        /// <returns>The type of service client.</returns>
         public ServiceType CreateServiceClient(string endPointAddress)
         {
             var binding = CreateBinding();

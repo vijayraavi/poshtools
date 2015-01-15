@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowershellTools.ProcessMana
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowershellTools.ProcessManager.Services", "PowershellTools.ProcessManager.Services\PowershellTools.ProcessManager.Services.csproj", "{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowershellTools.Common", "PowershellTools.Common\PowershellTools.Common.csproj", "{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +116,18 @@ Global
 		{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}.Release|x86.ActiveCfg = Release|Any CPU
 		{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}.Release|x86.Build.0 = Release|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Debug|x86.Build.0 = Debug|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Release|x86.ActiveCfg = Release|Any CPU
+		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

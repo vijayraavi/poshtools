@@ -12,6 +12,9 @@ using System.Management.Automation;
 
 namespace PowershellTools.ProcessManager.Data.IntelliSense
 {
+    /// <summary>
+    /// The statement completion lists needed for IntelliSense.
+    /// </summary>
     [DataContract(Namespace = Constants.ProcessManagerDataNamespace)]
     public sealed class CompletionResultList
     {

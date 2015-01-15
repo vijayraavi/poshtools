@@ -8,6 +8,9 @@ using PowershellTools.ProcessManager.Data.IntelliSense;
 
 namespace PowershellTools.ProcessManager.Data
 {
+    /// <summary>
+    /// Powershell service.
+    /// </summary>
     [ServiceContract]
     public interface IPowershellService
     {

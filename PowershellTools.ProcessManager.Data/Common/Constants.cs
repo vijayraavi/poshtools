@@ -14,10 +14,10 @@ namespace PowershellTools.ProcessManager.Data.Common
 
         public const string ProcessManagerDataNamespace = "https://github.com/Microsoft/poshtools";
 
-        public const string ReadyEventPrefix = "VspowershelltoolProcess:";
+        public const string ReadyEventPrefix = "VsPowershellToolProcess:";
 
         // 1K in milliseconds
-        public const int HostProcessStartupTimeout = 100000;
+        public const int HostProcessStartupTimeout = 1000;
 
         public const string PowershellHostExeName = "PowershellToolsProcessHost.exe";
 

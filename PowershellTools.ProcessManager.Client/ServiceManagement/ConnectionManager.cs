@@ -9,6 +9,9 @@ using PowershellTools.ProcessManager.Data.Common;
 
 namespace PowershellTools.ProcessManager.Client.ServiceManagement
 {
+    /// <summary>
+    /// Manage the process and channel creation.
+    /// </summary>
     internal sealed class ConnectionManager
     {
         private IPowershellService _powershellServiceChannel;
@@ -19,6 +22,9 @@ namespace PowershellTools.ProcessManager.Client.ServiceManagement
             OpenClientConnection();
         }
 
+        /// <summary>
+        /// The service channel we need.
+        /// </summary>
         public IPowershellService PowershellServiceChannel 
         { 
             get

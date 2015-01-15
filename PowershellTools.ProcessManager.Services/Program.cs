@@ -19,7 +19,7 @@ namespace PowershellTools.ProcessManager.Services
     {
         private static ServiceHost _powershellServiceHost;
         private static AutoResetEvent _processExitEvent;
- 
+
         [LoaderOptimization(LoaderOptimization.SingleDomain)]
         internal static int Main(string[] args)
         {
@@ -31,7 +31,7 @@ namespace PowershellTools.ProcessManager.Services
             {
                 return 1;
             }
-            
+
             _processExitEvent = new AutoResetEvent(false);
 
             string endpointGuid = args[0].Remove(0, Constants.UniqueEndpointArg.Length);
@@ -41,9 +41,9 @@ namespace PowershellTools.ProcessManager.Services
             }
 
             int vsProcessId;
-            if (!Int32.TryParse(args[1].Remove(0, Constants.VsProcessIdArg.Length), 
-                            NumberStyles.None, 
-                            CultureInfo.InvariantCulture, 
+            if (!Int32.TryParse(args[1].Remove(0, Constants.VsProcessIdArg.Length),
+                            NumberStyles.None,
+                            CultureInfo.InvariantCulture,
                             out vsProcessId))
             {
                 return 1;
@@ -53,20 +53,23 @@ namespace PowershellTools.ProcessManager.Services
             if (readyEventName.Length < 36)
             {
                 return 1;
-            }                
+            }
 
+            // Step 1: Create the NetNamedPipeBinding. 
+            // Note: the setup of the binding should be same as the client side, otherwise, the connection won't get established
             Uri baseAddress = new Uri(Constants.ProcessManagerHostUri + endpointGuid);
             NetNamedPipeBinding binding = new NetNamedPipeBinding(NetNamedPipeSecurityMode.None);
-            
             binding.ReceiveTimeout = TimeSpan.MaxValue;
             binding.Security.Transport.ProtectionLevel = ProtectionLevel.None;
             binding.MaxReceivedMessageSize = Constants.BindingMaxReceivedMessageSize;
 
+            // Step 2: Create the service host.
             CreatePowershellServiceHost(baseAddress, binding);
 
             // TODO: used for debugging, remove later
             Console.WriteLine("Powershell host is ready...");
 
+            // Step 3: Signal parent process that host is ready so that it can proceed.
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, readyEventName);
             readyEvent.Set();
             readyEvent.Close();
@@ -79,8 +82,9 @@ namespace PowershellTools.ProcessManager.Services
                 if (p != null)
                 {
                     p.EnableRaisingEvents = true;
+                    // Make sure the host process terminates when VS exits.
                     p.Exited += new EventHandler(
-                        (sender, eventArgs) => 
+                        (sender, eventArgs) =>
                         {
                             if (_powershellServiceHost != null)
                             {
@@ -89,7 +93,7 @@ namespace PowershellTools.ProcessManager.Services
                             }
 
                             _processExitEvent.Set();
-                        }); 
+                        });
                 }
 
                 _processExitEvent.WaitOne();
@@ -108,16 +112,16 @@ namespace PowershellTools.ProcessManager.Services
             Environment.Exit(0);
             return 0;
         }
- 
-        private static void CreatePowershellServiceHost(Uri baseAddress,  NetNamedPipeBinding binding)
+
+        private static void CreatePowershellServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
             _powershellServiceHost = new ServiceHost(typeof(PowershellService), baseAddress);
- 
+
             _powershellServiceHost.AddServiceEndpoint(typeof(IPowershellService),
-                binding,
-                Constants.ProcessManagerHostRelativeUri);
+                                                      binding,
+                                                      Constants.ProcessManagerHostRelativeUri);
 
             _powershellServiceHost.Open();
-        }        
+        }
     }
 }
