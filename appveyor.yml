@@ -2,6 +2,7 @@ version: 1.0.{build}
 configuration: Release
 platform: x86
 build:
+  parallel: true
   verbosity: minimal
 artifacts:
 - path: Binaries\Release12.0\PowerShellTools.vsix
