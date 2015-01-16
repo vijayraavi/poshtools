@@ -36,15 +36,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9D6EEFF8-395D-4EE0-9DB5-5A891A64EA64}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PowershellTools.ProcessManager.Data</RootNamespace>
-    <AssemblyName>PowershellTools.ProcessManager.Data</AssemblyName>
+    <RootNamespace>PowershellTools.ProcessManager.Services</RootNamespace>
+    <AssemblyName>PowershellToolsProcessHost</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -54,6 +55,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -70,7 +72,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -83,12 +84,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Constants.cs" />
-    <Compile Include="IntelliSense\CompletionItem.cs" />
-    <Compile Include="IntelliSense\CompletionResultList.cs" />
-    <Compile Include="IntelliSense\IPowershellIntelliSenseService.cs" />
+    <Compile Include="ServiceManagement\PowershellService.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PowershellTools.Common\PowershellTools.Common.csproj">
+      <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
+      <Name>PowershellTools.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Build\ProjectAfter.settings" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

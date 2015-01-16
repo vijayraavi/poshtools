@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PowershellTools.ProcessManager.Data.Common
+namespace PowershellTools.Common
 {
     internal static class Constants
     {

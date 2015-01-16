@@ -5,9 +5,9 @@ using System.Management.Automation;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using PowershellTools.ProcessManager.Data.Common;
+using PowershellTools.Common;
 
-namespace PowershellTools.ProcessManager.Data.IntelliSense
+namespace PowershellTools.Common.ServiceManagement.IntelliSenseContract
 {
     [DataContract(Namespace = Constants.ProcessManagerDataNamespace)]
     public sealed class CompletionItem

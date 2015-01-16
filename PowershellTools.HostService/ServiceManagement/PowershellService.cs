@@ -1,8 +1,8 @@
 ﻿using System.Management.Automation.Runspaces;
 using PowershellTools.Common.IntelliSense;
-using PowershellTools.ProcessManager.Data.IntelliSense;
+using PowershellTools.Common.ServiceManagement.IntelliSenseContract;
 
-namespace PowershellTools.ProcessManager.Services.IntelliSenseService
+namespace PowershellTools.HostService.ServiceManagement
 {
     public sealed class PowershellIntelliSenseService : IPowershellIntelliSenseService
     {

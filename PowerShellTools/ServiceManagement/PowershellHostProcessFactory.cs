@@ -8,9 +8,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using PowershellTools.ProcessManager.Data.Common;
+using PowershellTools.Common;
 
-namespace PowershellTools.ProcessManager.Client.ProcessManagement
+namespace PowershellTools.ServiceManagement
 {
     /// <summary>
     /// Initilize a process for hosting the WCF service.

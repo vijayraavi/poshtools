@@ -65,6 +65,8 @@
     <Reference Include="Microsoft.VisualStudio.Text.Data, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -76,10 +78,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants.cs" />
     <Compile Include="IntelliSense\CommandCompletionHelper.cs" />
     <Compile Include="IntelliSense\EmptyScriptExtent.cs" />
     <Compile Include="IntelliSense\EmptyScriptPosition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceManagement\IntelliSenseContract\CompletionItem.cs" />
+    <Compile Include="ServiceManagement\IntelliSenseContract\CompletionResultList.cs" />
+    <Compile Include="ServiceManagement\IntelliSenseContract\IPowershellIntelliSenseService.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="..\Build\ProjectAfter.settings" />

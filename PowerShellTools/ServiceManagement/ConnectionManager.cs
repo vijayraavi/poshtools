@@ -1,8 +1,7 @@
-﻿using PowershellTools.ProcessManager.Client.ProcessManagement;
-using PowershellTools.ProcessManager.Data.Common;
-using PowershellTools.ProcessManager.Data.IntelliSense;
+﻿using PowershellTools.Common;
+using PowershellTools.Common.ServiceManagement.IntelliSenseContract;
 
-namespace PowershellTools.ProcessManager.Client.ServiceManagement
+namespace PowershellTools.ServiceManagement
 {
     /// <summary>
     /// Manage the process and channel creation.

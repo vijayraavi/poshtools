@@ -1,6 +1,6 @@
 ﻿using System.ServiceModel;
 
-namespace PowershellTools.ProcessManager.Data.IntelliSense
+namespace PowershellTools.Common.ServiceManagement.IntelliSenseContract
 {
     /// <summary>
     /// Powershell service.

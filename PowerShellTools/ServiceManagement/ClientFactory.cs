@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Security;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
-using PowershellTools.ProcessManager.Data.Common;
+using PowershellTools.Common;
 
-namespace PowershellTools.ProcessManager.Client.ServiceManagement
+namespace PowershellTools.ServiceManagement
 {
     /// <summary>
     /// Represents a factory of service clients.

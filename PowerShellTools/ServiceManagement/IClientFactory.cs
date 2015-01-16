@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PowershellTools.ProcessManager.Client.ServiceManagement
+namespace PowershellTools.ServiceManagement
 {
     public interface IClientFactory<ServiceType> where ServiceType : class
     {
