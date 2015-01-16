@@ -1,13 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using PowershellTools.ProcessManager.Data.Common;
 
 namespace PowershellTools.ProcessManager.Data.IntelliSense
 {
+    [DataContract(Namespace = Constants.ProcessManagerDataNamespace)]
     public sealed class CompletionItem
     {
-        //TODO: in case searilization failure using default class, we need to create this customized serializable object
+        public CompletionItem(string completionText, string listItemText, int resultType, string toolTip)
+        {
+            CompletionText = completionText;
+            ListItemText = listItemText;
+            ResultType = resultType;
+            ToolTip = toolTip;
+        }
+
+        [DataMember]
+        public string CompletionText { get; private set; }
+
+        [DataMember]
+        public string ListItemText { get; private set; }
+
+        [DataMember]
+        public int ResultType { get; private set; }
+
+        [DataMember]
+        public string ToolTip { get; private set; }
     }
 }

@@ -19,7 +19,7 @@ namespace PowershellTools.ProcessManager.Data.IntelliSense
     public sealed class CompletionResultList
     {
         [DataMember]
-        public CompletionResult[] CompletionMatches { get; set; }
+        public CompletionItem[] CompletionMatches { get; set; }
 
         [DataMember]
         public int ReplacementIndex { get; set; }
@@ -32,10 +32,10 @@ namespace PowershellTools.ProcessManager.Data.IntelliSense
             return new CompletionResultList()
             {
                 CompletionMatches = (from match in commandCompletion.CompletionMatches
-                                     select new CompletionResult(match.CompletionText, 
-                                                                 match.ListItemText,
-                                                                 match.ResultType,
-                                                                 match.ToolTip)).ToArray(),
+                                     select new CompletionItem(match.CompletionText, 
+                                                               match.ListItemText,
+                                                               (int)match.ResultType,
+                                                               match.ToolTip)).ToArray(),
                 ReplacementIndex = commandCompletion.ReplacementIndex,
                 ReplacementLength = commandCompletion.ReplacementLength
             };

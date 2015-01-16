@@ -10,8 +10,5 @@ namespace PowershellTools.ProcessManager.Data.IntelliSense
     {
         [OperationContract]
         CompletionResultList GetCompletionResults(string scriptUpToCaret, int carePosition);
-
-        [OperationContract]
-        string TestWcf(string input);
     }
 }

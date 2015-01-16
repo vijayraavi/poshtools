@@ -7,6 +7,7 @@ using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using log4net;
@@ -205,14 +206,20 @@ namespace PowerShellTools.Intellisense
             var caretInLine = (caretPosition - line.Start);
             var text = line.GetText().Substring(0, caretInLine);
 
-            IList<CompletionResult> list = commandCompletion.CompletionMatches;
+            IList<CompletionResult> list = (from item in commandCompletion.CompletionMatches
+                                            select new CompletionResult(item.CompletionText, 
+                                                                        item.ListItemText,
+                                                                        (CompletionResultType)item.ResultType,
+                                                                        item.ToolTip)).ToList();
+
+
             if (string.Equals(lineTextUpToCaret, text, StringComparison.Ordinal) && list.Count != 0)
             {
                 if (list.Count != 0)
                 {
                     try
                     {
-                        IntellisenseDone(commandCompletion.CompletionMatches, lineStartPosition,
+                        IntellisenseDone(list, lineStartPosition,
                             commandCompletion.ReplacementIndex + 0, commandCompletion.ReplacementLength, caretPosition);
                     }
                     catch (Exception ex)
@@ -223,7 +230,6 @@ namespace PowerShellTools.Intellisense
             }
 
             statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
-            statusBar.SetText(PowerShellToolsPackage.IntelliSenseService.TestWcf("Test client"));
             _intellisenseRunning = false;
         }
 
