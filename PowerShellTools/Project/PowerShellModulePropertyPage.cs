@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.VisualStudioTools.Project;
 
@@ -41,7 +42,6 @@ namespace PowerShellTools.Project
             Project.SetProjectProperty("PowerShellHostVersion", _control.PowerShellHostVersion);
             Project.SetProjectProperty("PowerShellVersion", _control.PowerShellVersion);
             Project.SetProjectProperty("ProcessorArchitecture", _control.ProcessorArchitecture);
-            Project.SetProjectProperty("RequiredAssemblies", _control.RequiredAssemblies);
             Project.SetProjectProperty("RequiredModules", _control.RequiredModules);
             Project.SetProjectProperty("ScriptsToProcess", _control.ScriptsToProcess);
             Project.SetProjectProperty("TypesToProcess", _control.TypesToProcess);
@@ -65,6 +65,10 @@ namespace PowerShellTools.Project
             _control.FormatsToProcess = Project.GetProjectProperty("FormatsToProcess", true);
             _control.FunctionsToProcess = Project.GetProjectProperty("FunctionsToProcess", true);
             _control.Guid = Project.GetProjectProperty("Guid", true);
+            if (String.IsNullOrEmpty(_control.Guid))
+            {
+                _control.Guid = Guid.NewGuid().ToString();
+            }
             _control.ModuleList = Project.GetProjectProperty("ModuleList", true);
             _control.ModulesToProcess = Project.GetProjectProperty("ModuleToProcess", true);
             _control.Version = Project.GetProjectProperty("Version", true);
@@ -73,7 +77,12 @@ namespace PowerShellTools.Project
             _control.PowerShellHostVersion = Project.GetProjectProperty("PowerShellHostVersion", true);
             _control.PowerShellVersion = Project.GetProjectProperty("PowerShellVersion", true);
             _control.ProcessorArchitecture = Project.GetProjectProperty("ProcessorArchitecture", true);
-            _control.RequiredAssemblies = Project.GetProjectProperty("RequiredAssemblies", true);
+
+            foreach (var reference in Project.GetReferenceContainer().EnumReferences())
+            {
+                _control.AddRequiredAssembly(reference.Caption);
+            }
+
             _control.RequiredModules = Project.GetProjectProperty("RequiredModules", true);
             _control.ScriptsToProcess = Project.GetProjectProperty("ScriptsToProcess", true);
             _control.TypesToProcess = Project.GetProjectProperty("TypesToProcess", true);

@@ -457,6 +457,10 @@
     <Compile Include="Project\SharedProject\WebPiComponentPickerControl.Designer.cs">
       <DependentUpon>WebPiComponentPickerControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\Utils\CCBoxItem.cs" />
+    <Compile Include="Project\Utils\CheckedComboBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Project\Utils\DropDownListProperty.cs" />
     <Compile Include="Project\Utils\DropDownListPropertyEditor.cs" />
     <Compile Include="Project\Utils\FileListTypeConverter.cs" />

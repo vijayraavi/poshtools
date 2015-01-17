@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Microsoft.VisualStudioTools.Project;
 
@@ -32,8 +33,7 @@ namespace PowerShellTools.Project
             cmoPowerShellVersion.SelectedIndexChanged += Changed;
             cmoProcessorArchitecture.SelectedIndexChanged += Changed;
             txtRequiredModules.TextChanged += Changed;
-            txtRequiredAssemblies.TextChanged += Changed;
-            txtScriptsToProcess.TextChanged += Changed;
+            //txtScriptsToProcess.TextChanged += Changed;
             txtTypesToProcess.TextChanged += Changed;
             txtVariablesToExport.TextChanged += Changed;
             txtVersion.TextChanged += Changed;
@@ -147,10 +147,9 @@ namespace PowerShellTools.Project
             set { cmoProcessorArchitecture.SelectedText = value; }
         }
 
-        public string RequiredAssemblies
+        public void AddRequiredAssembly(string assemblyName)
         {
-            get { return txtRequiredAssemblies.Text; }
-            set { txtRequiredAssemblies.Text = value; }
+            cmoRequiredAssemblies.Items.Add(assemblyName);
         }
 
         public string RequiredModules
@@ -161,9 +160,10 @@ namespace PowerShellTools.Project
 
         public string ScriptsToProcess
         {
-            get { return txtScriptsToProcess.Text; }
-            set { txtScriptsToProcess.Text = value; }
-        }
+            //get { return txtScriptsToProcess.Text; }
+            //set { txtScriptsToProcess.Text = value; }
+
+            get; set; }
 
         public string TypesToProcess
         {
@@ -191,6 +191,26 @@ namespace PowerShellTools.Project
         private void btnGuid_Click(object sender, EventArgs e)
         {
             txtGuid.Text = System.Guid.NewGuid().ToString();
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtCopyright_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label31_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label30_Click(object sender, EventArgs e)
+        {
+
         }
 }
 
