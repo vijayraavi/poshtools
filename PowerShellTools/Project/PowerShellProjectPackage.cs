@@ -13,6 +13,11 @@ namespace PowerShellTools.Project
     [ProvideEditorExtension(typeof(PowerShellEditorFactory), PowerShellConstants.PS1File, 50, ProjectGuid = VSConstants.CLSID.MiscellaneousFilesProject_string, NameResourceID = 3004, DefaultName = "module", TemplateDir = "NewItemTemplates")]
     public class PowerShellProjectPackage : CommonProjectPackage
     {
+        protected override void Initialize()
+        {
+            PowerShellToolsPackage.ValidateInstalledPowerShellVersion();
+        }
+
         public override ProjectFactory CreateProjectFactory()
         {
             return new PowerShellProjectFactory(this);

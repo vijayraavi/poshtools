@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
 using System.Windows;
+using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft;
@@ -16,6 +17,7 @@ using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.Win32;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
 using PowerShellTools.DebugEngine;
@@ -24,6 +26,8 @@ using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using log4net;
 using Engine = PowerShellTools.DebugEngine.Engine;
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxOptions = System.Windows.MessageBoxOptions;
 
 namespace PowerShellTools
 {
@@ -202,12 +206,64 @@ namespace PowerShellTools
         {
             try
             {
+                if (!ValidateInstalledPowerShellVersion())
+                {
+                    return;
+                }
+
                 InitializeInternal();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Failed to initialize PowerShell Tools for Visual Studio." + ex,
                     "PowerShell Tools for Visual Studio Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public static bool ValidateInstalledPowerShellVersion()
+        {
+            if (InstalledPowerShellVersion < new Version(3, 0))
+            {
+                if (MessageBox.Show(
+                    Resources.MissingPowerShellVersion,
+                    Resources.MissingDependency,
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                {
+                    System.Diagnostics.Process.Start("http://go.microsoft.com/fwlink/?LinkID=524571");
+                }
+                return false;
+            }
+            return true;
+        }
+
+        public static Version InstalledPowerShellVersion
+        {
+            get
+            {
+                var version = new Version(0, 0);
+                using (var reg = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\PowerShell\3\PowerShellEngine"))
+                {
+                    if (reg != null)
+                    {
+                        var versionString = reg.GetValue("PowerShellVersion") as string;
+
+                        Version.TryParse(versionString, out version);
+                        return version;
+                    }
+                }
+
+                using (var reg = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\PowerShell\1\PowerShellEngine"))
+                {
+                    if (reg != null)
+                    {
+                        var versionString = reg.GetValue("PowerShellVersion") as string;
+                        Version.TryParse(versionString, out version);
+                        return version;
+                    }
+                }
+
+                return version;
             }
         }
 
