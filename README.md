@@ -3,7 +3,8 @@ PowerShell Tools for Visual Studio
 
 PowerShell integration for Visual Studio 2012 and 2013. 
 
-<a href="https://ci.appveyor.com/project/adamdriscoll/poshtools"><img src="https://ci.appveyor.com/api/projects/status/h9gfrh1xots5tg2y?svg=true"/></a><br/>
+Build status of adamdriscoll/poshtools: <a href="https://ci.appveyor.com/project/adamdriscoll/poshtools"><img src="https://ci.appveyor.com/api/projects/status/h9gfrh1xots5tg2y?svg=true"/></a><br/>
+Build status of microsoft/poshtools: [![Build status](https://ci.appveyor.com/api/projects/status/j31jw35kql84gxxm/?svg=true)](https://ci.appveyor.com/project/PoshTools-MSFT/poshtools) [(What's this?)](https://github.com/adamdriscoll/poshtools/wiki/What's-with-the-Microsoft-fork%3F)
 
 I do all of this for <b><i>free</i></b>. <a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2XL93PX3R3TJL'>Donations</a> help encourage my efforts!
 
@@ -58,4 +59,3 @@ PowerShell Tools for Visual Studio currently offers the following features.
 <h3><a href="https://github.com/pester/Pester">Pester</a> and <a href="https://github.com/jonwagner/PSate">PSate</a> Test Adapters</h3>
 
 <img src="http://i.imgur.com/eAXaKHV.png"/>
-
