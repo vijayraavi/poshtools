@@ -39,7 +39,7 @@
     <ProjectGuid>{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PowershellTools.ProcessManager.Services</RootNamespace>
+    <RootNamespace>PowershellTools.HostService</RootNamespace>
     <AssemblyName>PowershellToolsProcessHost</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -84,7 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ServiceManagement\PowershellService.cs" />
+    <Compile Include="ServiceManagement\PowershellIntelliSenseService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -61,12 +61,11 @@ namespace PowershellTools.ServiceManagement
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
                                             Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName); 
 
-            // TODO: uncomment the two lines below later
             powershellHostProcess.StartInfo.Arguments = hostArgs;
             powershellHostProcess.StartInfo.FileName = path;
-            //powershellHostProcess.StartInfo.CreateNoWindow = true; 
+            powershellHostProcess.StartInfo.CreateNoWindow = true; 
             powershellHostProcess.StartInfo.UseShellExecute = true;
-            //powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, hostProcessReadyEventName);
 

@@ -12,7 +12,7 @@ namespace PowershellTools.ServiceManagement
         private int _hostProcessId;
 
         public ConnectionManager()
-        {
+        {            
             OpenClientConnection();
         }
 

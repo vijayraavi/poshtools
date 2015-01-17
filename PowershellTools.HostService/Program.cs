@@ -60,10 +60,7 @@ namespace PowershellTools.HostService
 
             // Step 2: Create the service host.
             CreatePowershellServiceHost(baseAddress, binding);
-
-            // TODO: used for debugging, remove later
-            Console.WriteLine("Powershell host is ready...");
-
+            
             // Step 3: Signal parent process that host is ready so that it can proceed.
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, readyEventName);
             readyEvent.Set();
