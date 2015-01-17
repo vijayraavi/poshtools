@@ -288,6 +288,7 @@
       <DependentUpon>PowerShellDebugPropertyPageControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\PowerShellFileNode.cs" />
+    <Compile Include="Project\PowerShellFileNodeProperties.cs" />
     <Compile Include="Project\PowerShellGeneralPropertyPageControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

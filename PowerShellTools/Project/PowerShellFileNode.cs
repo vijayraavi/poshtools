@@ -18,6 +18,11 @@ namespace PowerShellTools.Project
 		}
 		#endregion
 
+        protected override NodeProperties CreatePropertiesObject()
+        {
+            return new PowerShellFileNodeProperties(this);
+        }
+
         internal override int QueryStatusOnNode(Guid guidCmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result)
         {
             if (guidCmdGroup == VsMenus.guidStandardCommandSet97 && IsFormSubType)
