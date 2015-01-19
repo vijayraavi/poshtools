@@ -42,8 +42,7 @@ namespace PowershellTools.ServiceManagement
             var binding = CreateBinding();
             var pipeFactory = new ChannelFactory<ServiceType>(binding, new EndpointAddress(endPointAddress));
 
-            return pipeFactory.CreateChannel();
-            
+            return pipeFactory.CreateChannel();            
         }
 
         #endregion
