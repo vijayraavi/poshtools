@@ -5,7 +5,7 @@ using System.Management.Automation.Language;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PowershellTools.Common.IntelliSense
+namespace PowerShellTools.Common.IntelliSense
 {
     [Serializable]
     internal sealed class EmptyScriptExtent : IScriptExtent

@@ -476,6 +476,7 @@
     <Compile Include="ServiceManagement\ClientFactory.cs" />
     <Compile Include="ServiceManagement\ConnectionManager.cs" />
     <Compile Include="ServiceManagement\IClientFactory.cs" />
+    <Compile Include="ServiceManagement\PowershellHostProcessException.cs" />
     <Compile Include="ServiceManagement\PowershellHostProcessFactory.cs" />
     <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>

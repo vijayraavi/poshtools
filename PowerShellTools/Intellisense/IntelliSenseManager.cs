@@ -18,7 +18,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using PowershellTools.Common.IntelliSense;
+using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Classification;
 
 namespace PowerShellTools.Intellisense
@@ -190,37 +190,48 @@ namespace PowerShellTools.Intellisense
             var sw = new Stopwatch();
             sw.Start();
 
-#if SUPPORT64BIT
-            var trackingSpan = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
-            var script = trackingSpan.GetText(_textView.TextBuffer.CurrentSnapshot);
-            var commandCompletion = PowerShellToolsPackage.IntelliSenseService.GetCompletionResults(script, caretPosition);
-#else
-            var commandCompletion = GetCommandCompletionList(caretPosition);
-#endif
-            if (commandCompletion == null)
+            IList<CompletionResult> completionMatchesList;
+            int completionReplacementIndex;
+            int completionReplacementLength;
+
+            // On 64-bit Operation system, default to Out-of-proc IntelliSense engine.
+            if (Environment.Is64BitOperatingSystem)
             {
-                return;
+                var trackingSpan = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
+                var script = trackingSpan.GetText(_textView.TextBuffer.CurrentSnapshot);
+                var commandCompletion = PowerShellToolsPackage.IntelliSenseService.GetCompletionResults(script, caretPosition);
+                if (commandCompletion == null)
+                {
+                    return;
+                }
+                completionMatchesList = (from item in commandCompletion.CompletionMatches
+                                         select new CompletionResult(item.CompletionText,
+                                                                     item.ListItemText,
+                                                                     (CompletionResultType)item.ResultType,
+                                                                     item.ToolTip)).ToList();
+                completionReplacementIndex = commandCompletion.ReplacementIndex;
+                completionReplacementLength = commandCompletion.ReplacementLength;
             }
+            else
+            {
+                var commandCompletion = GetCommandCompletionList(caretPosition);
+                completionMatchesList = commandCompletion.CompletionMatches;
+                completionReplacementIndex = commandCompletion.ReplacementIndex;
+                completionReplacementLength = commandCompletion.ReplacementLength;
+            }            
 
             var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
             var caretInLine = (caretPosition - line.Start);
             var text = line.GetText().Substring(0, caretInLine);
 
-            IList<CompletionResult> list = (from item in commandCompletion.CompletionMatches
-                                            select new CompletionResult(item.CompletionText, 
-                                                                        item.ListItemText,
-                                                                        (CompletionResultType)item.ResultType,
-                                                                        item.ToolTip)).ToList();
-
-
-            if (string.Equals(lineTextUpToCaret, text, StringComparison.Ordinal) && list.Count != 0)
+            if (string.Equals(lineTextUpToCaret, text, StringComparison.Ordinal) && completionMatchesList.Count != 0)
             {
-                if (list.Count != 0)
+                if (completionMatchesList.Count != 0)
                 {
                     try
                     {
-                        IntellisenseDone(list, lineStartPosition,
-                            commandCompletion.ReplacementIndex + 0, commandCompletion.ReplacementLength, caretPosition);
+                        IntellisenseDone(completionMatchesList, lineStartPosition,
+                            completionReplacementIndex + 0, completionReplacementLength, caretPosition);
                     }
                     catch (Exception ex)
                     {

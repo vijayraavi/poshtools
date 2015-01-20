@@ -16,8 +16,8 @@ using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
-using PowershellTools.Common.ServiceManagement.IntelliSenseContract;
-using PowershellTools.ServiceManagement;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
+using PowerShellTools.ServiceManagement;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
 using PowerShellTools.DebugEngine;
@@ -25,6 +25,7 @@ using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using Engine = PowerShellTools.DebugEngine.Engine;
+using System.IO;
 
 namespace PowerShellTools
 {
@@ -188,7 +189,11 @@ namespace PowerShellTools
             }
 
             InitializePowerShellHost();
-            EstablishProcessConnection();
+
+            if (Environment.Is64BitOperatingSystem)
+            {
+                EstablishProcessConnection();
+            }            
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),

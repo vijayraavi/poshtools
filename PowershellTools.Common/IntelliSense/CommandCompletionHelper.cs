@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text;
 
-namespace PowershellTools.Common.IntelliSense
+namespace PowerShellTools.Common.IntelliSense
 {
     internal static class CommandCompletionHelper
     {

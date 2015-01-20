@@ -309,4 +309,7 @@
   <data name="Version_DisplayName" xml:space="preserve">
     <value>Version</value>
   </data>
+  <data name="ErrorFailToCreateProcess" xml:space="preserve">
+    <value>Fail to create the process {0} due to an unknown error..</value>
+  </data>
 </root>

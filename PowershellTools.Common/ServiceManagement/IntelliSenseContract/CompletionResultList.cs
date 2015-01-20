@@ -9,7 +9,7 @@ using System.ServiceModel;
 using System.Runtime.Serialization;
 using System.Management.Automation;
 
-namespace PowershellTools.Common.ServiceManagement.IntelliSenseContract
+namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
 {
     /// <summary>
     /// The statement completion lists needed for IntelliSense.

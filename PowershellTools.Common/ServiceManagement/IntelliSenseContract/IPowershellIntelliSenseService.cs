@@ -1,6 +1,6 @@
 ﻿using System.ServiceModel;
 
-namespace PowershellTools.Common.ServiceManagement.IntelliSenseContract
+namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
 {
     /// <summary>
     /// Powershell service.

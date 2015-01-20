@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Net.Security;
 using System.ServiceModel;
-using PowershellTools.Common;
+using PowerShellTools.Common;
 
-namespace PowershellTools.ServiceManagement
+namespace PowerShellTools.ServiceManagement
 {
     /// <summary>
     /// Represents a factory of service clients.

@@ -4,11 +4,11 @@ using System.Globalization;
 using System.Net.Security;
 using System.ServiceModel;
 using System.Threading;
-using PowershellTools.Common;
-using PowershellTools.Common.ServiceManagement.IntelliSenseContract;
-using PowershellTools.HostService.ServiceManagement;
+using PowerShellTools.Common;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
+using PowerShellTools.HostService.ServiceManagement;
 
-namespace PowershellTools.HostService
+namespace PowerShellTools.HostService
 {
     internal class Program
     {

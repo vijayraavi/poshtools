@@ -8,9 +8,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using PowershellTools.Common;
+using PowerShellTools.Common;
 
-namespace PowershellTools.ServiceManagement
+namespace PowerShellTools.ServiceManagement
 {
     /// <summary>
     /// Initilize a process for hosting the WCF service.
@@ -90,7 +90,9 @@ namespace PowershellTools.ServiceManagement
                     powershellHostProcess.Dispose();
                     powershellHostProcess = null;
                 }
-                throw new Exception();
+                throw new PowershellHostProcessException(String.Format(CultureInfo.CurrentCulture,
+                                                                        Resources.ErrorFailToCreateProcess,
+                                                                        powershellHostProcess.Id));
             }
 
             return new PowershellHostProcess

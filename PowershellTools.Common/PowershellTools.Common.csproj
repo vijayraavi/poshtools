@@ -39,7 +39,7 @@
     <ProjectGuid>{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PowershellTools.Common</RootNamespace>
+    <RootNamespace>PowerShellTools.Common</RootNamespace>
     <AssemblyName>PowershellTools.Common</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

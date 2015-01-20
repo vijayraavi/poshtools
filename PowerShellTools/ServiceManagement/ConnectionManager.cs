@@ -1,7 +1,8 @@
-﻿using PowershellTools.Common;
-using PowershellTools.Common.ServiceManagement.IntelliSenseContract;
+﻿using System.Diagnostics;
+using PowerShellTools.Common;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 
-namespace PowershellTools.ServiceManagement
+namespace PowerShellTools.ServiceManagement
 {
     /// <summary>
     /// Manage the process and channel creation.
@@ -29,7 +30,7 @@ namespace PowershellTools.ServiceManagement
 
         private void OpenClientConnection()
         {
-            var hostProcess = PowershellHostProcessFactory.EnsurePowershellHostProcess();
+            var hostProcess = PowershellHostProcessFactory.EnsurePowershellHostProcess();            
             _hostProcessId = hostProcess.Process.Id;
 
             // net.pipe://localhost/UniqueEndpointGuid/NamedPipePowershellProcess
