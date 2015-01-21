@@ -1,29 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
+using System.ComponentModel.Design;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.ComponentModel.Design;
 using System.Windows;
 using EnvDTE;
 using EnvDTE80;
+using log4net;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
+using PowerShellTools.ServiceManagement;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
-using log4net;
 using Engine = PowerShellTools.DebugEngine.Engine;
+using System.IO;
 
 namespace PowerShellTools
 {
@@ -120,6 +122,8 @@ namespace PowerShellTools
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
 
+        public static IPowershellIntelliSenseService IntelliSenseService { get; private set; }
+
         public new object GetService(Type type)
         {
             return base.GetService(type);
@@ -128,6 +132,14 @@ namespace PowerShellTools
         public override Type GetLibraryManagerType()
         {
             return null;
+        }
+
+        public static bool UseOutProc
+        {
+            get
+            {
+                return Environment.Is64BitOperatingSystem;
+            }
         }
 
         internal override LibraryManager CreateLibraryManager(CommonPackage package)
@@ -185,6 +197,11 @@ namespace PowerShellTools
             }
 
             InitializePowerShellHost();
+
+            if (UseOutProc)
+            {
+                EstablishProcessConnection();
+            }            
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
@@ -289,6 +306,12 @@ namespace PowerShellTools
                     statusBar.Progress(ref cookie, 1, "", 0, 0);
                 }
             };
+        }
+
+        private void EstablishProcessConnection()
+        {
+            var connectionManager = new ConnectionManager();
+            IntelliSenseService = connectionManager.PowershellIntelliSenseServiceChannel;
         }
 
         public T GetDialogPage<T>() where T : DialogPage
