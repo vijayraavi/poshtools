@@ -136,9 +136,9 @@
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Management.Automation">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
-    </Reference>
+		<SpecificVersion>False</SpecificVersion>
+		<HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
+	</Reference>
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
@@ -525,6 +525,10 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <EmbeddedResource Include="Resources\completionset.bmp" />
+    <Content Include="PowerShellToolsColors.pkgdef">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="preview.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>

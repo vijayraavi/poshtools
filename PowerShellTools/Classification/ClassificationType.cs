@@ -29,6 +29,9 @@ namespace PowerShellTools.Classification
         public const string PowerShellUnknown = "PowerShellUnknown";
     }
 
+    // The foreground colors specified in this file are the defaults if not overridden.
+    // For Dark theme and High Contrast, see PowerShellToolsColors.pkgdef
+
     [Export(typeof(EditorFormatDefinition))]
     [ClassificationType(ClassificationTypeNames = Classifications.PowerShellAttribute)]
     [Name("PowerShell Attribute")]
@@ -224,7 +227,46 @@ namespace PowerShellTools.Classification
             ForegroundColor = Color.FromArgb(255, 0, 0, 0);
         }
     }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellLineContinuation)]
+    [Name("PowerShell Line Continuation")]
+    [DisplayName("PowerShell Line Continuation (Backtick)")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellLineContinuationFormat : ClassificationFormatDefinition
+    {
+        public PowerShellLineContinuationFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 0);
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellLoopLabel)]
+    [Name("PowerShell Loop Label")]
+    [DisplayName("PowerShell Loop Label")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellLoopLabelFormat : ClassificationFormatDefinition
+    {
+        public PowerShellLoopLabelFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 139);
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellStatementSeparator)]
+    [Name("PowerShell Statement Separator")]
+    [DisplayName("PowerShell Statement Separator (Semicolon)")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellStatementSeparatorFormat : ClassificationFormatDefinition
+    {
+        public PowerShellStatementSeparatorFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 0);
+        }
+    }
 }
-
-
-
