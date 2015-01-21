@@ -44,7 +44,8 @@ namespace PowerShellTools.HostService
             }
 
             string readyEventName = args[2].Remove(0, Constants.ReadyEventUniqueNameArg.Length);
-            if (readyEventName.Length != Guid.Empty.ToString().Length)
+            // the readyEventName should be VsPowershellToolProcess:TheGeneratedGuid
+            if (readyEventName.Length != (Constants.ReadyEventPrefix.Length + Guid.Empty.ToString().Length))
             {
                 return 1;
             }
