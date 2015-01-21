@@ -66,11 +66,10 @@ namespace PowerShellTools.TestAdapter
 
             var testSuites =
                 ast.FindAll(
-                    m => {
-                        return ((m is CommandAst) &&
+                    m => 
+                        (m is CommandAst) &&
                         (m as CommandAst).GetCommandName() != null &&
-                        (m as CommandAst).GetCommandName().Equals("describe", StringComparison.OrdinalIgnoreCase));
-                    }, true);
+                        (m as CommandAst).GetCommandName().Equals("describe", StringComparison.OrdinalIgnoreCase), true);
 
 
             foreach (var ast1 in testSuites)
@@ -80,6 +79,7 @@ namespace PowerShellTools.TestAdapter
                 var contextes = ast1.FindAll(
                     m =>
                         (m is CommandAst) &&
+                        (m as CommandAst).GetCommandName() != null &&
                         (m as CommandAst).GetCommandName().Equals("context", StringComparison.OrdinalIgnoreCase), true);
 
                 foreach(var context in contextes)
@@ -89,6 +89,7 @@ namespace PowerShellTools.TestAdapter
                     var its = context.FindAll(
                     m =>
                         (m is CommandAst) &&
+                        (m as CommandAst).GetCommandName() != null &&
                         (m as CommandAst).GetCommandName().Equals("it", StringComparison.OrdinalIgnoreCase), true);
 
                     foreach (var test in its)
@@ -167,13 +168,21 @@ namespace PowerShellTools.TestAdapter
             ParseError[] errors;
             var ast = Parser.ParseFile(source, out tokens, out errors);
 
-            var testAsts = ast.FindAll(m => (m is CommandAst) && (m as CommandAst).GetCommandName().Equals("TestFixture", StringComparison.OrdinalIgnoreCase), true);
+            var testAsts = ast.FindAll(
+            m => 
+                (m is CommandAst) &&  
+                (m as CommandAst).GetCommandName() != null &&
+                (m as CommandAst).GetCommandName().Equals("TestFixture", StringComparison.OrdinalIgnoreCase), true);
 
             foreach (var ast1 in testAsts)
             {
                 var testFixtureAst = (CommandAst) ast1;
                 var testCaseAsts =
-                    testFixtureAst.FindAll(m => (m is CommandAst) && (m as CommandAst).GetCommandName().Equals("TestCase", StringComparison.OrdinalIgnoreCase), true);
+                    testFixtureAst.FindAll(
+                    m => 
+                        (m is CommandAst) && 
+                        (m as CommandAst).GetCommandName() != null &&
+                        (m as CommandAst).GetCommandName().Equals("TestCase", StringComparison.OrdinalIgnoreCase), true);
 
                 try
                 {
