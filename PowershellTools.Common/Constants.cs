@@ -19,7 +19,7 @@ namespace PowerShellTools.Common
         // 2 seconds
         public const int HostProcessStartupTimeout = 2000;
 
-        public const string PowershellHostExeName = "PowershellToolsProcessHost.exe";
+        public const string PowershellHostExeName = "PowerShellToolsProcessHost.exe";
 
         // 10M in bytes
         public const int BindingMaxReceivedMessageSize = 10000000;

@@ -94,6 +94,10 @@
     <Compile Include="VsxHostTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PowershellTools.Common\PowerShellTools.Common.csproj">
+      <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
+      <Name>PowerShellTools.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj">
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>
       <Name>PowerShellTools.TestAdapter</Name>
@@ -171,6 +175,7 @@
     <Content Include="Modules\Pester\en-US\about_should.help.txt" />
     <Content Include="Modules\Pester\en-US\about_TestDrive.help.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

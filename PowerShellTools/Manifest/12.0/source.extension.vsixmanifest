@@ -31,7 +31,7 @@
     <Asset Type="UnitTestExtension" d:Source="Project" d:ProjectName="%CurrentProject%.TestAdapter" Path="|PowerShellTools.TestAdapter|" />
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="ReplWindow" Path="|ReplWindow;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="ReplWindow" Path="|ReplWindow|" />
-    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="PowershellTools.HostService" Path="|PowershellTools.HostService|" AssemblyName="|PowershellTools.HostService;AssemblyName|" />
-    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" Path="|PowershellTools.Common|" AssemblyName="|PowershellTools.Common;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%.HostService" Path="|PowerShellTools.HostService|" AssemblyName="|PowerShellTools.HostService;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" Path="|PowerShellTools.Common|" AssemblyName="|PowerShellTools.Common;AssemblyName|" d:ProjectName="%CurrentProject%.Common" />
   </Assets>
 </PackageManifest>

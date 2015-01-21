@@ -40,7 +40,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PowerShellTools.HostService</RootNamespace>
-    <AssemblyName>PowershellToolsProcessHost</AssemblyName>
+    <AssemblyName>PowerShellToolsProcessHost</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -89,9 +89,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowershellTools.Common\PowershellTools.Common.csproj">
+    <ProjectReference Include="..\PowershellTools.Common\PowerShellTools.Common.csproj">
       <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
-      <Name>PowershellTools.Common</Name>
+      <Name>PowerShellTools.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

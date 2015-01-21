@@ -136,9 +136,9 @@
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Management.Automation">
-		<SpecificVersion>False</SpecificVersion>
-		<HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
-	</Reference>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
+    </Reference>
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
@@ -612,15 +612,15 @@
     <Folder Include="Project\SharedProject\Debugger\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowershellTools.Common\PowershellTools.Common.csproj">
+    <ProjectReference Include="..\PowerShellTools.Common\PowerShellTools.Common.csproj">
       <Project>{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}</Project>
-      <Name>PowershellTools.Common</Name>
+      <Name>PowerShellTools.Common</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\PowershellTools.HostService\PowershellTools.HostService.csproj">
+    <ProjectReference Include="..\PowerShellTools.HostService\PowerShellTools.HostService.csproj">
       <Project>{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}</Project>
-      <Name>PowershellTools.HostService</Name>
+      <Name>PowerShellTools.HostService</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
