@@ -66,9 +66,11 @@ namespace PowerShellTools.TestAdapter
 
             var testSuites =
                 ast.FindAll(
-                    m =>
-                        (m is CommandAst) &&
-                        (m as CommandAst).GetCommandName().Equals("describe", StringComparison.OrdinalIgnoreCase), true);
+                    m => {
+                        return ((m is CommandAst) &&
+                        (m as CommandAst).GetCommandName() != null &&
+                        (m as CommandAst).GetCommandName().Equals("describe", StringComparison.OrdinalIgnoreCase));
+                    }, true);
 
 
             foreach (var ast1 in testSuites)
