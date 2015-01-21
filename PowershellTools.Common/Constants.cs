@@ -12,8 +12,6 @@ namespace PowerShellTools.Common
 
         public const string ProcessManagerHostRelativeUri = "NamedPipePowershellProcess";
 
-        public const string ProcessManagerDataNamespace = "https://github.com/Microsoft/poshtools";
-
         public const string ReadyEventPrefix = "VsPowershellToolProcess:";
 
         // 2 seconds

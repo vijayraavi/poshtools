@@ -80,6 +80,17 @@ namespace PowerShellTools.Common.IntelliSense
                 return "";
             }
         }
+
+        public override int GetHashCode()
+        {
+            return File.GetHashCode() ^ 
+                   StartLineNumber.GetHashCode() ^ 
+                   StartColumnNumber.GetHashCode() ^ 
+                   EndLineNumber.GetHashCode() ^ 
+                   EndColumnNumber.GetHashCode() ^ 
+                   Text.GetHashCode();
+        }
+
         public override bool Equals(object obj)
         {
             var scriptExtent = obj as IScriptExtent;

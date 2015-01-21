@@ -14,7 +14,7 @@ namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
     /// <summary>
     /// The statement completion lists needed for IntelliSense.
     /// </summary>
-    [DataContract(Namespace = Constants.ProcessManagerDataNamespace)]
+    [DataContract]
     public sealed class CompletionResultList
     {
         [DataMember]

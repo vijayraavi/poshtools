@@ -311,7 +311,7 @@ namespace PowerShellTools
         private void EstablishProcessConnection()
         {
             var connectionManager = new ConnectionManager();
-            IntelliSenseService = connectionManager.PowershellServiceChannel;
+            IntelliSenseService = connectionManager.PowershellIntelliSenseServiceChannel;
         }
 
         public T GetDialogPage<T>() where T : DialogPage

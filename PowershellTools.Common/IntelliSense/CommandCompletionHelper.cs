@@ -13,6 +13,13 @@ namespace PowerShellTools.Common.IntelliSense
 {
     internal static class CommandCompletionHelper
     {
+        /// <summary>
+        /// Completion lists calculator.
+        /// </summary>
+        /// <param name="script">The active script.</param>
+        /// <param name="caretPosition">The caret position.</param>
+        /// <param name="runspace">Runspace for completion computing.</param>
+        /// <returns></returns>
         public static CommandCompletion GetCommandCompletionList(string script, int caretPosition, Runspace runspace)
         {
             Ast ast;
@@ -30,6 +37,14 @@ namespace PowerShellTools.Common.IntelliSense
             return CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps);
         }
 
+        /// <summary>
+        /// Get the abstract syntax tree, tokens and the cursor position.
+        /// </summary>
+        /// <param name="script">The active script.</param>
+        /// <param name="caretPosition">The caret position.</param>
+        /// <param name="ast">The AST to get.</param>
+        /// <param name="tokens">The tokens to get.</param>
+        /// <param name="cursorPosition">The cursor position to get.</param>
         public static void GetCommandCompletionParameters(string script, int caretPosition, out Ast ast, out Token[] tokens, out IScriptPosition cursorPosition)
         {       
             ParseError[] array;            
@@ -49,6 +64,13 @@ namespace PowerShellTools.Common.IntelliSense
             cursorPosition = null;
         }
 
+        /// <summary>
+        /// Tokonize the script and get the needed data.
+        /// </summary>
+        /// <param name="script">The active script.</param>
+        /// <param name="tokens">The tokens to get.</param>
+        /// <param name="errors">The parse errors to get.</param>
+        /// <returns></returns>
         public static Ast Tokenize(string script, out Token[] tokens, out ParseError[] errors)
         {
             Ast result;

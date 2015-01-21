@@ -21,8 +21,7 @@ namespace PowerShellTools.HostService
             if (args.Length != 3 ||
                 !(args[0].StartsWith(Constants.UniqueEndpointArg, StringComparison.OrdinalIgnoreCase)
                 && args[1].StartsWith(Constants.VsProcessIdArg, StringComparison.OrdinalIgnoreCase)
-                && args[2].StartsWith(Constants.ReadyEventUniqueNameArg, StringComparison.OrdinalIgnoreCase)
-                ))
+                && args[2].StartsWith(Constants.ReadyEventUniqueNameArg, StringComparison.OrdinalIgnoreCase)))
             {
                 return 1;
             }
@@ -34,7 +33,7 @@ namespace PowerShellTools.HostService
             {
                 return 1;
             }
-
+            
             int vsProcessId;
             if (!Int32.TryParse(args[1].Remove(0, Constants.VsProcessIdArg.Length),
                             NumberStyles.None,
@@ -45,7 +44,7 @@ namespace PowerShellTools.HostService
             }
 
             string readyEventName = args[2].Remove(0, Constants.ReadyEventUniqueNameArg.Length);
-            if (readyEventName.Length < 36)
+            if (readyEventName.Length != Guid.Empty.ToString().Length)
             {
                 return 1;
             }
@@ -92,7 +91,7 @@ namespace PowerShellTools.HostService
             }
             catch (Exception)
             {
-
+                // The process need to wait for the parent process to exit.  
             }
 
             if (_powershellServiceHost != null)
@@ -101,7 +100,6 @@ namespace PowerShellTools.HostService
                 _powershellServiceHost = null;
             }
 
-            Environment.Exit(0);
             return 0;
         }
 

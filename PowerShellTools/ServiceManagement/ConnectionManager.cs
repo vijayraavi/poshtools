@@ -9,7 +9,7 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     internal sealed class ConnectionManager
     {
-        private IPowershellIntelliSenseService _powershellServiceChannel;
+        private IPowershellIntelliSenseService _powershellIntelliSenseServiceChannel;
         private int _hostProcessId;
 
         public ConnectionManager()
@@ -20,11 +20,11 @@ namespace PowerShellTools.ServiceManagement
         /// <summary>
         /// The service channel we need.
         /// </summary>
-        public IPowershellIntelliSenseService PowershellServiceChannel
+        public IPowershellIntelliSenseService PowershellIntelliSenseServiceChannel
         {
             get
             {
-                return _powershellServiceChannel;
+                return _powershellIntelliSenseServiceChannel;
             }
         }
 
@@ -38,16 +38,16 @@ namespace PowerShellTools.ServiceManagement
 
             try
             {
-                if (_powershellServiceChannel == null)
+                if (_powershellIntelliSenseServiceChannel == null)
                 {
                     var factory = ClientFactory<IPowershellIntelliSenseService>.ClientInstance;
-                    _powershellServiceChannel = factory.CreateServiceClient(clientEndPointAddress);
+                    _powershellIntelliSenseServiceChannel = factory.CreateServiceClient(clientEndPointAddress);
                 }
             }
             catch
             {
                 // Connection has to be established...
-                _powershellServiceChannel = null;
+                _powershellIntelliSenseServiceChannel = null;
                 throw;
             }
         }

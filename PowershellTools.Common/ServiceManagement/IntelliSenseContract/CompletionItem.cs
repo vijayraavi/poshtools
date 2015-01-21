@@ -9,7 +9,7 @@ using PowerShellTools.Common;
 
 namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
 {
-    [DataContract(Namespace = Constants.ProcessManagerDataNamespace)]
+    [DataContract]
     public sealed class CompletionItem
     {
         public CompletionItem(string completionText, string listItemText, int resultType, string toolTip)
