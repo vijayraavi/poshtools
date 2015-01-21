@@ -195,7 +195,7 @@ namespace PowerShellTools.Intellisense
             int completionReplacementLength;
 
             // On 64-bit Operation system, default to Out-of-proc IntelliSense engine.
-            if (Environment.Is64BitOperatingSystem)
+            if (PowerShellToolsPackage.UseOutProc)
             {
                 var trackingSpan = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
                 var script = trackingSpan.GetText(_textView.TextBuffer.CurrentSnapshot);
@@ -230,8 +230,11 @@ namespace PowerShellTools.Intellisense
                 {
                     try
                     {
-                        IntellisenseDone(completionMatchesList, lineStartPosition,
-                            completionReplacementIndex + 0, completionReplacementLength, caretPosition);
+                        IntellisenseDone(completionMatchesList, 
+                                        lineStartPosition,
+                                        completionReplacementIndex + 0, 
+                                        completionReplacementLength, 
+                                        caretPosition);
                     }
                     catch (Exception ex)
                     {
