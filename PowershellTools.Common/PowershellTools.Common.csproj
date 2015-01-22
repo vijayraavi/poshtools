@@ -86,6 +86,7 @@
     <Compile Include="ServiceManagement\IntelliSenseContract\CompletionItem.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\CompletionResultList.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\IPowershellIntelliSenseService.cs" />
+    <Compile Include="ServiceManagement\IntelliSenseContract\ParseErrorItem.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="..\Build\ProjectAfter.settings" />

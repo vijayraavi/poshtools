@@ -6,13 +6,14 @@ using System.Management.Automation.Language;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 
 namespace PowerShellTools.Classification
 {
     /// <summary>
     /// Classifies tokens for syntax highlighting.
     /// </summary>
-    internal class ClassifierService 
+    internal class ClassifierService
     {
         /// <summary>
         /// Classifies the specified tokens.
@@ -104,22 +105,51 @@ namespace PowerShellTools.Classification
                 yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag("syntax error", parseError.Message));
             }
         }
+
+        /// <summary>
+        /// Returns tag information about the errors in the buffer provided. 
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="spanStart"></param>
+        /// <param name="errors"></param>
+        /// <returns></returns>
+        internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextBuffer buffer, int spanStart, IEnumerable<ParseErrorItem> errors)
+        {
+            var currentSnapshot = buffer.CurrentSnapshot;
+            foreach (var parseError in errors)
+            {
+                var errorSpanStart = parseError.ExtentStartOffset + spanStart;
+                var errorSpanLength = parseError.ExtentEndOffset - parseError.ExtentStartOffset;
+                if (errorSpanStart > currentSnapshot.Length || errorSpanStart + errorSpanLength > currentSnapshot.Length) continue;
+
+                if (errorSpanLength == 0)
+                {
+                    errorSpanLength = 1;
+                    if (errorSpanStart == currentSnapshot.Length)
+                    {
+                        errorSpanStart = currentSnapshot.Length - 1;
+                    }
+                }
+
+                yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag("syntax error", parseError.Message));
+            }
+        }
     }
 
     /// <summary>
     /// Matches braces and regions for code folding.
     /// </summary>
-    internal class RegionAndBraceMatchingService 
+    internal class RegionAndBraceMatchingService
     {
         private static char[] OpenChars { get; set; }
 
         static RegionAndBraceMatchingService()
-	    {
+        {
             OpenChars = new char[255];
             OpenChars[125] = '{';
             OpenChars[41] = '(';
             OpenChars[93] = '[';
-	    }
+        }
 
         internal void GetRegionsAndBraceMatchingInformation(string spanText, int spanStart,
     IList<Token> generatedTokens, out Dictionary<int, int> startBraces, out Dictionary<int, int> endBraces,
