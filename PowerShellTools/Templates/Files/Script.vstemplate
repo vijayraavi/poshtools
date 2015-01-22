@@ -1,14 +1,20 @@
-<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.microsoft.com/developer/vstemplate/2005">
   <TemplateData>
     <DefaultName>Script.ps1</DefaultName>
     <Name>PowerShell Script</Name>
-    <Description>An empty PowerShell script.</Description>
     <ProjectType>PowerShell</ProjectType>
+    <Description>An empty PowerShell script.</Description>
+    <TemplateID>PowerShellTools.PowerShell.PowerShellScript</TemplateID>
+    <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
+    <AppliesTo>PowerShell | (!PowerShell)</AppliesTo>
     <SortOrder>10</SortOrder>
     <Icon>PowerShell.ico</Icon>
+    <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
+    <ShowByDefault>true</ShowByDefault>
   </TemplateData>
   <TemplateContent>
     <References />
-    <ProjectItem TargetFileName="$fileinputname$.ps1" ReplaceParameters="false">Script.ps1</ProjectItem>
+    <ProjectItem TargetFileName="$fileinputname$.ps1" ReplaceParameters="true">Script.ps1</ProjectItem>
   </TemplateContent>
 </VSTemplate>
