@@ -10,5 +10,8 @@ namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
     {
         [OperationContract]
         CompletionResultList GetCompletionResults(string scriptUpToCaret, int carePosition);
+
+        [OperationContract]
+        ParseErrorItem[] GetParseErrors(string spanText);
     }
 }

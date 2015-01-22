@@ -10,40 +10,40 @@ using Microsoft.VisualStudio.Text.Tagging;
 
 namespace PowerShellTools.Classification
 {
-	internal class PowerShellTokenizationService
-	{
-	    private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellTokenizationService));
+    internal class PowerShellTokenizationService
+    {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellTokenizationService));
 
-	    private bool _isBufferTokenizing;
+        private bool _isBufferTokenizing;
 
-	    private static readonly Token[] EmptyTokens = new Token[0];
-	    private static readonly Dictionary<int, int> EmptyDictionary = new Dictionary<int, int>();
+        private static readonly Token[] EmptyTokens = new Token[0];
+        private static readonly Dictionary<int, int> EmptyDictionary = new Dictionary<int, int>();
 
-	    private static readonly List<TagInformation<IOutliningRegionTag>> EmptyRegions =
+        private static readonly List<TagInformation<IOutliningRegionTag>> EmptyRegions =
             new List<TagInformation<IOutliningRegionTag>>();
 
-	    private static readonly List<ClassificationInfo> EmptyTokenSpans = new List<ClassificationInfo>();
-	    private static readonly List<TagInformation<ErrorTag>> EmptyErrorTags = new List<TagInformation<ErrorTag>>();
+        private static readonly List<ClassificationInfo> EmptyTokenSpans = new List<ClassificationInfo>();
+        private static readonly List<TagInformation<ErrorTag>> EmptyErrorTags = new List<TagInformation<ErrorTag>>();
 
-	    private Dictionary<int, int> _endBraces;
-	    private IEnumerable<TagInformation<ErrorTag>> _errorTags;
-	    private Ast _generatedAst;
-	    private Token[] _generatedTokens;
-	    private List<TagInformation<IOutliningRegionTag>> _regions;
-	    private Dictionary<int, int> _startBraces;
+        private Dictionary<int, int> _endBraces;
+        private IEnumerable<TagInformation<ErrorTag>> _errorTags;
+        private Ast _generatedAst;
+        private Token[] _generatedTokens;
+        private List<TagInformation<IOutliningRegionTag>> _regions;
+        private Dictionary<int, int> _startBraces;
         private IEnumerable<ClassificationInfo> _tokenSpans;
-	    internal event EventHandler<EventArgs> TokenizationComplete;
+        internal event EventHandler<EventArgs> TokenizationComplete;
 
-	    internal ITrackingSpan SpanToTokenize { get; set; }
-	    private ITextBuffer Buffer { get; set; }
+        internal ITrackingSpan SpanToTokenize { get; set; }
+        private ITextBuffer Buffer { get; set; }
 
-	    private readonly ClassifierService _classifierService;
-	    private readonly ErrorTagSpanService _errorTagService;
-	    private readonly RegionAndBraceMatchingService _regionAndBraceMatchingService;
+        private readonly ClassifierService _classifierService;
+        private readonly ErrorTagSpanService _errorTagService;
+        private readonly RegionAndBraceMatchingService _regionAndBraceMatchingService;
 
-	    public PowerShellTokenizationService(ITextBuffer buffer)
-		{
-			Buffer = buffer;
+        public PowerShellTokenizationService(ITextBuffer buffer)
+        {
+            Buffer = buffer;
             _classifierService = new ClassifierService();
             _errorTagService = new ErrorTagSpanService();
             _regionAndBraceMatchingService = new RegionAndBraceMatchingService();
@@ -51,136 +51,145 @@ namespace PowerShellTools.Classification
             SetEmptyTokenizationProperties();
             SpanToTokenize = Buffer.CurrentSnapshot.CreateTrackingSpan(0, Buffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
             StartTokenization();
-		}
+        }
 
-	    internal void StartTokenization()
-	    {
-	        var spanToTokenizeCache = SpanToTokenize;
+        internal void StartTokenization()
+        {
+            var spanToTokenizeCache = SpanToTokenize;
 
-	        if (spanToTokenizeCache == null)
-	        {
-	            return;
-	        }
-	        if (_isBufferTokenizing)
-	        {
+            if (spanToTokenizeCache == null)
+            {
+                return;
+            }
+            if (_isBufferTokenizing)
+            {
                 Log.Debug("Already tokenizing...");
-	            return;
-	        }
+                return;
+            }
 
-	        _isBufferTokenizing = true;
-	        SetEmptyTokenizationProperties();
-	        if (Buffer.CurrentSnapshot.Length == 0)
-	        {
-	            RemoveCachedTokenizationProperties();
-	            OnTokenizationComplete();
-	            _isBufferTokenizing = false;
-	            return;
-	        }
+            _isBufferTokenizing = true;
+            SetEmptyTokenizationProperties();
+            if (Buffer.CurrentSnapshot.Length == 0)
+            {
+                RemoveCachedTokenizationProperties();
+                OnTokenizationComplete();
+                _isBufferTokenizing = false;
+                return;
+            }
 
-	        var tokenizationText = spanToTokenizeCache.GetText(Buffer.CurrentSnapshot);
+            var tokenizationText = spanToTokenizeCache.GetText(Buffer.CurrentSnapshot);
 
-	        ThreadPool.QueueUserWorkItem(delegate
-	        {
-	            var done = false;
-	            while (!done)
-	            {
-	                Tokenize(spanToTokenizeCache, tokenizationText);
-	                var trackingSpan = SpanToTokenize;
-	                if (!ReferenceEquals(trackingSpan, spanToTokenizeCache))
-	                {
-	                    spanToTokenizeCache = trackingSpan;
-	                    tokenizationText = spanToTokenizeCache.GetText(Buffer.CurrentSnapshot);
-	                    return;
-	                }
-	                SetTokenizationProperties();
-	                RemoveCachedTokenizationProperties();
-	                SetBufferProperty(BufferProperties.SpanTokenized, spanToTokenizeCache);
-	                OnTokenizationComplete();
-	                _isBufferTokenizing = false;
-	                done = true;
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                var done = false;
+                while (!done)
+                {
+                    Tokenize(spanToTokenizeCache, tokenizationText);
+                    var trackingSpan = SpanToTokenize;
+                    if (!ReferenceEquals(trackingSpan, spanToTokenizeCache))
+                    {
+                        spanToTokenizeCache = trackingSpan;
+                        tokenizationText = spanToTokenizeCache.GetText(Buffer.CurrentSnapshot);
+                        return;
+                    }
+                    SetTokenizationProperties();
+                    RemoveCachedTokenizationProperties();
+                    SetBufferProperty(BufferProperties.SpanTokenized, spanToTokenizeCache);
+                    OnTokenizationComplete();
+                    _isBufferTokenizing = false;
+                    done = true;
 
-	                NotifyOnTagsChanged(BufferProperties.Classifier);
+                    NotifyOnTagsChanged(BufferProperties.Classifier);
                     NotifyOnTagsChanged(BufferProperties.ErrorTagger);
                     NotifyOnTagsChanged(typeof(PowerShellOutliningTagger).Name);
-	            }
-	        }, this);
-	    }
+                }
+            }, this);
+        }
 
-	    private void NotifyOnTagsChanged(string name)
-	    {
-	        if (!Buffer.Properties.ContainsProperty(name)) return;
-	        var classifier = Buffer.Properties.GetProperty<INotifyTagsChanged>(name);
-	        if (classifier != null)
-	        {
-	            classifier.OnTagsChanged(SpanToTokenize.GetSpan(Buffer.CurrentSnapshot));
-	        }
-	    }
+        private void NotifyOnTagsChanged(string name)
+        {
+            if (!Buffer.Properties.ContainsProperty(name)) return;
+            var classifier = Buffer.Properties.GetProperty<INotifyTagsChanged>(name);
+            if (classifier != null)
+            {
+                classifier.OnTagsChanged(SpanToTokenize.GetSpan(Buffer.CurrentSnapshot));
+            }
+        }
 
-	    private void SetBufferProperty(object key, object propertyValue)
-		{
-			if (Buffer.Properties.ContainsProperty(key))
-			{
-				Buffer.Properties.RemoveProperty(key);
-			}
-			Buffer.Properties.AddProperty(key, propertyValue);
-		}
+        private void SetBufferProperty(object key, object propertyValue)
+        {
+            if (Buffer.Properties.ContainsProperty(key))
+            {
+                Buffer.Properties.RemoveProperty(key);
+            }
+            Buffer.Properties.AddProperty(key, propertyValue);
+        }
 
-		private void OnTokenizationComplete()
-		{
+        private void OnTokenizationComplete()
+        {
             if (TokenizationComplete != null)
-			{
+            {
                 TokenizationComplete(this, new EventArgs());
-			}
-		}
+            }
+        }
 
-	    internal void SetEmptyTokenizationProperties()
-	    {
-	        SetBufferProperty(BufferProperties.Tokens, EmptyTokens);
-	        SetBufferProperty(BufferProperties.Ast, null);
+        internal void SetEmptyTokenizationProperties()
+        {
+            SetBufferProperty(BufferProperties.Tokens, EmptyTokens);
+            SetBufferProperty(BufferProperties.Ast, null);
             SetBufferProperty(BufferProperties.TokenErrorTags, EmptyErrorTags);
             SetBufferProperty(BufferProperties.EndBrace, EmptyDictionary);
             SetBufferProperty(BufferProperties.StartBrace, EmptyDictionary);
             SetBufferProperty(BufferProperties.TokenSpans, EmptyTokenSpans);
             SetBufferProperty(BufferProperties.SpanTokenized, Buffer.CurrentSnapshot.CreateTrackingSpan(0, 0, SpanTrackingMode.EdgeInclusive));
             SetBufferProperty(BufferProperties.Regions, EmptyRegions);
-	    }
+        }
 
-	    private void Tokenize(ITrackingSpan spanToTokenize, string spanText)
-	    {
+        private void Tokenize(ITrackingSpan spanToTokenize, string spanText)
+        {
             Log.Debug("Parsing input.");
-	        ParseError[] errors;
-	        _generatedAst = Parser.ParseInput(spanText, out _generatedTokens, out errors);
-	        
-	        var position = spanToTokenize.GetStartPoint(Buffer.CurrentSnapshot).Position;
-	        var array = _generatedTokens;
+            ParseError[] errors;
+            _generatedAst = Parser.ParseInput(spanText, out _generatedTokens, out errors);
+
+            var position = spanToTokenize.GetStartPoint(Buffer.CurrentSnapshot).Position;
+            var array = _generatedTokens;
 
             Log.Debug("Classifying tokens.");
             _tokenSpans = _classifierService.ClassifyTokens(array, position);
 
             Log.Debug("Tagging error spans.");
-	        _errorTags = _errorTagService.TagErrorSpans(Buffer, position, errors).ToList();
+            // Trigger the out-proc error parsing only when it's enabled and there are errors from the in-proc parser
+            if (errors.Length != 0 && PowerShellToolsPackage.UseOutProc)
+            {
+                var errorsParsedFromOutProc = PowerShellToolsPackage.IntelliSenseService.GetParseErrors(spanText);
+                _errorTags = _errorTagService.TagErrorSpans(Buffer, position, errorsParsedFromOutProc).ToList();
+            }
+            else
+            {
+                _errorTags = _errorTagService.TagErrorSpans(Buffer, position, errors).ToList();
+            }
 
             Log.Debug("Matching braces and regions.");
             _regionAndBraceMatchingService.GetRegionsAndBraceMatchingInformation(spanText, position, _generatedTokens, out _startBraces, out _endBraces, out _regions);
-	    }
+        }
 
-	    private void SetTokenizationProperties()
-	    {
-	        SetBufferProperty(BufferProperties.Tokens, _generatedTokens);
+        private void SetTokenizationProperties()
+        {
+            SetBufferProperty(BufferProperties.Tokens, _generatedTokens);
             SetBufferProperty(BufferProperties.Ast, _generatedAst);
-	        SetBufferProperty(BufferProperties.SpanTokenized, null);
-	        SetBufferProperty(BufferProperties.TokenErrorTags, _errorTags);
-	        SetBufferProperty(BufferProperties.EndBrace, _endBraces);
-	        SetBufferProperty(BufferProperties.StartBrace, _startBraces);
-	        SetBufferProperty(BufferProperties.Regions, _regions);
-	        SetBufferProperty(BufferProperties.TokenSpans, _tokenSpans);
-	    }
+            SetBufferProperty(BufferProperties.SpanTokenized, null);
+            SetBufferProperty(BufferProperties.TokenErrorTags, _errorTags);
+            SetBufferProperty(BufferProperties.EndBrace, _endBraces);
+            SetBufferProperty(BufferProperties.StartBrace, _startBraces);
+            SetBufferProperty(BufferProperties.Regions, _regions);
+            SetBufferProperty(BufferProperties.TokenSpans, _tokenSpans);
+        }
 
-	    private void RemoveCachedTokenizationProperties()
-	    {
-	        Buffer.Properties.RemoveProperty(BufferProperties.RegionTags);
-	    }
-	}
+        private void RemoveCachedTokenizationProperties()
+        {
+            Buffer.Properties.RemoveProperty(BufferProperties.RegionTags);
+        }
+    }
 
     internal struct BraceInformation
     {
