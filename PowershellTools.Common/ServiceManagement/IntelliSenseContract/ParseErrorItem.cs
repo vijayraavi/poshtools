@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
 {
+    /// <summary>
+    /// A data contract for syntax errors.
+    /// </summary>
     [DataContract]
     public sealed class ParseErrorItem
     {

@@ -80,10 +80,10 @@ namespace PowerShellTools.Classification
         /// <summary>
         /// Returns tag information about the errors in the buffer provided. 
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="spanStart"></param>
-        /// <param name="errors"></param>
-        /// <returns></returns>
+        /// <param name="buffer">The text buffer.</param>
+        /// <param name="spanStart">The start position of the current text span.</param>
+        /// <param name="errors">The parsed errors.</param>
+        /// <returns>Error tags consumed by VS.</returns>
         internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextBuffer buffer, int spanStart, IEnumerable<ParseError> errors)
         {
             var currentSnapshot = buffer.CurrentSnapshot;
@@ -109,10 +109,10 @@ namespace PowerShellTools.Classification
         /// <summary>
         /// Returns tag information about the errors in the buffer provided. 
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="spanStart"></param>
-        /// <param name="errors"></param>
-        /// <returns></returns>
+        /// <param name="buffer">The text buffer.</param>
+        /// <param name="spanStart">The start position of the current text span.</param>
+        /// <param name="errors">The parsed errors from out-proc.</param>
+        /// <returns>Error tags consumed by VS.</returns>
         internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextBuffer buffer, int spanStart, IEnumerable<ParseErrorItem> errors)
         {
             var currentSnapshot = buffer.CurrentSnapshot;
