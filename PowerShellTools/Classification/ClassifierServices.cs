@@ -4,6 +4,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
@@ -102,7 +103,7 @@ namespace PowerShellTools.Classification
                     }
                 }
 
-                yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag("syntax error", parseError.Message));
+                yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag(PredefinedErrorTypeNames.SyntaxError, parseError.Message));
             }
         }
 
@@ -131,7 +132,7 @@ namespace PowerShellTools.Classification
                     }
                 }
 
-                yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag("syntax error", parseError.Message));
+                yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag(PredefinedErrorTypeNames.SyntaxError, parseError.Message));
             }
         }
     }
