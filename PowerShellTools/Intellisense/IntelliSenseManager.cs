@@ -206,31 +206,23 @@ namespace PowerShellTools.Intellisense
             int completionReplacementIndex;
             int completionReplacementLength;
 
-            // On 64-bit Operation system, default to Out-of-proc IntelliSense engine.
-            if (PowerShellToolsPackage.UseOutProc)
+
+            var trackingSpan = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
+            var script = trackingSpan.GetText(_textView.TextBuffer.CurrentSnapshot);
+
+            // Go out-of-proc here to get the completion list
+            var commandCompletion = PowerShellToolsPackage.IntelliSenseService.GetCompletionResults(script, caretPosition);
+            if (commandCompletion == null)
             {
-                var trackingSpan = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
-                var script = trackingSpan.GetText(_textView.TextBuffer.CurrentSnapshot);
-                var commandCompletion = PowerShellToolsPackage.IntelliSenseService.GetCompletionResults(script, caretPosition);
-                if (commandCompletion == null)
-                {
-                    return;
-                }
-                completionMatchesList = (from item in commandCompletion.CompletionMatches
-                                         select new CompletionResult(item.CompletionText,
-                                                                     item.ListItemText,
-                                                                     (CompletionResultType)item.ResultType,
-                                                                     item.ToolTip)).ToList();
-                completionReplacementIndex = commandCompletion.ReplacementIndex;
-                completionReplacementLength = commandCompletion.ReplacementLength;
+                return;
             }
-            else
-            {
-                var commandCompletion = GetCommandCompletionList(caretPosition);
-                completionMatchesList = commandCompletion.CompletionMatches;
-                completionReplacementIndex = commandCompletion.ReplacementIndex;
-                completionReplacementLength = commandCompletion.ReplacementLength;
-            }            
+            completionMatchesList = (from item in commandCompletion.CompletionMatches
+                                        select new CompletionResult(item.CompletionText,
+                                                                    item.ListItemText,
+                                                                    (CompletionResultType)item.ResultType,
+                                                                    item.ToolTip)).ToList();
+            completionReplacementIndex = commandCompletion.ReplacementIndex;
+            completionReplacementLength = commandCompletion.ReplacementLength;
 
             var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
             var caretInLine = (caretPosition - line.Start);
@@ -258,52 +250,7 @@ namespace PowerShellTools.Intellisense
             statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
             _intellisenseRunning = false;
         }
-
-        private CommandCompletion GetCommandCompletionList(int caretPosition)
-        {
-            Ast ast;
-            Token[] tokens;
-            IScriptPosition cursorPosition;
-            GetCommandCompletionParameters(caretPosition, out ast, out tokens, out cursorPosition);
-            if (ast == null)
-            {
-                return null;
-            }
-
-            var ps = PowerShell.Create();
-            ps.Runspace = PowerShellToolsPackage.Debugger.Runspace;
-
-            return CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps);
-        }
-
-        private void GetCommandCompletionParameters(int caretPosition, out Ast ast, out Token[] tokens, out IScriptPosition cursorPosition)
-        {
-            ITrackingSpan trackingSpan;
-            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.Ast, out ast);
-            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.Tokens, out tokens);
-            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.SpanTokenized, out trackingSpan);
-
-            // No ast or tokens available on the buffer. Re-tokenize.
-            if (ast == null || tokens == null)
-            {
-                var trackingSpan2 = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
-                var text = trackingSpan2.GetText(_textView.TextBuffer.CurrentSnapshot);
-                ParseError[] array;
-                ast = CommandCompletionHelper.Tokenize(text, out tokens, out array);
-            }
-            if (ast != null)
-            {
-                //HACK: Clone with a new offset using private method... 
-                var type = ast.Extent.StartScriptPosition.GetType();
-                var method = type.GetMethod("CloneWithNewOffset", BindingFlags.Instance | BindingFlags.NonPublic, null,
-                    new[] { typeof(int) }, null);
-
-                cursorPosition = (IScriptPosition)method.Invoke(ast.Extent.StartScriptPosition, new object[] { caretPosition });
-                return;
-            }
-            cursorPosition = null;
-        }
-
+        
         internal void IntellisenseDone(IList<CompletionResult> completionResults, int lineStartPosition, int replacementIndex, int replacementLength, int startCaretPosition)
         {
             var textBuffer = _textView.TextBuffer;

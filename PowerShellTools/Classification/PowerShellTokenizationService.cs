@@ -158,8 +158,8 @@ namespace PowerShellTools.Classification
             _tokenSpans = _classifierService.ClassifyTokens(array, position);
 
             Log.Debug("Tagging error spans.");
-            // Trigger the out-proc error parsing only when it's enabled and there are errors from the in-proc parser
-            if (errors.Length != 0 && PowerShellToolsPackage.UseOutProc)
+            // Trigger the out-proc error parsing only when there are errors from the in-proc parser
+            if (errors.Length != 0)
             {
                 var errorsParsedFromOutProc = PowerShellToolsPackage.IntelliSenseService.GetParseErrors(spanText);
                 _errorTags = _errorTagService.TagErrorSpans(Buffer, position, errorsParsedFromOutProc).ToList();

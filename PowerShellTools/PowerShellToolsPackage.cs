@@ -134,14 +134,6 @@ namespace PowerShellTools
             return null;
         }
 
-        public static bool UseOutProc
-        {
-            get
-            {
-                return Environment.Is64BitOperatingSystem;
-            }
-        }
-
         internal override LibraryManager CreateLibraryManager(CommonPackage package)
         {
             throw new NotImplementedException();
@@ -198,10 +190,7 @@ namespace PowerShellTools
 
             InitializePowerShellHost();
 
-            if (UseOutProc)
-            {
-                EstablishProcessConnection();
-            }            
+            EstablishProcessConnection();       
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
