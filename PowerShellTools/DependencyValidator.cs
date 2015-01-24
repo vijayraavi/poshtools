@@ -20,7 +20,7 @@ namespace PowerShellTools
 
         public bool ValidateInstalledPowerShellVersion()
         {
-            if (InstalledPowerShellVersion < new Version(6, 0))
+            if (InstalledPowerShellVersion < new Version(3, 0))
             {
                 if (MessageBox.Show(
                     Resources.MissingPowerShellVersion,
