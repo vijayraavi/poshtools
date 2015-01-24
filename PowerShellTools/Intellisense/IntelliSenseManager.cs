@@ -102,6 +102,20 @@ namespace PowerShellTools.Intellisense
                 }
             }
 
+            if (commandId == (uint)VSConstants.VSStd2KCmdID.COMPLETEWORD)
+            {
+                if (_activeSession != null && !_activeSession.IsDismissed)
+                {
+                    Log.Debug("Filter");
+                    _activeSession.Filter();
+                }
+                else
+                {
+                    TriggerCompletion();
+                }
+                return VSConstants.S_OK;
+            }
+
             //pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
