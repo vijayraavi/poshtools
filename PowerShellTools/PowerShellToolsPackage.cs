@@ -48,7 +48,6 @@ namespace PowerShellTools
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(UIContextGuids.NoSolution)]
-    [ProvideAutoLoad(UIContextGuids.SolutionExists)]
     [ProvideLanguageService(typeof (PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true,
         EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
@@ -107,6 +106,7 @@ namespace PowerShellTools
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
             Instance = this;
             _commands = new Dictionary<ICommand, MenuCommand>();
+            DependencyValidator = new DependencyValidator();
         }
 
         private ITextBufferFactoryService _textBufferFactoryService;
@@ -123,6 +123,9 @@ namespace PowerShellTools
         /// Returns the current package instance.
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
+
+        [Export]
+        public DependencyValidator DependencyValidator { get; set; } 
 
         public new object GetService(Type type)
         {
@@ -206,7 +209,7 @@ namespace PowerShellTools
         {
             try
             {
-                if (!ValidateInstalledPowerShellVersion())
+                if (!DependencyValidator.Validate())
                 {
                     return;
                 }
@@ -220,52 +223,6 @@ namespace PowerShellTools
             }
         }
 
-        public static bool ValidateInstalledPowerShellVersion()
-        {
-            if (InstalledPowerShellVersion < new Version(3, 0))
-            {
-                if (MessageBox.Show(
-                    Resources.MissingPowerShellVersion,
-                    Resources.MissingDependency,
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                {
-                    System.Diagnostics.Process.Start("http://go.microsoft.com/fwlink/?LinkID=524571");
-                }
-                return false;
-            }
-            return true;
-        }
-
-        public static Version InstalledPowerShellVersion
-        {
-            get
-            {
-                var version = new Version(0, 0);
-                using (var reg = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\PowerShell\3\PowerShellEngine"))
-                {
-                    if (reg != null)
-                    {
-                        var versionString = reg.GetValue("PowerShellVersion") as string;
-
-                        Version.TryParse(versionString, out version);
-                        return version;
-                    }
-                }
-
-                using (var reg = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\PowerShell\1\PowerShellEngine"))
-                {
-                    if (reg != null)
-                    {
-                        var versionString = reg.GetValue("PowerShellVersion") as string;
-                        Version.TryParse(versionString, out version);
-                        return version;
-                    }
-                }
-
-                return version;
-            }
-        }
 
         private IContentType _contentType;
         public IContentType ContentType
