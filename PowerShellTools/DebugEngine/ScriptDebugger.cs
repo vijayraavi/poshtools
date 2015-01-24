@@ -23,8 +23,6 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public partial class ScriptDebugger 
     {
-        public event Action<string> DocumentChanged;
-
         private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
         private PowerShell _currentPowerShell;
