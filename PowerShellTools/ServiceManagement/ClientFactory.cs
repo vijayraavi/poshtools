@@ -45,6 +45,20 @@ namespace PowerShellTools.ServiceManagement
             return pipeFactory.CreateChannel();            
         }
 
+        /// <summary>
+        /// Create duplex channel over the address provided.
+        /// </summary>
+        /// <param name="endPointAddress">The channel end point address</param>
+        /// <param name="context">Instance context for service to callback</param>
+        /// <returns>The type of service client</returns>
+        public ServiceType CreateDuplexServiceClient(string endPointAddress, InstanceContext context)
+        {
+            var binding = CreateBinding();
+            var pipeFactory = new DuplexChannelFactory<ServiceType>(context, binding, new EndpointAddress(endPointAddress));
+
+            return pipeFactory.CreateChannel();
+        }
+
         #endregion
 
         private NetNamedPipeBinding CreateBinding()
