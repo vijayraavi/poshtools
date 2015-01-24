@@ -14,7 +14,7 @@ namespace PowerShellTools.Repl
     {
         public PowerShellReplEvaluator psEval;
 
-        [Import] private DependencyValidator _validator;
+        [Import] internal DependencyValidator _validator;
         
         public IReplEvaluator GetEvaluator(string replId)
         {

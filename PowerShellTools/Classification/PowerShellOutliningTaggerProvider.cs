@@ -10,7 +10,7 @@ namespace PowerShellTools.Classification
 	internal class PowerShellOutliningTaggerProvider : ITaggerProvider
 	{
         [Import]
-        private DependencyValidator _validator;
+        internal DependencyValidator _validator;
 
 		public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
 		{

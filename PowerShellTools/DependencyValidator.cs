@@ -7,11 +7,6 @@ namespace PowerShellTools
     public class DependencyValidator
     {
         private bool? _previousResult;
-
-        public DependencyValidator()
-        {
-        }
-
         public bool Validate()
         {
             if (_previousResult.HasValue) return _previousResult.Value;
