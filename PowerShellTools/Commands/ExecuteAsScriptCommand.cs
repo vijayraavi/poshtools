@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Design;
+using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -15,22 +16,44 @@ namespace PowerShellTools.Commands
     /// </remarks>
     internal class ExecuteAsScriptCommand : ICommand
     {
+        private readonly bool _fromSolutionExplorer;
+        public ExecuteAsScriptCommand(bool fromSolutionExplorer)
+        {
+            _fromSolutionExplorer = fromSolutionExplorer;
+        }
+
         public CommandID CommandId
         {
             get
             {
-                return new CommandID(new Guid(GuidList.CmdSetGuid), (int)GuidList.CmdidExecuteAsScript);
+                var cmdid = _fromSolutionExplorer
+                    ? GuidList.CmdidExecuteAsScriptSolution
+                    : GuidList.CmdidExecuteAsScript;
+
+                return new CommandID(new Guid(GuidList.CmdSetGuid), (int)cmdid);
             }
         }
         public void Execute(object sender, EventArgs args)
         {
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null && dte2.ActiveDocument != null)
+            var launcher = new PowerShellProjectLauncher();
+
+            string file = null; 
+
+            if (dte2 != null && _fromSolutionExplorer)
             {
-                var launcher = new PowerShellProjectLauncher();
-                dte2.ActiveDocument.Save();
-                launcher.LaunchFile(dte2.ActiveDocument.FullName, true);
+                var selectedItem = getSelectedItem(dte2);
+                file = selectedItem.ProjectItem.Document.FullName;
             }
+            else if (dte2 != null && dte2.ActiveDocument != null)
+            {
+                dte2.ActiveDocument.Save();
+                file = dte2.ActiveDocument.FullName;    
+            }
+
+            if (String.IsNullOrEmpty(file)) return;
+
+            launcher.LaunchFile(file, true);
         }
 
         public void QueryStatus(object sender, EventArgs args)
@@ -38,9 +61,23 @@ namespace PowerShellTools.Commands
             bool bVisible = false;
 
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == "PowerShell")
+
+            if (_fromSolutionExplorer)
             {
-                bVisible = true;
+                var selectedItem = getSelectedItem(dte2);
+                if (selectedItem != null &&
+                    selectedItem.ProjectItem != null &&
+                    LanguageUtilities.IsPowerShellFile(selectedItem.ProjectItem.Name))
+                {
+                    bVisible = true;
+                }
+            }
+            else
+            {
+                if (dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == "PowerShell")
+                {
+                    bVisible = true;
+                }
             }
 
             var menuItem = sender as OleMenuCommand;
@@ -48,6 +85,15 @@ namespace PowerShellTools.Commands
             {
                 menuItem.Visible = bVisible;
             }
+        }
+
+        private SelectedItem getSelectedItem(DTE2 _applicationObject)
+        {
+            if (_applicationObject.Solution == null)
+                return null;
+            if (_applicationObject.SelectedItems.Count == 1)
+                return _applicationObject.SelectedItems.Item(1);
+            return null;
         }
     }
 }
