@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Management.Automation;
-using System.Management.Automation.Language;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Linq;
+using System.Management.Automation;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using log4net;
@@ -16,8 +14,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Classification;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 
 namespace PowerShellTools.Intellisense
 {
@@ -217,10 +215,10 @@ namespace PowerShellTools.Intellisense
                 return;
             }
             completionMatchesList = (from item in commandCompletion.CompletionMatches
-                                        select new CompletionResult(item.CompletionText,
-                                                                    item.ListItemText,
-                                                                    (CompletionResultType)item.ResultType,
-                                                                    item.ToolTip)).ToList();
+                                     select new CompletionResult(item.CompletionText,
+                                                                 item.ListItemText,
+                                                                 (CompletionResultType)item.ResultType,
+                                                                 item.ToolTip)).ToList();
             completionReplacementIndex = commandCompletion.ReplacementIndex;
             completionReplacementLength = commandCompletion.ReplacementLength;
 
@@ -234,10 +232,10 @@ namespace PowerShellTools.Intellisense
                 {
                     try
                     {
-                        IntellisenseDone(completionMatchesList, 
+                        IntellisenseDone(completionMatchesList,
                                         lineStartPosition,
-                                        completionReplacementIndex + 0, 
-                                        completionReplacementLength, 
+                                        completionReplacementIndex + 0,
+                                        completionReplacementLength,
                                         caretPosition);
                     }
                     catch (Exception ex)
@@ -250,7 +248,7 @@ namespace PowerShellTools.Intellisense
             statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
             _intellisenseRunning = false;
         }
-        
+
         internal void IntellisenseDone(IList<CompletionResult> completionResults, int lineStartPosition, int replacementIndex, int replacementLength, int startCaretPosition)
         {
             var textBuffer = _textView.TextBuffer;
@@ -268,7 +266,7 @@ namespace PowerShellTools.Intellisense
             textBuffer.Properties.AddProperty(BufferProperties.LineUpToReplacementSpan, lineUpToReplacementSpan);
 
             Log.Debug("Dismissing all sessions...");
-            
+
 
             if (Application.Current.Dispatcher.Thread == Thread.CurrentThread)
             {

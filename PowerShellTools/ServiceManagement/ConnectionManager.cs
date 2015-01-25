@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.ServiceModel;
 using PowerShellTools.Common;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 
@@ -7,48 +8,86 @@ namespace PowerShellTools.ServiceManagement
     /// <summary>
     /// Manage the process and channel creation.
     /// </summary>
-    internal sealed class ConnectionManager
+    internal static class ConnectionManager
     {
-        private IPowershellIntelliSenseService _powershellIntelliSenseServiceChannel;
-        private int _hostProcessId;
+        private static IPowershellIntelliSenseService _powershellIntelliSenseService;
+        private static int _hostProcessId;
+        private static object _syncObject = new object();
+        private static ChannelFactory<IPowershellIntelliSenseService> _channelFactory;
 
-        public ConnectionManager()
-        {            
+        static ConnectionManager()
+        {
             OpenClientConnection();
         }
 
-        /// <summary>
-        /// The service channel we need.
-        /// </summary>
-        public IPowershellIntelliSenseService PowershellIntelliSenseServiceChannel
+        public static IPowershellIntelliSenseService PowershellIntelliSenseSerivce
         {
             get
             {
-                return _powershellIntelliSenseServiceChannel;
+                if (_powershellIntelliSenseService == null)
+                {
+                    OpenClientConnection();
+                }
+                return _powershellIntelliSenseService;
             }
         }
 
-        private void OpenClientConnection()
+        public static void OpenClientConnection()
         {
-            var hostProcess = PowershellHostProcessFactory.EnsurePowershellHostProcess();            
+            var hostProcess = PowershellHostProcessFactory.EnsurePowershellHostProcess();
+            hostProcess.Process.Exited += Process_Exited;
             _hostProcessId = hostProcess.Process.Id;
 
             // net.pipe://localhost/UniqueEndpointGuid/NamedPipePowershellProcess
-            string clientEndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.ProcessManagerHostRelativeUri;
+            lock (_syncObject)
+            {
+                ChannelFactoryMaker<IPowershellIntelliSenseService>.EndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.ProcessManagerHostRelativeUri;
+            }
 
             try
             {
-                if (_powershellIntelliSenseServiceChannel == null)
+                if (_powershellIntelliSenseService == null)
                 {
-                    var factory = ClientFactory<IPowershellIntelliSenseService>.ClientInstance;
-                    _powershellIntelliSenseServiceChannel = factory.CreateServiceClient(clientEndPointAddress);
+                    _channelFactory = ChannelFactoryMaker<IPowershellIntelliSenseService>.CreateChannelFactory();
+                    _channelFactory.Faulted += ChannelFactoryMaker_Faulted;
+                    _channelFactory.Closed += ChannelFactoryMaker_Closed;
+                    _channelFactory.Open();
+                    _powershellIntelliSenseService = _channelFactory.CreateChannel();
                 }
             }
             catch
             {
                 // Connection has to be established...
-                _powershellIntelliSenseServiceChannel = null;
+                _powershellIntelliSenseService = null;
                 throw;
+            }
+        }
+
+        private static void Process_Exited(object sender, EventArgs e)
+        {
+            lock (_syncObject)
+            {
+                _channelFactory.Faulted -= ChannelFactoryMaker_Faulted;
+                _channelFactory.Closed -= ChannelFactoryMaker_Closed;
+                _channelFactory.Abort();
+                _channelFactory = null;
+                _powershellIntelliSenseService = null;
+            }
+        }
+
+        private static void ChannelFactoryMaker_Closed(object sender, EventArgs e)
+        {
+            lock (_syncObject)
+            {
+                _powershellIntelliSenseService = null;
+            }
+        }
+
+        private static void ChannelFactoryMaker_Faulted(object sender, EventArgs e)
+        {
+            lock (_syncObject)
+            {
+                _powershellIntelliSenseService = null;
             }
         }
     }

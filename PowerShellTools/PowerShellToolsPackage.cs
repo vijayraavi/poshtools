@@ -16,16 +16,15 @@ using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
-using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
-using PowerShellTools.ServiceManagement;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
+using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
-using System.IO;
 
 namespace PowerShellTools
 {
@@ -92,6 +91,7 @@ namespace PowerShellTools
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
+        private static IPowershellIntelliSenseService _intelliSenseService;
 
         /// <summary>
         /// Default constructor of the package.
@@ -122,7 +122,13 @@ namespace PowerShellTools
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
 
-        public static IPowershellIntelliSenseService IntelliSenseService { get; private set; }
+        public static IPowershellIntelliSenseService IntelliSenseService
+        {
+            get
+            {
+                return ConnectionManager.PowershellIntelliSenseSerivce;
+            }
+        }
 
         public new object GetService(Type type)
         {
@@ -189,8 +195,7 @@ namespace PowerShellTools
             }
 
             InitializePowerShellHost();
-
-            EstablishProcessConnection();       
+            EstablishServiceConnection();
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
@@ -297,10 +302,10 @@ namespace PowerShellTools
             };
         }
 
-        private void EstablishProcessConnection()
+        private void EstablishServiceConnection()
         {
-            var connectionManager = new ConnectionManager();
-            IntelliSenseService = connectionManager.PowershellIntelliSenseServiceChannel;
+            // This is for triggering the initialization so that first IntelliSense trigger won't take too long.
+            var firstTrigger = ConnectionManager.PowershellIntelliSenseSerivce;
         }
 
         public T GetDialogPage<T>() where T : DialogPage
