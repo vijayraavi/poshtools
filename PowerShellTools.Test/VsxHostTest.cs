@@ -12,7 +12,7 @@ namespace PowerShellTools.Test
         [TestInitialize]
         public void Init()
         {
-            _host = new ScriptDebugger(true, null);
+            _host = new ScriptDebugger(true, null, null);
         }
 
         [TestMethod]

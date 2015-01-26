@@ -84,6 +84,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ServiceManagement\Debugging\PowershellDebuggingService.cs" />
+    <Compile Include="ServiceManagement\Debugging\PSHost.cs" />
     <Compile Include="ServiceManagement\PowershellIntelliSenseService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

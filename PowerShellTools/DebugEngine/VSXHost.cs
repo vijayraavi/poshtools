@@ -22,6 +22,7 @@ namespace PowerShellTools.DebugEngine
 {
 #if POWERSHELL
     using IReplWindow = IPowerShellReplWindow;
+    using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 #endif
 
 
@@ -30,14 +31,17 @@ namespace PowerShellTools.DebugEngine
     ///     The PoshTools PowerShell host and debugger.
     /// </summary>
     public partial class ScriptDebugger : PSHost, IHostSupportsInteractiveSession
-    {   
+    {
         private readonly Guid _instanceId = Guid.NewGuid();
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
         private Runspace _runspace;
         private readonly RunspaceRef _runspaceRef;
+        private IPowershellDebuggingService _debuggingService;
 
-        public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2)
+        public IPowershellDebuggingService DebuggingService { get { return _debuggingService; } }
+
+        public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2, IPowershellDebuggingService debuggingService)
         {
             HostUi = new HostUi(this);
 
@@ -52,7 +56,7 @@ namespace PowerShellTools.DebugEngine
             _runspaceRef = new RunspaceRef(_runspace);
             //TODO: I think this is a v4 thing. Probably need to look into it.
             //_runspaceRef.Runspace.Debugger.SetDebugMode(DebugModes.LocalScript | DebugModes.RemoteScript);
-            
+
             //Provide access to the DTE via PowerShell. 
             //This also allows PoshTools to support StudioShell.
             _runspace.SessionStateProxy.PSVariable.Set("dte", dte2);
@@ -63,8 +67,10 @@ namespace PowerShellTools.DebugEngine
             {
                 SetupExecutionPolicy();
             }
+            _debuggingService = debuggingService;
+            _debuggingService.InitializeRunspace();
 
-            SetRunspace(Runspace);
+            //SetRunspace(Runspace);
         }
 
         public HostUi HostUi { get; private set; }
@@ -118,7 +124,7 @@ namespace PowerShellTools.DebugEngine
             _runspaceRef.Override(newRunspace);
             SetRunspace(newRunspace);
             var oldRunspace = _runspaceRef.OldRunspace;
-           // EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, this, true, oldRunspace);
+            // EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, this, true, oldRunspace);
             RegisterRemoteFileOpenEvent(newRunspace);
         }
 
@@ -416,17 +422,17 @@ namespace PowerShellTools.DebugEngine
             if (caption.Length > 128)
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    ResourceStrings.PromptForCredential_InvalidCaption, new object[] {128}));
+                    ResourceStrings.PromptForCredential_InvalidCaption, new object[] { 128 }));
             }
             if (message.Length > 1024)
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    ResourceStrings.PromptForCredential_InvalidMessage, new object[] {1024}));
+                    ResourceStrings.PromptForCredential_InvalidMessage, new object[] { 1024 }));
             }
             if (userName != null && userName.Length > 513)
             {
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
-                    ResourceStrings.PromptForCredential_InvalidUserName, new object[] {513}));
+                    ResourceStrings.PromptForCredential_InvalidUserName, new object[] { 513 }));
             }
 
             CredUI.CREDUI_INFO cReduiInfo = default(CredUI.CREDUI_INFO);
@@ -528,7 +534,7 @@ namespace PowerShellTools.DebugEngine
 
         public override void SetBufferContents(Coordinates origin, BufferCell[,] contents)
         {
-           
+
         }
 
         public override void SetBufferContents(Rectangle rectangle, BufferCell fill)

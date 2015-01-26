@@ -13,7 +13,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
     public interface IPowershellDebuggingService
     {
         [OperationContract]
-        void SetBreakpoint(Breakpoint bp);
+        void SetBreakpoint(PowershellBreakpoint bp);
 
         [OperationContract]
         void SetResumeAction(DebuggerResumeAction action);

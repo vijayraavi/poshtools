@@ -14,30 +14,30 @@ namespace PowerShellTools.DebugEngine
     {
         public void DebuggerStopped(DebuggerStoppedEventArgs e)
         {
-            //PowerShellToolsPackage.Debugger.DebuggerStop(e);
+            PowerShellToolsPackage.Debugger.DebuggerStop(e);
         }
 
         public void OutputString(string output)
         {
-            //PowerShellToolsPackage.Debugger.VsOutputString(output);
+            PowerShellToolsPackage.Debugger.VsOutputString(output);
         }
 
 
         public void TerminatingException(Exception ex)
         {
-            //PowerShellToolsPackage.Debugger.TerminateException(ex);
+            PowerShellToolsPackage.Debugger.TerminateException(ex);
         }
 
 
         public void DebuggerFinished()
         {
-            //PowerShellToolsPackage.Debugger.DebuggerFinished();
+            PowerShellToolsPackage.Debugger.DebuggerFinished();
         }
 
 
         public void RefreshPrompt()
         {
-            //PowerShellToolsPackage.Debugger.RefreshPrompt();
+            PowerShellToolsPackage.Debugger.RefreshPrompt();
         }
     }
 }

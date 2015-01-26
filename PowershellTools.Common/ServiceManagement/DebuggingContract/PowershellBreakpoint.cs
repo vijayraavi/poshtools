@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 {
     [DataContract]
-    public class Breakpoint
+    public class PowershellBreakpoint
     {
         [DataMember]
         public string ScriptFullPath { get; set; }
@@ -16,7 +16,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         [DataMember]
         public int Line { get; set; }
 
-        public Breakpoint(string file, int line)
+        public PowershellBreakpoint(string file, int line)
         {
             ScriptFullPath = file;
             Line = line;

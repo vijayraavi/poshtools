@@ -26,6 +26,7 @@ using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using System.IO;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools
 {
@@ -124,6 +125,8 @@ namespace PowerShellTools
 
         public static IPowershellIntelliSenseService IntelliSenseService { get; private set; }
 
+        public static IPowershellDebuggingService DebuggingService { get; private set; }
+
         public new object GetService(Type type)
         {
             return base.GetService(type);
@@ -188,10 +191,9 @@ namespace PowerShellTools
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
+            EstablishProcessConnection();   
             InitializePowerShellHost();
-
-            EstablishProcessConnection();       
-
+            
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
                             new ExecuteAsScriptCommand(),
@@ -282,7 +284,7 @@ namespace PowerShellTools
 
             Log.Info("InitializePowerShellHost");
 
-            Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration, (DTE2)GetService(typeof(DTE)));
+            Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration, (DTE2)GetService(typeof(DTE)), DebuggingService);
             Debugger.HostUi.OutputProgress = (label, percentage) =>
             {
                 Log.DebugFormat("Output progress: {0} {1}", label, percentage);
@@ -301,6 +303,7 @@ namespace PowerShellTools
         {
             var connectionManager = new ConnectionManager();
             IntelliSenseService = connectionManager.PowershellIntelliSenseServiceChannel;
+            DebuggingService = connectionManager.PowershellDebuggingServiceChannel;
         }
 
         public T GetDialogPage<T>() where T : DialogPage

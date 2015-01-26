@@ -7,12 +7,15 @@ using System.Threading;
 using PowerShellTools.Common;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.HostService.ServiceManagement;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using PowerShellTools.HostService.ServiceManagement.Debugging;
 
 namespace PowerShellTools.HostService
 {
     internal class Program
     {
         private static ServiceHost _powershellServiceHost;
+        private static ServiceHost _powershellDebuggingServiceHost;
         private static AutoResetEvent _processExitEvent;
 
         [LoaderOptimization(LoaderOptimization.SingleDomain)]
@@ -55,11 +58,13 @@ namespace PowerShellTools.HostService
             Uri baseAddress = new Uri(Constants.ProcessManagerHostUri + endpointGuid);
             NetNamedPipeBinding binding = new NetNamedPipeBinding(NetNamedPipeSecurityMode.None);
             binding.ReceiveTimeout = TimeSpan.MaxValue;
+            binding.SendTimeout = TimeSpan.MaxValue;
             binding.Security.Transport.ProtectionLevel = ProtectionLevel.None;
             binding.MaxReceivedMessageSize = Constants.BindingMaxReceivedMessageSize;
 
             // Step 2: Create the service host.
-            CreatePowershellServiceHost(baseAddress, binding);
+            CreatePowershellIntelliSenseServiceHost(baseAddress, binding);
+            CreatePowershellDebuggingServiceHost(baseAddress, binding);
             
             // Step 3: Signal parent process that host is ready so that it can proceed.
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, readyEventName);
@@ -104,7 +109,7 @@ namespace PowerShellTools.HostService
             return 0;
         }
 
-        private static void CreatePowershellServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
+        private static void CreatePowershellIntelliSenseServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
             _powershellServiceHost = new ServiceHost(typeof(PowershellIntelliSenseService), baseAddress);
 
@@ -113,6 +118,17 @@ namespace PowerShellTools.HostService
                                                       Constants.ProcessManagerHostRelativeUri);
 
             _powershellServiceHost.Open();
+        }
+
+        private static void CreatePowershellDebuggingServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
+        {
+            _powershellDebuggingServiceHost = new ServiceHost(typeof(PowershellDebuggingService), baseAddress);
+
+            _powershellDebuggingServiceHost.AddServiceEndpoint(typeof(IPowershellDebuggingService),
+                binding,
+                Constants.DebuggingHostRelativeUri);
+
+            _powershellDebuggingServiceHost.Open();
         }
     }
 }
