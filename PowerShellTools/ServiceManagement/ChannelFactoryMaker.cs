@@ -5,21 +5,17 @@ using PowerShellTools.Common;
 
 namespace PowerShellTools.ServiceManagement
 {
-    internal static class ChannelFactoryMaker<ServiceType> where ServiceType : class
+    internal class ChannelFactoryMaker<ServiceType> where ServiceType : class
     {
-        private static ChannelFactory<ServiceType> _channelFactory;
-        private static object _syncObject = new object();
+        public ChannelFactoryMaker() { }
 
-        public static string EndPointAddress { get; set; }
-
-        public static ChannelFactory<ServiceType> CreateChannelFactory()
+        public ChannelFactory<ServiceType> CreateChannelFactory(string endPointAddress)
         {
             var binding = CreateBinding();
-            _channelFactory = new ChannelFactory<ServiceType>(binding, new EndpointAddress(EndPointAddress));
-            return _channelFactory;
+            return new ChannelFactory<ServiceType>(binding, new EndpointAddress(endPointAddress));
         }
 
-        private static NetNamedPipeBinding CreateBinding()
+        private NetNamedPipeBinding CreateBinding()
         {
             var binding = new NetNamedPipeBinding(NetNamedPipeSecurityMode.None);
             binding.ReceiveTimeout = TimeSpan.MaxValue;

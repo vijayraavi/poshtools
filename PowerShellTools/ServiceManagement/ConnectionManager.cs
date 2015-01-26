@@ -11,7 +11,6 @@ namespace PowerShellTools.ServiceManagement
     internal static class ConnectionManager
     {
         private static IPowershellIntelliSenseService _powershellIntelliSenseService;
-        private static int _hostProcessId;
         private static object _syncObject = new object();
         private static ChannelFactory<IPowershellIntelliSenseService> _channelFactory;
 
@@ -36,19 +35,16 @@ namespace PowerShellTools.ServiceManagement
         {
             var hostProcess = PowershellHostProcessFactory.EnsurePowershellHostProcess();
             hostProcess.Process.Exited += Process_Exited;
-            _hostProcessId = hostProcess.Process.Id;
 
             // net.pipe://localhost/UniqueEndpointGuid/NamedPipePowershellProcess
-            lock (_syncObject)
-            {
-                ChannelFactoryMaker<IPowershellIntelliSenseService>.EndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.ProcessManagerHostRelativeUri;
-            }
+            var endPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.ProcessManagerHostRelativeUri;
 
             try
             {
                 if (_powershellIntelliSenseService == null)
                 {
-                    _channelFactory = ChannelFactoryMaker<IPowershellIntelliSenseService>.CreateChannelFactory();
+                    var factoryMaker = new ChannelFactoryMaker<IPowershellIntelliSenseService>();
+                    _channelFactory = factoryMaker.CreateChannelFactory(endPointAddress);
                     _channelFactory.Faulted += ChannelFactoryMaker_Faulted;
                     _channelFactory.Closed += ChannelFactoryMaker_Closed;
                     _channelFactory.Open();
