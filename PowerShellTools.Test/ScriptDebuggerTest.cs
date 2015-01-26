@@ -42,7 +42,7 @@ namespace PowerShellTools.Test
                 pipe.Invoke();
             }
 
-            _debugger = new ScriptDebugger(true, null, null);
+            _debugger = new ScriptDebugger(true, null);
             _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(new List<ScriptBreakpoint>());
 
@@ -58,7 +58,7 @@ namespace PowerShellTools.Test
         [TestMethod]
         public void ShouldNotDieIfNoBreakpoints()
         {
-            _debugger = new ScriptDebugger(true, null, null);
+            _debugger = new ScriptDebugger(true, null);
             _debugger.SetRunspace(_runspace);
 
             using (var pipe = _runspace.CreatePipeline())
@@ -81,7 +81,7 @@ namespace PowerShellTools.Test
                                new ScriptBreakpoint(null, ".\\TestFile.ps1", 1, 0, engineEvents.Object)
                            };
 
-            _debugger = new ScriptDebugger(true, null, null);
+            _debugger = new ScriptDebugger(true, null);
             _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(sbps);
 
@@ -110,7 +110,7 @@ namespace PowerShellTools.Test
                                new ScriptBreakpoint(null, fi.FullName, 3, 0, engineEvents.Object)
                            };
 
-            _debugger = new ScriptDebugger(true, null, null);
+            _debugger = new ScriptDebugger(true, null);
             _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(sbps);
 
@@ -135,7 +135,7 @@ namespace PowerShellTools.Test
             var fi = new FileInfo(".\\TestFile.ps1");
 
             var sbps = new List<ScriptBreakpoint>();
-            _debugger = new ScriptDebugger(true, null, null);
+            _debugger = new ScriptDebugger(true, null);
             _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(sbps);
 
@@ -162,7 +162,7 @@ namespace PowerShellTools.Test
         public void ShouldExecuteSnippet()
         {
             var sbps = new List<ScriptBreakpoint>();
-            _debugger = new ScriptDebugger(true, null, null);
+            _debugger = new ScriptDebugger(true, null);
             _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(sbps);
 
@@ -186,7 +186,7 @@ namespace PowerShellTools.Test
         public void ShouldSupportRemoteSession()
         {
             var sbps = new List<ScriptBreakpoint>();
-            _debugger = new ScriptDebugger(true, null, null);
+            _debugger = new ScriptDebugger(true, null);
 
             _runspace.Dispose();
             _runspace = RunspaceFactory.CreateRunspace(_debugger);

@@ -41,36 +41,17 @@ namespace PowerShellTools.DebugEngine
 
         public IPowershellDebuggingService DebuggingService { get { return _debuggingService; } }
 
-        public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2, IPowershellDebuggingService debuggingService)
+        public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2)
         {
             HostUi = new HostUi(this);
 
-            InitialSessionState iss = InitialSessionState.CreateDefault();
-            iss.ApartmentState = ApartmentState.STA;
-            iss.ThreadOptions = PSThreadOptions.ReuseThread;
-
-
-            _runspace = RunspaceFactory.CreateRunspace(this, iss);
+            _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
 
             _runspaceRef = new RunspaceRef(_runspace);
-            //TODO: I think this is a v4 thing. Probably need to look into it.
-            //_runspaceRef.Runspace.Debugger.SetDebugMode(DebugModes.LocalScript | DebugModes.RemoteScript);
 
-            //Provide access to the DTE via PowerShell. 
-            //This also allows PoshTools to support StudioShell.
-            _runspace.SessionStateProxy.PSVariable.Set("dte", dte2);
-            ImportPoshToolsModule();
-            LoadProfile();
-
-            if (overrideExecutionPolicy)
-            {
-                SetupExecutionPolicy();
-            }
-            _debuggingService = debuggingService;
+            _debuggingService = PowerShellToolsPackage.DebuggingService;
             _debuggingService.InitializeRunspace();
-
-            //SetRunspace(Runspace);
         }
 
         public HostUi HostUi { get; private set; }
@@ -155,90 +136,7 @@ namespace PowerShellTools.DebugEngine
         {
             if (HostUi != null && HostUi.ReplWindow != null)
                 HostUi.ReplWindow.SetOptionValue(ReplOptions.CurrentPrimaryPrompt, GetPrompt());
-        }
-
-        private void ImportPoshToolsModule()
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                try
-                {
-                    var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-                    ps.Runspace = _runspace;
-                    ps.AddScript("Import-Module '" + assemblyLocation + "'");
-                    ps.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    Log.Info("Failed to load profile.", ex);
-                }
-            }
-        }
-
-        private void LoadProfile()
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                try
-                {
-                    var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    var windowsPowerShell = Path.Combine(myDocuments, "WindowsPowerShell");
-                    var profile = Path.Combine(windowsPowerShell, "PoshTools_profile.ps1");
-
-                    var fi = new FileInfo(profile);
-                    if (!fi.Exists)
-                    {
-                        return;
-                    }
-
-                    ps.Runspace = _runspace;
-                    ps.AddScript(". '" + profile + "'");
-                    ps.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    Log.Info("Failed to load profile.", ex);
-                }
-            }
-        }
-
-        private void SetupExecutionPolicy()
-        {
-            SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
-        }
-
-        private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                ps.Runspace = _runspace;
-                ps.AddCommand("Set-ExecutionPolicy")
-                    .AddParameter("ExecutionPolicy", policy)
-                    .AddParameter("Scope", scope)
-                    .AddParameter("Force");
-                ps.Invoke();
-            }
-        }
-
-        private ExecutionPolicy GetExecutionPolicy()
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                ps.Runspace = _runspace;
-                ps.AddCommand("Get-ExecutionPolicy");
-                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
-            }
-        }
-
-        private ExecutionPolicy GetExecutionPolicy(ExecutionPolicyScope scope)
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                ps.Runspace = _runspace;
-                ps.AddCommand("Get-ExecutionPolicy").AddParameter("Scope", scope);
-                return ps.Invoke<ExecutionPolicy>().FirstOrDefault();
-            }
-        }
+        }     
 
         private string GetPrompt()
         {
@@ -554,10 +452,5 @@ namespace PowerShellTools.DebugEngine
             BufferCell fill)
         {
         }
-    }
-
-    public interface IOutputWriter
-    {
-        void WriteLine(string message);
     }
 }

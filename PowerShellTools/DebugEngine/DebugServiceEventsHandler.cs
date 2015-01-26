@@ -22,18 +22,15 @@ namespace PowerShellTools.DebugEngine
             PowerShellToolsPackage.Debugger.VsOutputString(output);
         }
 
-
         public void TerminatingException(Exception ex)
         {
             PowerShellToolsPackage.Debugger.TerminateException(ex);
         }
 
-
         public void DebuggerFinished()
         {
             PowerShellToolsPackage.Debugger.DebuggerFinished();
         }
-
 
         public void RefreshPrompt()
         {
