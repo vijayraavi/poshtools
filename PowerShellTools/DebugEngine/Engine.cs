@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using PowerShellTools.DebugEngine.Definitions;
 using Task = System.Threading.Tasks.Task;
 using Thread = System.Threading.Thread;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 #endregion
 
@@ -169,43 +170,37 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
+        void Debugger_BreakpointUpdated(object sender, DebuggerBreakpointUpdatedEventArgs e)
         {
             if (_initializingRunspace) return;
 
             if (e.UpdateType == BreakpointUpdateType.Set)
             {
-                var lbp = e.Breakpoint as LineBreakpoint;
-                if (lbp != null)
-                {
-                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.Script, lbp.Line, lbp.Column, _events);
+
+                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.ScriptFullPath, e.Breakpoint.Line, e.Breakpoint.Column, _events);
                     breakpoint.Bind();
 
                     var bp = bps.FirstOrDefault(
                                                 m =>
-                                                m.Column == lbp.Column && m.Line == lbp.Line &&
-                                                m.File.Equals(lbp.Script, StringComparison.InvariantCultureIgnoreCase));
+                                                m.Column == e.Breakpoint.Column && m.Line == e.Breakpoint.Line &&
+                                                m.File.Equals(e.Breakpoint.ScriptFullPath, StringComparison.InvariantCultureIgnoreCase));
                     if (bp == null)
                         bps.Add(breakpoint);
-                }
             }
 
             if (e.UpdateType == BreakpointUpdateType.Removed)
             {
-                var lbp = e.Breakpoint as LineBreakpoint;
-                if (lbp != null)
-                {
+
                     var bp =bps.FirstOrDefault(
                         m =>
-                        m.Column == lbp.Column && m.Line == lbp.Line &&
-                        m.File.Equals(lbp.Script, StringComparison.InvariantCultureIgnoreCase));
+                        m.Column == e.Breakpoint.Column && m.Line == e.Breakpoint.Line &&
+                        m.File.Equals(e.Breakpoint.ScriptFullPath, StringComparison.InvariantCultureIgnoreCase));
 
                     if (bp != null)
                     {
                         bp.Delete();
                         bps.Remove(bp);
                     }
-                }
             }
         }
 
@@ -217,7 +212,6 @@ namespace PowerShellTools.DebugEngine
         void Debugger_DebuggingFinished(object sender, EventArgs e)
         {
             bps.Clear();
-            Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
             _events.ProgramDestroyed(_node);
         }
 

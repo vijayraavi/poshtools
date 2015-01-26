@@ -36,5 +36,11 @@ namespace PowerShellTools.DebugEngine
         {
             PowerShellToolsPackage.Debugger.RefreshPrompt();
         }
+
+
+        public void BreakpointUpdated(DebuggerBreakpointUpdatedEventArgs e)
+        {
+            PowerShellToolsPackage.Debugger.UpdateBreakpoint(e);
+        }
     }
 }

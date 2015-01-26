@@ -43,7 +43,7 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Event is fired when a breakpoint is updated.
         /// </summary>
-        public event EventHandler<BreakpointUpdatedEventArgs> BreakpointUpdated;
+        public event EventHandler<DebuggerBreakpointUpdatedEventArgs> BreakpointUpdated;
 
         /// <summary>
         /// Event is fired when a string is output from the PowerShell host.
@@ -107,25 +107,6 @@ namespace PowerShellTools.DebugEngine
                 _breakpoints.Add(bp);
                 bp.Bind();
             }
-        }
-
-        /// <summary>
-        /// Sets the current runspace for this debugger.
-        /// </summary>
-        /// <param name="runspace"></param>
-        public void SetRunspace(Runspace runspace)
-        {
-            if (_runspace != null)
-            {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
-            }
-
-            _runspace = runspace;
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
         }
 
         /// <summary>
@@ -252,7 +233,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                _debuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line));
+                _debuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
             }
             catch (Exception ex)
             {
@@ -260,30 +241,13 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-        void _runspace_StateChanged(object sender, RunspaceStateEventArgs e)
-        {
-            Log.InfoFormat("Runspace State Changed: {0}", e.RunspaceStateInfo.State);
-
-            switch (e.RunspaceStateInfo.State)
-            {
-                case RunspaceState.Broken:
-                case RunspaceState.Closed:
-                case RunspaceState.Disconnected:
-                    if (DebuggingFinished != null)
-                    {
-                        DebuggingFinished(this, new EventArgs());
-                    }
-                    break;
-            }
-        }
-
-        void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
+        public void UpdateBreakpoint(DebuggerBreakpointUpdatedEventArgs e)
         {
             Log.InfoFormat("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
 
             if (BreakpointUpdated != null)
             {
-                BreakpointUpdated(sender, e);
+                BreakpointUpdated(this, e);
             }
         }
 
@@ -325,8 +289,6 @@ namespace PowerShellTools.DebugEngine
 
             RefreshScopedVariables();
             RefreshCallStack();
-
-
 
             if (!ProcessLineBreakpoints(e.ScriptFullPath, e.Line, e.Column))
             {

@@ -14,6 +14,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void DebuggerStopped(DebuggerStoppedEventArgs args);
 
         [OperationContract(IsOneWay = true)]
+        void BreakpointUpdated(DebuggerBreakpointUpdatedEventArgs args);
+
+        [OperationContract(IsOneWay = true)]
         void OutputString(string output);
 
         [OperationContract(IsOneWay = true)]

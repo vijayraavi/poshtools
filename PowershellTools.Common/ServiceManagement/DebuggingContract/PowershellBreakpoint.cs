@@ -16,10 +16,14 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         [DataMember]
         public int Line { get; set; }
 
-        public PowershellBreakpoint(string file, int line)
+        [DataMember]
+        public int Column { get; set; }
+
+        public PowershellBreakpoint(string file, int line, int column)
         {
             ScriptFullPath = file;
             Line = line;
+            Column = column;
         }
     }
 }

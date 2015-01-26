@@ -197,12 +197,30 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void _runspace_StateChanged(object sender, RunspaceStateEventArgs e)
         {
-            //throw new NotImplementedException();
+            Console.WriteLine("Runspace State Changed: {0}", e.RunspaceStateInfo.State);
+
+            switch (e.RunspaceStateInfo.State)
+            {
+                case RunspaceState.Broken:
+                case RunspaceState.Closed:
+                case RunspaceState.Disconnected:
+                    if (_callback != null)
+                    {
+                        _callback.DebuggerFinished();
+                    }
+                    break;
+            }
         }
 
         private void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
-            //throw new NotImplementedException();
+            Console.WriteLine("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
+
+            if (_callback != null)
+            {
+                var lbp = e.Breakpoint as LineBreakpoint;
+                _callback.BreakpointUpdated(new DebuggerBreakpointUpdatedEventArgs(new PowershellBreakpoint(e.Breakpoint.Script, lbp.Line, lbp.Column), e.UpdateType));
+            }
         }
 
         public void NotifyOutputString(string value)
@@ -269,17 +287,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _currentPowerShell.Invoke(null, objects);
                 }
             }
-            catch (PSInvalidOperationException ex)
-            {
-                Log("Error" + ex);
-                _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
-            }
+            //catch (PSInvalidOperationException ex)
+            //{
+            //    Log("Error" + ex);
+            //    _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
+            //}
             catch (Exception ex)
             {
                 Log("Terminating error" + ex);
                 _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
 
                 OnTerminatingException(ex);
+            }
+            finally
+            {
                 DebuggerFinished();
             }
         }
@@ -403,7 +424,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (psVariable != null && psVariable is PSObject)
             {
-                int i = 0;
                 foreach (var prop in ((PSObject)psVariable).Properties)
                 {
                     if (propsVariable.Any(m => m.VarName == prop.Name))

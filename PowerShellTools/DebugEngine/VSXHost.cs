@@ -103,7 +103,6 @@ namespace PowerShellTools.DebugEngine
         {
             Pipeline runningCmd = EnterPSSessionCommandWrapper.ConnectRunningPipeline(newRunspace);
             _runspaceRef.Override(newRunspace);
-            SetRunspace(newRunspace);
             var oldRunspace = _runspaceRef.OldRunspace;
             // EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, this, true, oldRunspace);
             RegisterRemoteFileOpenEvent(newRunspace);
@@ -113,7 +112,6 @@ namespace PowerShellTools.DebugEngine
         {
             UnregisterRemoteFileOpenEvent(Runspace);
             _runspaceRef.Revert();
-            SetRunspace(Runspace);
         }
 
         public bool IsRunspacePushed

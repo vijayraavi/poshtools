@@ -43,7 +43,6 @@ namespace PowerShellTools.Test
             }
 
             _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(new List<ScriptBreakpoint>());
 
             using (var pipe = _runspace.CreatePipeline())
@@ -59,7 +58,6 @@ namespace PowerShellTools.Test
         public void ShouldNotDieIfNoBreakpoints()
         {
             _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
 
             using (var pipe = _runspace.CreatePipeline())
             {
@@ -82,7 +80,6 @@ namespace PowerShellTools.Test
                            };
 
             _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(sbps);
 
             using (var pipe = _runspace.CreatePipeline())
@@ -111,7 +108,6 @@ namespace PowerShellTools.Test
                            };
 
             _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
@@ -136,7 +132,6 @@ namespace PowerShellTools.Test
 
             var sbps = new List<ScriptBreakpoint>();
             _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
@@ -163,7 +158,6 @@ namespace PowerShellTools.Test
         {
             var sbps = new List<ScriptBreakpoint>();
             _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
@@ -191,7 +185,6 @@ namespace PowerShellTools.Test
             _runspace.Dispose();
             _runspace = RunspaceFactory.CreateRunspace(_debugger);
             _runspace.Open();
-            _debugger.SetRunspace(_runspace);
             _debugger.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
