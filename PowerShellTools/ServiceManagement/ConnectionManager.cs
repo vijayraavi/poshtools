@@ -31,7 +31,7 @@ namespace PowerShellTools.ServiceManagement
             }
         }
 
-        public static void OpenClientConnection()
+        private static void OpenClientConnection()
         {
             var hostProcess = PowershellHostProcessFactory.EnsurePowershellHostProcess();
             hostProcess.Process.Exited += Process_Exited;
