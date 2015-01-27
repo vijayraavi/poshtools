@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using PowerShellTools.Common;
 
 namespace PowerShellTools.ServiceManagement
@@ -59,11 +55,11 @@ namespace PowerShellTools.ServiceManagement
                                             "{0}{1} {2}{3} {4}{5}",
                                             Constants.UniqueEndpointArg, endPointGuid, // For generating a unique endpoint address 
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
-                                            Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName); 
+                                            Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName);
 
             powershellHostProcess.StartInfo.Arguments = hostArgs;
             powershellHostProcess.StartInfo.FileName = path;
-            powershellHostProcess.StartInfo.CreateNoWindow = true; 
+            powershellHostProcess.StartInfo.CreateNoWindow = true;
             powershellHostProcess.StartInfo.UseShellExecute = true;
             powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
@@ -72,7 +68,7 @@ namespace PowerShellTools.ServiceManagement
             powershellHostProcess.Start();
             powershellHostProcess.EnableRaisingEvents = true;
             powershellHostProcess.Exited += PowershellHostProcess_Exited;
-            bool success = readyEvent.WaitOne(Constants.HostProcessStartupTimeout, false);            
+            bool success = readyEvent.WaitOne(Constants.HostProcessStartupTimeout, false);
             readyEvent.Close();
 
             if (!success)
@@ -91,8 +87,8 @@ namespace PowerShellTools.ServiceManagement
                     powershellHostProcess = null;
                 }
                 throw new PowershellHostProcessException(String.Format(CultureInfo.CurrentCulture,
-                                                                        Resources.ErrorFailToCreateProcess,
-                                                                        powershellHostProcess.Id));
+                                                                       Resources.ErrorFailToCreateProcess,
+                                                                       powershellHostProcess.Id));
             }
 
             return new PowershellHostProcess
