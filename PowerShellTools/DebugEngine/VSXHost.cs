@@ -39,7 +39,7 @@ namespace PowerShellTools.DebugEngine
         private readonly RunspaceRef _runspaceRef;
         private IPowershellDebuggingService _debuggingService;
 
-        public IPowershellDebuggingService DebuggingService { get { return _debuggingService; } }
+        public IPowershellDebuggingService DebuggingService { get; set; }
 
         public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2)
         {
@@ -50,6 +50,18 @@ namespace PowerShellTools.DebugEngine
             _runspaceRef = new RunspaceRef(_runspace);
 
             _debuggingService = PowerShellToolsPackage.DebuggingService;
+            _debuggingService.InitializeRunspace();
+        }
+
+        public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2, IPowershellDebuggingService service)
+        {
+            //TODO: remove once user prompt work is finished for debugging
+            HostUi = new HostUi(this);
+            _runspace = RunspaceFactory.CreateRunspace();
+            _runspace.Open();
+            _runspaceRef = new RunspaceRef(_runspace);
+
+            _debuggingService = service;
             _debuggingService.InitializeRunspace();
         }
 

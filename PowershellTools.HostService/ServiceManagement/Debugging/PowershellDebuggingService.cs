@@ -46,7 +46,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         ///     The runspace used by the current PowerShell host.
         /// </summary>
-        public Runspace Runspace { get; set; }
+        public Runspace Runspace 
+        {
+            get
+            {
+                return _runspace;
+            }
+        }
+
+        public IDebugEngineCallback CallbackService
+        {
+            get
+            {
+                return _callback;
+            }
+            set 
+            {
+                _callback = value;
+            }
+        }
 
         #region Event handlers for debugger events inside service
 
@@ -95,7 +113,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public void NotifyOutputString(string value)
         {
             ServiceCommon.Log("Callback to client for string output in VS", ConsoleColor.Yellow);
-            _callback.OutputString(value);
+            if (_callback != null)
+            {
+                _callback.OutputString(value);
+            }
         }
 
         /// <summary>
@@ -114,11 +135,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             if (e.Breakpoints.Count > 0)
             {
                 LineBreakpoint bp = (LineBreakpoint)e.Breakpoints[0];
-                _callback.DebuggerStopped(new DebuggerStoppedEventArgs(bp.Script, bp.Line, bp.Column));
+                if (_callback != null)
+                {
+                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(bp.Script, bp.Line, bp.Column));
+                }
             }
             else
             {
-                _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
+                if (_callback != null)
+                {
+                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
+                }
             }
             _pausedEvent.WaitOne();
             ServiceCommon.Log(string.Format("Debuggee resume action is {0}", _resumeAction));
@@ -213,8 +240,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 return;
             }
+            try
+            {
+                if (_callback == null)
+                {
+                    _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log("No instance context retrieved.");
+            }
 
-            _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
             try
             {
                 using (_currentPowerShell = PowerShell.Create())
@@ -234,7 +271,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             catch (Exception ex)
             {
                 ServiceCommon.Log("Terminating error" + ex);
-                _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
+                if (_callback != null)
+                {
+                    _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
+                }
 
                 OnTerminatingException(ex);
             }
@@ -432,13 +472,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
             _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
             _runspace.StateChanged -= _runspace_StateChanged;
-            _callback.TerminatingException(new DebuggingServiceException(ex));
+            if (_callback != null)
+            {
+                _callback.TerminatingException(new DebuggingServiceException(ex));
+            }
         }
 
         private void DebuggerFinished()
         {
             ServiceCommon.Log("DebuggerFinished");
-            _callback.RefreshPrompt();
+            if (_callback != null)
+            {
+                _callback.RefreshPrompt();
+            }
 
             if (_runspace != null)
             {
@@ -447,8 +493,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _runspace.StateChanged -= _runspace_StateChanged;
             }
 
-
-            _callback.DebuggerFinished();
+            if (_callback != null)
+            {
+                _callback.DebuggerFinished();
+            }
         }
 
         private void objects_DataAdded(object sender, DataAddedEventArgs e)

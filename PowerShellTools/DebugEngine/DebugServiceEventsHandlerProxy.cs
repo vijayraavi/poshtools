@@ -14,15 +14,36 @@ namespace PowerShellTools.DebugEngine
     /// This works as InstanceContext for debugger service channel
     /// </summary>
     [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
-    class DebugServiceEventsHandlerProxy : IDebugEngineCallback
+    public class DebugServiceEventsHandlerProxy : IDebugEngineCallback
     {
+        private ScriptDebugger _debugger;
+
+        public DebugServiceEventsHandlerProxy(){}
+
+        public DebugServiceEventsHandlerProxy(ScriptDebugger debugger)
+        {
+            _debugger = debugger;
+        }
+
+        public ScriptDebugger Debugger
+        {
+            get 
+            {
+                if (_debugger == null)
+                {
+                    _debugger = PowerShellToolsPackage.Debugger;
+                }
+                return _debugger;
+            }
+        }
+
         /// <summary>
         /// Debugger stopped
         /// </summary>
         /// <param name="e"></param>
         public void DebuggerStopped(DebuggerStoppedEventArgs e)
         {
-            PowerShellToolsPackage.Debugger.DebuggerStop(e);
+            Debugger.DebuggerStop(e);
         }
 
         /// <summary>
@@ -31,7 +52,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="e"></param>
         public void BreakpointUpdated(DebuggerBreakpointUpdatedEventArgs e)
         {
-            PowerShellToolsPackage.Debugger.UpdateBreakpoint(e);
+            Debugger.UpdateBreakpoint(e);
         }
 
         /// <summary>
@@ -40,7 +61,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="output"></param>
         public void OutputString(string output)
         {
-            PowerShellToolsPackage.Debugger.VsOutputString(output);
+            Debugger.VsOutputString(output);
         }
 
         /// <summary>
@@ -48,7 +69,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void DebuggerFinished()
         {
-            PowerShellToolsPackage.Debugger.DebuggerFinished();
+            Debugger.DebuggerFinished();
         }
 
         /// <summary>
@@ -57,7 +78,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="ex"></param>
         public void TerminatingException(DebuggingServiceException ex)
         {
-            PowerShellToolsPackage.Debugger.TerminateException(ex);
+            Debugger.TerminateException(ex);
         }
 
         /// <summary>
@@ -65,7 +86,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void RefreshPrompt()
         {
-            PowerShellToolsPackage.Debugger.RefreshPrompt();
+            Debugger.RefreshPrompt();
         }
     }
 }
