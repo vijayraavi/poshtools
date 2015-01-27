@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
-    public class PowershellDebuggingService : PSHost, IPowershellDebuggingService
+    public partial class PowershellDebuggingService : IPowershellDebuggingService
     {
         private Runspace _runspace;
         private PowerShell _currentPowerShell;
@@ -27,174 +27,34 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private DebuggerResumeAction _resumeAction;
         private IEnumerable<PSObject> _varaiables;
         private IEnumerable<PSObject> _callstack;
-        private string _log;
+        private string log;
         private Collection<PSVariable> _localVariables;
         private Dictionary<string, Object> _propVariables;
-
-        /// <summary>
-        /// The identifier of this PSHost implementation.
-        /// </summary>
-        private Guid myId = Guid.NewGuid();
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
-
-        public HostUi HostUi { get; private set; }
-
-        public override PSHostUserInterface UI
-        {
-            get { return HostUi; }
-        }
-
-        private void Log(string msg)
-        {
-            Log(msg, ConsoleColor.Green);
-        }
-
-        private void Log(string msg, ConsoleColor c)
-        {
-            Console.ForegroundColor = c;
-            Console.WriteLine(msg);
-            Console.ResetColor();
-        }
+        private ServiceCommon _serviceCommon;
 
         public PowershellDebuggingService()
         {
-            Log("Initializing debugging engine service ...", ConsoleColor.Green);
+            ServiceCommon.Log("Initializing debugging engine service ...");
             HostUi = new HostUi(this);
             _localVariables = new Collection<PSVariable>();
             _propVariables = new Dictionary<string, object>();
+            _serviceCommon = new ServiceCommon(this);
+            _runspace = _serviceCommon.Runspace;
         }
-
-        /// <summary>
-        /// Gets a string that contains the name of this host implementation. 
-        /// Keep in mind that this string may be used by script writers to
-        /// identify when your host is being used.
-        /// </summary>
-        public override string Name
-        {
-            get { return "PowershellToolOutProcHost"; }
-        }
-
-        /// <summary>
-        /// This implementation always returns the GUID allocated at 
-        /// instantiation time.
-        /// </summary>
-        public override Guid InstanceId
-        {
-            get { return this.myId; }
-        }
-
 
         /// <summary>
         ///     The runspace used by the current PowerShell host.
         /// </summary>
-        public Runspace Runspace
-        {
-            get { return _runspace; }
-        }
+        public Runspace Runspace { get; set; }
 
-        public void InitializeRunspace()
-        {
-            Log("Initializing run space with debugger", ConsoleColor.Green);
-            InitialSessionState iss = InitialSessionState.CreateDefault();
-            iss.ApartmentState = ApartmentState.STA;
-            iss.ThreadOptions = PSThreadOptions.ReuseThread;
+        #region Event handlers for debugger events inside service
 
-
-            _runspace = RunspaceFactory.CreateRunspace(this, iss);
-            _runspace.Open();
-
-            ImportPoshToolsModule();
-            LoadProfile();
-
-            SetupExecutionPolicy();
-            SetRunspace(Runspace);
-        }
-
-        private void ImportPoshToolsModule()
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                try
-                {
-                    var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-                    ps.Runspace = _runspace;
-                    ps.AddScript("Import-Module '" + assemblyLocation + "'");
-                    ps.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Failed to load profile.", ex);
-                }
-            }
-        }
-
-        private void LoadProfile()
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                try
-                {
-                    var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    var windowsPowerShell = Path.Combine(myDocuments, "WindowsPowerShell");
-                    var profile = Path.Combine(windowsPowerShell, "PoshTools_profile.ps1");
-
-                    var fi = new FileInfo(profile);
-                    if (!fi.Exists)
-                    {
-                        return;
-                    }
-
-                    ps.Runspace = _runspace;
-                    ps.AddScript(". '" + profile + "'");
-                    ps.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Failed to load profile.", ex);
-                }
-            }
-        }
-
-        private void SetupExecutionPolicy()
-        {
-            SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
-        }
-
-        private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                ps.Runspace = _runspace;
-                ps.AddCommand("Set-ExecutionPolicy")
-                    .AddParameter("ExecutionPolicy", policy)
-                    .AddParameter("Scope", scope);
-                ps.Invoke();
-            }
-        }
-
-        public void SetRunspace(Runspace runspace)
-        {
-            if (_runspace != null)
-            {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
-            }
-
-            _runspace = runspace;
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
-        }
-
-        public void SetResumeAction(DebuggerResumeAction action)
-        {
-            Log("Client respond with resume action", ConsoleColor.Green);
-            _resumeAction = action;
-            _pausedEvent.Set();
-        }
-
-
+        /// <summary>
+        /// Runspace state change event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void _runspace_StateChanged(object sender, RunspaceStateEventArgs e)
         {
             Console.WriteLine("Runspace State Changed: {0}", e.RunspaceStateInfo.State);
@@ -212,6 +72,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Breakpoint updates (such as enabled/disabled)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
             Console.WriteLine("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
@@ -223,20 +88,29 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Debugging output event handler
+        /// </summary>
+        /// <param name="value">String to output</param>
         public void NotifyOutputString(string value)
         {
-            Log("Callback to client for string output in VS", ConsoleColor.Yellow);
+            ServiceCommon.Log("Callback to client for string output in VS", ConsoleColor.Yellow);
             _callback.OutputString(value);
         }
 
+        /// <summary>
+        /// PS debugger stopped event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
         {
-            Log("Debugger stopped ...");
+            ServiceCommon.Log("Debugger stopped ...");
             RefreshScopedVariable();
             RefreshCallStack();
 
 
-            Log("Callback to client, and wait for debuggee to resume", ConsoleColor.Yellow);
+            ServiceCommon.Log("Callback to client, and wait for debuggee to resume", ConsoleColor.Yellow);
             if (e.Breakpoints.Count > 0)
             {
                 LineBreakpoint bp = (LineBreakpoint)e.Breakpoints[0];
@@ -247,14 +121,41 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
             }
             _pausedEvent.WaitOne();
-            Log(string.Format("Debuggee resume action is {0}", _resumeAction));
+            ServiceCommon.Log(string.Format("Debuggee resume action is {0}", _resumeAction));
             e.ResumeAction = _resumeAction;
         }
 
+        #endregion
+
+        #region Debugging service calls
+
+        /// <summary>
+        /// Initialize of powershell runspace
+        /// </summary>
+        public void InitializeRunspace()
+        {
+            SetRunspace(_runspace);
+        }
+
+        /// <summary>
+        /// Client respond with resume action to service
+        /// </summary>
+        /// <param name="action">Resumeaction from client</param>
+        public void SetResumeAction(DebuggerResumeAction action)
+        {
+            ServiceCommon.Log("Client respond with resume action", ConsoleColor.Green);
+            _resumeAction = action;
+            _pausedEvent.Set();
+        }
+
+        /// <summary>
+        /// Sets breakpoint for the current runspace.
+        /// </summary>
+        /// <param name="bp">Breakpoint to set</param>
         public void SetBreakpoint(PowershellBreakpoint bp)
         {
-            Log("Setting breakpoing ...");
-             using (var pipeline = (_runspace.CreatePipeline()))
+            ServiceCommon.Log("Setting breakpoing ...");
+            using (var pipeline = (_runspace.CreatePipeline()))
             {
                 var command = new Command("Set-PSBreakpoint");
                 command.Parameters.Add("Script", bp.ScriptFullPath);
@@ -266,9 +167,52 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Clears existing breakpoints for the current runspace.
+        /// </summary>
+        public void ClearBreakpoints()
+        {
+            ServiceCommon.Log("ClearBreakpoints");
+
+            IEnumerable<PSObject> breakpoints;
+            using (var pipeline = (_runspace.CreatePipeline()))
+            {
+                var command = new Command("Get-PSBreakpoint");
+                pipeline.Commands.Add(command);
+                breakpoints = pipeline.Invoke();
+            }
+
+            if (!breakpoints.Any()) return;
+
+            try
+            {
+                using (var pipeline = (_runspace.CreatePipeline()))
+                {
+                    var command = new Command("Remove-PSBreakpoint");
+                    command.Parameters.Add("Breakpoint", breakpoints);
+                    pipeline.Commands.Add(command);
+
+                    pipeline.Invoke();
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log("Failed to clear breakpoints.");
+            }
+        }
+
+        /// <summary>
+        /// Execute the specified command line from client
+        /// </summary>
+        /// <param name="commandLine">Command line to execute</param>
         public void Execute(string commandLine)
         {
-            Log("Start executing ps script ...");
+            ServiceCommon.Log("Start executing ps script ...");
+
+            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
+            {
+                return;
+            }
 
             _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
             try
@@ -287,72 +231,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _currentPowerShell.Invoke(null, objects);
                 }
             }
-            //catch (PSInvalidOperationException ex)
-            //{
-            //    Log("Error" + ex);
-            //    _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
-            //}
             catch (Exception ex)
             {
-                Log("Terminating error" + ex);
+                ServiceCommon.Log("Terminating error" + ex);
                 _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
 
                 OnTerminatingException(ex);
             }
             finally
             {
+                _currentPowerShell.Stop();
                 DebuggerFinished();
             }
         }
 
-        private void OnTerminatingException(Exception ex)
-        {
-            Log("OnTerminatingException");
-            _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-            _runspace.StateChanged -= _runspace_StateChanged;
-            _callback.TerminatingException(ex);
-        }
 
-        private void DebuggerFinished()
-        {
-            Log("DebuggerFinished");
-            _callback.RefreshPrompt();
-
-            if (_runspace != null)
-            {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
-            }
-
-
-            _callback.DebuggerFinished();
-        }
-
-        private void RefreshScopedVariable()
-        {
-            Log("Debuggger stopped, let us retreive all local variable in scope");
-
-            using (var pipeline = (_runspace.CreateNestedPipeline()))
-            {
-                var command = new Command("Get-Variable");
-                pipeline.Commands.Add(command);
-                _varaiables = pipeline.Invoke();
-            }
-        }
-
-        private void RefreshCallStack()
-        {
-            Log("Debuggger stopped, let us retreive all call stack frames");
-            using (var pipeline = (_runspace.CreateNestedPipeline()))
-            {
-                var command = new Command("Get-PSCallstack");
-                pipeline.Commands.Add(command);
-                _callstack = pipeline.Invoke();
-            }
-        }
-
+        /// <summary>
+        /// Get all local scoped variables for client
+        /// </summary>
+        /// <returns>Collection of variable to client</returns>
         public Collection<Variable> GetScopedVariable()
         {
             Collection<Variable>  variables = new Collection<Variable>();
@@ -368,13 +265,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
             }
 
-
             return variables;
         }
 
+
+        /// <summary>
+        /// Expand IEnumerable to retrieve all elements
+        /// </summary>
+        /// <param name="varName">IEnumerable object name</param>
+        /// <returns>Collection of variable to client</returns>
         public Collection<Variable> GetExpandedIEnumerableVariable(string varName)
         {
-            Log("Client tries to watch an IEnumerable variable, dump its content ...");
+            ServiceCommon.Log("Client tries to watch an IEnumerable variable, dump its content ...");
 
             Collection<Variable> expandedVariable = new Collection<Variable>();
 
@@ -407,10 +309,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return expandedVariable;
         }
 
+
+        /// <summary>
+        /// Expand PSObject to retrieve all its properties
+        /// </summary>
+        /// <param name="varName">PSObject name</param>
+        /// <returns>Collection of variable to client</returns>
         public Collection<Variable> GetPSObjectVariable(string varName)
         {
-
-            Log("Client tries to watch an PSObject variable, dump its content ...");
+            ServiceCommon.Log("Client tries to watch an PSObject variable, dump its content ...");
 
             Collection<Variable> propsVariable = new Collection<Variable>();
 
@@ -455,11 +362,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return propsVariable;
         }
 
-
+        /// <summary>
+        /// Respond client request for callstack frames of current execution context
+        /// </summary>
+        /// <returns>Collection of callstack to client</returns>
         public IEnumerable<CallStack> GetCallStack()
         {
-
-            Log("Obtaining the context for wcf callback");
+            ServiceCommon.Log("Obtaining the context for wcf callback");
             List<CallStackFrame> callStackFrames = new List<CallStackFrame>();
 
             foreach (var psobj in _callstack)
@@ -474,112 +383,82 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return callStackFrames.Select(c => new CallStack(c.ScriptName, c.FunctionName, c.ScriptLineNumber));
         }
 
-        void objects_DataAdded(object sender, DataAddedEventArgs e)
+        #endregion
+
+        #region private helper
+
+        private void SetRunspace(Runspace runspace)
         {
-             var list = sender as PSDataCollection<PSObject>;
-                _log += list[e.Index] + Environment.NewLine;
+            if (_runspace != null)
+            {
+                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+                _runspace.StateChanged -= _runspace_StateChanged;
+            }
+
+            _runspace = runspace;
+            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            _runspace.StateChanged += _runspace_StateChanged;
+        }
+
+        private void RefreshScopedVariable()
+        {
+            ServiceCommon.Log("Debuggger stopped, let us retreive all local variable in scope");
+
+            using (var pipeline = (_runspace.CreateNestedPipeline()))
+            {
+                var command = new Command("Get-Variable");
+                pipeline.Commands.Add(command);
+                _varaiables = pipeline.Invoke();
+            }
+        }
+
+        private void RefreshCallStack()
+        {
+            ServiceCommon.Log("Debuggger stopped, let us retreive all call stack frames");
+            using (var pipeline = (_runspace.CreateNestedPipeline()))
+            {
+                var command = new Command("Get-PSCallstack");
+                pipeline.Commands.Add(command);
+                _callstack = pipeline.Invoke();
+            }
+        }
+
+
+        private void OnTerminatingException(Exception ex)
+        {
+            ServiceCommon.Log("OnTerminatingException");
+            _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+            _runspace.StateChanged -= _runspace_StateChanged;
+            _callback.TerminatingException(new DebuggingServiceException(ex));
+        }
+
+        private void DebuggerFinished()
+        {
+            ServiceCommon.Log("DebuggerFinished");
+            _callback.RefreshPrompt();
+
+            if (_runspace != null)
+            {
+                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+                _runspace.StateChanged -= _runspace_StateChanged;
+            }
+
+
+            _callback.DebuggerFinished();
+        }
+
+        private void objects_DataAdded(object sender, DataAddedEventArgs e)
+        {
+            var list = sender as PSDataCollection<PSObject>;
+            log += list[e.Index] + Environment.NewLine;
 
         }
 
-        /// <summary>
-        /// Gets the version object for this application. Typically this 
-        /// should match the version resource in the application.
-        /// </summary>
-        public override Version Version
-        {
-            get { return new Version(1, 0, 0, 0); }
-        }
-
-        /// <summary>
-        /// This API Instructs the host to interrupt the currently running 
-        /// pipeline and start a new nested input loop. In this example this 
-        /// functionality is not needed so the method throws a 
-        /// NotImplementedException exception.
-        /// </summary>
-        public override void EnterNestedPrompt()
-        {
-            throw new NotImplementedException(
-                  "The method or operation is not implemented.");
-        }
-
-        /// <summary>
-        /// This API instructs the host to exit the currently running input loop. 
-        /// In this example this functionality is not needed so the method 
-        /// throws a NotImplementedException exception.
-        /// </summary>
-        public override void ExitNestedPrompt()
-        {
-            throw new NotImplementedException(
-                  "The method or operation is not implemented.");
-        }
-
-        /// <summary>
-        /// This API is called before an external application process is 
-        /// started. Typically it is used to save state so that the parent  
-        /// can restore state that has been modified by a child process (after 
-        /// the child exits). In this example this functionality is not  
-        /// needed so the method returns nothing.
-        /// </summary>
-        public override void NotifyBeginApplication()
-        {
-            return;
-        }
-
-        /// <summary>
-        /// This API is called after an external application process finishes.
-        /// Typically it is used to restore state that a child process has
-        /// altered. In this example, this functionality is not needed so  
-        /// the method returns nothing.
-        /// </summary>
-        public override void NotifyEndApplication()
-        {
-            return;
-        }
-
-        /// <summary>
-        /// Indicate to the host application that exit has
-        /// been requested. Pass the exit code that the host
-        /// application should use when exiting the process.
-        /// </summary>
-        /// <param name="exitCode">The exit code that the 
-        /// host application should use.</param>
-        public override void SetShouldExit(int exitCode)
-        {
-
-        }
-        /// <summary>
-        /// The culture information of the thread that created
-        /// this object.
-        /// </summary>
-        private CultureInfo originalCultureInfo =
-            System.Threading.Thread.CurrentThread.CurrentCulture;
-
-        /// <summary>
-        /// The UI culture information of the thread that created
-        /// this object.
-        /// </summary>
-        private CultureInfo originalUICultureInfo =
-            System.Threading.Thread.CurrentThread.CurrentUICulture;
-
-        /// <summary>
-        /// Gets the culture information to use. This implementation 
-        /// returns a snapshot of the culture information of the thread 
-        /// that created this object.
-        /// </summary>
-        public override System.Globalization.CultureInfo CurrentCulture
-        {
-            get { return this.originalCultureInfo; }
-        }
-
-        /// <summary>
-        /// Gets the UI culture information to use. This implementation 
-        /// returns a snapshot of the UI culture information of the thread 
-        /// that created this object.
-        /// </summary>
-        public override System.Globalization.CultureInfo CurrentUICulture
-        {
-            get { return this.originalUICultureInfo; }
-        }
+        #endregion
 
     }
 }

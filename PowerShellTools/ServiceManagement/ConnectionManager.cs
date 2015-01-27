@@ -66,7 +66,7 @@ namespace PowerShellTools.ServiceManagement
                 if (_powershellDebuggingServiceChannel == null)
                 {
                     var factory = ClientFactory<IPowershellDebuggingService>.ClientInstance;
-                    _powershellDebuggingServiceChannel = factory.CreateDuplexServiceClient(clientDeubggingServiceEndPointAddress, new InstanceContext(new DebugServiceEventsHandler()));
+                    _powershellDebuggingServiceChannel = factory.CreateDuplexServiceClient(clientDeubggingServiceEndPointAddress, new InstanceContext(new DebugServiceEventsHandlerProxy()));
                 }
 
             }

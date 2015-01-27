@@ -328,7 +328,7 @@ namespace PowerShellTools.DebugEngine
             out IDebugProperty2 ppResult)
         {
             Log.Debug("EvaluateSync");
-            ppResult = ScriptPropertyFactory.MakeProperty(_debugger, _var, string.Empty);
+            ppResult = ScriptPropertyFactory.MakeProperty(_debugger, _var, string.Empty); // no parent path
             return VSConstants.S_OK;
         }
 

@@ -43,11 +43,10 @@ namespace PowerShellTools.DebugEngine
 
         public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2)
         {
+            //TODO: remove once user prompt work is finished for debugging
             HostUi = new HostUi(this);
-
             _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
-
             _runspaceRef = new RunspaceRef(_runspace);
 
             _debuggingService = PowerShellToolsPackage.DebuggingService;

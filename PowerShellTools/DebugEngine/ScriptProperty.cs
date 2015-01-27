@@ -43,15 +43,12 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public class EnumerableScriptProperty : ScriptProperty
     {
-        private readonly IEnumerable _enumerable;
-        private ScriptDebugger _debugger;
         private string _val;
         private string _path;
 
         public EnumerableScriptProperty(ScriptDebugger debugger, Variable var, string parentPath)
             : base(debugger, var)
         {
-            _debugger = debugger;
             _val = var.VarName;
             _path = parentPath;
         }
@@ -74,15 +71,12 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public class PSObjectScriptProperty : ScriptProperty
     {
-        private readonly PSObject _psObject;
-        private ScriptDebugger _debugger;
         private string _val;
         private string _path;
 
         public PSObjectScriptProperty(ScriptDebugger debugger, Variable var, string parentPath)
             : base(debugger, var)
         {
-            _debugger = debugger;
             _val = var.VarName;
             _path = parentPath;
         }
@@ -204,7 +198,7 @@ namespace PowerShellTools.DebugEngine
         protected virtual IEnumerable<ScriptProperty> GetChildren()
         {
             var props = Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            return props.Select(propertyInfo => ScriptPropertyFactory.MakeProperty(_debugger, new Variable(propertyInfo.Name, propertyInfo.GetValue(Value, null).ToString(), "", false, false), ""));
+            return props.Select(propertyInfo => ScriptPropertyFactory.MakeProperty(_debugger, new Variable(propertyInfo.Name, propertyInfo.GetValue(Value, null).ToString(), string.Empty, false, false), string.Empty));
         }
 
         public int GetParent(out IDebugProperty2 ppParent)

@@ -63,10 +63,13 @@ namespace PowerShellTools.ServiceManagement
 
             powershellHostProcess.StartInfo.Arguments = hostArgs;
             powershellHostProcess.StartInfo.FileName = path;
-            powershellHostProcess.StartInfo.CreateNoWindow = false; 
-            powershellHostProcess.StartInfo.UseShellExecute = true;
+#if DEBUG
+            powershellHostProcess.StartInfo.CreateNoWindow = false;
             powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
-
+#else
+            powershellHostProcess.StartInfo.UseShellExecute = true;
+            powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+#endif
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, hostProcessReadyEventName);
 
             powershellHostProcess.Start();

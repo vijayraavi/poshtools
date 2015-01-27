@@ -195,36 +195,14 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         private void ClearBreakpoints()
         {
-            Log.Info("ClearBreakpoints");
-
-            IEnumerable<PSObject> breakpoints;
-            using (var pipeline = (_runspace.CreatePipeline()))
-            {
-                var command = new Command("Get-PSBreakpoint");
-                pipeline.Commands.Add(command);
-                breakpoints = pipeline.Invoke();
-            }
-
-            if (!breakpoints.Any()) return;
-
-            Log.InfoFormat("Clearing {0} breakpoints.", breakpoints.Count());
-
             try
             {
-                using (var pipeline = (_runspace.CreatePipeline()))
-                {
-                    var command = new Command("Remove-PSBreakpoint");
-                    command.Parameters.Add("Breakpoint", breakpoints);
-                    pipeline.Commands.Add(command);
-
-                    pipeline.Invoke();
-                }
+                _debuggingService.ClearBreakpoints();
             }
             catch (Exception ex)
             {
-                Log.Error("Failed to clear breakpoints.", ex);
+                Log.Error("Failed to clear existing breakpoints", ex);
             }
-
         }
 
         private void SetBreakpoint(ScriptBreakpoint breakpoint)
@@ -240,52 +218,19 @@ namespace PowerShellTools.DebugEngine
                 Log.Error("Failed to set breakpoint.", ex);
             }
         }
+        
+        #region Debugging service event handlers
 
-        public void UpdateBreakpoint(DebuggerBreakpointUpdatedEventArgs e)
-        {
-            Log.InfoFormat("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
 
-            if (BreakpointUpdated != null)
-            {
-                BreakpointUpdated(this, e);
-            }
-        }
 
-        void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
-        {
-            Log.InfoFormat("Debugger stopped");
 
-            if (CurrentExecutingNode == null) return;
-
-            RefreshScopedVariables();
-            RefreshCallStack();
-
-            if (e.Breakpoints.Count == 0)
-            {
-                if (DebuggerPaused != null)
-                {
-                    var scriptLocation = new ScriptLocation();
-                    scriptLocation.File = e.InvocationInfo.ScriptName;
-                    scriptLocation.Line = e.InvocationInfo.ScriptLineNumber;
-                    scriptLocation.Column = 0;
-
-                    DebuggerPaused(this, new EventArgs<ScriptLocation>(scriptLocation));
-                }
-            }
-
-            Log.Debug("Waiting for debuggee to resume.");
-
-            //Wait for the user to step, continue or stop
-            _pausedEvent.WaitOne();
-            Log.DebugFormat("Debuggee resume action is {0}", _resumeAction);
-            e.ResumeAction = _resumeAction;
-        }
-
+        /// <summary>
+        /// Debugger stopped handler
+        /// </summary>
+        /// <param name="e"></param>
         public void DebuggerStop(DebuggerStoppedEventArgs e)
         {
             Log.InfoFormat("Debugger stopped");
-
-            //if (CurrentExecutingNode == null) return;
 
             RefreshScopedVariables();
             RefreshCallStack();
@@ -312,12 +257,117 @@ namespace PowerShellTools.DebugEngine
             _debuggingService.SetResumeAction(_resumeAction);
         }
 
-        public bool ProcessLineBreakpoints(string script, int line, int column)
+        /// <summary>
+        /// Output string from debugger in VS output/REPL pane window
+        /// </summary>
+        /// <param name="output"></param>
+        public void VsOutputString(string output)
+        {
+            if (ReplWindow != null)
+            {
+                if (output.StartsWith("[ERROR]"))
+                {
+                    ReplWindow.WriteError(output);
+                }
+                else
+                {
+                    ReplWindow.WriteOutput(output);
+                }
+            }
+
+            if (OutputString != null)
+            {
+                OutputString(this, new EventArgs<string>(output));
+            }
+        }
+
+        /// <summary>
+        /// PS execution terminating excpetion handler
+        /// </summary>
+        /// <param name="ex"></param>
+        public void TerminateException(DebuggingServiceException ex)
+        {
+            if (TerminatingException != null)
+            {
+                TerminatingException(this, new EventArgs<Exception>(new Exception(ex.Message, new Exception(ex.InnerExceptionMessage))));
+            }
+        }
+
+        /// <summary>
+        /// Breakpoint has been updated
+        /// </summary>
+        /// <param name="e"></param>
+        public void UpdateBreakpoint(DebuggerBreakpointUpdatedEventArgs e)
+        {
+            Log.InfoFormat("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
+
+            if (BreakpointUpdated != null)
+            {
+                BreakpointUpdated(this, e);
+            }
+        }
+
+        /// <summary>
+        /// PSDebugger event finished handler
+        /// </summary>
+        public void DebuggerFinished()
+        {
+            if (DebuggingFinished != null)
+            {
+                DebuggingFinished(this, new EventArgs());
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Retrieve local scoped variable from debugger(in PSHost proc)
+        /// </summary>
+        private void RefreshScopedVariables()
+        {
+            try
+            {
+                Collection<Variable> vars = _debuggingService.GetScopedVariable();
+                Variables = new Dictionary<string, Variable>();
+                foreach (Variable v in vars)
+                {
+                    Variables.Add(v.VarName, v);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to refresh scoped variables.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve callstack info from debugger(in PSHost proc)
+        /// </summary>
+        private void RefreshCallStack()
+        {
+            IEnumerable<CallStack> result = null;
+            try
+            {
+                result = _debuggingService.GetCallStack();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to refresh callstack", ex);
+            }
+
+            _callstack = new List<ScriptStackFrame>();
+            if (result == null) return;
+
+            foreach (var psobj in result)
+            {
+                _callstack.Add(new ScriptStackFrame(CurrentExecutingNode, psobj.ScriptFullPath, psobj.Line, psobj.FrameString));
+            }
+        }
+
+        private bool ProcessLineBreakpoints(string script, int line, int column)
         {
             Log.InfoFormat("Process Line Breapoints");
 
-            //if (lbp != null)
-            //{
             var bp =
                 _breakpoints.FirstOrDefault(
                     m =>
@@ -333,7 +383,6 @@ namespace PowerShellTools.DebugEngine
                     return true;
                 }
             }
-            //}
 
             return false;
         }
@@ -408,13 +457,14 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Info("Execute");
 
-            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
+            try
             {
-                throw new InvalidPipelineStateException("Runspace is not available for execution.");
+                _debuggingService.Execute(commandLine);
             }
-
-            _debuggingService.Execute(commandLine);
-
+            catch (Exception ex)
+            {
+                Log.Error("Failed to execute script", ex);
+            }
         }
 
         /// <summary>
@@ -444,7 +494,6 @@ namespace PowerShellTools.DebugEngine
                 }
                 Execute(commandLine);
             }
-
         }
 
         void objects_DataAdded(object sender, DataAddedEventArgs e)
@@ -453,96 +502,6 @@ namespace PowerShellTools.DebugEngine
             {
                 var list = sender as PSDataCollection<PSObject>;
                 OutputString(this, new EventArgs<string>(list[e.Index] + Environment.NewLine));
-            }
-        }
-
-        public void VsOutputString(string output)
-        {
-            if (ReplWindow != null)
-            {
-                if (output.StartsWith("[ERROR]"))
-                {
-                    ReplWindow.WriteError(output);
-                }
-                else
-                {
-                    ReplWindow.WriteOutput(output);
-                }
-            }
-
-            if (OutputString != null)
-            {
-                OutputString(this, new EventArgs<string>(output));
-            }
-        }
-
-        public void TerminateException(Exception ex)
-        {
-            if (TerminatingException != null)
-            {
-                TerminatingException(this, new EventArgs<Exception>(ex));
-            }
-        }
-
-        public void DebuggerFinished()
-        {
-            if (DebuggingFinished != null)
-            {
-                DebuggingFinished(this, new EventArgs());
-            }
-        }
-
-
-        public void RefreshScopedVariables()
-        {
-            try
-            {
-                Collection<Variable> vars = _debuggingService.GetScopedVariable();
-                Variables = new Dictionary<string, Variable>();
-                foreach (Variable v in vars)
-                {
-                    Variables.Add(v.VarName, v);
-                }
-                //using (var pipeline = (_runspace.CreateNestedPipeline()))
-                //{
-                //    var command = new Command("Get-Variable");
-                //    pipeline.Commands.Add(command);
-                //    result = pipeline.Invoke();
-                //}
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Failed to refresh scoped variables.", ex);
-            }
-        }
-
-        public void RefreshCallStack()
-        {
-            IEnumerable<CallStack> result = null;
-            try
-            {
-                result = _debuggingService.GetCallStack();
-
-                //using (var pipeline = (_runspace.CreateNestedPipeline()))
-                //{
-                //    var command = new Command("Get-PSCallstack");
-                //    pipeline.Commands.Add(command);
-                //    result = pipeline.Invoke();
-                //}
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Failed to refresh callstack", ex);
-            }
-
-            _callstack = new List<ScriptStackFrame>();
-            if (result == null) return;
-
-            foreach (var psobj in result)
-            {
-
-                _callstack.Add(new ScriptStackFrame(CurrentExecutingNode, psobj.ScriptFullPath, psobj.Line, psobj.FrameString));
-
             }
         }
 
