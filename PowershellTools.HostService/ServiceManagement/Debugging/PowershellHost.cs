@@ -55,6 +55,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void TryOutputString(string val)
         {
             _debuggingService.NotifyOutputString(val);
+            
+            if (OutputString != null)
+                OutputString(val);
         }
 
         public override void Write(string value)

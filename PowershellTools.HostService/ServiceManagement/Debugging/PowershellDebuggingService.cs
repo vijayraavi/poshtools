@@ -21,7 +21,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
     public partial class PowershellDebuggingService : IPowershellDebuggingService
     {
-        private Runspace _runspace;
+        private static Runspace _runspace;
         private PowerShell _currentPowerShell;
         private IDebugEngineCallback _callback;
         private DebuggerResumeAction _resumeAction;
@@ -46,7 +46,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         ///     The runspace used by the current PowerShell host.
         /// </summary>
-        public Runspace Runspace 
+        public static Runspace Runspace 
         {
             get
             {

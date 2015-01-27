@@ -16,14 +16,14 @@ using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
-using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
-using PowerShellTools.ServiceManagement;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
+using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using System.IO;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
@@ -93,6 +93,8 @@ namespace PowerShellTools
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
+        private static IPowershellIntelliSenseService _intelliSenseService;
+        private static IPowershellDebuggingService _debuggingService;
 
         /// <summary>
         /// Default constructor of the package.
@@ -123,9 +125,21 @@ namespace PowerShellTools
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
 
-        public static IPowershellIntelliSenseService IntelliSenseService { get; private set; }
+        public static IPowershellIntelliSenseService IntelliSenseService
+        {
+            get
+            {
+                return ConnectionManager.PowershellIntelliSenseSerivce;
+            }
+        }
 
-        public static IPowershellDebuggingService DebuggingService { get; private set; }
+        public static IPowershellDebuggingService DebuggingService
+        {
+            get
+            {
+                return ConnectionManager.PowershellDebuggingService;
+            }
+        }
 
         public new object GetService(Type type)
         {
@@ -191,7 +205,7 @@ namespace PowerShellTools
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            EstablishProcessConnection();   
+            EstablishServiceConnection();   
             InitializePowerShellHost();
             
             _gotoDefinitionCommand = new GotoDefinitionCommand();
@@ -299,11 +313,10 @@ namespace PowerShellTools
             };
         }
 
-        private void EstablishProcessConnection()
+        private void EstablishServiceConnection()
         {
-            var connectionManager = new ConnectionManager();
-            IntelliSenseService = connectionManager.PowershellIntelliSenseServiceChannel;
-            DebuggingService = connectionManager.PowershellDebuggingServiceChannel;
+            // This is for triggering the initialization so that first IntelliSense trigger won't take too long.
+            var firstTrigger = ConnectionManager.PowershellIntelliSenseSerivce;
         }
 
         public T GetDialogPage<T>() where T : DialogPage

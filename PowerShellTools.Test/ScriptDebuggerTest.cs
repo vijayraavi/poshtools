@@ -42,7 +42,7 @@ namespace PowerShellTools.Test
             _debuggingService.SetBreakpoint(new PowershellBreakpoint(".\\TestFile.ps1", 1, 0));
             _debugger.SetBreakpoints(new List<ScriptBreakpoint>());
 
-            using (var pipe = _debuggingService.Runspace.CreatePipeline())
+            using (var pipe = PowershellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add("Get-PSBreakpoint");
                 var breakpoints = pipe.Invoke();
@@ -54,7 +54,7 @@ namespace PowerShellTools.Test
         [TestMethod]
         public void ShouldNotDieIfNoBreakpoints()
         {
-            using (var pipe = _debuggingService.Runspace.CreatePipeline())
+            using (var pipe = PowershellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add("Get-PSBreakpoint");
                 var breakpoints = pipe.Invoke();
@@ -76,7 +76,7 @@ namespace PowerShellTools.Test
 
             _debugger.SetBreakpoints(sbps);
 
-            using (var pipe = _debuggingService.Runspace.CreatePipeline())
+            using (var pipe = PowershellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add("Get-PSBreakpoint");
                 var breakpoints = pipe.Invoke();
@@ -138,8 +138,8 @@ namespace PowerShellTools.Test
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            var arg1 = _debuggingService.Runspace.SessionStateProxy.GetVariable("Argument1");
-            var arg2 = _debuggingService.Runspace.SessionStateProxy.GetVariable("Argument2");
+            var arg1 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("Argument1");
+            var arg2 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("Argument2");
 
             Assert.AreEqual("Arg1", arg1);
             Assert.AreEqual("Arg2", arg2);
@@ -161,7 +161,7 @@ namespace PowerShellTools.Test
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            var myVariable = _debuggingService.Runspace.SessionStateProxy.GetVariable("MyVariable");
+            var myVariable = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("MyVariable");
 
             Assert.AreEqual("Test", myVariable);
         }

@@ -88,6 +88,11 @@ namespace PowerShellTools.HostService
                                 _powershellServiceHost.Close();
                                 _powershellServiceHost = null;
                             }
+                            if (_powershellDebuggingServiceHost != null)
+                            {
+                                _powershellDebuggingServiceHost.Close();
+                                _powershellDebuggingServiceHost = null;
+                            }
 
                             _processExitEvent.Set();
                         });
@@ -106,6 +111,13 @@ namespace PowerShellTools.HostService
                 _powershellServiceHost = null;
             }
 
+            if (_powershellDebuggingServiceHost != null)
+            {
+                _powershellDebuggingServiceHost.Abort();
+                _powershellDebuggingServiceHost = null;
+            }
+            
+            //Environment.Exit(0);
             return 0;
         }
 
