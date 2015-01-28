@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
 using System.Windows;
+using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft;
@@ -16,6 +17,7 @@ using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.Win32;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
 using PowerShellTools.DebugEngine;
@@ -24,6 +26,8 @@ using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using log4net;
 using Engine = PowerShellTools.DebugEngine.Engine;
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxOptions = System.Windows.MessageBoxOptions;
 
 namespace PowerShellTools
 {
@@ -44,9 +48,8 @@ namespace PowerShellTools
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(UIContextGuids.NoSolution)]
-    [ProvideAutoLoad(UIContextGuids.SolutionExists)]
     [ProvideLanguageService(typeof(PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true,
-        EnableCommenting = true)]
+EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     // This attribute registers a tool window exposed by this package.
@@ -103,6 +106,7 @@ namespace PowerShellTools
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
             Instance = this;
             _commands = new Dictionary<ICommand, MenuCommand>();
+            DependencyValidator = new DependencyValidator(this);
         }
 
         private ITextBufferFactoryService _textBufferFactoryService;
@@ -119,6 +123,9 @@ namespace PowerShellTools
         /// Returns the current package instance.
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
+
+        [Export]
+        internal DependencyValidator DependencyValidator { get; set; } 
 
         public new object GetService(Type type)
         {
@@ -203,6 +210,11 @@ namespace PowerShellTools
         {
             try
             {
+                if (!DependencyValidator.Validate())
+                {
+                    return;
+                }
+
                 InitializeInternal();
             }
             catch (Exception ex)
@@ -211,6 +223,7 @@ namespace PowerShellTools
                     "PowerShell Tools for Visual Studio Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private IContentType _contentType;
         public IContentType ContentType
