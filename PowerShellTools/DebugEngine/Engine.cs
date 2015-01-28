@@ -112,6 +112,8 @@ namespace PowerShellTools.DebugEngine
             Debugger.TerminatingException += Debugger_TerminatingException;
             _node.Debugger = Debugger;
 
+            Debugger.DebuggingService.SetRunspace();
+
             _initializingRunspace = false;
 
             Debugger.Execute(_node);

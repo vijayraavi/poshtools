@@ -59,7 +59,7 @@ namespace PowerShellTools.DebugEngine
             _runspaceRef = new RunspaceRef(_runspace);
 
             _debuggingService = PowerShellToolsPackage.DebuggingService;
-            _debuggingService.InitializeRunspace();
+            _debuggingService.SetRunspace();
         }
 
         public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2, IPowershellDebuggingService service)
@@ -71,7 +71,7 @@ namespace PowerShellTools.DebugEngine
             _runspaceRef = new RunspaceRef(_runspace);
 
             _debuggingService = service;
-            _debuggingService.InitializeRunspace();
+            _debuggingService.SetRunspace();
         }
 
         public HostUi HostUi { get; private set; }

@@ -157,7 +157,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         /// Initialize of powershell runspace
         /// </summary>
-        public void InitializeRunspace()
+        public void SetRunspace()
         {
             SetRunspace(_runspace);
         }
@@ -577,7 +577,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 ps.Runspace = _runspace;
                 ps.AddCommand("Set-ExecutionPolicy")
                     .AddParameter("ExecutionPolicy", policy)
-                    .AddParameter("Scope", scope);
+                    .AddParameter("Scope", scope)
+                    .AddParameter("Force");
                 ps.Invoke();
             }
         }
