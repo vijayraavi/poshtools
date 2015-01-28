@@ -1,4 +1,6 @@
-﻿namespace PowerShellTools
+﻿using System;
+
+namespace PowerShellTools
 {
     public static class PowerShellConstants
     {
@@ -14,9 +16,9 @@
     {
         public static bool IsPowerShellFile(string fileName)
         {
-            return fileName.ToLower().EndsWith(PowerShellConstants.PS1File) ||
-                   fileName.ToLower().EndsWith(PowerShellConstants.PSD1File) ||
-                   fileName.ToLower().EndsWith(PowerShellConstants.PSM1File);
+            return fileName.ToLower().EndsWith(PowerShellConstants.PS1File,  StringComparison.OrdinalIgnoreCase) ||
+                   fileName.ToLower().EndsWith(PowerShellConstants.PSD1File, StringComparison.OrdinalIgnoreCase) ||
+                   fileName.ToLower().EndsWith(PowerShellConstants.PSM1File, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

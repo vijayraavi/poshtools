@@ -4,6 +4,7 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Project;
 
 namespace PowerShellTools.Commands
@@ -90,14 +91,7 @@ namespace PowerShellTools.Commands
 
             if (String.IsNullOrEmpty(file)) return;
 
-            foreach (Document document in dte2.Documents)
-            {
-                if (!document.Saved)
-                {
-                    document.Save();
-                }
-            }
-
+            Utilities.SaveDirtyFiles();
             launcher.LaunchFile(file, true);
         }
 
