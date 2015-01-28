@@ -1,11 +1,22 @@
 ﻿using System;
 using System.Windows;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.Win32;
 
 namespace PowerShellTools
 {
-    public class DependencyValidator
+    internal class DependencyValidator
     {
+        private static readonly Version RequiredPowerShellVersion = new Version(6, 0);
+
+        private readonly Package _package;
+
+        public DependencyValidator(Package package)
+        {
+            _package = package;
+        }
+
         private bool? _previousResult;
         public bool Validate()
         {
@@ -15,9 +26,9 @@ namespace PowerShellTools
 
         public bool ValidateInstalledPowerShellVersion()
         {
-            if (InstalledPowerShellVersion < new Version(3, 0))
+            if (InstalledPowerShellVersion < RequiredPowerShellVersion)
             {
-                if (MessageBox.Show(
+                if (!VsShellUtilities.IsInAutomationFunction(_package) && MessageBox.Show(
                     Resources.MissingPowerShellVersion,
                     Resources.MissingDependency,
                     MessageBoxButton.YesNo,
@@ -27,10 +38,12 @@ namespace PowerShellTools
                 }
 
                 _previousResult = false;
-                return _previousResult.Value;
+            }
+            else
+            {
+                _previousResult = true;    
             }
 
-            _previousResult = true;
             return _previousResult.Value;
         }
 

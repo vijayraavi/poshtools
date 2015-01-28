@@ -106,7 +106,7 @@ EnableCommenting = true)]
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
             Instance = this;
             _commands = new Dictionary<ICommand, MenuCommand>();
-            DependencyValidator = new DependencyValidator();
+            DependencyValidator = new DependencyValidator(this);
         }
 
         private ITextBufferFactoryService _textBufferFactoryService;
@@ -125,7 +125,7 @@ EnableCommenting = true)]
         public static PowerShellToolsPackage Instance { get; private set; }
 
         [Export]
-        public DependencyValidator DependencyValidator { get; set; } 
+        internal DependencyValidator DependencyValidator { get; set; } 
 
         public new object GetService(Type type)
         {
