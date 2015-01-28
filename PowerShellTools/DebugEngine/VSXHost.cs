@@ -39,7 +39,16 @@ namespace PowerShellTools.DebugEngine
         private readonly RunspaceRef _runspaceRef;
         private IPowershellDebuggingService _debuggingService;
 
-        public IPowershellDebuggingService DebuggingService { get; set; }
+        public IPowershellDebuggingService DebuggingService {
+            get
+            {
+                return _debuggingService;
+            }
+            set
+            {
+                _debuggingService = value;
+            }
+        }
 
         public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2)
         {

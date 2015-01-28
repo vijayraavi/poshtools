@@ -113,11 +113,11 @@ namespace PowerShellTools.HostService
 
             if (_powershellDebuggingServiceHost != null)
             {
-                _powershellDebuggingServiceHost.Abort();
+                _powershellDebuggingServiceHost.Close();
                 _powershellDebuggingServiceHost = null;
             }
             
-            //Environment.Exit(0);
+            Environment.Exit(0);
             return 0;
         }
 

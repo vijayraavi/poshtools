@@ -31,7 +31,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Collection<PSVariable> _localVariables;
         private Dictionary<string, Object> _propVariables;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
-        private ServiceCommon _serviceCommon;
 
         public PowershellDebuggingService()
         {
@@ -39,8 +38,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             HostUi = new HostUi(this);
             _localVariables = new Collection<PSVariable>();
             _propVariables = new Dictionary<string, object>();
-            _serviceCommon = new ServiceCommon(this);
-            _runspace = _serviceCommon.Runspace;
+            InitializeRunspace(this);
         }
 
         /// <summary>
@@ -504,6 +502,84 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             var list = sender as PSDataCollection<PSObject>;
             log += list[e.Index] + Environment.NewLine;
 
+        }
+
+        private void InitializeRunspace(PSHost psHost)
+        {
+            ServiceCommon.Log("Initializing run space with debugger");
+            InitialSessionState iss = InitialSessionState.CreateDefault();
+            iss.ApartmentState = ApartmentState.STA;
+            iss.ThreadOptions = PSThreadOptions.ReuseThread;
+
+            _runspace = RunspaceFactory.CreateRunspace(psHost, iss);
+            _runspace.Open();
+
+            ImportPoshToolsModule();
+            LoadProfile();
+
+            SetupExecutionPolicy();
+        }
+
+        private void ImportPoshToolsModule()
+        {
+            using (PowerShell ps = PowerShell.Create())
+            {
+                try
+                {
+                    var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+                    ps.Runspace = _runspace;
+                    ps.AddScript("Import-Module '" + assemblyLocation + "'");
+                    ps.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to load profile.", ex);
+                }
+            }
+        }
+
+        private void LoadProfile()
+        {
+            using (PowerShell ps = PowerShell.Create())
+            {
+                try
+                {
+                    var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    var windowsPowerShell = Path.Combine(myDocuments, "WindowsPowerShell");
+                    var profile = Path.Combine(windowsPowerShell, "PoshTools_profile.ps1");
+
+                    var fi = new FileInfo(profile);
+                    if (!fi.Exists)
+                    {
+                        return;
+                    }
+
+                    ps.Runspace = _runspace;
+                    ps.AddScript(". '" + profile + "'");
+                    ps.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to load profile.", ex);
+                }
+            }
+        }
+
+        private void SetupExecutionPolicy()
+        {
+            SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
+        }
+
+        private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
+        {
+            using (PowerShell ps = PowerShell.Create())
+            {
+                ps.Runspace = _runspace;
+                ps.AddCommand("Set-ExecutionPolicy")
+                    .AddParameter("ExecutionPolicy", policy)
+                    .AddParameter("Scope", scope);
+                ps.Invoke();
+            }
         }
 
         #endregion
