@@ -25,6 +25,8 @@ using PowerShellTools.LanguageService;
 using PowerShellTools.Project;
 using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
+using System.IO;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools
 {
@@ -92,6 +94,7 @@ namespace PowerShellTools
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
         private static IPowershellIntelliSenseService _intelliSenseService;
+        private static IPowershellDebuggingService _debuggingService;
 
         /// <summary>
         /// Default constructor of the package.
@@ -127,6 +130,14 @@ namespace PowerShellTools
             get
             {
                 return ConnectionManager.PowershellIntelliSenseSerivce;
+            }
+        }
+
+        public static IPowershellDebuggingService DebuggingService
+        {
+            get
+            {
+                return ConnectionManager.PowershellDebuggingService;
             }
         }
 
@@ -194,9 +205,9 @@ namespace PowerShellTools
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
+            EstablishServiceConnection();   
             InitializePowerShellHost();
-            EstablishServiceConnection();
-
+            
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
                             new ExecuteAsScriptCommand(),

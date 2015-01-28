@@ -83,6 +83,14 @@
     <Compile Include="IntelliSense\EmptyScriptExtent.cs" />
     <Compile Include="IntelliSense\EmptyScriptPosition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\DebuggerBreakpointUpdatedEventArgs.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\CallStack.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\DebuggerStoppedEventArgs.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\DebuggingServiceException.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\IPowershellDebuggingService.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\IDebugEngineCallback.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\PowershellBreakpoint.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\Variable.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\CompletionItem.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\CompletionResultList.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\IPowershellIntelliSenseService.cs" />

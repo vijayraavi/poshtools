@@ -1,9 +1,11 @@
-﻿using System;  
+﻿using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+
 
 namespace PowerShellTools.DebugEngine
 {
@@ -15,15 +17,10 @@ namespace PowerShellTools.DebugEngine
         private readonly ScriptDebugger _debugger;
         private readonly ScriptProgramNode _node;
         private readonly ScriptDocumentContext _docContext;
-        private readonly CallStackFrame _frame;
-        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptStackFrame));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptStackFrame));
 
-        public CallStackFrame Frame
-        {
-            get { return _frame; }
-        }
 
-        public ScriptStackFrame(ScriptProgramNode node, CallStackFrame frame)
+        public ScriptStackFrame(ScriptProgramNode node, string scriptName, int line, string frame)
         {
             if (node == null)
             {
@@ -32,8 +29,7 @@ namespace PowerShellTools.DebugEngine
             _node = node;
             _debugger = node.Debugger;
             // VS is zero based, PS is 1 based
-            _docContext = new ScriptDocumentContext(frame.ScriptName, frame.ScriptLineNumber - 1, 0, frame.ToString());
-            _frame = frame;
+            _docContext = new ScriptDocumentContext(scriptName, line - 1, 0, frame);
         }
 
         #region Implementation of IDebugStackFrame2
@@ -200,7 +196,8 @@ namespace PowerShellTools.DebugEngine
             pbstrError = null;
             pichError = 0;
 
-            ppExpr = new ScriptExpression(_debugger, pszCode, variable);
+            ppExpr = new ScriptExpression(_debugger, variable);
+
             return VSConstants.S_OK;
         }
 
@@ -214,7 +211,7 @@ namespace PowerShellTools.DebugEngine
     {
         private uint _iterationLocation;
         private readonly ScriptProgramNode _node;
-        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptStackFrameCollection));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptStackFrameCollection));
 
         public ScriptStackFrameCollection(IEnumerable<ScriptStackFrame> frames, ScriptProgramNode node)
         {
@@ -233,7 +230,7 @@ namespace PowerShellTools.DebugEngine
         {
             pceltFetched = 0;
 
-            if (_iterationLocation == Count) return VSConstants.S_FALSE;  
+            if (_iterationLocation == Count) return VSConstants.S_FALSE;
             if (celt == 0) return VSConstants.S_OK;
 
             var currentIteration = _iterationLocation;
@@ -247,7 +244,7 @@ namespace PowerShellTools.DebugEngine
                 Log.Debug("ScriptStackFrameCollection: Next");
                 rgelt[index].m_dwValidFields = (enum_FRAMEINFO_FLAGS.FIF_LANGUAGE | enum_FRAMEINFO_FLAGS.FIF_DEBUGINFO | enum_FRAMEINFO_FLAGS.FIF_STALECODE | enum_FRAMEINFO_FLAGS.FIF_FRAME | enum_FRAMEINFO_FLAGS.FIF_FUNCNAME | enum_FRAMEINFO_FLAGS.FIF_MODULE);
                 rgelt[index].m_fHasDebugInfo = 1;
-                rgelt[index].m_fStaleCode = 0; 
+                rgelt[index].m_fStaleCode = 0;
                 rgelt[index].m_bstrLanguage = "PowerShell";
                 rgelt[index].m_bstrFuncName = currentFrame.ToString();
                 rgelt[index].m_pFrame = currentFrame;
@@ -295,22 +292,23 @@ namespace PowerShellTools.DebugEngine
 
     public class ScriptExpression : IDebugExpression2, IDebugEventCallback2
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptExpression));
-        private readonly string _name;
-        private readonly object _value;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptExpression));
+        private readonly Variable _var;
         private readonly ScriptDebugger _debugger;
 
-        public ScriptExpression(ScriptDebugger debugger, string name, object value)
+        public ScriptExpression(ScriptDebugger debugger, Variable var)
         {
-            Log.DebugFormat("Name [{0}] Value [{1}]", name, value);
-
-            if (name.StartsWith("$"))
+            if (var != null)
             {
-                name = name.Remove(0, 1);
-            }
+                Log.DebugFormat("Name [{0}] Value [{1}]", var.VarName, var.VarValue);
 
-            _name = name;
-            _value = value;
+                if (var.VarName.StartsWith("$"))
+                {
+                    var.VarName = var.VarName.Remove(0, 1);
+                }
+
+                _var = var;
+            }
             _debugger = debugger;
         }
 
@@ -330,7 +328,7 @@ namespace PowerShellTools.DebugEngine
             out IDebugProperty2 ppResult)
         {
             Log.Debug("EvaluateSync");
-            ppResult = ScriptPropertyFactory.MakeProperty(_debugger, _name, _value);
+            ppResult = ScriptPropertyFactory.MakeProperty(_debugger, _var, string.Empty); // no parent path
             return VSConstants.S_OK;
         }
 

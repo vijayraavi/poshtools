@@ -15,6 +15,12 @@ namespace PowerShellTools.ServiceManagement
             return new ChannelFactory<ServiceType>(binding, new EndpointAddress(endPointAddress));
         }
 
+        public ChannelFactory<ServiceType> CreateDuplexChannelFactory(string endPointAddress, InstanceContext context)
+        {
+            var binding = CreateBinding();
+            return new DuplexChannelFactory<ServiceType>(context, binding, new EndpointAddress(endPointAddress));
+        }
+
         private NetNamedPipeBinding CreateBinding()
         {
             var binding = new NetNamedPipeBinding(NetNamedPipeSecurityMode.None);
