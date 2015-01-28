@@ -188,7 +188,8 @@ namespace PowerShellTools
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
-                            new ExecuteAsScriptCommand(),
+                            new ExecuteFromEditorContextMenuCommand(),
+                            new ExecuteFromSolutionExplorerContextMenuCommand(),
                             _gotoDefinitionCommand,
                             new PrettyPrintCommand(Debugger.Runspace),
                             new OpenDebugReplCommand());
