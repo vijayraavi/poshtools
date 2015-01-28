@@ -8,7 +8,7 @@ namespace PowerShellTools
 {
     internal class DependencyValidator
     {
-        private static readonly Version RequiredPowerShellVersion = new Version(6, 0);
+        private static readonly Version RequiredPowerShellVersion = new Version(3, 0);
 
         private readonly Package _package;
 
@@ -28,14 +28,23 @@ namespace PowerShellTools
         {
             if (InstalledPowerShellVersion < RequiredPowerShellVersion)
             {
-                if (!VsShellUtilities.IsInAutomationFunction(_package) && MessageBox.Show(
-                    Resources.MissingPowerShellVersion,
-                    Resources.MissingDependency,
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                try
                 {
-                    System.Diagnostics.Process.Start("http://go.microsoft.com/fwlink/?LinkID=524571");
+                    if (!VsShellUtilities.IsInAutomationFunction(_package) && 
+                        MessageBox.Show(Resources.MissingPowerShellVersion,
+                                        Resources.MissingDependency,
+                                        MessageBoxButton.YesNo,
+                                        MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                    {
+                        System.Diagnostics.Process.Start("http://go.microsoft.com/fwlink/?LinkID=524571");
+                    }
                 }
+                catch (InvalidOperationException)
+                {
+                    
+                }
+
+
 
                 _previousResult = false;
             }
