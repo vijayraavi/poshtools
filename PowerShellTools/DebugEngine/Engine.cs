@@ -134,10 +134,7 @@ namespace PowerShellTools.DebugEngine
             if (e.Value is RuntimeException)
             {
                 var re = e.Value as RuntimeException;
-                var scriptLocation = new ScriptLocation();
-                scriptLocation.Column = 0;
-                scriptLocation.File = re.ErrorRecord.InvocationInfo.ScriptName;
-                scriptLocation.Line = re.ErrorRecord.InvocationInfo.ScriptLineNumber;
+                var scriptLocation = new ScriptLocation(re.ErrorRecord.InvocationInfo.ScriptName, re.ErrorRecord.InvocationInfo.ScriptLineNumber, 0);
 
                 //_events.Break(_node);
             }

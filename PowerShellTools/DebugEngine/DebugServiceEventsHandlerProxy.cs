@@ -40,7 +40,7 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Debugger stopped
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">DebuggerStoppedEventArgs</param>
         public void DebuggerStopped(DebuggerStoppedEventArgs e)
         {
             Debugger.DebuggerStop(e);
@@ -49,7 +49,7 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Breakpoint has updated
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">DebuggerBreakpointUpdatedEventArgs</param>
         public void BreakpointUpdated(DebuggerBreakpointUpdatedEventArgs e)
         {
             Debugger.UpdateBreakpoint(e);
@@ -58,7 +58,7 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Debugger has string to output
         /// </summary>
-        /// <param name="output"></param>
+        /// <param name="output">string to output</param>
         public void OutputString(string output)
         {
             Debugger.VsOutputString(output);
@@ -75,7 +75,7 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Execution engine has terminating exception thrown
         /// </summary>
-        /// <param name="ex"></param>
+        /// <param name="ex">DebuggingServiceException</param>
         public void TerminatingException(DebuggingServiceException ex)
         {
             Debugger.TerminateException(ex);

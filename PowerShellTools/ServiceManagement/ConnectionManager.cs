@@ -43,6 +43,10 @@ namespace PowerShellTools.ServiceManagement
         {
             get
             {
+                if (_powershellDebuggingService == null)
+                {
+                    OpenClientConnection();
+                }
                 return _powershellDebuggingService;
             }
         }

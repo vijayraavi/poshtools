@@ -239,10 +239,7 @@ namespace PowerShellTools.DebugEngine
             {
                 if (DebuggerPaused != null)
                 {
-                    var scriptLocation = new ScriptLocation();
-                    scriptLocation.File = e.ScriptFullPath;
-                    scriptLocation.Line = e.Line;
-                    scriptLocation.Column = 0;
+                    var scriptLocation = new ScriptLocation(e.ScriptFullPath, e.Line, 0);
 
                     DebuggerPaused(this, new EventArgs<ScriptLocation>(scriptLocation));
                 }
@@ -265,7 +262,7 @@ namespace PowerShellTools.DebugEngine
         {
             if (ReplWindow != null)
             {
-                if (output.StartsWith("[ERROR]"))
+                if (output.StartsWith(PowerShellConstants.PowershellOutputErrorTag))
                 {
                     ReplWindow.WriteError(output);
                 }
@@ -559,5 +556,12 @@ namespace PowerShellTools.DebugEngine
         /// Column within the file.
         /// </summary>
         public int Column { get; set; }
+
+        public ScriptLocation(string file, int line, int column)
+        {
+            File = file;
+            Line = line;
+            Column = column;
+        }
     }
 }
