@@ -88,5 +88,13 @@ namespace PowerShellTools.DebugEngine
         {
             Debugger.RefreshPrompt();
         }
+
+
+
+
+        public string ReadHostPrompt()
+        {
+            return Debugger.ReadLine();
+        }
     }
 }

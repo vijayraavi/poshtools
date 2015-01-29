@@ -154,7 +154,13 @@ namespace PowerShellTools.DebugEngine
         {
             if (HostUi != null && HostUi.ReplWindow != null)
                 HostUi.ReplWindow.SetOptionValue(ReplOptions.CurrentPrimaryPrompt, GetPrompt());
-        }     
+        }
+
+
+        public string ReadLine()
+        {
+            return Interaction.InputBox("Read-Host", "Read-Host"); 
+        }
 
         private string GetPrompt()
         {

@@ -299,18 +299,18 @@ namespace PowerShellTools
             Log.Info("InitializePowerShellHost");
 
             Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration, (DTE2)GetService(typeof(DTE)));
-            Debugger.HostUi.OutputProgress = (label, percentage) =>
-            {
-                Log.DebugFormat("Output progress: {0} {1}", label, percentage);
-                var statusBar = (IVsStatusbar)GetService(typeof(SVsStatusbar));
-                uint cookie = 0;
-                statusBar.Progress(ref cookie, 1, label, (uint)percentage, 100);
+            //Debugger.HostUi.OutputProgress = (label, percentage) =>
+            //{
+            //    Log.DebugFormat("Output progress: {0} {1}", label, percentage);
+            //    var statusBar = (IVsStatusbar)GetService(typeof(SVsStatusbar));
+            //    uint cookie = 0;
+            //    statusBar.Progress(ref cookie, 1, label, (uint)percentage, 100);
 
-                if (percentage == 100)
-                {
-                    statusBar.Progress(ref cookie, 1, "", 0, 0);
-                }
-            };
+            //    if (percentage == 100)
+            //    {
+            //        statusBar.Progress(ref cookie, 1, "", 0, 0);
+            //    }
+            //};
         }
 
         private void EstablishServiceConnection()

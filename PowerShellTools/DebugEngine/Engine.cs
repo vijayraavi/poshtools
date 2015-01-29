@@ -101,7 +101,6 @@ namespace PowerShellTools.DebugEngine
                 }    
             }
 
-            Debugger.HostUi.OutputString = _events.OutputString;
             Debugger.SetBreakpoints(bps);
 
             Debugger.OutputString += Debugger_OutputString;

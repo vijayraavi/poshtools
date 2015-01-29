@@ -27,5 +27,8 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract(IsOneWay = true)]
         void RefreshPrompt();
+
+        [OperationContract(IsOneWay = false)]
+        string ReadHostPrompt();
     }
 }

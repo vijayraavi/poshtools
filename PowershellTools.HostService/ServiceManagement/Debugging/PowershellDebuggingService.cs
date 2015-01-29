@@ -220,7 +220,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     pipeline.Invoke();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ServiceCommon.Log("Failed to clear breakpoints.");
             }
