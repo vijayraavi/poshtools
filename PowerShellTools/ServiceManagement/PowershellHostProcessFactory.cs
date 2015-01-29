@@ -9,40 +9,43 @@ using PowerShellTools.Common;
 namespace PowerShellTools.ServiceManagement
 {
     /// <summary>
-    /// Initilize a process for hosting the WCF service.
+    /// Initialize a process for hosting the WCF service.
     /// </summary>
-    internal static class PowershellHostProcessFactory
+    internal sealed class PowershellHostProcessFactory
     {
-        private static Lazy<PowershellHostProcess> _powershellHostProcess;
-        private static object _syncObject = new object();
+        private Lazy<PowershellHostProcess> _powershellHostProcess;
+        private static PowershellHostProcessFactory _instance;
+        private object _syncObject = new object();
 
-        static PowershellHostProcessFactory()
+        private PowershellHostProcessFactory()
         {
             LazyCreatePowershellHostProcess();
+        }
+
+        public static PowershellHostProcessFactory Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new PowershellHostProcessFactory();
+                }
+                return _instance;
+            }
         }
 
         /// <summary>
         /// The host process we want.
         /// </summary>
-        internal static PowershellHostProcess HostProcess { get; set; }
-
-        /// <summary>
-        /// In case we need to change host process at some point. What we need to do is signal the termination of the process and then create a new one. 
-        /// </summary>
-        internal static void SignalProcessTerminated()
+        public PowershellHostProcess HostProcess
         {
-            lock (_syncObject)
+            get
             {
-                LazyCreatePowershellHostProcess();
+                return _powershellHostProcess.Value;
             }
         }
 
-        internal static PowershellHostProcess EnsurePowershellHostProcess()
-        {
-            return _powershellHostProcess.Value;
-        }
-
-        private static PowershellHostProcess CreatePowershellHostProcess()
+        private PowershellHostProcess CreatePowershellHostProcess()
         {
             Process powershellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
@@ -55,7 +58,7 @@ namespace PowerShellTools.ServiceManagement
                                             "{0}{1} {2}{3} {4}{5}",
                                             Constants.UniqueEndpointArg, endPointGuid, // For generating a unique endpoint address 
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
-                                            Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName); 
+                                            Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName);
 
             powershellHostProcess.StartInfo.Arguments = hostArgs;
             powershellHostProcess.StartInfo.FileName = path;
@@ -71,7 +74,7 @@ namespace PowerShellTools.ServiceManagement
             powershellHostProcess.Start();
             powershellHostProcess.EnableRaisingEvents = true;
             powershellHostProcess.Exited += PowershellHostProcess_Exited;
-            bool success = readyEvent.WaitOne(Constants.HostProcessStartupTimeout, false);            
+            bool success = readyEvent.WaitOne(Constants.HostProcessStartupTimeout, false);
             readyEvent.Close();
 
             if (!success)
@@ -94,34 +97,27 @@ namespace PowerShellTools.ServiceManagement
                                                                         powershellHostProcess.Id));
             }
 
-            return new PowershellHostProcess
-            {
-                Process = powershellHostProcess,
-                EndpointGuid = endPointGuid
-            };
-
+            return new PowershellHostProcess(powershellHostProcess, endPointGuid);
         }
-
+        
         /// <summary>
         /// In case the process is terminated somehow, such as manually ended by users, we need to re-create the process as long as VS process is still running.
         /// </summary>
         /// <param name="sender">The scource of the event.</param>
         /// <param name="e">An System.EventArgs that contains no event data.</param>
-        private static void PowershellHostProcess_Exited(object sender, EventArgs e)
+        private void PowershellHostProcess_Exited(object sender, EventArgs e)
         {
             Process p = sender as Process;
-
             lock (_syncObject)
             {
-                if (_powershellHostProcess.IsValueCreated &&
-                    _powershellHostProcess.Value.Process == p)
+                if (_powershellHostProcess.IsValueCreated && _powershellHostProcess.Value.Process == p)
                 {
                     LazyCreatePowershellHostProcess();
                 }
-            }
+            }            
         }
 
-        private static void LazyCreatePowershellHostProcess()
+        private void LazyCreatePowershellHostProcess()
         {
             _powershellHostProcess = new Lazy<PowershellHostProcess>(CreatePowershellHostProcess);
         }
@@ -129,10 +125,17 @@ namespace PowerShellTools.ServiceManagement
         /// <summary>
         /// The structure containing the process we want and a guid used for the WCF client to establish connection to the service.
         /// </summary>
-        internal struct PowershellHostProcess
+        internal class PowershellHostProcess
         {
-            public Process Process { get; set; }
-            public Guid EndpointGuid { get; set; }
+            public PowershellHostProcess(Process process, Guid guid)
+            {
+                Process = process;
+                EndpointGuid = guid;
+            }
+
+            public Process Process { get; private set; }
+
+            public Guid EndpointGuid { get; private set; }
         }
     }
 }

@@ -5,33 +5,52 @@ using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using System.ServiceModel;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.DebugEngine;
+using System.Diagnostics;
 
 namespace PowerShellTools.ServiceManagement
 {
     /// <summary>
     /// Manage the process and channel creation.
     /// </summary>
-    internal static class ConnectionManager
+    internal sealed class ConnectionManager
     {
-        private static IPowershellIntelliSenseService _powershellIntelliSenseService;
-        private static IPowershellDebuggingService _powershellDebuggingService;
-        private static object _syncObject = new object();
-        private static ChannelFactory<IPowershellIntelliSenseService> _powershellIntelliSenseChannelFactory;
-        private static ChannelFactory<IPowershellDebuggingService> _powershellDebuggingServiceChannelFactory;
+        private IPowershellIntelliSenseService _powershellIntelliSenseService;
+        private IPowershellDebuggingService _powershellDebuggingService;
+        private object _syncObject = new object();
+        private static ConnectionManager _instance;
+        private Process _process;
+        private ChannelFactory<IPowershellIntelliSenseService> _intelliSenseServiceChannelFactory;
+        private ChannelFactory<IPowershellDebuggingService> _debuggingServiceChannelFactory;
 
-        static ConnectionManager()
-        {            
+        private ConnectionManager()
+        {
             OpenClientConnection();
         }
 
-        public static IPowershellIntelliSenseService PowershellIntelliSenseSerivce
+        public static ConnectionManager Instance
         {
             get
             {
-                if (_powershellIntelliSenseService == null)
+                if (_instance == null)
                 {
-                    OpenClientConnection();
+                    _instance = new ConnectionManager();
                 }
+                return _instance;
+            }
+        }
+
+        public IPowershellIntelliSenseService PowershellIntelliSenseSerivce
+        {
+            get
+            {
+                lock (_syncObject)
+                {
+                    if (_powershellIntelliSenseService == null)
+                    {
+                        OpenClientConnection();
+                    }
+                }
+
                 return _powershellIntelliSenseService;
             }
         }
@@ -39,50 +58,54 @@ namespace PowerShellTools.ServiceManagement
         /// <summary>
         /// The debugging service channel we need.
         /// </summary>
-        public static IPowershellDebuggingService PowershellDebuggingService
+        public IPowershellDebuggingService PowershellDebuggingService
         {
             get
             {
-                if (_powershellDebuggingService == null)
+                lock (_syncObject)
                 {
-                    OpenClientConnection();
+                    if (_powershellDebuggingService == null)
+                    {
+                        OpenClientConnection();
+                    }
                 }
                 return _powershellDebuggingService;
             }
         }
 
-
-        private static void OpenClientConnection()
+        private void OpenClientConnection()
         {
-            var hostProcess = PowershellHostProcessFactory.EnsurePowershellHostProcess();
-            hostProcess.Process.Exited += Process_Exited;
+            var hostProcess = PowershellHostProcessFactory.Instance.HostProcess;
+            _process = hostProcess.Process;
 
-            // net.pipe://localhost/UniqueEndpointGuid/NamedPipePowershellProcess
-            var intelliSenseServiceEndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.ProcessManagerHostRelativeUri;
+            // net.pipe://localhost/UniqueEndpointGuid/NamedPipePowershellIntelliSense
+            var intelliSenseServiceEndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.IntelliSenseHostRelativeUri;
             // net.pipe://localhost/UniqueEndpointGuid/NamedPipePowershellDebugging
-            string deubggingServiceEndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.DebuggingHostRelativeUri;
+            var deubggingServiceEndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.DebuggingHostRelativeUri;
 
             try
             {
-                if (_powershellIntelliSenseService == null)
+                if (_powershellIntelliSenseService == null || _powershellDebuggingService == null)
                 {
-                    var factoryMaker = new ChannelFactoryMaker<IPowershellIntelliSenseService>();
-                    _powershellIntelliSenseChannelFactory = factoryMaker.CreateChannelFactory(intelliSenseServiceEndPointAddress);
-                    _powershellIntelliSenseChannelFactory.Faulted += ChannelFactoryMaker_Faulted;
-                    _powershellIntelliSenseChannelFactory.Closed += ChannelFactoryMaker_Closed;
-                    _powershellIntelliSenseChannelFactory.Open();
-                    _powershellIntelliSenseService = _powershellIntelliSenseChannelFactory.CreateChannel();
+                    var intelliSenseServiceChannelFactoryBuilder = new ChannelFactoryBuilder<IPowershellIntelliSenseService>();
+                    _intelliSenseServiceChannelFactory = intelliSenseServiceChannelFactoryBuilder.CreateChannelFactory(intelliSenseServiceEndPointAddress);
+                    _intelliSenseServiceChannelFactory.Faulted += ChannelFactoryExceptionHandler;
+                    _intelliSenseServiceChannelFactory.Closed += ChannelFactoryExceptionHandler;
+                    _intelliSenseServiceChannelFactory.Open();
+                    _powershellIntelliSenseService = _intelliSenseServiceChannelFactory.CreateChannel();
+
+                    var debugServiceChannelFactoryBuilder = new ChannelFactoryBuilder<IPowershellDebuggingService>();
+                    _debuggingServiceChannelFactory = debugServiceChannelFactoryBuilder.CreateDuplexChannelFactory(deubggingServiceEndPointAddress, new InstanceContext(new DebugServiceEventsHandlerProxy()));
+                    _debuggingServiceChannelFactory.Faulted += ChannelFactoryExceptionHandler;
+                    _debuggingServiceChannelFactory.Closed += ChannelFactoryExceptionHandler;
+                    _debuggingServiceChannelFactory.Open();
+                    _powershellDebuggingService = _debuggingServiceChannelFactory.CreateChannel();
                 }
 
-                if (_powershellDebuggingService == null)
+                hostProcess.Process.Exited += (s, e) =>
                 {
-                    var factoryMaker = new ChannelFactoryMaker<IPowershellDebuggingService>();
-                    _powershellDebuggingServiceChannelFactory = factoryMaker.CreateDuplexChannelFactory(deubggingServiceEndPointAddress, new InstanceContext(new DebugServiceEventsHandlerProxy()));
-                    _powershellDebuggingServiceChannelFactory.Faulted += ChannelFactoryMaker_Faulted;
-                    _powershellDebuggingServiceChannelFactory.Closed += ChannelFactoryMaker_Closed;
-                    _powershellDebuggingServiceChannelFactory.Open();
-                    _powershellDebuggingService = _powershellDebuggingServiceChannelFactory.CreateChannel();
-                }
+                    EnsureClearServiceChannel();
+                };
             }
             catch
             {
@@ -93,40 +116,48 @@ namespace PowerShellTools.ServiceManagement
             }
         }
 
-        private static void Process_Exited(object sender, EventArgs e)
+        void ChannelFactoryExceptionHandler(object sender, EventArgs e)
         {
-            lock (_syncObject)
-            {
-                _powershellIntelliSenseChannelFactory.Faulted -= ChannelFactoryMaker_Faulted;
-                _powershellIntelliSenseChannelFactory.Closed -= ChannelFactoryMaker_Closed;
-                _powershellIntelliSenseChannelFactory.Abort();
-                _powershellIntelliSenseChannelFactory = null;
-                _powershellIntelliSenseService = null;
+            EnsureCloseProcess(_process);
+            EnsureClearServiceChannel();
+        }
 
-                _powershellDebuggingServiceChannelFactory.Faulted -= ChannelFactoryMaker_Faulted;
-                _powershellDebuggingServiceChannelFactory.Closed -= ChannelFactoryMaker_Closed;
-                _powershellDebuggingServiceChannelFactory.Abort();
-                _powershellDebuggingServiceChannelFactory = null;
-                _powershellDebuggingService = null;
+        private void EnsureCloseProcess(Process process)
+        {
+            if (process != null)
+            {
+                try
+                {
+                    process.Kill();
+                    process = null;
+                }
+                catch
+                {
+                    //TODO: log excetion info here
+                }
+                finally
+                {
+                    process = null;
+                }
             }
         }
 
-        private static void ChannelFactoryMaker_Closed(object sender, EventArgs e)
+        private void EnsureClearServiceChannel()
         {
-            lock (_syncObject)
+            if (_intelliSenseServiceChannelFactory != null)
             {
+                _intelliSenseServiceChannelFactory.Abort();
+                _intelliSenseServiceChannelFactory = null;
                 _powershellIntelliSenseService = null;
-                _powershellDebuggingService = null;
             }
-        }
 
-        private static void ChannelFactoryMaker_Faulted(object sender, EventArgs e)
-        {
-            lock (_syncObject)
+            if (_debuggingServiceChannelFactory != null)
             {
-                _powershellIntelliSenseService = null;
+                _debuggingServiceChannelFactory.Abort();
+                _debuggingServiceChannelFactory = null;
                 _powershellDebuggingService = null;
             }
+            
         }
     }
 }

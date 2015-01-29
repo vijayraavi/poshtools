@@ -10,7 +10,7 @@ namespace PowerShellTools.Common
     {
         public const string ProcessManagerHostUri = "net.pipe://localhost/";
 
-        public const string ProcessManagerHostRelativeUri = "NamedPipePowershellProcess";
+        public const string IntelliSenseHostRelativeUri = "NamedPipePowershellIntelliSense";
 
         public const string DebuggingHostRelativeUri = "NamedPipePowershellDebugging";
 
