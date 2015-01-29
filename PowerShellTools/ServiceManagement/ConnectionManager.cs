@@ -124,22 +124,21 @@ namespace PowerShellTools.ServiceManagement
 
         private void EnsureCloseProcess(Process process)
         {
-            if (process != null)
+            lock (_syncObject)
             {
-                try
+                if (process != null)
                 {
-                    process.Kill();
-                    process = null;
+                    try
+                    {
+                        process.Kill();
+                        process = null;
+                    }
+                    catch
+                    {
+                        //TODO: log excetion info here
+                    }
                 }
-                catch
-                {
-                    //TODO: log excetion info here
-                }
-                finally
-                {
-                    process = null;
-                }
-            }
+            }            
         }
 
         private void EnsureClearServiceChannel()
