@@ -9,43 +9,11 @@ using PowerShellTools.Common;
 namespace PowerShellTools.ServiceManagement
 {
     /// <summary>
-    /// Initialize a process for hosting the WCF service.
+    /// Helper class for creating a process used to host the WCF service.
     /// </summary>
-    internal sealed class PowershellHostProcessFactory
+    internal static class PowershellHostProcessHelper
     {
-        private Lazy<PowershellHostProcess> _powershellHostProcess;
-        private static PowershellHostProcessFactory _instance;
-        private object _syncObject = new object();
-
-        private PowershellHostProcessFactory()
-        {
-            LazyCreatePowershellHostProcess();
-        }
-
-        public static PowershellHostProcessFactory Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new PowershellHostProcessFactory();
-                }
-                return _instance;
-            }
-        }
-
-        /// <summary>
-        /// The host process we want.
-        /// </summary>
-        public PowershellHostProcess HostProcess
-        {
-            get
-            {
-                return _powershellHostProcess.Value;
-            }
-        }
-
-        private PowershellHostProcess CreatePowershellHostProcess()
+        public static PowershellHostProcess CreatePowershellHostProcess()
         {
             Process powershellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
@@ -73,7 +41,6 @@ namespace PowerShellTools.ServiceManagement
 
             powershellHostProcess.Start();
             powershellHostProcess.EnableRaisingEvents = true;
-            powershellHostProcess.Exited += PowershellHostProcess_Exited;
             bool success = readyEvent.WaitOne(Constants.HostProcessStartupTimeout, false);
             readyEvent.Close();
 
@@ -98,44 +65,22 @@ namespace PowerShellTools.ServiceManagement
             }
 
             return new PowershellHostProcess(powershellHostProcess, endPointGuid);
-        }
-        
-        /// <summary>
-        /// In case the process is terminated somehow, such as manually ended by users, we need to re-create the process as long as VS process is still running.
-        /// </summary>
-        /// <param name="sender">The scource of the event.</param>
-        /// <param name="e">An System.EventArgs that contains no event data.</param>
-        private void PowershellHostProcess_Exited(object sender, EventArgs e)
+        }        
+    }
+
+    /// <summary>
+    /// The structure containing the process we want and a guid used for the WCF client to establish connection to the service.
+    /// </summary>
+    public class PowershellHostProcess
+    {
+        public PowershellHostProcess(Process process, Guid guid)
         {
-            Process p = sender as Process;
-            lock (_syncObject)
-            {
-                if (_powershellHostProcess.IsValueCreated && _powershellHostProcess.Value.Process == p)
-                {
-                    LazyCreatePowershellHostProcess();
-                }
-            }            
+            Process = process;
+            EndpointGuid = guid;
         }
 
-        private void LazyCreatePowershellHostProcess()
-        {
-            _powershellHostProcess = new Lazy<PowershellHostProcess>(CreatePowershellHostProcess);
-        }
+        public Process Process { get; private set; }
 
-        /// <summary>
-        /// The structure containing the process we want and a guid used for the WCF client to establish connection to the service.
-        /// </summary>
-        internal class PowershellHostProcess
-        {
-            public PowershellHostProcess(Process process, Guid guid)
-            {
-                Process = process;
-                EndpointGuid = guid;
-            }
-
-            public Process Process { get; private set; }
-
-            public Guid EndpointGuid { get; private set; }
-        }
+        public Guid EndpointGuid { get; private set; }
     }
 }
