@@ -93,7 +93,6 @@ namespace PowerShellTools
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
-        private static ConnectionManager _connectionManager;
 
         /// <summary>
         /// Default constructor of the package.
@@ -128,7 +127,7 @@ namespace PowerShellTools
         {
             get
             {
-                return _connectionManager.PowershellIntelliSenseSerivce;
+                return ConnectionManager.Instance.PowershellIntelliSenseSerivce;
             }
         }
 
@@ -136,7 +135,7 @@ namespace PowerShellTools
         {
             get
             {
-                return _connectionManager.PowershellDebuggingService;
+                return ConnectionManager.Instance.PowershellDebuggingService;
             }
         }
 
@@ -204,7 +203,6 @@ namespace PowerShellTools
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            EstablishServiceConnection();   
             InitializePowerShellHost();
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
@@ -311,12 +309,7 @@ namespace PowerShellTools
                 }
             };
         }
-
-        private void EstablishServiceConnection()
-        {
-            _connectionManager = ConnectionManager.Instance;
-        }
-
+        
         public T GetDialogPage<T>() where T : DialogPage
         {
             return (T)GetDialogPage(typeof(T));
