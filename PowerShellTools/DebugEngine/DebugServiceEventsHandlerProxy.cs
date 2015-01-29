@@ -61,7 +61,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="output">string to output</param>
         public void OutputString(string output)
         {
-            Debugger.VsOutputString(output);
+            Debugger.HostUi.VsOutputString(output);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace PowerShellTools.DebugEngine
 
         public string ReadHostPrompt()
         {
-            return Debugger.ReadLine();
+            return Debugger.HostUi.ReadLine();
         }
     }
 }

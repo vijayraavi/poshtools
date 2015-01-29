@@ -173,7 +173,7 @@ namespace PowerShellTools.Test
             var sbps = new List<ScriptBreakpoint>();
 
             _runspace.Dispose();
-            _runspace = RunspaceFactory.CreateRunspace(_debugger);
+            _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
             _debugger.SetBreakpoints(sbps);
 
