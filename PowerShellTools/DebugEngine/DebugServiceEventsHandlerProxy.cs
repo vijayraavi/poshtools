@@ -61,7 +61,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="output">string to output</param>
         public void OutputString(string output)
         {
-            Debugger.VsOutputString(output);
+            Debugger.HostUi.VsOutputString(output);
         }
 
         /// <summary>
@@ -87,6 +87,25 @@ namespace PowerShellTools.DebugEngine
         public void RefreshPrompt()
         {
             Debugger.RefreshPrompt();
+        }
+
+        /// <summary>
+        /// Ask for user input from VS
+        /// </summary>
+        /// <returns>output string</returns>
+        public string ReadHostPrompt()
+        {
+            return Debugger.HostUi.ReadLine();
+        }
+
+        /// <summary>
+        /// Output the progress of writing output
+        /// </summary>
+        /// <param name="label">label</param>
+        /// <param name="percentage">percentage</param>
+        public void OutputProgress(string label, int percentage)
+        {
+            Debugger.HostUi.VSOutputProgress(label, percentage);
         }
     }
 }

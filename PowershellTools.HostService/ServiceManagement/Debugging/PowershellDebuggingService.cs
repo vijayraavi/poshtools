@@ -118,6 +118,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Debugging output event handler
+        /// </summary>
+        /// <param name="value">String to output</param>
+        public void NotifyOutputProgress(string label, int percentage)
+        {
+            ServiceCommon.Log("Callback to client to show progress", ConsoleColor.Yellow);
+            if (_callback != null)
+            {
+                _callback.OutputProgress(label, percentage);
+            }
+        }
+
+        /// <summary>
         /// PS debugger stopped event handler
         /// </summary>
         /// <param name="sender"></param>
@@ -157,8 +170,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         /// Initialize of powershell runspace
         /// </summary>
-        public void SetRunspace()
+        public void SetRunspace(bool overrideExecutionPolicy)
         {
+            if (overrideExecutionPolicy)
+            {
+                SetupExecutionPolicy();
+            }
+
             SetRunspace(_runspace);
         }
 
@@ -220,7 +238,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     pipeline.Invoke();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ServiceCommon.Log("Failed to clear breakpoints.");
             }
@@ -516,8 +534,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             ImportPoshToolsModule();
             LoadProfile();
-
-            SetupExecutionPolicy();
         }
 
         private void ImportPoshToolsModule()

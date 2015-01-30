@@ -20,6 +20,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void OutputString(string output);
 
         [OperationContract(IsOneWay = true)]
+        void OutputProgress(string lable, int percentage);
+
+        [OperationContract(IsOneWay = true)]
         void TerminatingException(DebuggingServiceException ex);
 
         [OperationContract(IsOneWay = true)]
@@ -27,5 +30,8 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract(IsOneWay = true)]
         void RefreshPrompt();
+
+        [OperationContract(IsOneWay = false)]
+        string ReadHostPrompt();
     }
 }

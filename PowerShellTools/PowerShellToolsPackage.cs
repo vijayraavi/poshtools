@@ -259,6 +259,8 @@ namespace PowerShellTools
             }
         }
 
+
+
         private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
         {
             e.TextBuffer.ContentTypeChanged += TextBuffer_ContentTypeChanged;
@@ -295,19 +297,7 @@ namespace PowerShellTools
 
             Log.Info("InitializePowerShellHost");
 
-            Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration, (DTE2)GetService(typeof(DTE)));
-            Debugger.HostUi.OutputProgress = (label, percentage) =>
-            {
-                Log.DebugFormat("Output progress: {0} {1}", label, percentage);
-                var statusBar = (IVsStatusbar)GetService(typeof(SVsStatusbar));
-                uint cookie = 0;
-                statusBar.Progress(ref cookie, 1, label, (uint)percentage, 100);
-
-                if (percentage == 100)
-                {
-                    statusBar.Progress(ref cookie, 1, "", 0, 0);
-                }
-            };
+            Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
         }
         
         public T GetDialogPage<T>() where T : DialogPage
