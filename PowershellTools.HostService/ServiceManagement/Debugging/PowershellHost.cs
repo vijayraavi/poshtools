@@ -8,6 +8,7 @@ using System.Management.Automation.Host;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -31,7 +32,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public override string ReadLine()
         {
-            return "";
+            if (_debuggingService.CallbackService != null)
+            {
+                return _debuggingService.CallbackService.ReadHostPrompt();
+            }
+
+            return string.Empty;
         }
 
         public override SecureString ReadLineAsSecureString()
@@ -48,6 +54,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void TryOutputProgress(string label, int percentage)
         {
+            _debuggingService.NotifyOutputProgress(label, percentage);
+
             if (OutputProgress != null)
                 OutputProgress(label, percentage);
         }
@@ -55,7 +63,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void TryOutputString(string val)
         {
             _debuggingService.NotifyOutputString(val);
-            
+
             if (OutputString != null)
                 OutputString(val);
         }

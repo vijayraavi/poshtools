@@ -69,7 +69,7 @@ namespace PowerShellTools.HostService
             // Step 2: Create the service host.
             CreatePowershellIntelliSenseServiceHost(baseAddress, binding);
             CreatePowershellDebuggingServiceHost(baseAddress, binding);
-            
+
             // Step 3: Signal parent process that host is ready so that it can proceed.
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, readyEventName);
             readyEvent.Set();
@@ -131,7 +131,7 @@ namespace PowerShellTools.HostService
 
             _powershellServiceHost.AddServiceEndpoint(typeof(IPowershellIntelliSenseService),
                                                       binding,
-                                                      Constants.ProcessManagerHostRelativeUri);
+                                                      Constants.IntelliSenseHostRelativeUri);
 
             _powershellServiceHost.Open();
         }

@@ -221,9 +221,6 @@ namespace PowerShellTools.DebugEngine
         
         #region Debugging service event handlers
 
-
-
-
         /// <summary>
         /// Debugger stopped handler
         /// </summary>
@@ -252,30 +249,6 @@ namespace PowerShellTools.DebugEngine
             Log.DebugFormat("Debuggee resume action is {0}", _resumeAction);
 
             _debuggingService.SetResumeAction(_resumeAction);
-        }
-
-        /// <summary>
-        /// Output string from debugger in VS output/REPL pane window
-        /// </summary>
-        /// <param name="output"></param>
-        public void VsOutputString(string output)
-        {
-            if (ReplWindow != null)
-            {
-                if (output.StartsWith(PowerShellConstants.PowershellOutputErrorTag))
-                {
-                    ReplWindow.WriteError(output);
-                }
-                else
-                {
-                    ReplWindow.WriteOutput(output);
-                }
-            }
-
-            if (OutputString != null)
-            {
-                OutputString(this, new EventArgs<string>(output));
-            }
         }
 
         /// <summary>

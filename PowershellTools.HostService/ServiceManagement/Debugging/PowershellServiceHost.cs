@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
-    public partial class PowershellDebuggingService : PSHost
+    public partial class PowershellDebuggingService : PSHost, IHostSupportsInteractiveSession
     {
         /// <summary>
         /// The identifier of this PSHost implementation.
@@ -142,5 +142,38 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             get { return this.originalUICultureInfo; }
         }
 
+
+        public bool IsRunspacePushed
+        {
+            get { throw new NotImplementedException(); }
+
+            //get { return _runspaceRef.IsRunspaceOverridden; }
+        }
+
+        public void PopRunspace()
+        {
+            throw new NotImplementedException();
+            
+            //UnregisterRemoteFileOpenEvent(Runspace);
+            //_runspaceRef.Revert();
+        }
+
+
+        public void PushRunspace(System.Management.Automation.Runspaces.Runspace runspace)
+        {
+            throw new NotImplementedException();
+
+            //Pipeline runningCmd = EnterPSSessionCommandWrapper.ConnectRunningPipeline(newRunspace);
+            //_runspaceRef.Override(newRunspace);
+            //var oldRunspace = _runspaceRef.OldRunspace;
+            //// EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, this, true, oldRunspace);
+            //RegisterRemoteFileOpenEvent(newRunspace);
+        }
+
+        System.Management.Automation.Runspaces.Runspace IHostSupportsInteractiveSession.Runspace
+        {
+            get { throw new NotImplementedException(); }
+            //get { return _runspaceRef.Runspace; }
+        }
     }
 }

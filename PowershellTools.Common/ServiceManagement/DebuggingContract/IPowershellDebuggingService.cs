@@ -25,7 +25,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void Execute(string cmdline);
 
         [OperationContract]
-        void SetRunspace();
+        void SetRunspace(bool overrideExecutionPolicy);
 
         [OperationContract]
         Collection<Variable> GetScopedVariable();
