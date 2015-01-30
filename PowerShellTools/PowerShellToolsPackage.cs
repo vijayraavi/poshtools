@@ -300,7 +300,7 @@ namespace PowerShellTools
 
             Log.Info("InitializePowerShellHost");
 
-            Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration, (DTE2)GetService(typeof(DTE)));
+            Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
         }
 
         private void EstablishServiceConnection()

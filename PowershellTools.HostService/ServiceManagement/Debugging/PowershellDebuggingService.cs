@@ -170,8 +170,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         /// Initialize of powershell runspace
         /// </summary>
-        public void SetRunspace()
+        public void SetRunspace(bool overrideExecutionPolicy)
         {
+            if (overrideExecutionPolicy)
+            {
+                SetupExecutionPolicy();
+            }
+
             SetRunspace(_runspace);
         }
 
@@ -529,8 +534,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             ImportPoshToolsModule();
             LoadProfile();
-
-            SetupExecutionPolicy();
         }
 
         private void ImportPoshToolsModule()

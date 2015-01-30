@@ -63,31 +63,27 @@ using Microsoft.VisualStudio.Shell.Interop;
             }
         }
 
-        public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2)
+        private ScriptDebugger()
         {
             //TODO: remove once user prompt work is finished for debugging
-            HostUi = new HostUi(this);
             _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
-            _runspaceRef = new RunspaceRef(_runspace);
-
-            _debuggingService = PowerShellToolsPackage.DebuggingService;
-            _debuggingService.SetRunspace();
+            HostUi = new HostUi();
         }
 
-        public ScriptDebugger(bool overrideExecutionPolicy, DTE2 dte2, IPowershellDebuggingService service)
-        {
-            //TODO: remove once user prompt work is finished for debugging
-            HostUi = new HostUi(this);
-            _runspace = RunspaceFactory.CreateRunspace();
-            _runspace.Open();
-            _runspaceRef = new RunspaceRef(_runspace);
+        public ScriptDebugger(bool overrideExecutionPolicy)
+            : this(overrideExecutionPolicy, PowerShellToolsPackage.DebuggingService){}
 
+        public ScriptDebugger(bool overrideExecutionPolicy, IPowershellDebuggingService service)
+            : this()
+        {
+            OverrideExecutionPolicy = overrideExecutionPolicy;
             _debuggingService = service;
-            _debuggingService.SetRunspace();
+            _debuggingService.SetRunspace(overrideExecutionPolicy);
         }
 
         public HostUi HostUi { get; private set; }
+        public bool OverrideExecutionPolicy { get; private set; }
 
         public IReplWindow ReplWindow
         {
@@ -131,13 +127,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 
     public class HostUi
     {
-        private readonly ScriptDebugger _scriptDebugger;
-
-        public HostUi(ScriptDebugger scriptDebugger)
-        {
-            _scriptDebugger = scriptDebugger;
-        }
-
         public IReplWindow ReplWindow { get; set; }
 
         public Action<String> OutputString { get; set; }

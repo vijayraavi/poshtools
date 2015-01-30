@@ -25,7 +25,7 @@ namespace PowerShellTools.Test
             _runspace.Open();
             
             _debuggingService = new PowershellDebuggingService();
-            _debugger = new ScriptDebugger(true, null, _debuggingService);
+            _debugger = new ScriptDebugger(true, _debuggingService);
             _debuggingService.CallbackService = new DebugServiceEventsHandlerProxy(_debugger); 
         }
 

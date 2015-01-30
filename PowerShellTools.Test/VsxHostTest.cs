@@ -15,7 +15,7 @@ namespace PowerShellTools.Test
         public void Init()
         {
             _debuggingService = new PowershellDebuggingService();
-            _host = new ScriptDebugger(true, null, _debuggingService);
+            _host = new ScriptDebugger(true, _debuggingService);
         }
 
         [TestMethod]
