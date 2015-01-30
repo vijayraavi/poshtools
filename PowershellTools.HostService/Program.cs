@@ -18,6 +18,8 @@ namespace PowerShellTools.HostService
         private static ServiceHost _powershellDebuggingServiceHost;
         private static AutoResetEvent _processExitEvent;
 
+        public static int VsProcessId { get; private set; }
+
         [LoaderOptimization(LoaderOptimization.SingleDomain)]
         internal static int Main(string[] args)
         {
@@ -45,6 +47,8 @@ namespace PowerShellTools.HostService
             {
                 return 1;
             }
+
+            VsProcessId = vsProcessId;
 
             string readyEventName = args[2].Remove(0, Constants.ReadyEventUniqueNameArg.Length);
             // the readyEventName should be VsPowershellToolProcess:TheGeneratedGuid
