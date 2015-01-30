@@ -23,6 +23,7 @@ namespace PowerShellTools.DebugEngine
 #if POWERSHELL
     using IReplWindow = IPowerShellReplWindow;
     using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using Microsoft.VisualStudio.Shell.Interop;
 #endif
 
 
@@ -171,6 +172,18 @@ namespace PowerShellTools.DebugEngine
             if (OutputString != null)
             {
                 OutputString(output);
+            }
+        }
+
+        public void VSOutputProgress(string label, int percentage)
+        {
+            var statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
+            uint cookie = 0;
+            statusBar.Progress(ref cookie, 1, label, (uint)percentage, 100);
+
+            if (percentage == 100)
+            {
+                statusBar.Progress(ref cookie, 1, "", 0, 0);
             }
         }
     }

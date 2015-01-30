@@ -54,16 +54,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void TryOutputProgress(string label, int percentage)
         {
-            if (OutputProgress != null)
-                OutputProgress(label, percentage);
+            _debuggingService.NotifyOutputProgress(label, percentage);
         }
 
         private void TryOutputString(string val)
         {
             _debuggingService.NotifyOutputString(val);
-            
-            if (OutputString != null)
-                OutputString(val);
         }
 
         public override void Write(string value)

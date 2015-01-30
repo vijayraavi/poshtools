@@ -118,6 +118,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Debugging output event handler
+        /// </summary>
+        /// <param name="value">String to output</param>
+        public void NotifyOutputProgress(string label, int percentage)
+        {
+            ServiceCommon.Log("Callback to client to show progress", ConsoleColor.Yellow);
+            if (_callback != null)
+            {
+                _callback.OutputProgress(label, percentage);
+            }
+        }
+
+        /// <summary>
         /// PS debugger stopped event handler
         /// </summary>
         /// <param name="sender"></param>

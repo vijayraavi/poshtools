@@ -89,12 +89,23 @@ namespace PowerShellTools.DebugEngine
             Debugger.RefreshPrompt();
         }
 
-
-
-
+        /// <summary>
+        /// Ask for user input from VS
+        /// </summary>
+        /// <returns>output string</returns>
         public string ReadHostPrompt()
         {
             return Debugger.HostUi.ReadLine();
+        }
+
+        /// <summary>
+        /// Output the progress of writing output
+        /// </summary>
+        /// <param name="label">label</param>
+        /// <param name="percentage">percentage</param>
+        public void OutputProgress(string label, int percentage)
+        {
+            Debugger.HostUi.VSOutputProgress(label, percentage);
         }
     }
 }
