@@ -24,7 +24,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private static Runspace _runspace;
         private PowerShell _currentPowerShell;
         private IDebugEngineCallback _callback;
-        private DebuggerResumeAction _resumeAction;
+        private string _debuggingCommand;
         private IEnumerable<PSObject> _varaiables;
         private IEnumerable<PSObject> _callstack;
         private string log;
@@ -141,7 +141,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             RefreshScopedVariable();
             RefreshCallStack();
 
-
             ServiceCommon.Log("Callback to client, and wait for debuggee to resume", ConsoleColor.Yellow);
             if (e.Breakpoints.Count > 0)
             {
@@ -158,9 +157,26 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
                 }
             }
-            _pausedEvent.WaitOne();
-            ServiceCommon.Log(string.Format("Debuggee resume action is {0}", _resumeAction));
-            e.ResumeAction = _resumeAction;
+
+            bool resumed = false;
+            while (!resumed)
+            {
+                _pausedEvent.WaitOne();
+
+                PSCommand psCommand = new PSCommand();
+                psCommand.AddScript(_debuggingCommand).AddCommand("out-default");
+                psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                var output = new PSDataCollection<PSObject>();
+                output.DataAdded += objects_DataAdded;
+                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
+
+                if (results.ResumeAction != null)
+                {
+                    ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
+                    e.ResumeAction = results.ResumeAction.Value;
+                    resumed = true; // debugger resumed executing
+                }
+            }
         }
 
         #endregion
@@ -184,10 +200,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Client respond with resume action to service
         /// </summary>
         /// <param name="action">Resumeaction from client</param>
-        public void SetResumeAction(DebuggerResumeAction action)
+        public void ExecuteDebuggingCommand(string debuggingCommand)
         {
-            ServiceCommon.Log("Client respond with resume action", ConsoleColor.Green);
-            _resumeAction = action;
+            ServiceCommon.Log("Client respond with debugging command");
+            _debuggingCommand = debuggingCommand;
             _pausedEvent.Set();
         }
 

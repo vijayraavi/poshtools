@@ -19,10 +19,10 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void ClearBreakpoints();
 
         [OperationContract]
-        void SetResumeAction(DebuggerResumeAction action);
+        void Execute(string cmdline);
 
         [OperationContract]
-        void Execute(string cmdline);
+        void ExecuteDebuggingCommand(string cmdline);
 
         [OperationContract]
         void SetRunspace(bool overrideExecutionPolicy);

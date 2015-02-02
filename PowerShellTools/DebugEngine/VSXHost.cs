@@ -43,6 +43,10 @@ using Microsoft.VisualStudio.Shell.Interop;
         public IPowershellDebuggingService DebuggingService {
             get
             {
+                if (_debuggingService == null)
+                {
+                    _debuggingService = PowerShellToolsPackage.DebuggingService;
+                }
                 return _debuggingService;
             }
             set

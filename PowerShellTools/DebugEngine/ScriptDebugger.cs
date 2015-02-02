@@ -8,6 +8,7 @@ using log4net;
 
 using System.Collections.ObjectModel;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -61,12 +62,8 @@ namespace PowerShellTools.DebugEngine
         public event EventHandler<EventArgs<Exception>> TerminatingException;
 
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
-        private DebuggerResumeAction _resumeAction;
 
-        /// <summary>
-        /// The current set of variables for the current runspace.
-        /// </summary>
-        public DebuggerResumeAction ResumeAction { get; private set; }
+        private string _debuggingCommand;
 
         /// <summary>
         /// The current set of variables for the current runspace.
@@ -82,6 +79,11 @@ namespace PowerShellTools.DebugEngine
         /// The currently executing <see cref="ScriptProgramNode"/>
         /// </summary>
         public ScriptProgramNode CurrentExecutingNode { get; private set; }
+
+        /// <summary>
+        /// Indicate if debugger is ready for accepting command
+        /// </summary>
+        public bool DebuggingCommandReady { get; private set; }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
 
@@ -244,11 +246,15 @@ namespace PowerShellTools.DebugEngine
 
             Log.Debug("Waiting for debuggee to resume.");
 
+            DebuggingCommandReady = true;
+
             //Wait for the user to step, continue or stop
             _pausedEvent.WaitOne();
-            Log.DebugFormat("Debuggee resume action is {0}", _resumeAction);
+            Log.DebugFormat("Debuggee resume action is {0}", _debuggingCommand);
 
-            _debuggingService.SetResumeAction(_resumeAction);
+            _debuggingService.ExecuteDebuggingCommand(_debuggingCommand);
+
+            DebuggingCommandReady = false;
         }
 
         /// <summary>
@@ -282,6 +288,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void DebuggerFinished()
         {
+            DebuggingCommandReady = false;
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());
@@ -366,7 +373,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                _resumeAction = DebuggerResumeAction.Stop;
+                _debuggingCommand = Constants.Debugger_Stop;
                 _pausedEvent.Set();
                 _currentPowerShell.Stop();
             }
@@ -385,7 +392,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOver()
         {
             Log.Info("StepOver");
-            _resumeAction = DebuggerResumeAction.StepOver;
+            _debuggingCommand = Constants.Debugger_StepOver;
             _pausedEvent.Set();
         }
 
@@ -395,7 +402,7 @@ namespace PowerShellTools.DebugEngine
         public void StepInto()
         {
             Log.Info("StepInto");
-            _resumeAction = DebuggerResumeAction.StepInto;
+            _debuggingCommand = Constants.Debugger_StepInto;
             _pausedEvent.Set();
         }
 
@@ -405,7 +412,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOut()
         {
             Log.Info("StepOut");
-            _resumeAction = DebuggerResumeAction.StepOut;
+            _debuggingCommand = Constants.Debugger_StepOut;
             _pausedEvent.Set();
         }
 
@@ -415,7 +422,7 @@ namespace PowerShellTools.DebugEngine
         public void Continue()
         {
             Log.Info("Continue");
-            _resumeAction = DebuggerResumeAction.Continue;
+            _debuggingCommand = Constants.Debugger_Continue;
             _pausedEvent.Set();
         }
 
@@ -429,11 +436,33 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
+                DebuggingCommandReady = false;
                 _debuggingService.Execute(commandLine);
             }
             catch (Exception ex)
             {
                 Log.Error("Failed to execute script", ex);
+            }
+        }
+
+        /// <summary>
+        /// Execute the specified command line as debugging command.
+        /// </summary>
+        /// <param name="commandLine">Command line to execute.</param>
+        public void ExecuteDebuggingCommand(string commandLine)
+        {
+            Log.Info("Execute debugging command");
+
+            if (DebuggingCommandReady)
+            {
+                try
+                {
+                    _debuggingService.ExecuteDebuggingCommand(commandLine);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Failed to execute debugging command", ex);
+                }
             }
         }
 
