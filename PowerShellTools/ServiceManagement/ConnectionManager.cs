@@ -1,12 +1,11 @@
 ﻿using System;
-using System.ServiceModel;
-using PowerShellTools.Common;
-using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
-using System.ServiceModel;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-using PowerShellTools.DebugEngine;
 using System.Diagnostics;
+using System.ServiceModel;
 using log4net;
+using PowerShellTools.Common;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
+using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.ServiceManagement
 {
