@@ -227,16 +227,16 @@ namespace PowerShellTools.Intellisense
                 replbuffers.Remove(currentActiveReplBuffer);
                 if (replbuffers.Count != 0)
                 {
-                    script = replbuffers.Select(b => b.CurrentSnapshot.GetText()).Aggregate((current, next) => current + next);
+                    script = replbuffers.Select(b => b.CurrentSnapshot.GetText())
+                                        .Aggregate((current, next) => current + next);
                 }                
 
                 var previousScriptLength = script.Length;
                 var caretPos = _textView.Caret.Position.BufferPosition;
-                var bufferPoint = _textView.BufferGraph.MapDownToFirstMatch(
-                    caretPos,
-                    PointTrackingMode.Positive,
-                    x => x.TextBuffer.ContentType == PowerShellToolsPackage.Instance.ContentType,
-                    PositionAffinity.Successor);
+                var bufferPoint = _textView.BufferGraph.MapDownToBuffer(caretPos,
+                                                                        PointTrackingMode.Positive,
+                                                                        currentActiveReplBuffer,
+                                                                        PositionAffinity.Successor);
                 int caretInCurrentBuffer = bufferPoint.Value.Position;
 
                 script += currentActiveReplBuffer.CurrentSnapshot.GetText(0, caretInCurrentBuffer);
