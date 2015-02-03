@@ -31,10 +31,14 @@ namespace PowerShellTools.Common.IntelliSense
                 return null;
             }
 
-            var ps = PowerShell.Create();
-            ps.Runspace = runspace;
+            CommandCompletion commandCompletion;
+            using (var ps = PowerShell.Create())
+            {
+                ps.Runspace = runspace;
+                commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps);
+            }
 
-            return CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps);
+            return commandCompletion;
         }
 
         /// <summary>

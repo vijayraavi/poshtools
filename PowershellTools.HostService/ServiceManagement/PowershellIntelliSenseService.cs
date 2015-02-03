@@ -3,6 +3,7 @@ using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
+using PowerShellTools.HostService.ServiceManagement.Debugging;
 
 namespace PowerShellTools.HostService.ServiceManagement
 {
@@ -11,16 +12,7 @@ namespace PowerShellTools.HostService.ServiceManagement
     /// </summary>
     public sealed class PowershellIntelliSenseService : IPowershellIntelliSenseService
     {
-        private Runspace _runspace;
-
-        /// <summary>
-        /// Create and open the runspace for the sake of service.
-        /// </summary>
-        public PowershellIntelliSenseService()
-        {
-            _runspace = RunspaceFactory.CreateRunspace();
-            _runspace.Open();
-        }
+        private readonly Runspace _runspace = PowershellDebuggingService.Runspace;
 
         #region IAutoCompletionService Members
 
