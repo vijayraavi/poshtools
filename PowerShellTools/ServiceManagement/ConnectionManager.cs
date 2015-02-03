@@ -25,6 +25,11 @@ namespace PowerShellTools.ServiceManagement
         private ChannelFactory<IPowershellDebuggingService> _debuggingServiceChannelFactory;
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
 
+        /// <summary>
+        /// Event is fired when the connection exception happened.
+        /// </summary>
+        public event EventHandler ConnectionException;
+
         private ConnectionManager()
         {
             OpenClientConnection();
@@ -106,7 +111,13 @@ namespace PowerShellTools.ServiceManagement
                         _debuggingServiceChannelFactory.Faulted += ConnectionExceptionHandler;
                         _debuggingServiceChannelFactory.Closed += ConnectionExceptionHandler;
                         _debuggingServiceChannelFactory.Open();
-                        _powershellDebuggingService = _debuggingServiceChannelFactory.CreateChannel();                        
+                        _powershellDebuggingService = _debuggingServiceChannelFactory.CreateChannel();
+
+                        // Always warm up the debugging service ahead of other services in host service process
+                        if (PowerShellToolsPackage.Debugger != null)
+                        {
+                            _powershellDebuggingService.SetRunspace(PowerShellToolsPackage.OverrideExecutionPolicyConfiguration);
+                        }
                     }
                     catch
                     {
@@ -124,6 +135,11 @@ namespace PowerShellTools.ServiceManagement
         private void ConnectionExceptionHandler(object sender, EventArgs e)
         {
             EnsureClearServiceChannel();
+
+            if (ConnectionException != null)
+            {
+                ConnectionException(this, new EventArgs());
+            }
         }
 
         private void EnsureCloseProcess(Process process)

@@ -24,6 +24,7 @@ namespace PowerShellTools.DebugEngine
     using IReplWindow = IPowerShellReplWindow;
     using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using Microsoft.VisualStudio.Shell.Interop;
+    using PowerShellTools.ServiceManagement;
 #endif
 
 
@@ -38,20 +39,22 @@ using Microsoft.VisualStudio.Shell.Interop;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
         private Runspace _runspace;
         private readonly RunspaceRef _runspaceRef;
-        private IPowershellDebuggingService _debuggingService;
+        private IPowershellDebuggingService _debuggingServiceTest;
 
-        public IPowershellDebuggingService DebuggingService {
+        public IPowershellDebuggingService DebuggingService
+        {
             get
             {
-                if (_debuggingService == null)
+                if (_debuggingServiceTest != null)
                 {
-                    _debuggingService = PowerShellToolsPackage.DebuggingService;
+                    return _debuggingServiceTest;
                 }
-                return _debuggingService;
+
+                return PowerShellToolsPackage.DebuggingService;
             }
-            set
+            private set
             {
-                _debuggingService = value;
+                _debuggingServiceTest = value;
             }
         }
 
@@ -76,14 +79,17 @@ using Microsoft.VisualStudio.Shell.Interop;
         }
 
         public ScriptDebugger(bool overrideExecutionPolicy)
-            : this(overrideExecutionPolicy, PowerShellToolsPackage.DebuggingService){}
+            : this(overrideExecutionPolicy, null)
+        {
+            ConnectionManager.Instance.ConnectionException += ConnectionExceptionHandler;
+        }
 
         public ScriptDebugger(bool overrideExecutionPolicy, IPowershellDebuggingService service)
             : this()
         {
             OverrideExecutionPolicy = overrideExecutionPolicy;
-            _debuggingService = service;
-            _debuggingService.SetRunspace(overrideExecutionPolicy);
+            _debuggingServiceTest = service;
+            DebuggingService.SetRunspace(overrideExecutionPolicy);
         }
 
         public HostUi HostUi { get; private set; }

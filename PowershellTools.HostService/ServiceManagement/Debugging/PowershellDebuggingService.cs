@@ -73,7 +73,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="e"></param>
         private void _runspace_StateChanged(object sender, RunspaceStateEventArgs e)
         {
-            Console.WriteLine("Runspace State Changed: {0}", e.RunspaceStateInfo.State);
+            ServiceCommon.Log("Runspace State Changed: {0}", e.RunspaceStateInfo.State);
 
             switch (e.RunspaceStateInfo.State)
             {
@@ -95,7 +95,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="e"></param>
         private void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
-            Console.WriteLine("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
+            ServiceCommon.Log("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
 
             if (_callback != null)
             {
@@ -110,7 +110,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="value">String to output</param>
         public void NotifyOutputString(string value)
         {
-            ServiceCommon.Log("Callback to client for string output in VS", ConsoleColor.Yellow);
+            ServiceCommon.LogCallbackEvent("Callback to client for string output in VS");
             if (_callback != null)
             {
                 _callback.OutputString(value);
@@ -123,7 +123,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="value">String to output</param>
         public void NotifyOutputProgress(string label, int percentage)
         {
-            ServiceCommon.Log("Callback to client to show progress", ConsoleColor.Yellow);
+            ServiceCommon.LogCallbackEvent("Callback to client to show progress");
             if (_callback != null)
             {
                 _callback.OutputProgress(label, percentage);
@@ -141,7 +141,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             RefreshScopedVariable();
             RefreshCallStack();
 
-            ServiceCommon.Log("Callback to client, and wait for debuggee to resume", ConsoleColor.Yellow);
+            ServiceCommon.LogCallbackEvent("Callback to client, and wait for debuggee to resume");
             if (e.Breakpoints.Count > 0)
             {
                 LineBreakpoint bp = (LineBreakpoint)e.Breakpoints[0];
@@ -159,23 +159,30 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             bool resumed = false;
-            while (!resumed)
+            try
             {
-                _pausedEvent.WaitOne();
-
-                PSCommand psCommand = new PSCommand();
-                psCommand.AddScript(_debuggingCommand).AddCommand("out-default");
-                psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                var output = new PSDataCollection<PSObject>();
-                output.DataAdded += objects_DataAdded;
-                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-
-                if (results.ResumeAction != null)
+                while (!resumed)
                 {
-                    ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
-                    e.ResumeAction = results.ResumeAction.Value;
-                    resumed = true; // debugger resumed executing
+                    _pausedEvent.WaitOne();
+
+                    PSCommand psCommand = new PSCommand();
+                    psCommand.AddScript(_debuggingCommand).AddCommand("out-default");
+                    psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                    var output = new PSDataCollection<PSObject>();
+                    output.DataAdded += objects_DataAdded;
+                    DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
+
+                    if (results.ResumeAction != null)
+                    {
+                        ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
+                        e.ResumeAction = results.ResumeAction.Value;
+                        resumed = true; // debugger resumed executing
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log("Exception happened while process user debugging action. Exception: {0}", ex);
             }
         }
 
@@ -214,15 +221,22 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public void SetBreakpoint(PowershellBreakpoint bp)
         {
             ServiceCommon.Log("Setting breakpoing ...");
-            using (var pipeline = (_runspace.CreatePipeline()))
+            try
             {
-                var command = new Command("Set-PSBreakpoint");
-                command.Parameters.Add("Script", bp.ScriptFullPath);
-                command.Parameters.Add("Line", bp.Line);
+                using (var pipeline = (_runspace.CreatePipeline()))
+                {
+                    var command = new Command("Set-PSBreakpoint");
+                    command.Parameters.Add("Script", bp.ScriptFullPath);
+                    command.Parameters.Add("Line", bp.Line);
 
-                pipeline.Commands.Add(command);
+                    pipeline.Commands.Add(command);
 
-                pipeline.Invoke();
+                    pipeline.Invoke();
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log("Failed to set break point.  Exception: {0}", ex);
             }
         }
 
@@ -234,17 +248,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             ServiceCommon.Log("ClearBreakpoints");
 
             IEnumerable<PSObject> breakpoints;
-            using (var pipeline = (_runspace.CreatePipeline()))
-            {
-                var command = new Command("Get-PSBreakpoint");
-                pipeline.Commands.Add(command);
-                breakpoints = pipeline.Invoke();
-            }
-
-            if (!breakpoints.Any()) return;
-
             try
             {
+                using (var pipeline = (_runspace.CreatePipeline()))
+                {
+                    var command = new Command("Get-PSBreakpoint");
+                    pipeline.Commands.Add(command);
+                    breakpoints = pipeline.Invoke();
+                }
+
+                if (!breakpoints.Any()) return;
+
                 using (var pipeline = (_runspace.CreatePipeline()))
                 {
                     var command = new Command("Remove-PSBreakpoint");
@@ -279,7 +293,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ServiceCommon.Log("No instance context retrieved.");
             }
@@ -302,7 +316,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             catch (Exception ex)
             {
-                ServiceCommon.Log("Terminating error" + ex);
+                ServiceCommon.Log("Terminating error,  Exception: {0}", ex);
                 if (_callback != null)
                 {
                     _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
@@ -312,7 +326,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             finally
             {
-                _currentPowerShell.Stop();
                 DebuggerFinished();
             }
         }
@@ -477,23 +490,37 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void RefreshScopedVariable()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all local variable in scope");
-
-            using (var pipeline = (_runspace.CreateNestedPipeline()))
+            try
             {
-                var command = new Command("Get-Variable");
-                pipeline.Commands.Add(command);
-                _varaiables = pipeline.Invoke();
+                using (var pipeline = (_runspace.CreateNestedPipeline()))
+                {
+                    var command = new Command("Get-Variable");
+                    pipeline.Commands.Add(command);
+                    _varaiables = pipeline.Invoke();
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log("Failed to retrieve local variable.  Exception: {0}", ex);
             }
         }
 
         private void RefreshCallStack()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all call stack frames");
-            using (var pipeline = (_runspace.CreateNestedPipeline()))
+
+            try
             {
-                var command = new Command("Get-PSCallstack");
-                pipeline.Commands.Add(command);
-                _callstack = pipeline.Invoke();
+                using (var pipeline = (_runspace.CreateNestedPipeline()))
+                {
+                    var command = new Command("Get-PSCallstack");
+                    pipeline.Commands.Add(command);
+                    _callstack = pipeline.Invoke();
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log("Failed to retrieve stack trace. Exception: {0}", ex);
             }
         }
 
@@ -529,13 +556,22 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 _callback.DebuggerFinished();
             }
+
+            if (_currentPowerShell != null)
+            {
+                _currentPowerShell.Stop();
+                _currentPowerShell = null;
+            }
+
+            _debuggingCommand = string.Empty;
+            _localVariables.Clear();
+            _propVariables.Clear();
         }
 
         private void objects_DataAdded(object sender, DataAddedEventArgs e)
         {
             var list = sender as PSDataCollection<PSObject>;
             log += list[e.Index] + Environment.NewLine;
-
         }
 
         private void InitializeRunspace(PSHost psHost)
@@ -565,7 +601,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Failed to load profile.", ex);
+                    ServiceCommon.Log("Failed to load profile.  Exception: {0}", ex);
                 }
             }
         }
@@ -592,7 +628,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Failed to load profile.", ex);
+                    ServiceCommon.Log("Failed to load profile. Exception: {0}", ex);
                 }
             }
         }
@@ -604,14 +640,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
         {
-            using (PowerShell ps = PowerShell.Create())
+            try
             {
-                ps.Runspace = _runspace;
-                ps.AddCommand("Set-ExecutionPolicy")
-                    .AddParameter("ExecutionPolicy", policy)
-                    .AddParameter("Scope", scope)
-                    .AddParameter("Force");
-                ps.Invoke();
+                using (PowerShell ps = PowerShell.Create())
+                {
+                    ps.Runspace = _runspace;
+                    ps.AddCommand("Set-ExecutionPolicy")
+                        .AddParameter("ExecutionPolicy", policy)
+                        .AddParameter("Scope", scope)
+                        .AddParameter("Force");
+                    ps.Invoke();
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log("Failed to set execution policy. Exception: {0}", ex);
             }
         }
 

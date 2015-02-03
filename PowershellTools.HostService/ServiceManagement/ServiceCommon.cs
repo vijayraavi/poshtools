@@ -15,13 +15,16 @@ namespace PowerShellTools.HostService.ServiceManagement
 {
     public class ServiceCommon
     {
+
         /// <summary>
         /// TODO: Temporary logging before having logging infrastructure ready
         /// </summary>
         /// <param name="msg"></param>
-        public static void Log(string msg)
+        public static void Log(string msg, params object[] args)
         {
-            Log(msg, ConsoleColor.Green);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Log(string.Format(msg, args));
+            Console.ResetColor();
         }
 
         /// <summary>
@@ -29,11 +32,20 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// </summary>
         /// <param name="msg"></param>
         /// <param name="c"></param>
-        public static void Log(string msg, ConsoleColor c)
+        public static void LogCallbackEvent(string msg, params object[] args)
         {
-            Console.ForegroundColor = c;
-            Console.WriteLine(msg);
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Log(msg, args);
             Console.ResetColor();
+        }
+
+        /// <summary>
+        /// TODO: Temporary logging before having logging infrastructure ready
+        /// </summary>
+        /// <param name="msg"></param>
+        private static void Log(string msg)
+        {
+            Console.WriteLine(msg);
         }
     }
 }

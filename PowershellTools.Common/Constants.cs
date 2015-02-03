@@ -28,12 +28,5 @@ namespace PowerShellTools.Common
         public const string VsProcessIdArg = "/vsPid:";
         public const string UniqueEndpointArg = "/endpoint:";
         public const string ReadyEventUniqueNameArg = "/readyEventUniqueName:";
-
-        // Powershell debugging command
-        public const string Debugger_Stop = "p";
-        public const string Debugger_StepOver = "v";
-        public const string Debugger_StepInto = "s";
-        public const string Debugger_StepOut = "o";
-        public const string Debugger_Continue = "c";
     }
 }

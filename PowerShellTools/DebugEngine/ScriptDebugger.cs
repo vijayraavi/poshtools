@@ -8,7 +8,6 @@ using log4net;
 
 using System.Collections.ObjectModel;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-using PowerShellTools.Common;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -199,7 +198,7 @@ namespace PowerShellTools.DebugEngine
         {
             try
             {
-                _debuggingService.ClearBreakpoints();
+                DebuggingService.ClearBreakpoints();
             }
             catch (Exception ex)
             {
@@ -213,7 +212,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                _debuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                DebuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
             }
             catch (Exception ex)
             {
@@ -252,7 +251,7 @@ namespace PowerShellTools.DebugEngine
             _pausedEvent.WaitOne();
             Log.DebugFormat("Debuggee resume action is {0}", _debuggingCommand);
 
-            _debuggingService.ExecuteDebuggingCommand(_debuggingCommand);
+            DebuggingService.ExecuteDebuggingCommand(_debuggingCommand);
 
             DebuggingCommandReady = false;
         }
@@ -295,6 +294,12 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
+        private void ConnectionExceptionHandler(object sender, EventArgs e)
+        {
+            Log.Error("Connection to host service is broken, terminating debugging.");
+            DebuggerFinished();
+        }
+
         #endregion
 
         /// <summary>
@@ -304,7 +309,7 @@ namespace PowerShellTools.DebugEngine
         {
             try
             {
-                Collection<Variable> vars = _debuggingService.GetScopedVariable();
+                Collection<Variable> vars = DebuggingService.GetScopedVariable();
                 Variables = new Dictionary<string, Variable>();
                 foreach (Variable v in vars)
                 {
@@ -325,7 +330,7 @@ namespace PowerShellTools.DebugEngine
             IEnumerable<CallStack> result = null;
             try
             {
-                result = _debuggingService.GetCallStack();
+                result = DebuggingService.GetCallStack();
             }
             catch (Exception ex)
             {
@@ -373,7 +378,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                _debuggingCommand = Constants.Debugger_Stop;
+                _debuggingCommand = PowerShellConstants.Debugger_Stop;
                 _pausedEvent.Set();
                 _currentPowerShell.Stop();
             }
@@ -392,7 +397,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOver()
         {
             Log.Info("StepOver");
-            _debuggingCommand = Constants.Debugger_StepOver;
+            _debuggingCommand = PowerShellConstants.Debugger_StepOver;
             _pausedEvent.Set();
         }
 
@@ -402,7 +407,7 @@ namespace PowerShellTools.DebugEngine
         public void StepInto()
         {
             Log.Info("StepInto");
-            _debuggingCommand = Constants.Debugger_StepInto;
+            _debuggingCommand = PowerShellConstants.Debugger_StepInto;
             _pausedEvent.Set();
         }
 
@@ -412,7 +417,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOut()
         {
             Log.Info("StepOut");
-            _debuggingCommand = Constants.Debugger_StepOut;
+            _debuggingCommand = PowerShellConstants.Debugger_StepOut;
             _pausedEvent.Set();
         }
 
@@ -422,7 +427,7 @@ namespace PowerShellTools.DebugEngine
         public void Continue()
         {
             Log.Info("Continue");
-            _debuggingCommand = Constants.Debugger_Continue;
+            _debuggingCommand = PowerShellConstants.Debugger_Continue;
             _pausedEvent.Set();
         }
 
@@ -437,7 +442,7 @@ namespace PowerShellTools.DebugEngine
             try
             {
                 DebuggingCommandReady = false;
-                _debuggingService.Execute(commandLine);
+                DebuggingService.Execute(commandLine);
             }
             catch (Exception ex)
             {
@@ -457,7 +462,7 @@ namespace PowerShellTools.DebugEngine
             {
                 try
                 {
-                    _debuggingService.ExecuteDebuggingCommand(commandLine);
+                    DebuggingService.ExecuteDebuggingCommand(commandLine);
                 }
                 catch (Exception ex)
                 {
