@@ -222,25 +222,14 @@ namespace PowerShellTools.Intellisense
             }
             else if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
             {
-                var replbuffers = _textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal));
-                var currentActiveReplBuffer = replbuffers.LastOrDefault();
-                replbuffers.Remove(currentActiveReplBuffer);
-                if (replbuffers.Count != 0)
-                {
-                    script = replbuffers.Select(b => b.CurrentSnapshot.GetText())
-                                        .Aggregate((current, next) => current + next);
-                }                
-
-                var previousScriptLength = script.Length;
-                var caretPos = _textView.Caret.Position.BufferPosition;
-                var bufferPoint = _textView.BufferGraph.MapDownToBuffer(caretPos,
-                                                                        PointTrackingMode.Positive,
-                                                                        currentActiveReplBuffer,
-                                                                        PositionAffinity.Successor);
-                int caretInCurrentBuffer = bufferPoint.Value.Position;
-
-                script += currentActiveReplBuffer.CurrentSnapshot.GetText(0, caretInCurrentBuffer);
-                scriptParsePosition = caretInCurrentBuffer + previousScriptLength;
+                var currentActiveReplBuffer = _textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
+                                                                   .LastOrDefault();
+                var currentBufferPoint = _textView.BufferGraph.MapDownToBuffer(_textView.Caret.Position.BufferPosition,
+                                                                               PointTrackingMode.Positive,
+                                                                               currentActiveReplBuffer,
+                                                                               PositionAffinity.Successor);
+                scriptParsePosition = currentBufferPoint.Value.Position;
+                script = currentActiveReplBuffer.CurrentSnapshot.GetText(0, scriptParsePosition);
             }
             else
             {
@@ -259,8 +248,8 @@ namespace PowerShellTools.Intellisense
                                                                  item.ListItemText,
                                                                  (CompletionResultType)item.ResultType,
                                                                  item.ToolTip)).ToList();
-            completionReplacementIndex = caretPosition - commandCompletion.ReplacementLength;
             completionReplacementLength = commandCompletion.ReplacementLength;
+            completionReplacementIndex = caretPosition - completionReplacementLength;
 
             var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
             var caretInLine = (caretPosition - line.Start);
