@@ -1,4 +1,5 @@
-﻿using Microsoft.PowerShell;
+﻿using EnvDTE80;
+using Microsoft.PowerShell;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
 using System.Collections;
@@ -270,6 +271,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             try
             {
+                // Preset dte as PS variable if not yet
+                if (_runspace.SessionStateProxy.PSVariable.Get("dte") == null)
+                {
+                    DTE2 dte = DTEManager.GetDTE(Program.VsProcessId);
+                    if (dte != null)
+                    {
+                        _runspace.SessionStateProxy.PSVariable.Set("dte", dte);
+                    }
+                }
+
                 using (_currentPowerShell = PowerShell.Create())
                 {
                     _currentPowerShell.Runspace = _runspace;
