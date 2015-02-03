@@ -209,8 +209,8 @@ namespace PowerShellTools.Intellisense
 
             // Procedures for correctly supporting IntelliSense in REPL window.
             // Step 1, determine if this is REPL windows IntelliSense. If no, continue with normal IntelliSense triggering process. Otherwise, continue with the following steps.            
-            // Step 2, map the caret position in current text buffer to the one in current POWERSHELL text buffer adjust it if there are previous POWERSHELL text buffers.
-            // Step 3, get all text buffers of POWERSHELL, concat all the texts from previous buffers and then concat the current POWERSHELL text which only ranges from 0 to the caret position from Step 2.
+            // Step 2, map the caret position in current REPL window text buffer to the one in current POWERSHELL text buffer.
+            // Step 3, get the current POWERSHELL text which only ranges from 0 to the caret position from Step 2.
             // Step 4, get the command completion results using the script text from Step 3 and the mapped caret position from Step 2.
             // Step 5, from this point on, make sure we go back to the original text buffer and caret position so that we can show the completion window in the right place.
             string script = String.Empty;
