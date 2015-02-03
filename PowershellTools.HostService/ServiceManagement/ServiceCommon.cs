@@ -20,6 +20,7 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// TODO: Temporary logging before having logging infrastructure ready
         /// </summary>
         /// <param name="msg"></param>
+        /// <param name="args"></param>
         public static void Log(string msg, params object[] args)
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -31,11 +32,11 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// TODO: Temporary logging before having logging infrastructure ready
         /// </summary>
         /// <param name="msg"></param>
-        /// <param name="c"></param>
+        /// <param name="args"></param>
         public static void LogCallbackEvent(string msg, params object[] args)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Log(msg, args);
+            Log(string.Format(msg, args));
             Console.ResetColor();
         }
 
