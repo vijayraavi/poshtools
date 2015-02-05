@@ -38,8 +38,12 @@ namespace PowerShellTools.Classification
         [Import]
         public IClassificationTypeRegistryService ClassificationTypeRegistryService { get; set; }
 
+        [Import] private DependencyValidator _validator;
+
 		public IClassifier GetClassifier(ITextBuffer textBuffer)
 		{
+            if (!_validator.Validate()) return null;
+
             return textBuffer.Properties.GetOrCreateSingletonProperty(() => new PowerShellClassifier(textBuffer));
 		}
 	}

@@ -8,10 +8,11 @@ namespace PowerShellTools.Project
     internal class PowerShellProjectNode : CommonProjectNode
     {
         private readonly CommonProjectPackage _package;
-
-        public PowerShellProjectNode(CommonProjectPackage package)
+        private readonly bool _dependenciesResolved;
+        public PowerShellProjectNode(CommonProjectPackage package, bool dependenciesResolved)
             : base(package, Utilities.GetImageList(typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.ProjectIcon.bmp")))
         {
+            _dependenciesResolved = dependenciesResolved;
             _package = package;
             // TODO: Temporary!! AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
             AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
@@ -57,7 +58,7 @@ namespace PowerShellTools.Project
 
         public override IProjectLauncher GetLauncher()
         {
-            return new PowerShellProjectLauncher(this);
+            return new PowerShellProjectLauncher(this, _dependenciesResolved);
         }
 
         protected override Stream ProjectIconsImageStripStream
