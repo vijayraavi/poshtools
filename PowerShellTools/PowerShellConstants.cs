@@ -18,9 +18,9 @@ namespace PowerShellTools
     {
         public static bool IsPowerShellFile(string fileName)
         {
-            return fileName.ToLower().EndsWith(PowerShellConstants.PS1File,  StringComparison.OrdinalIgnoreCase) ||
-                   fileName.ToLower().EndsWith(PowerShellConstants.PSD1File, StringComparison.OrdinalIgnoreCase) ||
-                   fileName.ToLower().EndsWith(PowerShellConstants.PSM1File, StringComparison.OrdinalIgnoreCase);
+            return fileName.EndsWith(PowerShellConstants.PS1File,  StringComparison.OrdinalIgnoreCase) ||
+                   fileName.EndsWith(PowerShellConstants.PSD1File, StringComparison.OrdinalIgnoreCase) ||
+                   fileName.EndsWith(PowerShellConstants.PSM1File, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
