@@ -10,6 +10,7 @@ using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Repl;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
@@ -108,7 +109,7 @@ namespace PowerShellTools.Intellisense
                 {
                     if (_activeSession.CompletionSets[0].SelectionStatus.IsSelected)
                     {
-                      _activeSession.Commit();
+                        _activeSession.Commit();
                     }
                 }
                 else
@@ -206,12 +207,38 @@ namespace PowerShellTools.Intellisense
             int completionReplacementIndex;
             int completionReplacementLength;
 
-
-            var trackingSpan = _textView.TextBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textView.TextBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
-            var script = trackingSpan.GetText(_textView.TextBuffer.CurrentSnapshot);
+            // Procedures for correctly supporting IntelliSense in REPL window.
+            // Step 1, determine if this is REPL windows IntelliSense. If no, continue with normal IntelliSense triggering process. Otherwise, continue with the following steps.            
+            // Step 2, map the caret position in current REPL window text buffer to the one in current POWERSHELL text buffer.
+            // Step 3, get the current POWERSHELL text which only ranges from 0 to the caret position from Step 2.
+            // Step 4, get the command completion results using the script text from Step 3 and the mapped caret position from Step 2.
+            // Step 5, from this point on, make sure we go back to the original text buffer and caret position so that we can show the completion window in the right place.
+            string script = String.Empty;
+            int scriptParsePosition = 0;
+            if (_textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
+            {
+                script = _textView.TextBuffer.CurrentSnapshot.GetText();
+                scriptParsePosition = caretPosition;
+            }
+            else if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
+            {
+                var currentActiveReplBuffer = _textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
+                                                                   .LastOrDefault();
+                var currentBufferPoint = _textView.BufferGraph.MapDownToBuffer(_textView.Caret.Position.BufferPosition,
+                                                                               PointTrackingMode.Positive,
+                                                                               currentActiveReplBuffer,
+                                                                               PositionAffinity.Successor);
+                scriptParsePosition = currentBufferPoint.Value.Position;
+                script = currentActiveReplBuffer.CurrentSnapshot.GetText(0, scriptParsePosition);
+            }
+            else
+            {
+                Log.Error("The content type of the text buffer isn't recognized.");
+                return;
+            }
 
             // Go out-of-proc here to get the completion list
-            var commandCompletion = PowerShellToolsPackage.IntelliSenseService.GetCompletionResults(script, caretPosition);
+            var commandCompletion = PowerShellToolsPackage.IntelliSenseService.GetCompletionResults(script, scriptParsePosition);
             if (commandCompletion == null)
             {
                 return;
@@ -221,8 +248,8 @@ namespace PowerShellTools.Intellisense
                                                                  item.ListItemText,
                                                                  (CompletionResultType)item.ResultType,
                                                                  item.ToolTip)).ToList();
-            completionReplacementIndex = commandCompletion.ReplacementIndex;
             completionReplacementLength = commandCompletion.ReplacementLength;
+            completionReplacementIndex = caretPosition - completionReplacementLength;
 
             var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
             var caretInLine = (caretPosition - line.Start);
@@ -236,7 +263,7 @@ namespace PowerShellTools.Intellisense
                     {
                         IntellisenseDone(completionMatchesList,
                                         lineStartPosition,
-                                        completionReplacementIndex + 0,
+                                        completionReplacementIndex,
                                         completionReplacementLength,
                                         caretPosition);
                     }
@@ -251,7 +278,7 @@ namespace PowerShellTools.Intellisense
             _intellisenseRunning = false;
         }
 
-        internal void IntellisenseDone(IList<CompletionResult> completionResults, int lineStartPosition, int replacementIndex, int replacementLength, int startCaretPosition)
+        private void IntellisenseDone(IList<CompletionResult> completionResults, int lineStartPosition, int replacementIndex, int replacementLength, int startCaretPosition)
         {
             var textBuffer = _textView.TextBuffer;
             var length = replacementIndex - lineStartPosition;
