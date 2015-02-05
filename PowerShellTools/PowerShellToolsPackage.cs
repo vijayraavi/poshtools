@@ -119,6 +119,11 @@ namespace PowerShellTools
         internal static ScriptDebugger Debugger { get; private set; }
 
         /// <summary>
+        /// Indicate if override the execution policy
+        /// </summary>
+        internal static bool OverrideExecutionPolicyConfiguration { get; private set; }
+
+        /// <summary>
         /// Returns the current package instance.
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
@@ -304,6 +309,7 @@ namespace PowerShellTools
         private void InitializePowerShellHost()
         {
             var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
+            OverrideExecutionPolicyConfiguration = page.OverrideExecutionPolicyConfiguration;
 
             Log.Info("InitializePowerShellHost");
 
