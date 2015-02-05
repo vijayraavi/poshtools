@@ -28,7 +28,6 @@ namespace PowerShellTools.DebugEngine
     {
         private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
-        private PowerShell _currentPowerShell;
 
         /// <summary>
         /// Event is fired when a breakpoint is hit.
@@ -380,7 +379,6 @@ namespace PowerShellTools.DebugEngine
             {
                 _debuggingCommand = PowerShellConstants.Debugger_Stop;
                 _pausedEvent.Set();
-                _currentPowerShell.Stop();
             }
             catch (Exception ex)
             {

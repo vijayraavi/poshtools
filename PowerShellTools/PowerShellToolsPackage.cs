@@ -27,7 +27,6 @@ using PowerShellTools.Project;
 using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using System.IO;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.PublicContracts;
 using PowerShellTools.Service;
 using System.Diagnostics;
