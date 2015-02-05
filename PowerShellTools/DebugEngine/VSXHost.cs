@@ -38,7 +38,6 @@ using Microsoft.VisualStudio.Shell.Interop;
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
         private Runspace _runspace;
-        private readonly RunspaceRef _runspaceRef;
         private IPowershellDebuggingService _debuggingServiceTest;
 
         public IPowershellDebuggingService DebuggingService

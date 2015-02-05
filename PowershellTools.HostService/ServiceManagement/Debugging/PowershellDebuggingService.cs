@@ -282,10 +282,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ServiceCommon.Log("Start executing ps script ...");
 
-            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
-            {
-                return;
-            }
             try
             {
                 if (_callback == null)
@@ -296,6 +292,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             catch (Exception)
             {
                 ServiceCommon.Log("No instance context retrieved.");
+            }
+
+            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
+            {
+                _callback.OutputString("Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.");
+                return;
             }
 
             try
