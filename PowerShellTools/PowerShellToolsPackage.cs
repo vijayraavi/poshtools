@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using EnvDTE;
-using EnvDTE80;
 using log4net;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -18,6 +18,7 @@ using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
@@ -30,6 +31,7 @@ using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.PublicContracts;
 using PowerShellTools.Service;
 using System.Diagnostics;
+using MessageBox = System.Windows.MessageBox;
 
 namespace PowerShellTools
 {
@@ -50,7 +52,6 @@ namespace PowerShellTools
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(UIContextGuids.NoSolution)]
-    [ProvideAutoLoad(UIContextGuids.SolutionExists)]
     [ProvideLanguageService(typeof(PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true,
         EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
@@ -113,6 +114,7 @@ namespace PowerShellTools
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
             Instance = this;
             _commands = new Dictionary<ICommand, MenuCommand>();
+            DependencyValidator = new DependencyValidator(this);
         }
 
         private ITextBufferFactoryService _textBufferFactoryService;
@@ -124,6 +126,11 @@ namespace PowerShellTools
         /// Returns the PowerShell host for the package.
         /// </summary>
         internal static ScriptDebugger Debugger { get; private set; }
+
+        /// <summary>
+        /// Indicate if override the execution policy
+        /// </summary>
+        internal static bool OverrideExecutionPolicyConfiguration { get; private set; }
 
         /// <summary>
         /// Returns the current package instance.
@@ -145,6 +152,9 @@ namespace PowerShellTools
                 return ConnectionManager.Instance.PowershellDebuggingService;
             }
         }
+
+        [Export]
+        internal DependencyValidator DependencyValidator { get; set; }
 
         public new object GetService(Type type)
         {
@@ -214,7 +224,8 @@ namespace PowerShellTools
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
-                            new ExecuteAsScriptCommand(),
+                            new ExecuteFromEditorContextMenuCommand(),
+                            new ExecuteFromSolutionExplorerContextMenuCommand(),
                             _gotoDefinitionCommand,
                             new PrettyPrintCommand(Debugger.Runspace),
                             new OpenDebugReplCommand());
@@ -228,6 +239,11 @@ namespace PowerShellTools
         {
             try
             {
+                if (!DependencyValidator.Validate())
+                {
+                    return;
+                }
+
                 InitializeInternal();
                 _powershellService = new Lazy<PowershellService>(() => { return new PowershellService(); });
                 RegisterServices();
@@ -314,6 +330,7 @@ namespace PowerShellTools
         private void InitializePowerShellHost()
         {
             var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
+            OverrideExecutionPolicyConfiguration = page.OverrideExecutionPolicyConfiguration;
 
             Log.Info("InitializePowerShellHost");
 
