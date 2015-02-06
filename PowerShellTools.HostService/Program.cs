@@ -134,6 +134,12 @@ namespace PowerShellTools.HostService
                                                       Constants.IntelliSenseHostRelativeUri);
 
             _powershellServiceHost.Open();
+            _powershellServiceHost.Closing += _powershellServiceHost_Closing;
+        }
+
+        static void _powershellServiceHost_Closing(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private static void CreatePowershellDebuggingServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
@@ -145,6 +151,30 @@ namespace PowerShellTools.HostService
                 Constants.DebuggingHostRelativeUri);
 
             _powershellDebuggingServiceHost.Open();
+            _powershellDebuggingServiceHost.Closing += _powershellDebuggingServiceHost_Closing;
+            _powershellDebuggingServiceHost.Closed += _powershellDebuggingServiceHost_Closed;
+            _powershellDebuggingServiceHost.Faulted += _powershellDebuggingServiceHost_Faulted;
+            _powershellDebuggingServiceHost.UnknownMessageReceived += _powershellDebuggingServiceHost_UnknownMessageReceived;
+        }
+
+        static void _powershellDebuggingServiceHost_UnknownMessageReceived(object sender, UnknownMessageReceivedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        static void _powershellDebuggingServiceHost_Faulted(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        static void _powershellDebuggingServiceHost_Closed(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        static void _powershellDebuggingServiceHost_Closing(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }
