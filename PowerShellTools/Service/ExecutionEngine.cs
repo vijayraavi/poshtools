@@ -3,10 +3,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using PowerShellTools.DebugEngine;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace PowerShellTools.Service
@@ -23,6 +19,7 @@ namespace PowerShellTools.Service
         private ExecutionEngine()
         {
             _debugger = PowerShellToolsPackage.Debugger;
+            _debugger.HostUi.OutputString = OutputString;
 
             try
             {
@@ -56,23 +53,21 @@ namespace PowerShellTools.Service
         }
 
         /// <summary>
-        /// Issue a command for powershell tools to run synchronously
+        /// Issue a command for PowershellTools to run synchronously
         /// </summary>
         /// <param name="command">Command to execute</param>
         public void ExecutePowerShellCommand(string command)
-        {
-            _debugger.HostUi.OutputString = OutputString;
+        {   
             _debugger.Execute(command);
         }
 
         /// <summary>
-        /// Issue a command for powershell tools to run asynchronously
+        /// Issue a command for PowershellTools to run asynchronously
         /// </summary>
         /// <param name="command">Command to execute</param>
         /// <returns></returns>
         public Task ExecutePowerShellCommandAsync(string command)
         {
-            _debugger.HostUi.OutputString = OutputString;
             return Task.Run(() => ExecutePowerShellCommand(command));
         }
 
