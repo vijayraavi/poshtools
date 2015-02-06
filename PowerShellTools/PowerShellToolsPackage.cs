@@ -27,7 +27,7 @@ using PowerShellTools.Project;
 using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using System.IO;
-using PowerShellTools.PublicContracts;
+using PowerShellTools.Contracts;
 using PowerShellTools.Service;
 using System.Diagnostics;
 using MessageBox = System.Windows.MessageBox;
