@@ -80,7 +80,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public override void WriteLine(string value)
         {
-            TryOutputString(value + "\n");
+            TryOutputString(value + Environment.NewLine);
         }
 
         public override void WriteErrorLine(string value)

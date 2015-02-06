@@ -8,7 +8,7 @@ using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Service
 {
-    class PowershellService : IPowershellService
+    internal sealed class PowershellService : IPowershellService
     {
         /// <summary>
         /// Issue a command for powershell tools to run synchronously

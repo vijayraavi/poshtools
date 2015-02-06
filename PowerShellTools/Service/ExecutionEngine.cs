@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.Service
 {
-    public class ExecutionEngine
+    internal sealed class ExecutionEngine
     {
         private ScriptDebugger _debugger;
         private static object _staticSyncObject = new object();
@@ -88,7 +88,7 @@ namespace PowerShellTools.Service
             if (_generalPane != null)
             {
                 _generalPane.Activate(); // Brings this pane into view
-                _generalPane.OutputStringThreadSafe(output); // Thread-safe so the the output order can be preserved
+                _generalPane.OutputStringThreadSafe(output + Environment.NewLine); // Thread-safe so the the output order can be preserved
             }
         }
     }

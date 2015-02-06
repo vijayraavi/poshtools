@@ -448,6 +448,10 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
+        /// <summary>
+        /// Execute the specified command line 
+        /// </summary>
+        /// <param name="commandLine">Command line to execute.</param>
         public void ExecuteInternal(string commandLine)
         {
             DebuggingCommandReady = false;
