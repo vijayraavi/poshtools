@@ -340,26 +340,6 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Missing Dependency.
-        /// </summary>
-        public static string MissingDependency {
-            get {
-                return ResourceManager.GetString("MissingDependency", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to PowerShell Tools for Visual Studio requires at least Windows Management Framework v3, which you do not have installed.
-        ///
-        ///Would you like to download now?.
-        /// </summary>
-        public static string MissingPowerShellVersion {
-            get {
-                return ResourceManager.GetString("MissingPowerShellVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Module list.
         /// </summary>
         public static string ModuleList_Description {

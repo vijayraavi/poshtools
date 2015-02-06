@@ -13,12 +13,9 @@ namespace PowerShellTools.Repl
     internal class PowerShellReplEvaluatorProvider : IReplEvaluatorProvider
     {
         public PowerShellReplEvaluator psEval;
-
-        [Import] internal DependencyValidator _validator;
         
         public IReplEvaluator GetEvaluator(string replId)
         {
-            if (!_validator.Validate()) return null;
             if (replId != "PowerShell") return null;
 
             if (psEval == null)

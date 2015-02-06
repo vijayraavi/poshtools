@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using EnvDTE;
+using EnvDTE80;
 using log4net;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -18,7 +18,6 @@ using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
@@ -31,6 +30,7 @@ using PowerShellTools.Contracts;
 using PowerShellTools.Service;
 using System.Diagnostics;
 using MessageBox = System.Windows.MessageBox;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools
 {
@@ -51,6 +51,7 @@ namespace PowerShellTools
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(UIContextGuids.NoSolution)]
+    [ProvideAutoLoad(UIContextGuids.SolutionExists)]
     [ProvideLanguageService(typeof(PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true,
         EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
@@ -113,7 +114,6 @@ namespace PowerShellTools
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
             Instance = this;
             _commands = new Dictionary<ICommand, MenuCommand>();
-            DependencyValidator = new DependencyValidator(this);
         }
 
         private ITextBufferFactoryService _textBufferFactoryService;
@@ -151,9 +151,6 @@ namespace PowerShellTools
                 return ConnectionManager.Instance.PowershellDebuggingService;
             }
         }
-
-        [Export]
-        internal DependencyValidator DependencyValidator { get; set; }
 
         public new object GetService(Type type)
         {
@@ -223,8 +220,7 @@ namespace PowerShellTools
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
-                            new ExecuteFromEditorContextMenuCommand(),
-                            new ExecuteFromSolutionExplorerContextMenuCommand(),
+                            new ExecuteAsScriptCommand(),
                             _gotoDefinitionCommand,
                             new PrettyPrintCommand(Debugger.Runspace),
                             new OpenDebugReplCommand());
@@ -238,11 +234,6 @@ namespace PowerShellTools
         {
             try
             {
-                if (!DependencyValidator.Validate())
-                {
-                    return;
-                }
-
                 InitializeInternal();
                 _powershellService = new Lazy<PowershellService>(() => { return new PowershellService(); });
                 RegisterServices();
@@ -335,7 +326,7 @@ namespace PowerShellTools
 
             Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
         }
-        
+
         public T GetDialogPage<T>() where T : DialogPage
         {
             return (T)GetDialogPage(typeof(T));

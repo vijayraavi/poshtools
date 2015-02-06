@@ -309,15 +309,7 @@
   <data name="Version_DisplayName" xml:space="preserve">
     <value>Version</value>
   </data>
-  <data name="MissingDependency" xml:space="preserve">
-    <value>Missing Dependency</value>
-  </data>
-  <data name="MissingPowerShellVersion" xml:space="preserve">
-    <value>PowerShell Tools for Visual Studio requires at least Windows Management Framework v3, which you do not have installed.
-
-Would you like to download now?</value>
-  </data>
   <data name="ErrorFailToCreateProcess" xml:space="preserve">
-    <value>Failed to create the process {0} due to an unknown error...</value>
+    <value>Fail to create the process {0} due to an unknown error..</value>
   </data>
 </root>
