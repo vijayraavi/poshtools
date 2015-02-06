@@ -57,8 +57,16 @@ namespace PowerShellTools.Service
         /// </summary>
         /// <param name="command">Command to execute</param>
         public void ExecutePowerShellCommand(string command)
-        {   
-            _debugger.Execute(command);
+        {
+            try
+            {
+                _debugger.ExecuteInternal(command);
+            }
+            catch (Exception ex)
+            {
+                OutputString(ex.Message);
+                throw;
+            }
         }
 
         /// <summary>

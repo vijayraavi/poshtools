@@ -439,13 +439,19 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                DebuggingCommandReady = false;
-                DebuggingService.Execute(commandLine);
+                ExecuteInternal(commandLine);
             }
             catch (Exception ex)
             {
                 Log.Error("Failed to execute script", ex);
+                OutputString(this, new EventArgs<string>(ex.Message));
             }
+        }
+
+        public void ExecuteInternal(string commandLine)
+        {
+            DebuggingCommandReady = false;
+            DebuggingService.Execute(commandLine);
         }
 
         /// <summary>
