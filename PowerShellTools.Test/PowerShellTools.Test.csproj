@@ -92,6 +92,7 @@
     <Compile Include="TestAdapter\PowerShellTestDiscoverer.Test.cs" />
     <Compile Include="TestAdapter\PowerShellTestExecutor.Test.cs" />
     <Compile Include="TestAdapter\PSateTestExecutor.Test.cs" />
+    <Compile Include="TestExecutionEngine.cs" />
     <Compile Include="VsxHostTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -173,7 +174,9 @@
     <None Include="TestFile.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="TestFile1.ps1" />
+    <None Include="TestFile1.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Ugly.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

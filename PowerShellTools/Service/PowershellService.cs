@@ -10,12 +10,12 @@ namespace PowerShellTools.Service
 {
     internal sealed class PowershellService : IPowershellService
     {
-        private ExecutionEngine _engine;
+        private IExecutionEngine _engine;
 
         /// <summary>
         /// Powershell execution engine used for executing
         /// </summary>
-        public ExecutionEngine Engine
+        public IExecutionEngine Engine
         {
             get
             {

@@ -46,9 +46,31 @@ namespace PowerShellTools.Test
             _debugger.DebuggingFinished += (sender, args) => mre.Set();
 
             PowershellService srv = new PowershellService();
-            srv.Engine = ExecutionEngine.TestInstance;
+            srv.Engine = new TestExecutionEngine(_debugger);
             
             srv.ExecutePowerShellCommand(string.Format(". \"{0}\"", fi.FullName));
+
+            Assert.IsTrue(mre.WaitOne(5000));
+
+            var var1 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("var1");
+            var var2 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("var2");
+
+            Assert.AreEqual("execution", var1);
+            Assert.AreEqual("engine", var2);
+        }
+
+        [TestMethod]
+        public void ShouldExecuteAsync()
+        {
+            var fi = new FileInfo(".\\TestFile1.ps1");
+
+            var mre = new ManualResetEvent(false);
+            _debugger.DebuggingFinished += (sender, args) => mre.Set();
+
+            PowershellService srv = new PowershellService();
+            srv.Engine = new TestExecutionEngine(_debugger);
+
+            srv.ExecutePowerShellCommandAsync(string.Format(". \"{0}\"", fi.FullName));
 
             Assert.IsTrue(mre.WaitOne(5000));
 
@@ -68,14 +90,18 @@ namespace PowerShellTools.Test
             _debugger.DebuggingFinished += (sender, args) => mre.Set();
 
             string outputString = null;
-            _debugger.HostUi.OutputString = (args) => outputString = args;
-
             PowershellService srv = new PowershellService();
+            srv.Engine = new TestExecutionEngine(_debugger);
+            _debuggingService.HostUi.OutputString = x =>
+            {
+                outputString += x;
+            };
+            
             srv.ExecutePowerShellCommand(string.Format(". \"{0}\"", fi.FullName));
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            Assert.AreEqual("Hey", outputString);
+            Assert.AreEqual("Hey\n", outputString);
         }
     }
 }
