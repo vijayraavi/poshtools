@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PowerShellTools
+﻿namespace PowerShellTools
 {
     public static class PowerShellConstants
     {
@@ -19,15 +17,5 @@ namespace PowerShellTools
         public const string Debugger_StepInto = "s";
         public const string Debugger_StepOut = "o";
         public const string Debugger_Continue = "c";
-    }
-
-    public static class LanguageUtilities
-    {
-        public static bool IsPowerShellFile(string fileName)
-        {
-            return fileName.EndsWith(PowerShellConstants.PS1File,  StringComparison.OrdinalIgnoreCase) ||
-                   fileName.EndsWith(PowerShellConstants.PSD1File, StringComparison.OrdinalIgnoreCase) ||
-                   fileName.EndsWith(PowerShellConstants.PSM1File, StringComparison.OrdinalIgnoreCase);
-        }
     }
 }

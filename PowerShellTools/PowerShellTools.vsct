@@ -27,27 +27,12 @@
         <!-- These symbols are defined in GeneratedVSCT.vsct -->
         <Parent guid="guidCmdSet" id="menuidContext" />
       </Group>
-      <Group guid="guidPoshToolsCmdSet" id="grpidPoshToolsSolutionExplorerGroup" priority="0x0100">
-        <!-- These symbols are defined in GeneratedVSCT.vsct -->
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE" />
-      </Group>
     </Groups>
     <!-- Define a button - a menu item - inside the Group -->
     <Buttons>
       <Button guid="guidPoshToolsCmdSet" id="cmdidExecuteAsScript"
         priority="0x0100" type="Button">
         <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
-        <CommandFlag>DefaultInvisible</CommandFlag>
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <Strings>
-          <LocCanonicalName>PowerShell.ExecuteAsScript</LocCanonicalName>
-          <CanonicalName>PowerShell.ExecuteAsScript</CanonicalName>
-          <ButtonText>Execute as script</ButtonText>
-        </Strings>
-      </Button>
-      <Button guid="guidPoshToolsCmdSet" id="cmdidExecuteAsScriptSolution"
-          priority="0x0100" type="Button">
-        <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsSolutionExplorerGroup"/>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
@@ -129,6 +114,7 @@
 
 
 
+
   <Symbols>
     <!-- This is the package guid. -->
     <GuidSymbol name="guidPoshToolsPckg" value="{58dce676-42b0-4dd6-9ee4-afbc8e582b8a}" />
@@ -144,14 +130,13 @@
       <IDSymbol name="cmdidSnippet" value="0x0105"/>
       <IDSymbol name="cmdidPrettyPrint" value="0x0106"/>
       <IDSymbol name="cmdidReplWindow" value="0x0107"/>
-      <IDSymbol name="cmdidExecuteAsScriptSolution"  value="0x0108"/>
       <!--Groups-->
       <IDSymbol name="grpidPoshToolsGroup" value="0x01001"/>
-      <IDSymbol name="grpidPoshToolsSolutionExplorerGroup" value="0x01002"/>
     </GuidSymbol>
     
     <GuidSymbol name="guidCmdSet" value="{D309F791-903F-11D0-9EFC-00A0C911004F}" >
       <IDSymbol name="menuidContext" value="0x0040D"/>
+      <!--<IDSymbol name="menuidContext" value="0x10000"/>-->
       <IDSymbol name="grpidContextMain" value="0x20000"/>
       <IDSymbol name="grpidExplorerCopyPaste" value="0x30000"/>
       <IDSymbol name="menuidExplorer" value="0x10001"/>
