@@ -88,7 +88,7 @@ namespace PowerShellTools.Service
             if (_generalPane != null)
             {
                 _generalPane.Activate(); // Brings this pane into view
-                _generalPane.OutputString(output);
+                _generalPane.OutputStringThreadSafe(output); // Thread-safe so the the output order can be preserved
             }
         }
     }
