@@ -4,10 +4,11 @@ using Microsoft.VisualStudio.Shell.Interop;
 using PowerShellTools.DebugEngine;
 using System;
 using System.Threading.Tasks;
+using PowerShellTools.Contracts;
 
 namespace PowerShellTools.Service
 {
-    internal sealed class ExecutionEngine
+    internal sealed class ExecutionEngine : IExecutionEngine
     {
         private ScriptDebugger _debugger;
         private static object _staticSyncObject = new object();
@@ -19,7 +20,10 @@ namespace PowerShellTools.Service
         private ExecutionEngine()
         {
             _debugger = PowerShellToolsPackage.Debugger;
-            _debugger.HostUi.OutputString = OutputString;
+            if (_debugger.HostUi != null)
+            {
+                _debugger.HostUi.OutputString = OutputString;
+            }
 
             try
             {
@@ -36,6 +40,8 @@ namespace PowerShellTools.Service
                 throw;
             }
         }
+
+        private ExecutionEngine(bool test) {}
 
         public static ExecutionEngine Instance
         {

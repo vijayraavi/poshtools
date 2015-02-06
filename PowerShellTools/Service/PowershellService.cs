@@ -10,6 +10,25 @@ namespace PowerShellTools.Service
 {
     internal sealed class PowershellService : IPowershellService
     {
+        private ExecutionEngine _engine;
+
+        /// <summary>
+        /// Powershell execution engine used for executing
+        /// </summary>
+        public ExecutionEngine Engine
+        {
+            get
+            {
+                if(_engine == null)
+                    _engine = ExecutionEngine.Instance;
+                return _engine;
+            }
+            set
+            {
+                _engine = value;
+            }
+        }
+
         /// <summary>
         /// Issue a command for powershell tools to run synchronously
         /// </summary>
@@ -19,7 +38,7 @@ namespace PowerShellTools.Service
         /// </remarks>
         public void ExecutePowerShellCommand(string command)
         {
-            ExecutionEngine.Instance.ExecutePowerShellCommand(command);
+            Engine.ExecutePowerShellCommand(command);
         }
 
         /// <summary>
@@ -32,7 +51,7 @@ namespace PowerShellTools.Service
         /// </remarks>
         public Task ExecutePowerShellCommandAsync(string command)
         {
-            return ExecutionEngine.Instance.ExecutePowerShellCommandAsync(command);
+            return Engine.ExecutePowerShellCommandAsync(command);
         }
     }
 }
