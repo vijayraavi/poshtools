@@ -84,6 +84,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -96,14 +97,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PowershellServiceHostBehavior.cs" />
     <Compile Include="ServiceManagement\Debugging\DTEManager.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellDebuggingService.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellHost.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellServiceHost.cs" />
-    <Compile Include="ServiceManagement\PowershellIntelliSenseService.cs" />
+    <Compile Include="ServiceManagement\IntelliSense\PowershellIntelliSenseService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceManagement\ServiceCommon.cs" />
+    <Compile Include="ServiceCommon.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PowershellTools.Common\PowerShellTools.Common.csproj">
