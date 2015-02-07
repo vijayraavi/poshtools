@@ -112,6 +112,11 @@ namespace PowerShellTools.Intellisense
                     SetBraceCompleteState(false);
                     break;
                 case (uint)VSConstants.VSStd2KCmdID.BACKSPACE:
+                    // Return in Repl windows would execute the current command 
+                    if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
+                    {
+                        break;
+                    }
                     if (ProcessBackspaceKey())
                     {
                         SetBraceCompleteState(false);
@@ -199,7 +204,7 @@ namespace PowerShellTools.Intellisense
 
         private bool ProcessBackspaceKey()
         {
-            if (_isLastCmdBraceComplete)
+            if (_isLastCmdBraceComplete && IsCaretInMiddleOfPairedCurlyBrace())
             {
                 _undoHistory.Undo(1);
             }
