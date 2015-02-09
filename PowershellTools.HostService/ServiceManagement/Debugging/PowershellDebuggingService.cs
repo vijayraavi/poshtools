@@ -343,6 +343,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Stop the current executiong
+        /// </summary>
+        public void Stop()
+        {
+            _currentPowerShell.Stop();
+        }
 
         /// <summary>
         /// Get all local scoped variables for client

@@ -25,6 +25,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void ExecuteDebuggingCommand(string cmdline);
 
         [OperationContract]
+        void Stop();
+
+        [OperationContract]
         void SetRunspace(bool overrideExecutionPolicy);
 
         [OperationContract]

@@ -379,14 +379,17 @@ namespace PowerShellTools.DebugEngine
             {
                 _debuggingCommand = PowerShellConstants.Debugger_Stop;
                 _pausedEvent.Set();
+                DebuggingService.Stop();
             }
             catch (Exception ex)
             {
                 //BUGBUG: Suppressing an exception that is thrown when stopping...
                 Log.Debug("Error while stopping script...", ex);
             }
-
-            DebuggerFinished();
+            finally
+            {
+                DebuggerFinished();
+            }
         }
 
         /// <summary>
