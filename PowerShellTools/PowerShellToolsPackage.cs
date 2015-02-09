@@ -26,6 +26,10 @@ using PowerShellTools.Project;
 using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using System.IO;
+using PowerShellTools.Contracts;
+using PowerShellTools.Service;
+using System.Diagnostics;
+using MessageBox = System.Windows.MessageBox;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools
@@ -90,9 +94,13 @@ namespace PowerShellTools
          "PowerShell",        // Name of Language attribute in snippet template
          @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
          SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
+    
+    [ProvideService(typeof(IPowerShellService))]
+
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
+        private Lazy<PowerShellService> _powershellService;
 
         /// <summary>
         /// Default constructor of the package.
@@ -117,6 +125,11 @@ namespace PowerShellTools
         /// Returns the PowerShell host for the package.
         /// </summary>
         internal static ScriptDebugger Debugger { get; private set; }
+
+        /// <summary>
+        /// Indicate if override the execution policy
+        /// </summary>
+        internal static bool OverrideExecutionPolicyConfiguration { get; private set; }
 
         /// <summary>
         /// Returns the current package instance.
@@ -222,12 +235,25 @@ namespace PowerShellTools
             try
             {
                 InitializeInternal();
+                _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
+                RegisterServices();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Failed to initialize PowerShell Tools for Visual Studio." + ex,
                     "PowerShell Tools for Visual Studio Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        /// <summary>
+        /// Register Services
+        /// </summary>
+        private void RegisterServices()
+        {
+            Debug.Assert(this is IServiceContainer, "The package is expected to be an IServiceContainer.");
+
+            var serviceContainer = (IServiceContainer)this;
+            serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powershellService.Value, true);
         }
 
         private IContentType _contentType;
@@ -294,12 +320,13 @@ namespace PowerShellTools
         private void InitializePowerShellHost()
         {
             var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
+            OverrideExecutionPolicyConfiguration = page.OverrideExecutionPolicyConfiguration;
 
             Log.Info("InitializePowerShellHost");
 
             Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
         }
-        
+
         public T GetDialogPage<T>() where T : DialogPage
         {
             return (T)GetDialogPage(typeof(T));

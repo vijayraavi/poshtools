@@ -271,6 +271,7 @@
     <Compile Include="GeneralDialogPage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Intellisense\BraceCompletionController.cs" />
     <Compile Include="Intellisense\IntellisenseController.cs" />
     <Compile Include="Intellisense\IntellisenseControllerProvider.cs" />
     <Compile Include="Intellisense\IntelliSenseManager.cs" />
@@ -282,7 +283,7 @@
     <Compile Include="LanguageService\Indenter.cs" />
     <Compile Include="LanguageService\PowerShellLanguageInfo.cs" />
     <Compile Include="LanguageService\TextViewFilter.cs" />
-    <Compile Include="LanguageService\ViewFilter.cs" />
+    <Compile Include="LanguageService\EditFilter.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="Classification\OutputPaneClassifier.cs" />
     <Compile Include="PackageProperties.cs" />
@@ -490,6 +491,9 @@
     <Compile Include="ServiceManagement\ConnectionManager.cs" />
     <Compile Include="ServiceManagement\PowershellHostProcessException.cs" />
     <Compile Include="ServiceManagement\PowershellHostProcessHelper.cs" />
+    <Compile Include="Service\ExecutionEngine.cs" />
+    <Compile Include="Service\IExecutionEngine.cs" />
+    <Compile Include="Service\PowerShellService.cs" />
     <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -637,6 +641,11 @@
       <Name>PowerShellTools.HostService</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.PublicContract\PowerShellTools.Contracts.csproj">
+      <Project>{103c9af2-f8a5-4bf0-a341-a43147c320aa}</Project>
+      <Name>PowerShellTools.Contracts</Name>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj">
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>
