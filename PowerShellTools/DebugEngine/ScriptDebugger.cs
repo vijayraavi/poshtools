@@ -28,7 +28,6 @@ namespace PowerShellTools.DebugEngine
     {
         private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
-        private PowerShell _currentPowerShell;
 
         /// <summary>
         /// Event is fired when a breakpoint is hit.
@@ -441,13 +440,23 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                DebuggingCommandReady = false;
-                DebuggingService.Execute(commandLine);
+                ExecuteInternal(commandLine);
             }
             catch (Exception ex)
             {
                 Log.Error("Failed to execute script", ex);
+                OutputString(this, new EventArgs<string>(ex.Message));
             }
+        }
+
+        /// <summary>
+        /// Execute the specified command line 
+        /// </summary>
+        /// <param name="commandLine">Command line to execute.</param>
+        public void ExecuteInternal(string commandLine)
+        {
+            DebuggingCommandReady = false;
+            DebuggingService.Execute(commandLine);
         }
 
         /// <summary>
