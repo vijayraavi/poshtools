@@ -380,7 +380,7 @@ namespace PowerShellTools.DebugEngine
             {
                 _debuggingCommand = PowerShellConstants.Debugger_Stop;
                 _pausedEvent.Set();
-                _currentPowerShell.Stop();
+                DebuggingService.Stop();
             }
             catch (Exception ex)
             {
