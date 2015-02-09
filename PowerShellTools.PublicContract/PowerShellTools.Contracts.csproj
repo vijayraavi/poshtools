@@ -45,7 +45,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IExecutionEngine.cs" />
     <Compile Include="IPowershellService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

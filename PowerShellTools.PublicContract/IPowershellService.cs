@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.Contracts
 {
+    [ComImport]
+    [ComVisible(true)]
     [Guid("cf108f4f-2e2a-44ad-907d-9a01905f7d8e")]
     public interface IPowershellService
     {

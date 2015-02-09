@@ -1,5 +1,5 @@
-﻿using PowerShellTools.Contracts;
-using PowerShellTools.DebugEngine;
+﻿using PowerShellTools.DebugEngine;
+using PowerShellTools.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
