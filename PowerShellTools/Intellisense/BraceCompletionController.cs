@@ -112,9 +112,10 @@ namespace PowerShellTools.Intellisense
                     SetBraceCompleteState(false);
                     break;
                 case (uint)VSConstants.VSStd2KCmdID.BACKSPACE:
-                    // Return in Repl windows would execute the current command 
+                    // As there are no undo history preserved for REPL window, default action is applied to Backspace.
                     if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
                     {
+                        SetBraceCompleteState(false);
                         break;
                     }
                     if (ProcessBackspaceKey())
@@ -126,6 +127,8 @@ namespace PowerShellTools.Intellisense
                     break;
                 case (uint)VSConstants.VSStd2KCmdID.DELETE:                    
                 case (uint)VSConstants.VSStd2KCmdID.UNDO:
+                case (uint)VSConstants.VSStd2KCmdID.PASTE:
+                case (uint)VSConstants.VSStd2KCmdID.CUT:
                     SetBraceCompleteState(false);
                     break;
                 default:
@@ -188,7 +191,7 @@ namespace PowerShellTools.Intellisense
 
                     DeleteRightBrace();
                     _editorOperations.InsertNewLine();
-                    _editorOperations.InsertText('}'.ToString());
+                    _editorOperations.InsertText("}");
                     _editorOperations.MoveLineUp(false);
                     _editorOperations.MoveToEndOfLine(false);
                     _editorOperations.InsertNewLine();
