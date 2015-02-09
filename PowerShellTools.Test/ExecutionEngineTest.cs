@@ -45,7 +45,7 @@ namespace PowerShellTools.Test
             var mre = new ManualResetEvent(false);
             _debugger.DebuggingFinished += (sender, args) => mre.Set();
 
-            PowershellService srv = new PowershellService();
+            PowerShellService srv = new PowerShellService();
             srv.Engine = new TestExecutionEngine(_debugger);
             
             srv.ExecutePowerShellCommand(string.Format(". \"{0}\"", fi.FullName));
@@ -67,7 +67,7 @@ namespace PowerShellTools.Test
             var mre = new ManualResetEvent(false);
             _debugger.DebuggingFinished += (sender, args) => mre.Set();
 
-            PowershellService srv = new PowershellService();
+            PowerShellService srv = new PowerShellService();
             srv.Engine = new TestExecutionEngine(_debugger);
 
             srv.ExecutePowerShellCommandAsync(string.Format(". \"{0}\"", fi.FullName));
@@ -90,7 +90,7 @@ namespace PowerShellTools.Test
             _debugger.DebuggingFinished += (sender, args) => mre.Set();
 
             string outputString = null;
-            PowershellService srv = new PowershellService();
+            PowerShellService srv = new PowerShellService();
             srv.Engine = new TestExecutionEngine(_debugger);
             _debuggingService.HostUi.OutputString = x =>
             {

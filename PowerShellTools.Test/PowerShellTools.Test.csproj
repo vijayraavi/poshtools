@@ -62,10 +62,6 @@
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="PowerShellTools.Contracts">
-      <HintPath>..\Binaries\Release12.0\PowerShellTools.Contracts.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Management.Automation">
       <SpecificVersion>False</SpecificVersion>
@@ -107,6 +103,10 @@
     <ProjectReference Include="..\PowershellTools.HostService\PowerShellTools.HostService.csproj">
       <Project>{c9d4aac3-51d3-4ed9-ab9b-564d4d2d30e8}</Project>
       <Name>PowerShellTools.HostService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.PublicContract\PowerShellTools.Contracts.csproj">
+      <Project>{103c9af2-f8a5-4bf0-a341-a43147c320aa}</Project>
+      <Name>PowerShellTools.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj">
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>

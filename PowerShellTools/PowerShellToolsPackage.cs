@@ -95,12 +95,12 @@ namespace PowerShellTools
          @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
          SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
     
-    [ProvideService(typeof(IPowershellService))]
+    [ProvideService(typeof(IPowerShellService))]
 
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
-        private Lazy<PowershellService> _powershellService;
+        private Lazy<PowerShellService> _powershellService;
 
         /// <summary>
         /// Default constructor of the package.
@@ -235,7 +235,7 @@ namespace PowerShellTools
             try
             {
                 InitializeInternal();
-                _powershellService = new Lazy<PowershellService>(() => { return new PowershellService(); });
+                _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
                 RegisterServices();
             }
             catch (Exception ex)
@@ -253,7 +253,7 @@ namespace PowerShellTools
             Debug.Assert(this is IServiceContainer, "The package is expected to be an IServiceContainer.");
 
             var serviceContainer = (IServiceContainer)this;
-            serviceContainer.AddService(typeof(IPowershellService), (c, t) => _powershellService.Value, true);
+            serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powershellService.Value, true);
         }
 
         private IContentType _contentType;
