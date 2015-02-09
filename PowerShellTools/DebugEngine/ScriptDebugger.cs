@@ -386,8 +386,10 @@ namespace PowerShellTools.DebugEngine
                 //BUGBUG: Suppressing an exception that is thrown when stopping...
                 Log.Debug("Error while stopping script...", ex);
             }
-
-            DebuggerFinished();
+            finally
+            {
+                DebuggerFinished();
+            }
         }
 
         /// <summary>
