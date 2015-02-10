@@ -21,6 +21,11 @@ namespace PowerShellTools.HostService
     {
         #region IErrorHandler Members
 
+        /// <summary>
+        /// Central place for error handling for service host behaior
+        /// </summary>
+        /// <param name="error">exception</param>
+        /// <returns></returns>
         public bool HandleError(Exception error)
         {
             // Log the error details on server side
@@ -30,6 +35,12 @@ namespace PowerShellTools.HostService
             return true;
         }
 
+        /// <summary>
+        /// Transform error into proper faultexception to client
+        /// </summary>
+        /// <param name="error">Original exception</param>
+        /// <param name="version">Message version</param>
+        /// <param name="fault">Fault output</param>
         public void ProvideFault(Exception error, MessageVersion version, ref Message fault)
         {
             // If the error is intented to be send to client, we just let it be
@@ -52,8 +63,11 @@ namespace PowerShellTools.HostService
 
         #region IServiceBehavior Members
 
-        public void AddBindingParameters(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase, Collection<ServiceEndpoint> endpoints, BindingParameterCollection bindingParameters) {}
-        
+        /// <summary>
+        /// Hook up the service behavior into service host channel properly
+        /// </summary>
+        /// <param name="serviceDescription"></param>
+        /// <param name="serviceHostBase"></param>
         public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
         {
             // Adds a PowershellServiceHostBehavior to each ChannelDispatcher
@@ -64,6 +78,8 @@ namespace PowerShellTools.HostService
             }
         }
 
+        public void AddBindingParameters(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase, Collection<ServiceEndpoint> endpoints, BindingParameterCollection bindingParameters) { }
+        
         public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase) { }
         
         #endregion
