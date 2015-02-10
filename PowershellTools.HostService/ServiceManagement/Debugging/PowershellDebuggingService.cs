@@ -428,7 +428,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 foreach (var propertyInfo in props)
                 {
                     object val = propertyInfo.GetValue(psVariable, null);
-                    expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), string.Empty, false, false));
+                    expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
 
                     if (!val.GetType().IsPrimitive)
                     {
