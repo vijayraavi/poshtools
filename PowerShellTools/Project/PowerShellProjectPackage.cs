@@ -1,7 +1,5 @@
-﻿using System.ComponentModel.Composition;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
@@ -13,25 +11,16 @@ namespace PowerShellTools.Project
     [ProvideProjectFactory(typeof(PowerShellProjectFactory), "PowerShell", "PowerShell Project Files (*.pssproj);*.pssproj", "pssproj", "pssproj", @"\ProjectTemplates\PowerShell", LanguageVsTemplate = "PowerShell", NewProjectRequireNewFolderVsTemplate = false)]
     [ProvideProjectItem(typeof(PowerShellProjectFactory), "PowerShell", @"Templates", 500)]
     [ProvideEditorExtension(typeof(PowerShellEditorFactory), PowerShellConstants.PS1File, 50, ProjectGuid = VSConstants.CLSID.MiscellaneousFilesProject_string, NameResourceID = 3004, DefaultName = "module", TemplateDir = "NewItemTemplates")]
-    [Export]
     public class PowerShellProjectPackage : CommonProjectPackage
     {
-        private readonly DependencyValidator _validator;
-
-        public PowerShellProjectPackage()
-        {
-            var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
-            _validator = componentModel.GetService<DependencyValidator>();
-        }
-
         public override ProjectFactory CreateProjectFactory()
         {
-            return new PowerShellProjectFactory(this, _validator.Validate());
+            return new PowerShellProjectFactory(this);
         }
 
         public override CommonEditorFactory CreateEditorFactory()
         {
-            return new PowerShellEditorFactory(this, _validator.Validate());
+            return new PowerShellEditorFactory(this);
         }
 
         public override uint GetIconIdForAboutBox()
