@@ -97,7 +97,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PowershellServiceHostBehavior.cs" />
+    <Compile Include="PowerShellServiceHostBehaviorAttribute.cs" />
     <Compile Include="ServiceManagement\Debugging\DTEManager.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellDebuggingService.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellHost.cs" />

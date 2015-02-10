@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PowerShellTools.Common.ServiceManagement
 {
     [DataContract]
-    class PowershellHostServiceExceptionDetails
+    public sealed class PowershellHostServiceExceptionDetails
     {
         public static readonly PowershellHostServiceExceptionDetails Default = new PowershellHostServiceExceptionDetails();
 

@@ -13,11 +13,12 @@ using System.Threading.Tasks;
 namespace PowerShellTools.HostService
 {
     /// <summary>
-    /// In WCF, unhandled excpetion crashes the servcie, leaving the channel into fault state, which is basically requiring client to re-instantiate proxy in order to continue using the service.
+    /// In WCF, unhandled exception crashes the service, leaving the channel into fault state, which is basically requiring client to re-instantiate proxy in order to continue using the service.
     /// As a result, WCF provides the ability to configure a service to return information from unhandled exceptions.
     /// This is implemetaion of the generic error handler for entire powershell wcf services, by exposing it as a service behavior attribute, so that it is developer friendly
     /// </summary>
-    class PowershellServiceHostBehavior : Attribute, IErrorHandler, IServiceBehavior
+    [AttributeUsage(AttributeTargets.Class)]
+    class PowerShellServiceHostBehaviorAttribute : Attribute, IErrorHandler, IServiceBehavior
     {
         #region IErrorHandler Members
 
@@ -74,7 +75,7 @@ namespace PowerShellTools.HostService
             foreach (var channelDispatcherBase in serviceHostBase.ChannelDispatchers)
             {
                 var channelDispatcher = channelDispatcherBase as ChannelDispatcher;
-                channelDispatcher.ErrorHandlers.Add(new PowershellServiceHostBehavior());
+                channelDispatcher.ErrorHandlers.Add(new PowerShellServiceHostBehaviorAttribute());
             }
         }
 

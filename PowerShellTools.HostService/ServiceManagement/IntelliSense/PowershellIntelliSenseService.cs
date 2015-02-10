@@ -10,7 +10,7 @@ namespace PowerShellTools.HostService.ServiceManagement
     /// <summary>
     /// Represents a implementation of the service contract.
     /// </summary>
-    [PowershellServiceHostBehavior]
+    [PowerShellServiceHostBehavior]
     public sealed class PowershellIntelliSenseService : IPowershellIntelliSenseService
     {
         private readonly Runspace _runspace = PowershellDebuggingService.Runspace;

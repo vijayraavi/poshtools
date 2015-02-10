@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
-    [PowershellServiceHostBehavior]
+    [PowerShellServiceHostBehavior]
     public partial class PowershellDebuggingService : IPowershellDebuggingService
     {
         private static Runspace _runspace;
@@ -215,7 +215,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="bp">Breakpoint to set</param>
         public void SetBreakpoint(PowershellBreakpoint bp)
         {
-            ServiceCommon.Log("Setting breakpoing ...");
+            ServiceCommon.Log("Setting breakpoint ...");
             
             using (var pipeline = (_runspace.CreatePipeline()))
             {
