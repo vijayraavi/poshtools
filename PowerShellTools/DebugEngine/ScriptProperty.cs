@@ -45,10 +45,9 @@ namespace PowerShellTools.DebugEngine
     {
         private string _val;
         public EnumerableScriptProperty(ScriptDebugger debugger, Variable var, string parentPath)
-            : base(debugger, var)
+            : base(debugger, var, parentPath)
         {
             _val = var.VarName;
-            _path = parentPath;
         }
 
         protected override IEnumerable<ScriptProperty> GetChildren()
@@ -71,10 +70,9 @@ namespace PowerShellTools.DebugEngine
     {
         private string _val;
         public PSObjectScriptProperty(ScriptDebugger debugger, Variable var, string parentPath)
-            : base(debugger, var)
+            : base(debugger, var, parentPath)
         {
             _val = var.VarName;
-            _path = parentPath;
         }
 
         protected override IEnumerable<ScriptProperty> GetChildren()
@@ -110,7 +108,7 @@ namespace PowerShellTools.DebugEngine
 
         protected readonly ScriptDebugger _debugger;
 
-        protected string _path { get; set; }
+        protected string _path { get; private set; }
 
         public ScriptProperty(ScriptDebugger debugger, string name, string value, string type, string path)
         {
@@ -122,13 +120,14 @@ namespace PowerShellTools.DebugEngine
             _path = path;
         }
 
-        protected ScriptProperty(ScriptDebugger debugger, Variable var)
+        protected ScriptProperty(ScriptDebugger debugger, Variable var, string path)
         {
             Log.DebugFormat("{0} {1}", var.VarName, var.VarValue);
             Name = var.VarName;
             Value = var.VarValue;
             _debugger = debugger;
             TypeName = (var.Type == null ? string.Empty : var.Type);
+            _path = path;
         }
 
         #region Implementation of IDebugProperty2
