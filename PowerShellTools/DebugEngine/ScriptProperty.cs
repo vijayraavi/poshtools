@@ -34,7 +34,7 @@ namespace PowerShellTools.DebugEngine
                 return new PSObjectScriptProperty(debugger, var, parentPath);
             }
 
-            return new ScriptProperty(debugger, var.VarName, var.VarValue, var.Type);
+            return new ScriptProperty(debugger, var.VarName, var.VarValue, var.Type, parentPath);
         }
     }
 
@@ -44,8 +44,6 @@ namespace PowerShellTools.DebugEngine
     public class EnumerableScriptProperty : ScriptProperty
     {
         private string _val;
-        private string _path;
-
         public EnumerableScriptProperty(ScriptDebugger debugger, Variable var, string parentPath)
             : base(debugger, var)
         {
@@ -72,8 +70,6 @@ namespace PowerShellTools.DebugEngine
     public class PSObjectScriptProperty : ScriptProperty
     {
         private string _val;
-        private string _path;
-
         public PSObjectScriptProperty(ScriptDebugger debugger, Variable var, string parentPath)
             : base(debugger, var)
         {
@@ -114,16 +110,19 @@ namespace PowerShellTools.DebugEngine
 
         protected readonly ScriptDebugger _debugger;
 
-        public ScriptProperty(ScriptDebugger debugger, string name, string value, string type)
+        protected string _path { get; set; }
+
+        public ScriptProperty(ScriptDebugger debugger, string name, string value, string type, string path)
         {
             Log.DebugFormat("{0} {1}", name, value);
             Name = name;
             Value = value;
             _debugger = debugger;
             TypeName = (type == null ? string.Empty : type);
+            _path = path;
         }
 
-        public ScriptProperty(ScriptDebugger debugger, Variable var)
+        protected ScriptProperty(ScriptDebugger debugger, Variable var)
         {
             Log.DebugFormat("{0} {1}", var.VarName, var.VarValue);
             Name = var.VarName;
@@ -197,8 +196,14 @@ namespace PowerShellTools.DebugEngine
 
         protected virtual IEnumerable<ScriptProperty> GetChildren()
         {
-            var props = Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            return props.Select(propertyInfo => ScriptPropertyFactory.MakeProperty(_debugger, new Variable(propertyInfo.Name, propertyInfo.GetValue(Value, null).ToString(), string.Empty, false, false), string.Empty));
+            string varFullName = string.IsNullOrEmpty(_path) ? Value : string.Format("{0}\\{1}", _path, Name);
+
+            Collection<Variable> propVars = _debugger.DebuggingService.GetObjectVariable(varFullName);
+
+            foreach (var item in propVars)
+            {
+                yield return ScriptPropertyFactory.MakeProperty(_debugger, item, varFullName);
+            }
         }
 
         public int GetParent(out IDebugProperty2 ppParent)
