@@ -481,6 +481,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return callStackFrames.Select(c => new CallStack(c.ScriptName, c.FunctionName, c.ScriptLineNumber));
         }
 
+        public string GetPrompt()
+        {
+            using (_currentPowerShell = PowerShell.Create())
+            {
+                _currentPowerShell.Runspace = _runspace;
+                _currentPowerShell.AddCommand("prompt");
+                return _currentPowerShell.Invoke<string>().FirstOrDefault();
+            }
+        }
+
         #endregion
 
         #region private helper
