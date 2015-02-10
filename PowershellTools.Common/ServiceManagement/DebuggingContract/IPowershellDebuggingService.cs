@@ -37,6 +37,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         Collection<Variable> GetPSObjectVariable(string varFullName);
 
         [OperationContract]
+        Collection<Variable> GetObjectVariable(string varFullName);
+
+        [OperationContract]
         IEnumerable<CallStack> GetCallStack();
 
     }
