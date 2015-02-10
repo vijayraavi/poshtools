@@ -425,7 +425,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 var props = psVariable.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
                 
-                int i = 0;
                 foreach (var propertyInfo in props)
                 {
                     object val = propertyInfo.GetValue(psVariable, null);
@@ -437,8 +436,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         if (!_propVariables.ContainsKey(key))
                             _propVariables.Add(key, val);
                     }
-
-                    i++;
                 }
             }
 
