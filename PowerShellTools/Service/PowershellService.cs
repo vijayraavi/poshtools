@@ -36,9 +36,9 @@ namespace PowerShellTools.Service
         /// <remarks> 
         /// Catch FaultException to inspect for error message
         /// </remarks>
-        public void ExecutePowerShellCommand(string command)
+        public bool ExecutePowerShellCommand(string command)
         {
-            Engine.ExecutePowerShellCommand(command);
+            return Engine.ExecutePowerShellCommand(command);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace PowerShellTools.Service
         /// <remarks> 
         /// Catch FaultException to inspect for error message
         /// </remarks>
-        public Task ExecutePowerShellCommandAsync(string command)
+        public Task<bool> ExecutePowerShellCommandAsync(string command)
         {
             return Engine.ExecutePowerShellCommandAsync(command);
         }

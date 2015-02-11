@@ -12,8 +12,8 @@ namespace PowerShellTools.Contracts
     [Guid("cf108f4f-2e2a-44ad-907d-9a01905f7d8e")]
     public interface IPowerShellService
     {
-        void ExecutePowerShellCommand(string command);
+        bool ExecutePowerShellCommand(string command);
 
-        Task ExecutePowerShellCommandAsync(string command);
+        Task<bool> ExecutePowerShellCommandAsync(string command);
     }
 }
