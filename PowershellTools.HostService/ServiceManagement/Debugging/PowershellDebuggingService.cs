@@ -1,6 +1,5 @@
 ﻿using EnvDTE80;
 using Microsoft.PowerShell;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +15,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -385,13 +385,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             Collection<Variable> expandedVariable = new Collection<Variable>();
 
-            var psVar = _localVariables.FirstOrDefault(v => v.Name == varName);
-            object psVariable = (psVar == null) ? null : psVar.Value;
-            
-            if(psVariable == null)
-            {
-                psVariable = _propVariables[varName];
-            }
+            object psVariable = RetrieveVariable(varName);
 
             if (psVariable != null && psVariable is IEnumerable)
             {
@@ -400,7 +394,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     expandedVariable.Add(new Variable(String.Format("[{0}]", i), item.ToString(), item.GetType().ToString(), item is IEnumerable, item is PSObject));
 
-                    if (!(item is string) && (item is IEnumerable || item is PSObject))
+                    if (!item.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, String.Format("[{0}]", i));
                         if(!_propVariables.ContainsKey(key))
@@ -414,6 +408,39 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return expandedVariable;
         }
 
+        /// <summary>
+        /// Expand object to retrieve all properties
+        /// </summary>
+        /// <param name="varName">Object name</param>
+        /// <returns>Collection of variable to client</returns>
+        public Collection<Variable> GetObjectVariable(string varName)
+        {
+            ServiceCommon.Log("Client tries to watch an object variable, dump its content ...");
+
+            Collection<Variable> expandedVariable = new Collection<Variable>();
+
+            object psVariable = RetrieveVariable(varName);
+
+            if (psVariable != null && !(psVariable is IEnumerable) && !(psVariable is PSObject))
+            {
+                var props = psVariable.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                
+                foreach (var propertyInfo in props)
+                {
+                    object val = propertyInfo.GetValue(psVariable, null);
+                    expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
+
+                    if (!val.GetType().IsPrimitive)
+                    {
+                        string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
+                        if (!_propVariables.ContainsKey(key))
+                            _propVariables.Add(key, val);
+                    }
+                }
+            }
+
+            return expandedVariable;
+        }
 
         /// <summary>
         /// Expand PSObject to retrieve all its properties
@@ -426,13 +453,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             Collection<Variable> propsVariable = new Collection<Variable>();
 
-            var psVar = _localVariables.FirstOrDefault(v => v.Name == varName);
-            object psVariable = (psVar == null) ? null : psVar.Value;
-
-            if (psVariable == null)
-            {
-                psVariable = _propVariables[varName];
-            }
+            object psVariable = RetrieveVariable(varName);
 
             if (psVariable != null && psVariable is PSObject)
             {
@@ -455,7 +476,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                     propsVariable.Add(new Variable(prop.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
 
-                    if (!(val is string) && (val is IEnumerable || val is PSObject))
+                    if (!val.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, prop.Name);
                         if (!_propVariables.ContainsKey(key))
@@ -676,6 +697,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 ServiceCommon.Log("Failed to set execution policy. Exception: {0}", ex);
             }
+        }
+
+        private object RetrieveVariable(string varName)
+        {
+            var psVar = _localVariables.FirstOrDefault(v => v.Name == varName);
+            object psVariable = (psVar == null) ? null : psVar.Value;
+
+            if (psVariable == null && _propVariables.ContainsKey(varName))
+            {
+                psVariable = _propVariables[varName];
+            }
+
+            return psVariable;
         }
 
         #endregion
