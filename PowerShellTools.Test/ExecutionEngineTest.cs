@@ -103,5 +103,27 @@ namespace PowerShellTools.Test
 
             Assert.AreEqual("Hey\n", outputString);
         }
+
+        [TestMethod]
+        public void ShouldOuputWithCustomOutputAction()
+        {
+            var fi = new FileInfo(".\\TestFile1.ps1");
+
+            var mre = new ManualResetEvent(false);
+            _debugger.DebuggingFinished += (sender, args) => mre.Set();
+
+            string outputString = null;
+            PowerShellService srv = new PowerShellService();
+            srv.Engine = new TestExecutionEngine(_debugger);
+
+            srv.ExecutePowerShellCommand(string.Format(". \"{0}\"", fi.FullName), x =>
+            {
+                outputString += x;
+            });
+
+            Assert.IsTrue(mre.WaitOne(5000));
+
+            Assert.AreEqual("Hey\n", outputString);
+        }
     }
 }

@@ -30,12 +30,13 @@ namespace PowerShellTools.Test
 
         public bool ExecutePowerShellCommand(string command, Action<string> output)
         {
-            throw new NotImplementedException();
+            _debugger.HostUi.OutputString = output;
+            return _debugger.ExecuteInternal(command);
         }
 
         public Task<bool> ExecutePowerShellCommandAsync(string command, Action<string> output)
         {
-            throw new NotImplementedException();
+            return Task.Run(() => ExecutePowerShellCommand(command, output));
         }
     }
 }
