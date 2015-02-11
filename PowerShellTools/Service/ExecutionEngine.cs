@@ -62,11 +62,11 @@ namespace PowerShellTools.Service
         /// Issue a command for PowershellTools to run synchronously
         /// </summary>
         /// <param name="command">Command to execute</param>
-        public void ExecutePowerShellCommand(string command)
+        public bool ExecutePowerShellCommand(string command)
         {
             try
             {
-                _debugger.ExecuteInternal(command);
+                return _debugger.ExecuteInternal(command);
             }
             catch (Exception ex)
             {
@@ -80,7 +80,7 @@ namespace PowerShellTools.Service
         /// </summary>
         /// <param name="command">Command to execute</param>
         /// <returns></returns>
-        public Task ExecutePowerShellCommandAsync(string command)
+        public Task<bool> ExecutePowerShellCommandAsync(string command)
         {
             return Task.Run(() => ExecutePowerShellCommand(command));
         }

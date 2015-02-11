@@ -8,8 +8,8 @@ namespace PowerShellTools.Service
 {
     internal interface IExecutionEngine
     {
-        void ExecutePowerShellCommand(string command);
+        bool ExecutePowerShellCommand(string command);
 
-        Task ExecutePowerShellCommandAsync(string command);
+        Task<bool> ExecutePowerShellCommandAsync(string command);
     }
 }

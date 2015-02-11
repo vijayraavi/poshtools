@@ -279,7 +279,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Execute the specified command line from client
         /// </summary>
         /// <param name="commandLine">Command line to execute</param>
-        public void Execute(string commandLine)
+        public bool Execute(string commandLine)
         {
             ServiceCommon.Log("Start executing ps script ...");
 
@@ -298,9 +298,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
             {
                 _callback.OutputString("Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.");
-                return;
+                return false;
             }
 
+            bool error = false;
             try
             {
                 // Preset dte as PS variable if not yet
@@ -325,7 +326,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     objects.DataAdded += objects_DataAdded;
 
                     _currentPowerShell.Invoke(null, objects);
+                    error = _currentPowerShell.HadErrors;
                 }
+
+                return !error;
             }
             catch (Exception ex)
             {
@@ -336,6 +340,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
 
                 OnTerminatingException(ex);
+                return false;
             }
             finally
             {

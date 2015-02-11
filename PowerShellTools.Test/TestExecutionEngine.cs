@@ -17,12 +17,12 @@ namespace PowerShellTools.Test
             _debugger = debugger;
         }
 
-        public void ExecutePowerShellCommand(string command)
+        public bool ExecutePowerShellCommand(string command)
         {
-            _debugger.ExecuteInternal(command);
+            return _debugger.ExecuteInternal(command);
         }
 
-        public Task ExecutePowerShellCommandAsync(string command)
+        public Task<bool> ExecutePowerShellCommandAsync(string command)
         {
             return Task.Run(() => ExecutePowerShellCommand(command));
         }
