@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PowerShellTools.HostService.ServiceManagement
+namespace PowerShellTools.HostService
 {
     public class ServiceCommon
     {

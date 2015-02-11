@@ -95,6 +95,7 @@
     <Compile Include="ServiceManagement\IntelliSenseContract\CompletionResultList.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\IPowershellIntelliSenseService.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\ParseErrorItem.cs" />
+    <Compile Include="ServiceManagement\PowershellHostServiceExceptionDetails.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="..\Build\ProjectAfter.settings" />
