@@ -20,6 +20,7 @@ namespace PowerShellTools.Service
         private ExecutionEngine()
         {
             _debugger = PowerShellToolsPackage.Debugger;
+            
             if (_debugger.HostUi != null)
             {
                 _debugger.HostUi.OutputString = OutputString;
@@ -62,10 +63,16 @@ namespace PowerShellTools.Service
         /// Issue a command for PowershellTools to run synchronously
         /// </summary>
         /// <param name="command">Command to execute</param>
+        /// <returns>Has error or not</returns>
         public bool ExecutePowerShellCommand(string command)
         {
             try
             {
+                if (_debugger.HostUi != null)
+                {
+                    _debugger.HostUi.OutputString = OutputString;
+                }
+
                 return _debugger.ExecuteInternal(command);
             }
             catch (Exception ex)
@@ -76,13 +83,58 @@ namespace PowerShellTools.Service
         }
 
         /// <summary>
+        /// Issue a command for PowershellTools to run synchronously
+        /// </summary>
+        /// <param name="command">Command to execute</param>
+        /// <param name="output">output action</param>
+        /// <returns>Has error or not</returns>
+        public bool ExecutePowerShellCommand(string command, Action<string> output)
+        {
+            try
+            {
+                if (_debugger.HostUi != null)
+                {
+                    if (output != null)
+                    {
+                        _debugger.HostUi.OutputString = output;
+                    }
+                }
+
+                return _debugger.ExecuteInternal(command);
+            }
+            catch (Exception ex)
+            {
+                OutputString(ex.Message);
+                throw;
+            }
+            finally
+            {
+                if (_debugger.HostUi != null)
+                {
+                    _debugger.HostUi.OutputString = OutputString;
+                }
+            }
+        }
+
+        /// <summary>
         /// Issue a command for PowershellTools to run asynchronously
         /// </summary>
         /// <param name="command">Command to execute</param>
-        /// <returns></returns>
+        /// <returns>Task indicating has error or not</returns>
         public Task<bool> ExecutePowerShellCommandAsync(string command)
         {
             return Task.Run(() => ExecutePowerShellCommand(command));
+        }
+
+        /// <summary>
+        /// Issue a command for PowershellTools to run asynchronously
+        /// </summary>
+        /// <param name="command">Command to execute</param>
+        /// <param name="output">output action</param>
+        /// <returns>Task indicating has error or not</returns>
+        public Task<bool> ExecutePowerShellCommandAsync(string command, Action<string> output)
+        {
+            return Task.Run(() => ExecutePowerShellCommand(command, output));
         }
 
         /// <summary>

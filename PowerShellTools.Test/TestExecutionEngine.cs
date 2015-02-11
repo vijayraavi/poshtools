@@ -26,5 +26,16 @@ namespace PowerShellTools.Test
         {
             return Task.Run(() => ExecutePowerShellCommand(command));
         }
+
+
+        public bool ExecutePowerShellCommand(string command, Action<string> output)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> ExecutePowerShellCommandAsync(string command, Action<string> output)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -11,5 +11,9 @@ namespace PowerShellTools.Service
         bool ExecutePowerShellCommand(string command);
 
         Task<bool> ExecutePowerShellCommandAsync(string command);
+
+        bool ExecutePowerShellCommand(string command, Action<string> output);
+
+        Task<bool> ExecutePowerShellCommandAsync(string command, Action<string> output);
     }
 }

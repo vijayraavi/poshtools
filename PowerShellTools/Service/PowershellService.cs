@@ -53,5 +53,32 @@ namespace PowerShellTools.Service
         {
             return Engine.ExecutePowerShellCommandAsync(command);
         }
+
+        /// <summary>
+        /// Issue a command for powershell tools to run synchronously
+        /// </summary>
+        /// <param name="command">Command to execute</param>
+        /// <param name="output">Output action</param>
+        /// <remarks> 
+        /// Catch FaultException to inspect for error message
+        /// </remarks>
+        public bool ExecutePowerShellCommand(string command, Action<string> output)
+        {
+            return Engine.ExecutePowerShellCommand(command, output);
+        }
+
+        /// <summary>
+        /// Issue a command for powershell tools to run asynchronously
+        /// </summary>
+        /// <param name="command">Command to execute</param>
+        /// <param name="output">Output action</param>
+        /// <returns>Task to await for this async call</returns>
+        /// <remarks> 
+        /// Catch FaultException to inspect for error message
+        /// </remarks>
+        public Task<bool> ExecutePowerShellCommandAsync(string command, Action<string> output)
+        {
+            return Engine.ExecutePowerShellCommandAsync(command, output);
+        }
     }
 }
