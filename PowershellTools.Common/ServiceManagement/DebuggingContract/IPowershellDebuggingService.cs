@@ -19,7 +19,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void ClearBreakpoints();
 
         [OperationContract]
-        void Execute(string cmdline);
+        bool Execute(string cmdline);
 
         [OperationContract]
         void ExecuteDebuggingCommand(string cmdline);
