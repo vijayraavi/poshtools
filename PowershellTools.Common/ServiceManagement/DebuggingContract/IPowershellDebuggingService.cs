@@ -19,10 +19,13 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void ClearBreakpoints();
 
         [OperationContract]
-        void Execute(string cmdline);
+        bool Execute(string cmdline);
 
         [OperationContract]
         void ExecuteDebuggingCommand(string cmdline);
+
+        [OperationContract]
+        void Stop();
 
         [OperationContract]
         void SetRunspace(bool overrideExecutionPolicy);
@@ -35,6 +38,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract]
         Collection<Variable> GetPSObjectVariable(string varFullName);
+
+        [OperationContract]
+        Collection<Variable> GetObjectVariable(string varFullName);
 
         [OperationContract]
         IEnumerable<CallStack> GetCallStack();

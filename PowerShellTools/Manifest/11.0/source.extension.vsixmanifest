@@ -3,7 +3,7 @@
   <Metadata>
     <Identity Id="58dce676-42b0-4dd6-9ee4-afbc8e582b8b" Version="1.0.5" Language="en-US" Publisher="Adam Driscoll" />
     <DisplayName>PowerShell Tools for Visual Studio 2012</DisplayName>
-    <Description xml:space="preserve">PowerShell integration for Visual Studio</Description>
+    <Description xml:space="preserve">A set of tools for developing and debugging PowerShell scripts and modules in Visual Studio.</Description>
     <MoreInfo>http://adamdriscoll.github.io/poshtools</MoreInfo>
     <License>License.txt</License>
     <Icon>poshtools.png</Icon>

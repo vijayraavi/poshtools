@@ -112,9 +112,10 @@ namespace PowerShellTools.Intellisense
                     SetBraceCompleteState(false);
                     break;
                 case (uint)VSConstants.VSStd2KCmdID.BACKSPACE:
-                    // Return in Repl windows would execute the current command 
+                    // As there are no undo history preserved for REPL window, default action is applied to Backspace.
                     if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
                     {
+                        SetBraceCompleteState(false);
                         break;
                     }
                     if (ProcessBackspaceKey())
@@ -126,6 +127,12 @@ namespace PowerShellTools.Intellisense
                     break;
                 case (uint)VSConstants.VSStd2KCmdID.DELETE:                    
                 case (uint)VSConstants.VSStd2KCmdID.UNDO:
+                case (uint)VSConstants.VSStd2KCmdID.PASTE:
+                case (uint)VSConstants.VSStd2KCmdID.CUT:
+                case (uint)VSConstants.VSStd2KCmdID.COMMENT_BLOCK:
+                case (uint)VSConstants.VSStd2KCmdID.COMMENTBLOCK:
+                case (uint)VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
+                case (uint)VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
                     SetBraceCompleteState(false);
                     break;
                 default:
@@ -188,7 +195,7 @@ namespace PowerShellTools.Intellisense
 
                     DeleteRightBrace();
                     _editorOperations.InsertNewLine();
-                    _editorOperations.InsertText('}'.ToString());
+                    _editorOperations.InsertText("}");
                     _editorOperations.MoveLineUp(false);
                     _editorOperations.MoveToEndOfLine(false);
                     _editorOperations.InsertNewLine();
@@ -204,7 +211,7 @@ namespace PowerShellTools.Intellisense
 
         private bool ProcessBackspaceKey()
         {
-            if (_isLastCmdBraceComplete && IsCaretInMiddleOfPairedCurlyBrace())
+            if (_isLastCmdBraceComplete && IsCaretInMiddleOfPairedBrace())
             {
                 _undoHistory.Undo(1);
             }
@@ -216,6 +223,30 @@ namespace PowerShellTools.Intellisense
             _isLastCmdBraceComplete = isBraceComplete;
         }
         
+        private bool IsCaretInMiddleOfPairedBrace()
+        {
+            int currentCaret = _textView.Caret.Position.BufferPosition.Position;
+            return IsPreviousCharLeftBrace(currentCaret) && IsNextCharRightBrace(currentCaret);
+        }
+
+        private bool IsPreviousCharLeftBrace(int currentCaret)
+        {
+            if (currentCaret == 0) return false;
+
+            ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret - 1, PointTrackingMode.Positive);
+            char previousChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
+            return IsLeftBrace(previousChar);
+        }
+
+        private bool IsNextCharRightBrace(int currentCaret)
+        {
+            if (currentCaret >= _textView.TextSnapshot.Length) return false;
+
+            ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret, PointTrackingMode.Positive);
+            char nextChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
+            return IsRightBrace(nextChar);
+        }
+
         private bool IsCaretInMiddleOfPairedCurlyBrace()
         {
             int currentCaret = _textView.Caret.Position.BufferPosition.Position;
