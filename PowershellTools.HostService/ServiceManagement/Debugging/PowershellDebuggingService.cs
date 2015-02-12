@@ -496,6 +496,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return callStackFrames.Select(c => new CallStack(c.ScriptName, c.FunctionName, c.ScriptLineNumber));
         }
 
+        /// <summary>
+        /// Get prompt string
+        /// </summary>
+        /// <returns>Prompt string</returns>
         public string GetPrompt()
         {
             using (_currentPowerShell = PowerShell.Create())
