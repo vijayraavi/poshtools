@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Host;
+using System.Management.Automation.Runspaces;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// The identifier of this PSHost implementation.
         /// </summary>
         private Guid myId = Guid.NewGuid();
+
+        /// <summary>
+        /// A reference to the runspace used to start an interactive session.
+        /// </summary>
+        private Runspace _pushedRunspace = null;
 
         /// <summary>
         /// Gets a string that contains the name of this host implementation. 
@@ -142,26 +148,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             get { return this.originalUICultureInfo; }
         }
 
+        #region IHostSupportsInteractiveSession
 
         public bool IsRunspacePushed
         {
-            get { throw new NotImplementedException(); }
-
-            //get { return _runspaceRef.IsRunspaceOverridden; }
+            get { return _pushedRunspace != null; }
         }
 
         public void PopRunspace()
         {
-            throw new NotImplementedException();
-            
             //UnregisterRemoteFileOpenEvent(Runspace);
-            //_runspaceRef.Revert();
+            Runspace = _pushedRunspace;
+            _pushedRunspace = null;
         }
 
 
         public void PushRunspace(System.Management.Automation.Runspaces.Runspace runspace)
         {
-            throw new NotImplementedException();
+            _pushedRunspace = Runspace;
+            Runspace = runspace;
 
             //Pipeline runningCmd = EnterPSSessionCommandWrapper.ConnectRunningPipeline(newRunspace);
             //_runspaceRef.Override(newRunspace);
@@ -170,10 +175,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             //RegisterRemoteFileOpenEvent(newRunspace);
         }
 
-        System.Management.Automation.Runspaces.Runspace IHostSupportsInteractiveSession.Runspace
+        Runspace IHostSupportsInteractiveSession.Runspace
         {
-            get { throw new NotImplementedException(); }
-            //get { return _runspaceRef.Runspace; }
+            get { return PowershellDebuggingService.Runspace; }
         }
+
+        #endregion IHostSupportsInteractiveSession
     }
 }

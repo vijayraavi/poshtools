@@ -52,6 +52,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 return _runspace;
             }
+            set
+            {
+                _runspace = value;
+            }
         }
 
         public IDebugEngineCallback CallbackService
