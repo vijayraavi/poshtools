@@ -45,5 +45,8 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         [OperationContract]
         IEnumerable<CallStack> GetCallStack();
 
+        [OperationContract]
+        string GetPrompt();
+
     }
 }
