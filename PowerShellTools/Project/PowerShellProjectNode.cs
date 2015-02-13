@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
+using PowerShellTools.Project.PropertyPages;
 
 namespace PowerShellTools.Project
 {
@@ -21,9 +22,11 @@ namespace PowerShellTools.Project
             : base(package, projectImageList)
         {
             _package = package;
-            // TODO: Temporary!! AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
-            AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
-            AddCATIDMapping(typeof (PowerShellModulePropertyPage), typeof (PowerShellModulePropertyPage).GUID);
+            AddCATIDMapping(typeof(DebugPropertyPage), typeof(DebugPropertyPage).GUID);
+            AddCATIDMapping(typeof(InformationPropertyPage), typeof(InformationPropertyPage).GUID);
+            AddCATIDMapping(typeof(ComponentsPropertyPage), typeof(ComponentsPropertyPage).GUID);
+            AddCATIDMapping(typeof(ExportsPropertyPage), typeof(ExportsPropertyPage).GUID);
+            AddCATIDMapping(typeof(RequirementsPropertyPage), typeof(RequirementsPropertyPage).GUID);
         }
 
         public override Type GetProjectFactoryType()
@@ -48,14 +51,17 @@ namespace PowerShellTools.Project
 
         public override Type GetGeneralPropertyPageType()
         {
-            //TODO: Temporary!!  return typeof (PowerShellGeneralPropertyPage);
             return null;
         }
 
         protected override Guid[] GetConfigurationIndependentPropertyPages()
         {
-           //TODO: Temporary!! return new[] { typeof(PowerShellGeneralPropertyPage).GUID, typeof(PowerShellDebugPropertyPage).GUID, typeof(PowerShellModulePropertyPage).GUID };
-            return new[] { typeof(PowerShellDebugPropertyPage).GUID, typeof(PowerShellModulePropertyPage).GUID };
+            return new[] { 
+                typeof(DebugPropertyPage).GUID, 
+                typeof(InformationPropertyPage).GUID, 
+                typeof(ComponentsPropertyPage).GUID, 
+                typeof(ExportsPropertyPage).GUID, 
+                typeof(RequirementsPropertyPage).GUID };
         }
 
         public override Type GetLibraryManagerType()

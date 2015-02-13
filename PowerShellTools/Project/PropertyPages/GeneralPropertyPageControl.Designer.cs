@@ -1,6 +1,6 @@
-﻿namespace PowerShellTools.Project
+﻿namespace PowerShellTools.Project.PropertyPages
 {
-    partial class PowerShellGeneralPropertyPageControl
+    partial class GeneralPropertyPageControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -101,7 +101,7 @@
             this.chkSignOutput.UseVisualStyleBackColor = true;
             this.chkSignOutput.CheckedChanged += new System.EventHandler(this.chkSignOutput_CheckedChanged);
             // 
-            // PowerShellGeneralPropertyPageControl
+            // GeneralPropertyPageControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -112,7 +112,7 @@
             this.Controls.Add(this.chkSignOutput);
             this.Controls.Add(this.btnOutputDirectory);
             this.Controls.Add(this.txtOutputDirectory);
-            this.Name = "PowerShellGeneralPropertyPageControl";
+            this.Name = "GeneralPropertyPageControl";
             this.Size = new System.Drawing.Size(443, 117);
             this.ResumeLayout(false);
             this.PerformLayout();
