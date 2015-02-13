@@ -205,12 +205,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                     if (!string.IsNullOrEmpty(text) && array != null)
                     {
-                        string fullFileName = Path.GetTempFileName();
+                        string tmpFileName = Path.GetTempFileName();
+                        string dirPath = tmpFileName.Substring(0, tmpFileName.Length - 4);
+                        Directory.CreateDirectory(dirPath);
+                        string fullFileName = dirPath + "\\" + new FileInfo(text).Name;
                         File.WriteAllBytes(fullFileName, array);
 
                         _callback.OpenRemoteFile(fullFileName);
-                        // bool flag;
-                        // this.LoadFile(text, array, out flag);
                     }
                 }
                 catch
@@ -325,13 +326,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             bool error = false;
             try
             {
-                // Preset dte as PS variable if not yet
-                if (_runspace.SessionStateProxy.PSVariable.Get("dte") == null)
+                // only do this when we are working with a local runspace
+                if (_pushedRunspace == null)
                 {
-                    DTE2 dte = DTEManager.GetDTE(Program.VsProcessId);
-                    if (dte != null)
+                    // Preset dte as PS variable if not yet
+                    if (_runspace.SessionStateProxy.PSVariable.Get("dte") == null)
                     {
-                        _runspace.SessionStateProxy.PSVariable.Set("dte", dte);
+                        DTE2 dte = DTEManager.GetDTE(Program.VsProcessId);
+                        if (dte != null)
+                        {
+                            _runspace.SessionStateProxy.PSVariable.Set("dte", dte);
+                        }
                     }
                 }
 

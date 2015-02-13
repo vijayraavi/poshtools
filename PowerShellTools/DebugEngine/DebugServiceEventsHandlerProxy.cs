@@ -113,7 +113,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void OpenRemoteFile(string fullName)
         {
-            throw new NotImplementedException();
+            Debugger.OpenRemoteFile(fullName);
         }
     }
 }

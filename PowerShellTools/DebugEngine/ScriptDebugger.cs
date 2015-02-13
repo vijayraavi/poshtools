@@ -5,9 +5,12 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using log4net;
-
 using System.Collections.ObjectModel;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using DTE = EnvDTE;
+using DTE80 = EnvDTE80;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -357,7 +360,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="commandLine">Command line to execute.</param>
         public bool Execute(string commandLine)
         {
-            Log.Info("Execute");
+             Log.Info("Execute");
 
             try
             {
@@ -474,6 +477,13 @@ namespace PowerShellTools.DebugEngine
             }
 
             return null;
+        }
+
+        internal void OpenRemoteFile(string fullName)
+        {
+            var dte2 = (DTE80.DTE2)Package.GetGlobalService(typeof(DTE.DTE));
+
+            dte2.ItemOperations.OpenFile(fullName);
         }
     }
 

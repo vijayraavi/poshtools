@@ -168,6 +168,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             _pushedRunspace = Runspace;
             Runspace = runspace;
+            Runspace.Debugger.SetDebugMode(DebugModes.RemoteScript);
 
             RegisterRemoteFileOpenEvent(runspace);
         }
