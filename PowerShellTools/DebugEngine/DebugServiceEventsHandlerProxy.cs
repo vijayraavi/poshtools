@@ -107,5 +107,13 @@ namespace PowerShellTools.DebugEngine
         {
             Debugger.HostUi.VSOutputProgress(label, percentage);
         }
+
+        /// <summary>
+        /// To open specific file in client
+        /// </summary>
+        public void OpenRemoteFile(string fullName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

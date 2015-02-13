@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.ServiceModel;
@@ -157,7 +158,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public void PopRunspace()
         {
-            //UnregisterRemoteFileOpenEvent(Runspace);
+            UnregisterRemoteFileOpenEvent(Runspace);
             Runspace = _pushedRunspace;
             _pushedRunspace = null;
         }
@@ -168,11 +169,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _pushedRunspace = Runspace;
             Runspace = runspace;
 
-            //Pipeline runningCmd = EnterPSSessionCommandWrapper.ConnectRunningPipeline(newRunspace);
-            //_runspaceRef.Override(newRunspace);
-            //var oldRunspace = _runspaceRef.OldRunspace;
-            //// EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, this, true, oldRunspace);
-            //RegisterRemoteFileOpenEvent(newRunspace);
+            RegisterRemoteFileOpenEvent(runspace);
         }
 
         Runspace IHostSupportsInteractiveSession.Runspace
@@ -181,5 +178,59 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         #endregion IHostSupportsInteractiveSession
+
+        #region private helpers
+
+        /// <summary>
+        /// Unused at the moment. Will be used for remote debugging scripts.
+        /// </summary>
+        /// <param name="remoteRunspace"></param>
+        public void RegisterRemoteFileOpenEvent(Runspace remoteRunspace)
+        {
+            remoteRunspace.Events.ReceivedEvents.PSEventReceived += new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
+            if (remoteRunspace.RunspaceStateInfo.State != RunspaceState.Opened || remoteRunspace.RunspaceAvailability != RunspaceAvailability.Available)
+            {
+                return;
+            }
+            using (PowerShell powerShell = PowerShell.Create())
+            {
+                powerShell.Runspace = remoteRunspace;
+                powerShell.AddScript("\r\n            param (\r\n                [string] $PSEditFunction\r\n            )\r\n\r\n            Register-EngineEvent -SourceIdentifier PSISERemoteSessionOpenFile -Forward\r\n\r\n            if ((Test-Path -Path 'function:\\global:PSEdit') -eq $false)\r\n            {\r\n                Set-Item -Path 'function:\\global:PSEdit' -Value $PSEditFunction\r\n            }\r\n        ").AddParameter("PSEditFunction", "\r\n            param (\r\n                [Parameter(Mandatory=$true)] [String[]] $FileNames\r\n            )\r\n\r\n            foreach ($fileName in $FileNames)\r\n            {\r\n                dir $fileName | where { ! $_.PSIsContainer } | foreach {\r\n                    $filePathName = $_.FullName\r\n\r\n                    # Get file contents\r\n                    $contentBytes = Get-Content -Path $filePathName -Raw -Encoding Byte\r\n\r\n                    # Notify client for file open.\r\n                    New-Event -SourceIdentifier PSISERemoteSessionOpenFile -EventArguments @($filePathName, $contentBytes) > $null\r\n                }\r\n            }\r\n        ");
+                try
+                {
+                    powerShell.Invoke();
+                }
+                catch (RemoteException)
+                {
+                }
+            }
+        }
+
+        /// <summary>
+        /// Unused at the moment. Will be used for remote debugging scripts.
+        /// </summary>
+        /// <param name="remoteRunspace"></param>
+        public void UnregisterRemoteFileOpenEvent(Runspace remoteRunspace)
+        {
+            remoteRunspace.Events.ReceivedEvents.PSEventReceived -= new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
+            if (remoteRunspace.RunspaceStateInfo.State != RunspaceState.Opened || remoteRunspace.RunspaceAvailability != RunspaceAvailability.Available)
+            {
+                return;
+            }
+            using (PowerShell powerShell = PowerShell.Create())
+            {
+                powerShell.Runspace = remoteRunspace;
+                powerShell.AddScript("\r\n            if ((Test-Path -Path 'function:\\global:PSEdit') -eq $true)\r\n            {\r\n                Remove-Item -Path 'function:\\global:PSEdit' -Force\r\n            }\r\n\r\n            Get-EventSubscriber -SourceIdentifier PSISERemoteSessionOpenFile -EA Ignore | Remove-Event\r\n        ");
+                try
+                {
+                    powerShell.Invoke();
+                }
+                catch (RemoteException)
+                {
+                }
+            }
+        }
+
+        #endregion
     }
 }

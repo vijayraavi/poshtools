@@ -33,5 +33,8 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract(IsOneWay = false)]
         string ReadHostPrompt();
+
+        [OperationContract(IsOneWay = false)]
+        void OpenRemoteFile(string fullName);
     }
 }

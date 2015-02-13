@@ -185,6 +185,41 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Unused at the moment. Will be used for remote debugging scripts.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void HandleRemoteSessionForwardedEvent(object sender, PSEventArgs args)
+        {
+            if (args.SourceIdentifier.Equals("PSISERemoteSessionOpenFile", StringComparison.OrdinalIgnoreCase))
+            {
+                string text = null;
+                byte[] array = null;
+                try
+                {
+                    if (args.SourceArgs.Length == 2)
+                    {
+                        text = (args.SourceArgs[0] as string);
+                        array = (byte[])(args.SourceArgs[1] as PSObject).BaseObject;
+                    }
+                    if (!string.IsNullOrEmpty(text) && array != null)
+                    {
+                        string fullFileName = Path.GetTempFileName();
+                        File.WriteAllBytes(fullFileName, array);
+
+                        _callback.OpenRemoteFile(fullFileName);
+                        // bool flag;
+                        // this.LoadFile(text, array, out flag);
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
         #endregion
 
         #region Debugging service calls
