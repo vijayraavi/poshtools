@@ -12,15 +12,16 @@ namespace PowerShellTools.Project
     internal class PowerShellProjectNode : CommonProjectNode
     {
         private readonly CommonProjectPackage _package;
-
-        private static ImageList projectImageList =
+        private static readonly ImageList ProjectImageList =
             Utilities.GetImageList(
                 typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream(
                     "PowerShellTools.Project.Resources.ImageList.bmp"));
 
-        public PowerShellProjectNode(CommonProjectPackage package)
-            : base(package, projectImageList)
+        private readonly bool _dependenciesResolved;
+        public PowerShellProjectNode(CommonProjectPackage package, bool dependenciesResolved)
+            : base(package, ProjectImageList)
         {
+            _dependenciesResolved = dependenciesResolved;
             _package = package;
             AddCATIDMapping(typeof(DebugPropertyPage), typeof(DebugPropertyPage).GUID);
             AddCATIDMapping(typeof(InformationPropertyPage), typeof(InformationPropertyPage).GUID);
@@ -71,7 +72,7 @@ namespace PowerShellTools.Project
 
         public override IProjectLauncher GetLauncher()
         {
-            return new PowerShellProjectLauncher(this);
+            return new PowerShellProjectLauncher(this, _dependenciesResolved);
         }
 
         protected override Stream ProjectIconsImageStripStream

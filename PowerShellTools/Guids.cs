@@ -31,6 +31,7 @@ namespace PowerShellTools
         public const uint CmdidSnippet = 0x0105;
         public const uint CmdidPrettyPrint = 0x0106;
         public const uint CmdidDisplayRepl = 0x0107;
+        public const uint CmdidExecuteAsScriptSolution = 0x0108;
 
         public const string guidCustomEditorCmdSetString = "73d661d7-c0a7-476c-ad5e-3b36f1e91a8f";
         public const string guidCustomEditorEditorFactoryString = "0ff6321c-6ea5-400b-8342-f126da8505a2";

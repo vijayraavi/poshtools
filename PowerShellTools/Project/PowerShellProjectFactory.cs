@@ -9,12 +9,14 @@ namespace PowerShellTools.Project
     [Guid("F5034706-568F-408A-B7B3-4D38C6DB8A32")]
     public class PowerShellProjectFactory : ProjectFactory
     {
-        private CommonProjectPackage package;
+        private readonly CommonProjectPackage _package;
+        private readonly bool _dependenciesResolved;
 
-        public PowerShellProjectFactory(CommonProjectPackage package)
+        public PowerShellProjectFactory(CommonProjectPackage package, bool dependenciesResolved)
             : base(package)
         {
-            this.package = package;
+            _dependenciesResolved = dependenciesResolved;
+            this._package = package;
 
             var loc = Assembly.GetExecutingAssembly().Location;
             var fileInfo = new FileInfo(loc);
@@ -30,10 +32,8 @@ namespace PowerShellTools.Project
 
         internal override ProjectNode CreateProject()
         {
-            var project = new PowerShellProjectNode(package);
-            project.SetSite((IServiceProvider)((System.IServiceProvider)this.package).GetService(typeof(IServiceProvider)));
-
-            
+            var project = new PowerShellProjectNode(_package, _dependenciesResolved);
+            project.SetSite((IServiceProvider)((System.IServiceProvider)this._package).GetService(typeof(IServiceProvider)));
 
             return project;
         }

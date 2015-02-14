@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
 using System.Windows;
+using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft;
@@ -16,6 +17,7 @@ using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.Win32;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
 using PowerShellTools.DebugEngine;
@@ -25,6 +27,8 @@ using PowerShellTools.Project;
 using log4net;
 using PowerShellTools.Project.PropertyPages;
 using Engine = PowerShellTools.DebugEngine.Engine;
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxOptions = System.Windows.MessageBoxOptions;
 
 namespace PowerShellTools
 {
@@ -45,9 +49,8 @@ namespace PowerShellTools
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(UIContextGuids.NoSolution)]
-    [ProvideAutoLoad(UIContextGuids.SolutionExists)]
-    [ProvideLanguageService(typeof (PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true,
-        EnableCommenting = true)]
+    [ProvideLanguageService(typeof(PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true,
+EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     // This attribute registers a tool window exposed by this package.
@@ -71,14 +74,14 @@ namespace PowerShellTools
         Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
     [Clsid(Clsid = "{08F3B557-C153-4F6C-8745-227439E55E79}", Assembly = "PowerGuiVsx.Core.DebugEngine",
         Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
-    [Microsoft.VisualStudioTools.ProvideDebugEngine("PowerShell", typeof (ScriptProgramProvider), typeof (Engine),
+    [Microsoft.VisualStudioTools.ProvideDebugEngine("PowerShell", typeof(ScriptProgramProvider), typeof(Engine),
         "{43ACAB74-8226-4920-B489-BFCF05372437}")]
     [ProvideIncompatibleEngineInfo("{92EF0900-2251-11D2-B72E-0000F87572EF}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
     [ProvideOptionPage(typeof(GeneralDialogPage), "PowerShell Tools", "General", 101, 106, true)]
-    [ProvideOptionPage(typeof (DiagnosticsDialogPage), "PowerShell Tools", "Diagnostics", 101, 106, true)]
+    [ProvideOptionPage(typeof(DiagnosticsDialogPage), "PowerShell Tools", "Diagnostics", 101, 106, true)]
     [ProvideDiffSupportedContentType(".ps1;.psm1;.psd1", ";")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
@@ -92,7 +95,7 @@ namespace PowerShellTools
          SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
     public sealed class PowerShellToolsPackage : CommonPackage
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellToolsPackage));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
 
         /// <summary>
         /// Default constructor of the package.
@@ -106,6 +109,7 @@ namespace PowerShellTools
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
             Instance = this;
             _commands = new Dictionary<ICommand, MenuCommand>();
+            DependencyValidator = new DependencyValidator(this);
         }
 
         private ITextBufferFactoryService _textBufferFactoryService;
@@ -122,6 +126,9 @@ namespace PowerShellTools
         /// Returns the current package instance.
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
+
+        [Export]
+        internal DependencyValidator DependencyValidator { get; set; } 
 
         public new object GetService(Type type)
         {
@@ -146,7 +153,7 @@ namespace PowerShellTools
         private void RefreshCommands(params ICommand[] commands)
         {
             // Add our command handlers for menu (commands must exist in the .vsct file)
-            var mcs = GetService(typeof (IMenuCommandService)) as OleMenuCommandService;
+            var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (null != mcs)
             {
                 foreach (var command in commands)
@@ -191,7 +198,8 @@ namespace PowerShellTools
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
             RefreshCommands(new ExecuteSelectionCommand(),
-                            new ExecuteAsScriptCommand(),
+                            new ExecuteFromEditorContextMenuCommand(),
+                            new ExecuteFromSolutionExplorerContextMenuCommand(),
                             _gotoDefinitionCommand,
                             new PrettyPrintCommand(Debugger.Runspace),
                             new OpenDebugReplCommand());
@@ -205,6 +213,11 @@ namespace PowerShellTools
         {
             try
             {
+                if (!DependencyValidator.Validate())
+                {
+                    return;
+                }
+
                 InitializeInternal();
             }
             catch (Exception ex)
@@ -213,6 +226,7 @@ namespace PowerShellTools
                     "PowerShell Tools for Visual Studio Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private IContentType _contentType;
         public IContentType ContentType
@@ -283,9 +297,9 @@ namespace PowerShellTools
             Debugger.HostUi.OutputProgress = (label, percentage) =>
             {
                 Log.DebugFormat("Output progress: {0} {1}", label, percentage);
-                var statusBar = (IVsStatusbar) GetService(typeof (SVsStatusbar));
+                var statusBar = (IVsStatusbar)GetService(typeof(SVsStatusbar));
                 uint cookie = 0;
-                statusBar.Progress(ref cookie, 1, label, (uint) percentage, 100);
+                statusBar.Progress(ref cookie, 1, label, (uint)percentage, 100);
 
                 if (percentage == 100)
                 {
@@ -296,7 +310,7 @@ namespace PowerShellTools
 
         public T GetDialogPage<T>() where T : DialogPage
         {
-            return (T)GetDialogPage(typeof (T));
+            return (T)GetDialogPage(typeof(T));
         }
     }
 }

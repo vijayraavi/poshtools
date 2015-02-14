@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.Composition;
+using System.Windows.Media;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 
@@ -20,13 +21,16 @@ namespace PowerShellTools.Classification
         public const string PowerShellMember = "PowerShellMember";
         public const string PowerShellGroupStart = "PowerShellGroupStart";
         public const string PowerShellGroupEnd = "PowerShellGroupEnd";
-        public const string PowerShellLineCotinuation = "PowerShellLineCotinuation";
+        public const string PowerShellLineContinuation = "PowerShellLineContinuation";
         public const string PowerShellLoopLabel = "PowerShellLoopLabel";
         public const string PowerShellNewLine = "PowerShellNewLine";
         public const string PowerShellPosition = "PowerShellPosition";
         public const string PowerShellStatementSeparator = "PowerShellStatementSeparator";
         public const string PowerShellUnknown = "PowerShellUnknown";
     }
+
+    // The foreground colors specified in this file are the defaults if not overridden.
+    // For Dark theme and High Contrast, see PowerShellToolsColors.pkgdef
 
     [Export(typeof(EditorFormatDefinition))]
     [ClassificationType(ClassificationTypeNames = Classifications.PowerShellAttribute)]
@@ -36,6 +40,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellAttributeFormat : ClassificationFormatDefinition
     {
+        public PowerShellAttributeFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 191, 255);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -46,6 +54,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellCommandFormat : ClassificationFormatDefinition
     {
+        public PowerShellCommandFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 255);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -56,6 +68,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellCommandArgumentFormat : ClassificationFormatDefinition
     {
+        public PowerShellCommandArgumentFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 138, 43, 226);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -66,6 +82,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellCommandParameterFormat : ClassificationFormatDefinition
     {
+        public PowerShellCommandParameterFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 128);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -76,6 +96,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellCommentFormat : ClassificationFormatDefinition
     {
+        public PowerShellCommentFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 100, 0);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -86,6 +110,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellKeywordFormat : ClassificationFormatDefinition
     {
+        public PowerShellKeywordFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 139);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -96,6 +124,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellNumberFormat : ClassificationFormatDefinition
     {
+        public PowerShellNumberFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 128, 0, 128);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -106,6 +138,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellOperatorsFormat : ClassificationFormatDefinition
     {
+        public PowerShellOperatorsFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 169, 169, 169);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -116,6 +152,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellStringFormat : ClassificationFormatDefinition
     {
+        public PowerShellStringFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 139, 0, 0);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -126,6 +166,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellTypeFormat : ClassificationFormatDefinition
     {
+        public PowerShellTypeFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 128, 128);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -136,6 +180,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellVariablesFormat : ClassificationFormatDefinition
     {
+        public PowerShellVariablesFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 255, 69, 0);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -146,6 +194,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellMemberFormat : ClassificationFormatDefinition
     {
+        public PowerShellMemberFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 0);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -156,6 +208,10 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellGroupStartFormat: ClassificationFormatDefinition
     {
+        public PowerShellGroupStartFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 0);
+        }
     }
 
     [Export(typeof(EditorFormatDefinition))]
@@ -166,8 +222,51 @@ namespace PowerShellTools.Classification
     [Order(After = Priority.Default, Before = Priority.High)]
     internal sealed class PowerShellGroupEndFormat : ClassificationFormatDefinition
     {
+        public PowerShellGroupEndFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 0);
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellLineContinuation)]
+    [Name("PowerShell Line Continuation")]
+    [DisplayName("PowerShell Line Continuation (Backtick)")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellLineContinuationFormat : ClassificationFormatDefinition
+    {
+        public PowerShellLineContinuationFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 0);
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellLoopLabel)]
+    [Name("PowerShell Loop Label")]
+    [DisplayName("PowerShell Loop Label")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellLoopLabelFormat : ClassificationFormatDefinition
+    {
+        public PowerShellLoopLabelFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 139);
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellStatementSeparator)]
+    [Name("PowerShell Statement Separator")]
+    [DisplayName("PowerShell Statement Separator (Semicolon)")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellStatementSeparatorFormat : ClassificationFormatDefinition
+    {
+        public PowerShellStatementSeparatorFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 0);
+        }
     }
 }
-
-
-
