@@ -32,6 +32,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private string log;
         private Collection<PSVariable> _localVariables;
         private Dictionary<string, Object> _propVariables;
+        private Dictionary<string, string> _mapLocalToRemote;
+        private Dictionary<string, string> _mapRemoteToLocal;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
 
         public PowershellDebuggingService()
@@ -40,6 +42,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             HostUi = new HostUi(this);
             _localVariables = new Collection<PSVariable>();
             _propVariables = new Dictionary<string, object>();
+            _mapLocalToRemote = new Dictionary<string, string>();
+            _mapRemoteToLocal = new Dictionary<string, string>();
             InitializeRunspace(this);
         }
 
@@ -153,7 +157,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 LineBreakpoint bp = (LineBreakpoint)e.Breakpoints[0];
                 if (_callback != null)
                 {
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(bp.Script, bp.Line, bp.Column));
+                    if (_pushedRunspace != null)
+                    {
+                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(_mapRemoteToLocal[bp.Script], bp.Line, bp.Column));
+                    }
+                    else
+                    {
+                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(bp.Script, bp.Line, bp.Column));
+                    }
                 }
             }
             else
@@ -209,6 +220,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         string dirPath = tmpFileName.Substring(0, tmpFileName.Length - 4);
                         Directory.CreateDirectory(dirPath);
                         string fullFileName = dirPath + "\\" + new FileInfo(text).Name;
+                        _mapRemoteToLocal.Add(text, fullFileName);
+                        _mapLocalToRemote.Add(fullFileName, text);
+
                         File.WriteAllBytes(fullFileName, array);
 
                         _callback.OpenRemoteFile(fullFileName);
@@ -260,7 +274,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             using (var pipeline = (_runspace.CreatePipeline()))
             {
                 var command = new Command("Set-PSBreakpoint");
-                command.Parameters.Add("Script", bp.ScriptFullPath);
+                if (_pushedRunspace != null)
+                {
+                    command.Parameters.Add("Script", _mapLocalToRemote[bp.ScriptFullPath]);
+                }
+                else
+                {
+                    command.Parameters.Add("Script", bp.ScriptFullPath);
+                }
                 command.Parameters.Add("Line", bp.Line);
 
                 pipeline.Commands.Add(command);
@@ -303,8 +324,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="commandLine">Command line to execute</param>
         public bool Execute(string commandLine)
         {
-            ServiceCommon.Log("Start executing ps script ...");
+            if (_pushedRunspace != null && commandLine.StartsWith("."))
+            {
+                commandLine = commandLine.Replace(commandLine.Substring(2), @"'c:\test\test1.ps1'");
+            }
 
+            ServiceCommon.Log("Start executing ps script ...");
+            
             try
             {
                 if (_callback == null)
@@ -379,7 +405,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public void Stop()
         {
-            _currentPowerShell.Stop();
+            if (_currentPowerShell != null)
+            {
+                _currentPowerShell.Stop();
+            }
         }
 
         /// <summary>
@@ -576,22 +605,48 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void RefreshScopedVariable()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all local variable in scope");
-            using (var pipeline = (_runspace.CreateNestedPipeline()))
+            if (_runspace.RunspaceAvailability == RunspaceAvailability.RemoteDebug)
             {
-                var command = new Command("Get-Variable");
-                pipeline.Commands.Add(command);
-                _varaiables = pipeline.Invoke();
+                PSCommand psCommand = new PSCommand();
+                psCommand.AddScript("Get-Variable");
+                //psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                var output = new PSDataCollection<PSObject>();
+                output.DataAdded += variables_DataAdded;
+                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
+                _varaiables = output;
+            }
+            else
+            {
+                using (var pipeline = (_runspace.CreateNestedPipeline()))
+                {
+                    var command = new Command("Get-Variable");
+                    pipeline.Commands.Add(command);
+                    _varaiables = pipeline.Invoke();
+                }
             }
         }
 
         private void RefreshCallStack()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all call stack frames");
-            using (var pipeline = (_runspace.CreateNestedPipeline()))
+            if (_runspace.RunspaceAvailability == RunspaceAvailability.RemoteDebug)
             {
-                var command = new Command("Get-PSCallstack");
-                pipeline.Commands.Add(command);
-                _callstack = pipeline.Invoke();
+                PSCommand psCommand = new PSCommand();
+                psCommand.AddScript("Get-PSCallstack");
+                //psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                var output = new PSDataCollection<PSObject>();
+                output.DataAdded += callstack_DataAdded;
+                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
+                _callstack = output;
+            }
+            else
+            {
+                using (var pipeline = (_runspace.CreateNestedPipeline()))
+                {
+                    var command = new Command("Get-PSCallstack");
+                    pipeline.Commands.Add(command);
+                    _callstack = pipeline.Invoke();
+                }
             }
         }
 
