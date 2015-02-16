@@ -421,12 +421,27 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             foreach (var psobj in _varaiables)
             {
-                var psVar = psobj.BaseObject as PSVariable;
-
-                if (psVar != null)
+                if (_runspace.ConnectionInfo == null)
                 {
-                    _localVariables.Add(psVar);
-                    variables.Add(new Variable(psVar));
+                    var psVar = psobj.BaseObject as PSVariable;
+
+                    if (psVar != null)
+                    {
+                        _localVariables.Add(psVar);
+                        variables.Add(new Variable(psVar));
+                    }
+                }
+                else
+                {
+                    dynamic psVar = (dynamic)psobj;
+                    if (psVar.Value == null)
+                    {
+                        variables.Add(new Variable(psVar.Name, string.Empty, string.Empty, false, false));
+                    }
+                    else
+                    {
+                        variables.Add(new Variable((string)psVar.Name.ToString(), (string)psVar.Value.ToString(), (string)psVar.Value.GetType().ToString(), psVar.Value is IEnumerable, psVar.Value is PSObject));
+                    }
                 }
             }
 
@@ -555,18 +570,31 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public IEnumerable<CallStack> GetCallStack()
         {
             ServiceCommon.Log("Obtaining the context for wcf callback");
-            List<CallStackFrame> callStackFrames = new List<CallStackFrame>();
+            List<CallStack> callStackFrames = new List<CallStack>();
 
             foreach (var psobj in _callstack)
             {
-                var frame = psobj.BaseObject as CallStackFrame;
-                if (frame != null)
+                if (_runspace.ConnectionInfo == null)
                 {
-                    callStackFrames.Add(frame);
+                    var frame = psobj.BaseObject as CallStackFrame;
+                    if (frame != null)
+                    {
+                        callStackFrames.Add(new CallStack(frame.ScriptName, frame.FunctionName, frame.ScriptLineNumber));
+                    }
+                }
+                else
+                {
+                    dynamic psFrame = (dynamic)psobj;
+
+                    callStackFrames.Add(
+                        new CallStack(
+                            psFrame.ScriptName == null ? string.Empty : (string)psFrame.ScriptName.ToString(),
+                            (string)psFrame.FunctionName.ToString(), 
+                            (int)psFrame.ScriptLineNumber));
                 }
             }
 
-            return callStackFrames.Select(c => new CallStack(c.ScriptName, c.FunctionName, c.ScriptLineNumber));
+            return callStackFrames;
         }
 
         /// <summary>
@@ -611,7 +639,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 psCommand.AddScript("Get-Variable");
                 //psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
                 var output = new PSDataCollection<PSObject>();
-                output.DataAdded += variables_DataAdded;
                 DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
                 _varaiables = output;
             }
@@ -635,7 +662,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 psCommand.AddScript("Get-PSCallstack");
                 //psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
                 var output = new PSDataCollection<PSObject>();
-                output.DataAdded += callstack_DataAdded;
                 DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
                 _callstack = output;
             }
