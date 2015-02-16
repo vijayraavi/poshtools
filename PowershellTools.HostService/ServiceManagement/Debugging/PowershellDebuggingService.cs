@@ -607,7 +607,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 _currentPowerShell.Runspace = _runspace;
                 _currentPowerShell.AddCommand("prompt");
-                return _currentPowerShell.Invoke<string>().FirstOrDefault();
+
+                if (_runspace.ConnectionInfo == null)
+                {
+                    return _currentPowerShell.Invoke<string>().FirstOrDefault();
+                }
+                else
+                {
+                    return string.Format("[{0}] {1}", _runspace.ConnectionInfo.ComputerName, _currentPowerShell.Invoke<string>().FirstOrDefault());
+                }
             }
         }
 
