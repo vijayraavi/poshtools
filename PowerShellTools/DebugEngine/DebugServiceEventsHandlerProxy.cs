@@ -111,6 +111,7 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// To open specific file in client
         /// </summary>
+        /// <param name="fullName">Full name of remote file(mapped into local)</param>
         public void OpenRemoteFile(string fullName)
         {
             Debugger.OpenRemoteFile(fullName);

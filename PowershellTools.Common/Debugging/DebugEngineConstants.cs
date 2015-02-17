@@ -17,7 +17,15 @@ namespace PowerShellTools.Common.Debugging
         /// </remarks>
         public const string ExecutionCommandFormat = ". '{0}' {1}";
 
+
+        /// <summary>
+        /// Match if that is an execution command
+        /// </summary>
         public const string ExecutionCommandPattern = @"^\.\s\'.*?\'.*$";
+        
+        /// <summary>
+        /// Match the scrip file name from execution command
+        /// </summary>
         public const string ExecutionCommandFileReplacePattern = @"(?<=\.\s\').*?(?=\')";
     }
 }

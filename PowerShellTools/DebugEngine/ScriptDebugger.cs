@@ -484,7 +484,18 @@ namespace PowerShellTools.DebugEngine
         {
             var dte2 = (DTE80.DTE2)Package.GetGlobalService(typeof(DTE.DTE));
 
-            dte2.ItemOperations.OpenFile(fullName);
+            if (dte2 != null)
+            {
+                try
+                {
+                    dte2.ItemOperations.OpenFile(fullName);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Failed to open remote file through powershell remote session", ex);
+                    OutputString(this, new EventArgs<string>(ex.Message));
+                }
+            }
         }
     }
 
