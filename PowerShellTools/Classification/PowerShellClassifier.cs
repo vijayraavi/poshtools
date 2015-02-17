@@ -52,7 +52,10 @@ namespace PowerShellTools.Classification
 		private static ClassificationTypeDefinition variableTypeDefinition;
 		[BaseDefinition("text"), Name("PowerShell TokenInBreakpoint"), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition tokenInBreakpoinTypeDefinition;
-		private static Dictionary<PSTokenType, IClassificationType> tokenClassificationTypeMap;
+        [BaseDefinition("text"), Name("PS1ScriptGaps"), Export(typeof(ClassificationTypeDefinition))]
+        private static ClassificationTypeDefinition scriptGapsTypeDefinition;
+        private static Dictionary<PSTokenType, IClassificationType> tokenClassificationTypeMap;
+        private static IClassificationType scriptGaps;
 #pragma warning restore 649
         static PowerShellClassifier()
 	    {
@@ -77,7 +80,8 @@ namespace PowerShellTools.Classification
             tokenClassificationTypeMap[PSTokenType.Type] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellType);
             tokenClassificationTypeMap[PSTokenType.Unknown] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellUnknown);
             tokenClassificationTypeMap[PSTokenType.Variable] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellVariable);
-	    }
+            scriptGaps = EditorImports.ClassificationTypeRegistryService.GetClassificationType("PS1ScriptGaps");
+        }
 
         internal PowerShellClassifier(ITextBuffer bufferToClassify)
             : base(bufferToClassify)
@@ -157,8 +161,8 @@ namespace PowerShellTools.Classification
 				return list;
 			}
 
-			AddTokenClassifications(Buffer, span, list, null, ScriptGaps);
-			FillBeginningAndEnd(span, list, Buffer.CurrentSnapshot, ScriptGaps);
+            AddTokenClassifications(Buffer, span, list, null, scriptGaps);
+            FillBeginningAndEnd(span, list, Buffer.CurrentSnapshot, scriptGaps);
 			return list;
 		}
 	}
