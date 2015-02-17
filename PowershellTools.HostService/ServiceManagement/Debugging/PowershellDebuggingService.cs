@@ -1,6 +1,5 @@
 ﻿using EnvDTE80;
 using Microsoft.PowerShell;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,10 +15,12 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
+    [PowerShellServiceHostBehavior]
     public partial class PowershellDebuggingService : IPowershellDebuggingService
     {
         private static Runspace _runspace;
@@ -160,30 +161,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             bool resumed = false;
-            try
+            while (!resumed)
             {
-                while (!resumed)
+                _pausedEvent.WaitOne();
+
+                PSCommand psCommand = new PSCommand();
+                psCommand.AddScript(_debuggingCommand).AddCommand("out-default");
+                psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                var output = new PSDataCollection<PSObject>();
+                output.DataAdded += objects_DataAdded;
+                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
+
+                if (results.ResumeAction != null)
                 {
-                    _pausedEvent.WaitOne();
-
-                    PSCommand psCommand = new PSCommand();
-                    psCommand.AddScript(_debuggingCommand).AddCommand("out-default");
-                    psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                    var output = new PSDataCollection<PSObject>();
-                    output.DataAdded += objects_DataAdded;
-                    DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-
-                    if (results.ResumeAction != null)
-                    {
-                        ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
-                        e.ResumeAction = results.ResumeAction.Value;
-                        resumed = true; // debugger resumed executing
-                    }
+                    ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
+                    e.ResumeAction = results.ResumeAction.Value;
+                    resumed = true; // debugger resumed executing
                 }
-            }
-            catch (Exception ex)
-            {
-                ServiceCommon.Log("Exception happened while process user debugging action. Exception: {0}", ex);
             }
         }
 
@@ -221,23 +215,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="bp">Breakpoint to set</param>
         public void SetBreakpoint(PowershellBreakpoint bp)
         {
-            ServiceCommon.Log("Setting breakpoing ...");
-            try
+            ServiceCommon.Log("Setting breakpoint ...");
+            
+            using (var pipeline = (_runspace.CreatePipeline()))
             {
-                using (var pipeline = (_runspace.CreatePipeline()))
-                {
-                    var command = new Command("Set-PSBreakpoint");
-                    command.Parameters.Add("Script", bp.ScriptFullPath);
-                    command.Parameters.Add("Line", bp.Line);
+                var command = new Command("Set-PSBreakpoint");
+                command.Parameters.Add("Script", bp.ScriptFullPath);
+                command.Parameters.Add("Line", bp.Line);
 
-                    pipeline.Commands.Add(command);
+                pipeline.Commands.Add(command);
 
-                    pipeline.Invoke();
-                }
-            }
-            catch (Exception ex)
-            {
-                ServiceCommon.Log("Failed to set break point.  Exception: {0}", ex);
+                pipeline.Invoke();
             }
         }
 
@@ -249,29 +237,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             ServiceCommon.Log("ClearBreakpoints");
 
             IEnumerable<PSObject> breakpoints;
-            try
+
+            using (var pipeline = (_runspace.CreatePipeline()))
             {
-                using (var pipeline = (_runspace.CreatePipeline()))
-                {
-                    var command = new Command("Get-PSBreakpoint");
-                    pipeline.Commands.Add(command);
-                    breakpoints = pipeline.Invoke();
-                }
-
-                if (!breakpoints.Any()) return;
-
-                using (var pipeline = (_runspace.CreatePipeline()))
-                {
-                    var command = new Command("Remove-PSBreakpoint");
-                    command.Parameters.Add("Breakpoint", breakpoints);
-                    pipeline.Commands.Add(command);
-
-                    pipeline.Invoke();
-                }
+                var command = new Command("Get-PSBreakpoint");
+                pipeline.Commands.Add(command);
+                breakpoints = pipeline.Invoke();
             }
-            catch (Exception)
+
+            if (!breakpoints.Any()) return;
+
+            using (var pipeline = (_runspace.CreatePipeline()))
             {
-                ServiceCommon.Log("Failed to clear breakpoints.");
+                var command = new Command("Remove-PSBreakpoint");
+                command.Parameters.Add("Breakpoint", breakpoints);
+                pipeline.Commands.Add(command);
+
+                pipeline.Invoke();
             }
         }
 
@@ -279,7 +261,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Execute the specified command line from client
         /// </summary>
         /// <param name="commandLine">Command line to execute</param>
-        public void Execute(string commandLine)
+        public bool Execute(string commandLine)
         {
             ServiceCommon.Log("Start executing ps script ...");
 
@@ -298,9 +280,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
             {
                 _callback.OutputString("Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.");
-                return;
+                return false;
             }
 
+            bool error = false;
             try
             {
                 // Preset dte as PS variable if not yet
@@ -325,7 +308,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     objects.DataAdded += objects_DataAdded;
 
                     _currentPowerShell.Invoke(null, objects);
+                    error = _currentPowerShell.HadErrors;
                 }
+
+                return !error;
             }
             catch (Exception ex)
             {
@@ -336,6 +322,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
 
                 OnTerminatingException(ex);
+                return false;
             }
             finally
             {
@@ -343,6 +330,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Stop the current executiong
+        /// </summary>
+        public void Stop()
+        {
+            _currentPowerShell.Stop();
+        }
 
         /// <summary>
         /// Get all local scoped variables for client
@@ -378,13 +372,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             Collection<Variable> expandedVariable = new Collection<Variable>();
 
-            var psVar = _localVariables.FirstOrDefault(v => v.Name == varName);
-            object psVariable = (psVar == null) ? null : psVar.Value;
-            
-            if(psVariable == null)
-            {
-                psVariable = _propVariables[varName];
-            }
+            object psVariable = RetrieveVariable(varName);
 
             if (psVariable != null && psVariable is IEnumerable)
             {
@@ -393,7 +381,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     expandedVariable.Add(new Variable(String.Format("[{0}]", i), item.ToString(), item.GetType().ToString(), item is IEnumerable, item is PSObject));
 
-                    if (!(item is string) && (item is IEnumerable || item is PSObject))
+                    if (!item.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, String.Format("[{0}]", i));
                         if(!_propVariables.ContainsKey(key))
@@ -407,6 +395,39 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return expandedVariable;
         }
 
+        /// <summary>
+        /// Expand object to retrieve all properties
+        /// </summary>
+        /// <param name="varName">Object name</param>
+        /// <returns>Collection of variable to client</returns>
+        public Collection<Variable> GetObjectVariable(string varName)
+        {
+            ServiceCommon.Log("Client tries to watch an object variable, dump its content ...");
+
+            Collection<Variable> expandedVariable = new Collection<Variable>();
+
+            object psVariable = RetrieveVariable(varName);
+
+            if (psVariable != null && !(psVariable is IEnumerable) && !(psVariable is PSObject))
+            {
+                var props = psVariable.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                
+                foreach (var propertyInfo in props)
+                {
+                    object val = propertyInfo.GetValue(psVariable, null);
+                    expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
+
+                    if (!val.GetType().IsPrimitive)
+                    {
+                        string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
+                        if (!_propVariables.ContainsKey(key))
+                            _propVariables.Add(key, val);
+                    }
+                }
+            }
+
+            return expandedVariable;
+        }
 
         /// <summary>
         /// Expand PSObject to retrieve all its properties
@@ -419,13 +440,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             Collection<Variable> propsVariable = new Collection<Variable>();
 
-            var psVar = _localVariables.FirstOrDefault(v => v.Name == varName);
-            object psVariable = (psVar == null) ? null : psVar.Value;
-
-            if (psVariable == null)
-            {
-                psVariable = _propVariables[varName];
-            }
+            object psVariable = RetrieveVariable(varName);
 
             if (psVariable != null && psVariable is PSObject)
             {
@@ -448,7 +463,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                     propsVariable.Add(new Variable(prop.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
 
-                    if (!(val is string) && (val is IEnumerable || val is PSObject))
+                    if (!val.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, prop.Name);
                         if (!_propVariables.ContainsKey(key))
@@ -481,6 +496,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return callStackFrames.Select(c => new CallStack(c.ScriptName, c.FunctionName, c.ScriptLineNumber));
         }
 
+        /// <summary>
+        /// Get prompt string
+        /// </summary>
+        /// <returns>Prompt string</returns>
+        public string GetPrompt()
+        {
+            using (_currentPowerShell = PowerShell.Create())
+            {
+                _currentPowerShell.Runspace = _runspace;
+                _currentPowerShell.AddCommand("prompt");
+                return _currentPowerShell.Invoke<string>().FirstOrDefault();
+            }
+        }
+
         #endregion
 
         #region private helper
@@ -503,37 +532,22 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void RefreshScopedVariable()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all local variable in scope");
-            try
+            using (var pipeline = (_runspace.CreateNestedPipeline()))
             {
-                using (var pipeline = (_runspace.CreateNestedPipeline()))
-                {
-                    var command = new Command("Get-Variable");
-                    pipeline.Commands.Add(command);
-                    _varaiables = pipeline.Invoke();
-                }
-            }
-            catch (Exception ex)
-            {
-                ServiceCommon.Log("Failed to retrieve local variable.  Exception: {0}", ex);
+                var command = new Command("Get-Variable");
+                pipeline.Commands.Add(command);
+                _varaiables = pipeline.Invoke();
             }
         }
 
         private void RefreshCallStack()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all call stack frames");
-
-            try
+            using (var pipeline = (_runspace.CreateNestedPipeline()))
             {
-                using (var pipeline = (_runspace.CreateNestedPipeline()))
-                {
-                    var command = new Command("Get-PSCallstack");
-                    pipeline.Commands.Add(command);
-                    _callstack = pipeline.Invoke();
-                }
-            }
-            catch (Exception ex)
-            {
-                ServiceCommon.Log("Failed to retrieve stack trace. Exception: {0}", ex);
+                var command = new Command("Get-PSCallstack");
+                pipeline.Commands.Add(command);
+                _callstack = pipeline.Invoke();
             }
         }
 
@@ -605,17 +619,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             using (PowerShell ps = PowerShell.Create())
             {
-                try
-                {
-                    var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-                    ps.Runspace = _runspace;
-                    ps.AddScript("Import-Module '" + assemblyLocation + "'");
-                    ps.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    ServiceCommon.Log("Failed to load profile.  Exception: {0}", ex);
-                }
+                var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+                ps.Runspace = _runspace;
+                ps.AddScript("Import-Module '" + assemblyLocation + "'");
+                ps.Invoke();
             }
         }
 
@@ -623,26 +630,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             using (PowerShell ps = PowerShell.Create())
             {
-                try
-                {
-                    var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    var windowsPowerShell = Path.Combine(myDocuments, "WindowsPowerShell");
-                    var profile = Path.Combine(windowsPowerShell, "PoshTools_profile.ps1");
+                var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var windowsPowerShell = Path.Combine(myDocuments, "WindowsPowerShell");
+                var profile = Path.Combine(windowsPowerShell, "PoshTools_profile.ps1");
 
-                    var fi = new FileInfo(profile);
-                    if (!fi.Exists)
-                    {
-                        return;
-                    }
-
-                    ps.Runspace = _runspace;
-                    ps.AddScript(". '" + profile + "'");
-                    ps.Invoke();
-                }
-                catch (Exception ex)
+                var fi = new FileInfo(profile);
+                if (!fi.Exists)
                 {
-                    ServiceCommon.Log("Failed to load profile. Exception: {0}", ex);
+                    return;
                 }
+
+                ps.Runspace = _runspace;
+                ps.AddScript(". '" + profile + "'");
+                ps.Invoke();
             }
         }
 
@@ -653,22 +653,28 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
         {
-            try
+            using (PowerShell ps = PowerShell.Create())
             {
-                using (PowerShell ps = PowerShell.Create())
-                {
-                    ps.Runspace = _runspace;
-                    ps.AddCommand("Set-ExecutionPolicy")
-                        .AddParameter("ExecutionPolicy", policy)
-                        .AddParameter("Scope", scope)
-                        .AddParameter("Force");
-                    ps.Invoke();
-                }
+                ps.Runspace = _runspace;
+                ps.AddCommand("Set-ExecutionPolicy")
+                    .AddParameter("ExecutionPolicy", policy)
+                    .AddParameter("Scope", scope)
+                    .AddParameter("Force");
+                ps.Invoke();
             }
-            catch (Exception ex)
+        }
+
+        private object RetrieveVariable(string varName)
+        {
+            var psVar = _localVariables.FirstOrDefault(v => v.Name == varName);
+            object psVariable = (psVar == null) ? null : psVar.Value;
+
+            if (psVariable == null && _propVariables.ContainsKey(varName))
             {
-                ServiceCommon.Log("Failed to set execution policy. Exception: {0}", ex);
+                psVariable = _propVariables[varName];
             }
+
+            return psVariable;
         }
 
         #endregion

@@ -120,12 +120,7 @@ using Microsoft.VisualStudio.Shell.Interop;
         {
             try
             {
-                using (PowerShell ps = PowerShell.Create())
-                {
-                    ps.Runspace = _runspace;
-                    ps.AddCommand("prompt");
-                    return ps.Invoke<string>().FirstOrDefault();
-                }
+                return DebuggingService.GetPrompt();
             }
             catch
             {

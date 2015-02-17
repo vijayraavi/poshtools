@@ -379,14 +379,17 @@ namespace PowerShellTools.DebugEngine
             {
                 _debuggingCommand = PowerShellConstants.Debugger_Stop;
                 _pausedEvent.Set();
+                DebuggingService.Stop();
             }
             catch (Exception ex)
             {
                 //BUGBUG: Suppressing an exception that is thrown when stopping...
                 Log.Debug("Error while stopping script...", ex);
             }
-
-            DebuggerFinished();
+            finally
+            {
+                DebuggerFinished();
+            }
         }
 
         /// <summary>
@@ -433,18 +436,19 @@ namespace PowerShellTools.DebugEngine
         /// Execute the specified command line.
         /// </summary>
         /// <param name="commandLine">Command line to execute.</param>
-        public void Execute(string commandLine)
+        public bool Execute(string commandLine)
         {
             Log.Info("Execute");
 
             try
             {
-                ExecuteInternal(commandLine);
+                return ExecuteInternal(commandLine);
             }
             catch (Exception ex)
             {
                 Log.Error("Failed to execute script", ex);
                 OutputString(this, new EventArgs<string>(ex.Message));
+                return false;
             }
         }
 
@@ -452,10 +456,10 @@ namespace PowerShellTools.DebugEngine
         /// Execute the specified command line 
         /// </summary>
         /// <param name="commandLine">Command line to execute.</param>
-        public void ExecuteInternal(string commandLine)
+        public bool ExecuteInternal(string commandLine)
         {
             DebuggingCommandReady = false;
-            DebuggingService.Execute(commandLine);
+            return DebuggingService.Execute(commandLine);
         }
 
         /// <summary>

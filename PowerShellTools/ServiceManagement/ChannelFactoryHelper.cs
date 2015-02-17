@@ -37,6 +37,7 @@ namespace PowerShellTools.ServiceManagement
         private static NetNamedPipeBinding CreateBinding()
         {
             var binding = new NetNamedPipeBinding(NetNamedPipeSecurityMode.None);
+            binding.SendTimeout = TimeSpan.MaxValue;
             binding.ReceiveTimeout = TimeSpan.MaxValue;
             binding.Security.Transport.ProtectionLevel = ProtectionLevel.None;
             binding.MaxReceivedMessageSize = Constants.BindingMaxReceivedMessageSize;
