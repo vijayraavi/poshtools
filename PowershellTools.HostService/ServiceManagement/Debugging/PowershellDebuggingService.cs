@@ -218,9 +218,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     if (!string.IsNullOrEmpty(text) && array != null)
                     {
                         string tmpFileName = Path.GetTempFileName();
-                        string dirPath = tmpFileName.Substring(0, tmpFileName.Length - 4);
+                        string dirPath = tmpFileName.Remove(tmpFileName.LastIndexOf('.'));
                         Directory.CreateDirectory(dirPath);
-                        string fullFileName = dirPath + "\\" + new FileInfo(text).Name;
+                        string fullFileName = Path.Combine(dirPath, new FileInfo(text).Name);
+
                         _mapRemoteToLocal.Add(text, fullFileName);
                         _mapLocalToRemote.Add(fullFileName, text);
 
@@ -229,9 +230,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         _callback.OpenRemoteFile(fullFileName);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    ServiceCommon.Log("Failed to create local copy for downloaded file due to exception: {0}", ex);
                 }
             }
         }

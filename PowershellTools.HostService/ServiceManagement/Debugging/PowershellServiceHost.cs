@@ -196,7 +196,36 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             using (PowerShell powerShell = PowerShell.Create())
             {
                 powerShell.Runspace = remoteRunspace;
-                powerShell.AddScript("\r\n            param (\r\n                [string] $PSEditFunction\r\n            )\r\n\r\n            Register-EngineEvent -SourceIdentifier PSISERemoteSessionOpenFile -Forward\r\n\r\n            if ((Test-Path -Path 'function:\\global:PSEdit') -eq $false)\r\n            {\r\n                Set-Item -Path 'function:\\global:PSEdit' -Value $PSEditFunction\r\n            }\r\n        ").AddParameter("PSEditFunction", "\r\n            param (\r\n                [Parameter(Mandatory=$true)] [String[]] $FileNames\r\n            )\r\n\r\n            foreach ($fileName in $FileNames)\r\n            {\r\n                dir $fileName | where { ! $_.PSIsContainer } | foreach {\r\n                    $filePathName = $_.FullName\r\n\r\n                    # Get file contents\r\n                    $contentBytes = Get-Content -Path $filePathName -Raw -Encoding Byte\r\n\r\n                    # Notify client for file open.\r\n                    New-Event -SourceIdentifier PSISERemoteSessionOpenFile -EventArguments @($filePathName, $contentBytes) > $null\r\n                }\r\n            }\r\n        ");
+                powerShell.AddScript(@"
+param (
+    [string] $PSEditFunction
+)
+
+    Register-EngineEvent -SourceIdentifier PSISERemoteSessionOpenFile -Forward
+    if ((Test-Path -Path 'function:\\global:PSEdit') -eq $false)
+    {
+        Set-Item -Path 'function:\\global:PSEdit' -Value $PSEditFunction
+    }
+").AddParameter("PSEditFunction", @"
+param (
+    [Parameter(Mandatory=$true)] [String[]] $FileNames
+)
+
+    foreach ($fileName in $FileNames)
+    {
+        dir $fileName | where { ! $_.PSIsContainer } | foreach {
+            $filePathName = $_.FullName
+            
+            # Get file contents
+            $contentBytes = Get-Content -Path $filePathName -Raw -Encoding Byte
+            
+            # Notify client for file open.
+            New-Event -SourceIdentifier PSISERemoteSessionOpenFile -EventArguments @($filePathName, $contentBytes) > $null
+        }
+    }
+");
+
+                
                 try
                 {
                     powerShell.Invoke();
@@ -221,7 +250,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             using (PowerShell powerShell = PowerShell.Create())
             {
                 powerShell.Runspace = remoteRunspace;
-                powerShell.AddScript("\r\n            if ((Test-Path -Path 'function:\\global:PSEdit') -eq $true)\r\n            {\r\n                Remove-Item -Path 'function:\\global:PSEdit' -Force\r\n            }\r\n\r\n            Get-EventSubscriber -SourceIdentifier PSISERemoteSessionOpenFile -EA Ignore | Remove-Event\r\n        ");
+                powerShell.AddScript(@"
+if ((Test-Path -Path 'function:\\global:PSEdit') -eq $true)
+{
+    Remove-Item -Path 'function:\\global:PSEdit' -Force
+}
+
+Get-EventSubscriber -SourceIdentifier PSISERemoteSessionOpenFile -EA Ignore | Remove-Event
+");
+
                 try
                 {
                     powerShell.Invoke();
