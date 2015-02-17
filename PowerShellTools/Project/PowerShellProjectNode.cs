@@ -138,8 +138,7 @@ namespace PowerShellTools.Project
 
             var fi = new FileInfo(fileName);
 
-            return CodeFileExtensions.Select(m => m)
-                .Any(x => x.Equals(fi.Extension, StringComparison.OrdinalIgnoreCase));
+            return CodeFileExtensions.Any(x => x.Equals(fi.Extension, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
