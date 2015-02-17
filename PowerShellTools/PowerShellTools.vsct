@@ -52,6 +52,7 @@
           <ButtonText>Execute selection</ButtonText>
         </Strings>
       </Button>
+      <!-- DISABLED AS CURRENTLY NOT FUNCTIONING
       <Button guid="guidPoshToolsCmdSet" id="cmdidPrettyPrint"
         priority="0x0100" type="Button">
         <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
@@ -63,6 +64,7 @@
           <ButtonText>Reformat Script</ButtonText>
         </Strings>
       </Button>
+      -->
       <!--<Button guid="guidPoshToolsCmdSet" id="cmdidGotoDefinition"
         priority="0x0100" type="Button">
         <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>

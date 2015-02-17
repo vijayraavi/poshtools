@@ -11,23 +11,9 @@ namespace PowerShellTools.Classification
 {
     internal abstract class Classifier : IClassifier, INotifyTagsChanged
 	{
-		[BaseDefinition("text"), Name("PS1ScriptGaps"), Export(typeof(ClassificationTypeDefinition))]
-		private static ClassificationTypeDefinition scriptGapsTypeDefinition;
-		private static IClassificationType scriptGaps;
 		private readonly ITextBuffer buffer;
 
 		public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
-		protected static IClassificationType ScriptGaps
-		{
-			get
-			{
-				if (scriptGaps == null)
-				{
-					scriptGaps = EditorImports.ClassificationTypeRegistryService.GetClassificationType("PS1ScriptGaps");
-				}
-				return scriptGaps;
-			}
-		}
 
 		protected ITextBuffer Buffer
 		{
@@ -43,7 +29,8 @@ namespace PowerShellTools.Classification
 		public IList<ClassificationSpan> GetClassificationSpans(SnapshotSpan span)
 		{
 			UpdateClassifierBufferProperty();
-			return VirtualGetClassificationSpans(span);
+			var result = VirtualGetClassificationSpans(span);
+            return result;
 		}
 
 		internal static void SetClassificationTypeColors<T>(IDictionary<T, Color> tokenColors, IDictionary<T, Color> defaultTokenColors, string prefix, string sufix)
