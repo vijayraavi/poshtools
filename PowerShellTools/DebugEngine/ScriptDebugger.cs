@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using DTE = EnvDTE;
 using DTE80 = EnvDTE80;
+using PowerShellTools.Common.Debugging;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -428,7 +429,7 @@ namespace PowerShellTools.DebugEngine
 
                 if (node.IsFile)
                 {
-                    commandLine = String.Format(". '{0}' {1}", node.FileName, node.Arguments);
+                    commandLine = String.Format(DebugEngineConstants.ExecutionCommandFormat, node.FileName, node.Arguments);
                 }
                 Execute(commandLine);
             }

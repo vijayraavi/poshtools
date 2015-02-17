@@ -16,6 +16,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using System.Text.RegularExpressions;
+using PowerShellTools.Common.Debugging;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -157,14 +159,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 LineBreakpoint bp = (LineBreakpoint)e.Breakpoints[0];
                 if (_callback != null)
                 {
-                    if (_pushedRunspace != null)
+                    string file = bp.Script;
+                    if (_runspace.ConnectionInfo != null && _mapRemoteToLocal.ContainsKey(bp.Script))
                     {
-                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(_mapRemoteToLocal[bp.Script], bp.Line, bp.Column));
+                        file = _mapRemoteToLocal[bp.Script];
                     }
-                    else
-                    {
-                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(bp.Script, bp.Line, bp.Column));
-                    }
+
+                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, bp.Line, bp.Column));
                 }
             }
             else
@@ -274,14 +275,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             using (var pipeline = (_runspace.CreatePipeline()))
             {
                 var command = new Command("Set-PSBreakpoint");
-                if (_pushedRunspace != null)
+
+                string file = bp.ScriptFullPath;
+                if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
                 {
-                    command.Parameters.Add("Script", _mapLocalToRemote[bp.ScriptFullPath]);
+                    file = _mapLocalToRemote[bp.ScriptFullPath];
                 }
-                else
-                {
-                    command.Parameters.Add("Script", bp.ScriptFullPath);
-                }
+                
+                command.Parameters.Add("Script", file);
+                
                 command.Parameters.Add("Line", bp.Line);
 
                 pipeline.Commands.Add(command);
@@ -324,9 +326,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="commandLine">Command line to execute</param>
         public bool Execute(string commandLine)
         {
-            if (_pushedRunspace != null && commandLine.StartsWith("."))
+            if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
             {
-                commandLine = commandLine.Replace(commandLine.Substring(2), @"'c:\test\test1.ps1'");
+                Regex rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
+                string localFile = rgx.Match(commandLine).Value;
+                commandLine = rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
             }
 
             ServiceCommon.Log("Start executing ps script ...");
@@ -353,7 +357,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             try
             {
                 // only do this when we are working with a local runspace
-                if (_pushedRunspace == null)
+                if (_runspace.ConnectionInfo == null)
                 {
                     // Preset dte as PS variable if not yet
                     if (_runspace.SessionStateProxy.PSVariable.Get("dte") == null)
@@ -608,14 +612,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.Runspace = _runspace;
                 _currentPowerShell.AddCommand("prompt");
 
+                string prompt;
                 if (_runspace.ConnectionInfo == null)
                 {
-                    return _currentPowerShell.Invoke<string>().FirstOrDefault();
+                    prompt = _currentPowerShell.Invoke<string>().FirstOrDefault();
                 }
                 else
                 {
-                    return string.Format("[{0}] {1}", _runspace.ConnectionInfo.ComputerName, _currentPowerShell.Invoke<string>().FirstOrDefault());
+                    prompt = string.Format("[{0}] {1}", _runspace.ConnectionInfo.ComputerName, _currentPowerShell.Invoke<string>().FirstOrDefault());
                 }
+
+                return prompt;
             }
         }
 
