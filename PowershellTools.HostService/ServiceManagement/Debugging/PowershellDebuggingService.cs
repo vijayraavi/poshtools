@@ -222,9 +222,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         Directory.CreateDirectory(dirPath);
                         string fullFileName = Path.Combine(dirPath, new FileInfo(text).Name);
 
-                        _mapRemoteToLocal.Add(text, fullFileName);
-                        _mapLocalToRemote.Add(fullFileName, text);
-
+                        _mapRemoteToLocal[text] = fullFileName;
+                        _mapLocalToRemote[fullFileName] = text;
+                        
                         File.WriteAllBytes(fullFileName, array);
 
                         _callback.OpenRemoteFile(fullFileName);
@@ -391,11 +391,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             catch (Exception ex)
             {
                 ServiceCommon.Log("Terminating error,  Exception: {0}", ex);
-                if (_callback != null)
-                {
-                    _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
-                }
-
                 OnTerminatingException(ex);
                 return false;
             }
@@ -649,11 +644,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void RefreshScopedVariable()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all local variable in scope");
-            if (_runspace.RunspaceAvailability == RunspaceAvailability.RemoteDebug)
+            if (_runspace.ConnectionInfo != null)
             {
                 PSCommand psCommand = new PSCommand();
                 psCommand.AddScript("Get-Variable");
-                //psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
                 var output = new PSDataCollection<PSObject>();
                 DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
                 _varaiables = output;
@@ -672,11 +666,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void RefreshCallStack()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all call stack frames");
-            if (_runspace.RunspaceAvailability == RunspaceAvailability.RemoteDebug)
+            if (_runspace.ConnectionInfo != null)
             {
                 PSCommand psCommand = new PSCommand();
                 psCommand.AddScript("Get-PSCallstack");
-                //psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
                 var output = new PSDataCollection<PSObject>();
                 DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
                 _callstack = output;

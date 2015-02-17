@@ -300,9 +300,15 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                _debuggingCommand = PowerShellConstants.Debugger_Stop;
-                _pausedEvent.Set();
-                DebuggingService.Stop();
+                if (DebuggingCommandReady)
+                {
+                    _debuggingCommand = PowerShellConstants.Debugger_Stop;
+                    _pausedEvent.Set();
+                }
+                else
+                {
+                    DebuggingService.Stop();
+                }
             }
             catch (Exception ex)
             {
