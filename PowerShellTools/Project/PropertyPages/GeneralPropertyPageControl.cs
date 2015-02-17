@@ -2,15 +2,15 @@
 using System.Windows.Forms;
 using Microsoft.VisualStudioTools.Project;
 
-namespace PowerShellTools.Project
+namespace PowerShellTools.Project.PropertyPages
 {
-    public partial class PowerShellGeneralPropertyPageControl : UserControl
+    public partial class GeneralPropertyPageControl : UserControl
     {
         private readonly CommonPropertyPage _page;
         
         public bool LoadingSettings { get; set; }
 
-        public PowerShellGeneralPropertyPageControl(CommonPropertyPage page)
+        public GeneralPropertyPageControl(CommonPropertyPage page)
         {
             InitializeComponent();
             _page = page;

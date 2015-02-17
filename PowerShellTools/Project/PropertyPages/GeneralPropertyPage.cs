@@ -3,17 +3,17 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.VisualStudioTools.Project;
 
-namespace PowerShellTools.Project
+namespace PowerShellTools.Project.PropertyPages
 {
-    [Guid(GuidList.PowerShellGeneralPropertiesPageGuid)]
-    public class PowerShellGeneralPropertyPage : CommonPropertyPage
+    [Guid(GuidList.GeneralPropertiesPageGuid)]
+    public class GeneralPropertyPage : CommonPropertyPage
     {
         private PowerShellProjectNode _project;
-        private readonly PowerShellGeneralPropertyPageControl _control;
+        private readonly GeneralPropertyPageControl _control;
 
-        public PowerShellGeneralPropertyPage()
+        public GeneralPropertyPage()
         {
-            _control = new PowerShellGeneralPropertyPageControl(this);
+            _control = new GeneralPropertyPageControl(this);
         }
 
         internal override CommonProjectNode Project
