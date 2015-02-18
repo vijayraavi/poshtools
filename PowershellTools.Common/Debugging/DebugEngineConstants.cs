@@ -27,5 +27,7 @@ namespace PowerShellTools.Common.Debugging
         /// Match the scrip file name from execution command
         /// </summary>
         public const string ExecutionCommandFileReplacePattern = @"(?<=\.\s\').*?(?=\')";
+
+        public const string ReadHostDialogTitle = "Read-Host";
     }
 }

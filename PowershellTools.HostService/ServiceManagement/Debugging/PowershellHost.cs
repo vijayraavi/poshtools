@@ -9,6 +9,7 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualBasic;
+using PowerShellTools.Common.Debugging;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -32,14 +33,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public override string ReadLine()
         {
-            return ReadLineFromUI("Read-Host");
+            return ReadLineFromUI(DebugEngineConstants.ReadHostDialogTitle);
         }
 
         private string ReadLineFromUI(string message)
         {
             if (_debuggingService.CallbackService != null)
             {
-                return _debuggingService.CallbackService.ReadHostPrompt();
+                return _debuggingService.CallbackService.ReadHostPrompt(message);
             }
 
             return string.Empty;
@@ -122,7 +123,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                      new Dictionary<string, PSObject>();
             foreach (FieldDescription fd in descriptions)
             {
-                string userData = this.ReadLineFromUI(promptMessage);
+                string userData = this.ReadLineFromUI(promptMessage + fd.Name);
                 if (userData == null)
                 {
                     return null;
@@ -152,59 +153,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices,
             int defaultChoice)
         {
-            //// Write the caption and message strings in Blue.
-            //this.WriteLine(
-            //               ConsoleColor.Blue,
-            //               ConsoleColor.Black,
-            //               caption + "\n" + message + "\n");
-
-            //// Convert the choice collection into something that is
-            //// easier to work with. See the BuildHotkeysAndPlainLabels 
-            //// method for details.
-            //string[,] promptData = BuildHotkeysAndPlainLabels(choices);
-
-            //// Format the overall choice prompt string to display.
-            //StringBuilder sb = new StringBuilder();
-            //for (int element = 0; element < choices.Count; element++)
-            //{
-            //    sb.Append(String.Format(
-            //                            CultureInfo.CurrentCulture,
-            //                            "|{0}> {1} ",
-            //                            promptData[0, element],
-            //                            promptData[1, element]));
-            //}
-
-            //sb.Append(String.Format(
-            //                        CultureInfo.CurrentCulture,
-            //                        "[Default is ({0}]",
-            //                        promptData[0, defaultChoice]));
-
-            //// Read prompts until a match is made, the default is
-            //// chosen, or the loop is interrupted with ctrl-C.
-            //while (true)
-            //{
-            //    this.WriteLine(ConsoleColor.Cyan, ConsoleColor.Black, sb.ToString());
-            //    string data = Console.ReadLine().Trim().ToUpper(CultureInfo.CurrentCulture);
-
-            //    // If the choice string was empty, use the default selection.
-            //    if (data.Length == 0)
-            //    {
-            //        return defaultChoice;
-            //    }
-
-            //    // See if the selection matched and return the
-            //    // corresponding index if it did.
-            //    for (int i = 0; i < choices.Count; i++)
-            //    {
-            //        if (promptData[0, i] == data)
-            //        {
-            //            return i;
-            //        }
-            //    }
-
-            //    this.WriteErrorLine("Invalid choice: " + data);
-            //}
-
             return 0;
         }
 
