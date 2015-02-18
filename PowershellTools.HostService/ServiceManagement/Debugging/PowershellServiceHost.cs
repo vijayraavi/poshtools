@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerShellTools.Common.Debugging;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -183,7 +184,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         #region private helpers
 
         /// <summary>
-        /// Unused at the moment. Will be used for remote debugging scripts.
+        /// Register psedit command for remote file open event
         /// </summary>
         /// <param name="remoteRunspace"></param>
         public void RegisterRemoteFileOpenEvent(Runspace remoteRunspace)
@@ -196,36 +197,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             using (PowerShell powerShell = PowerShell.Create())
             {
                 powerShell.Runspace = remoteRunspace;
-                powerShell.AddScript(@"
-param (
-    [string] $PSEditFunction
-)
+                powerShell.AddScript(DebugEngineConstants.RegisterPSEditScript).AddParameter(DebugEngineConstants.RegisterPSEditParameterName, DebugEngineConstants.PSEditFunctionScript);
 
-    Register-EngineEvent -SourceIdentifier PSISERemoteSessionOpenFile -Forward
-    if ((Test-Path -Path 'function:\\global:PSEdit') -eq $false)
-    {
-        Set-Item -Path 'function:\\global:PSEdit' -Value $PSEditFunction
-    }
-").AddParameter("PSEditFunction", @"
-param (
-    [Parameter(Mandatory=$true)] [String[]] $FileNames
-)
-
-    foreach ($fileName in $FileNames)
-    {
-        dir $fileName | where { ! $_.PSIsContainer } | foreach {
-            $filePathName = $_.FullName
-            
-            # Get file contents
-            $contentBytes = Get-Content -Path $filePathName -Raw -Encoding Byte
-            
-            # Notify client for file open.
-            New-Event -SourceIdentifier PSISERemoteSessionOpenFile -EventArguments @($filePathName, $contentBytes) > $null
-        }
-    }
-");
-
-                
                 try
                 {
                     powerShell.Invoke();
@@ -237,7 +210,7 @@ param (
         }
 
         /// <summary>
-        /// Unused at the moment. Will be used for remote debugging scripts.
+        /// Unregister psedit function
         /// </summary>
         /// <param name="remoteRunspace"></param>
         public void UnregisterRemoteFileOpenEvent(Runspace remoteRunspace)
@@ -250,14 +223,7 @@ param (
             using (PowerShell powerShell = PowerShell.Create())
             {
                 powerShell.Runspace = remoteRunspace;
-                powerShell.AddScript(@"
-if ((Test-Path -Path 'function:\\global:PSEdit') -eq $true)
-{
-    Remove-Item -Path 'function:\\global:PSEdit' -Force
-}
-
-Get-EventSubscriber -SourceIdentifier PSISERemoteSessionOpenFile -EA Ignore | Remove-Event
-");
+                powerShell.AddScript(DebugEngineConstants.UnregisterPSEditScript);
 
                 try
                 {
