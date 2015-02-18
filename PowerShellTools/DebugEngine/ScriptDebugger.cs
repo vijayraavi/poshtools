@@ -5,9 +5,13 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using log4net;
-
 using System.Collections.ObjectModel;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using DTE = EnvDTE;
+using DTE80 = EnvDTE80;
+using PowerShellTools.Common.Debugging;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -106,87 +110,6 @@ namespace PowerShellTools.DebugEngine
                 SetBreakpoint(bp);
                 _breakpoints.Add(bp);
                 bp.Bind();
-            }
-        }
-
-        /// <summary>
-        /// Unused at the moment. Will be used for remote debugging scripts.
-        /// </summary>
-        /// <param name="remoteRunspace"></param>
-        public void RegisterRemoteFileOpenEvent(Runspace remoteRunspace)
-        {
-            remoteRunspace.Events.ReceivedEvents.PSEventReceived += new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
-            if (remoteRunspace.RunspaceStateInfo.State != RunspaceState.Opened || remoteRunspace.RunspaceAvailability != RunspaceAvailability.Available)
-            {
-                return;
-            }
-            using (PowerShell powerShell = PowerShell.Create())
-            {
-                powerShell.Runspace = remoteRunspace;
-                powerShell.AddScript("\r\n            param (\r\n                [string] $PSEditFunction\r\n            )\r\n\r\n            Register-EngineEvent -SourceIdentifier PSISERemoteSessionOpenFile -Forward\r\n\r\n            if ((Test-Path -Path 'function:\\global:PSEdit') -eq $false)\r\n            {\r\n                Set-Item -Path 'function:\\global:PSEdit' -Value $PSEditFunction\r\n            }\r\n        ").AddParameter("PSEditFunction", "\r\n            param (\r\n                [Parameter(Mandatory=$true)] [String[]] $FileNames\r\n            )\r\n\r\n            foreach ($fileName in $FileNames)\r\n            {\r\n                dir $fileName | where { ! $_.PSIsContainer } | foreach {\r\n                    $filePathName = $_.FullName\r\n\r\n                    # Get file contents\r\n                    $contentBytes = Get-Content -Path $filePathName -Raw -Encoding Byte\r\n\r\n                    # Notify client for file open.\r\n                    New-Event -SourceIdentifier PSISERemoteSessionOpenFile -EventArguments @($filePathName, $contentBytes) > $null\r\n                }\r\n            }\r\n        ");
-                try
-                {
-                    powerShell.Invoke();
-                }
-                catch (RemoteException)
-                {
-                }
-            }
-        }
-
-        /// <summary>
-        /// Unused at the moment. Will be used for remote debugging scripts.
-        /// </summary>
-        /// <param name="remoteRunspace"></param>
-        public void UnregisterRemoteFileOpenEvent(Runspace remoteRunspace)
-        {
-            remoteRunspace.Events.ReceivedEvents.PSEventReceived -= new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
-            if (remoteRunspace.RunspaceStateInfo.State != RunspaceState.Opened || remoteRunspace.RunspaceAvailability != RunspaceAvailability.Available)
-            {
-                return;
-            }
-            using (PowerShell powerShell = PowerShell.Create())
-            {
-                powerShell.Runspace = remoteRunspace;
-                powerShell.AddScript("\r\n            if ((Test-Path -Path 'function:\\global:PSEdit') -eq $true)\r\n            {\r\n                Remove-Item -Path 'function:\\global:PSEdit' -Force\r\n            }\r\n\r\n            Get-EventSubscriber -SourceIdentifier PSISERemoteSessionOpenFile -EA Ignore | Remove-Event\r\n        ");
-                try
-                {
-                    powerShell.Invoke();
-                }
-                catch (RemoteException)
-                {
-                }
-            }
-        }
-
-        /// <summary>
-        /// Unused at the moment. Will be used for remote debugging scripts.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void HandleRemoteSessionForwardedEvent(object sender, PSEventArgs args)
-        {
-            if (args.SourceIdentifier.Equals("PSISERemoteSessionOpenFile", StringComparison.OrdinalIgnoreCase))
-            {
-                string text = null;
-                byte[] array = null;
-                try
-                {
-                    if (args.SourceArgs.Length == 2)
-                    {
-                        text = (args.SourceArgs[0] as string);
-                        array = (byte[])(args.SourceArgs[1] as PSObject).BaseObject;
-                    }
-                    if (!string.IsNullOrEmpty(text) && array != null)
-                    {
-                        // bool flag;
-                        // this.LoadFile(text, array, out flag);
-                    }
-                }
-                catch
-                {
-
-                }
             }
         }
 
@@ -377,9 +300,15 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                _debuggingCommand = PowerShellConstants.Debugger_Stop;
-                _pausedEvent.Set();
-                DebuggingService.Stop();
+                if (DebuggingCommandReady)
+                {
+                    _debuggingCommand = PowerShellConstants.Debugger_Stop;
+                    _pausedEvent.Set();
+                }
+                else
+                {
+                    DebuggingService.Stop();
+                }
             }
             catch (Exception ex)
             {
@@ -438,7 +367,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="commandLine">Command line to execute.</param>
         public bool Execute(string commandLine)
         {
-            Log.Info("Execute");
+             Log.Info("Execute");
 
             try
             {
@@ -506,7 +435,7 @@ namespace PowerShellTools.DebugEngine
 
                 if (node.IsFile)
                 {
-                    commandLine = String.Format(". '{0}' {1}", node.FileName, node.Arguments);
+                    commandLine = String.Format(DebugEngineConstants.ExecutionCommandFormat, node.FileName, node.Arguments);
                 }
                 Execute(commandLine);
             }
@@ -555,6 +484,24 @@ namespace PowerShellTools.DebugEngine
             }
 
             return null;
+        }
+
+        internal void OpenRemoteFile(string fullName)
+        {
+            var dte2 = (DTE80.DTE2)Package.GetGlobalService(typeof(DTE.DTE));
+
+            if (dte2 != null)
+            {
+                try
+                {
+                    dte2.ItemOperations.OpenFile(fullName);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Failed to open remote file through powershell remote session", ex);
+                    OutputString(this, new EventArgs<string>(ex.Message));
+                }
+            }
         }
     }
 

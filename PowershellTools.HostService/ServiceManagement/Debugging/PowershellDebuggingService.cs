@@ -16,6 +16,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using System.Text.RegularExpressions;
+using PowerShellTools.Common.Debugging;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -32,6 +34,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private string log;
         private Collection<PSVariable> _localVariables;
         private Dictionary<string, Object> _propVariables;
+        private Dictionary<string, string> _mapLocalToRemote;
+        private Dictionary<string, string> _mapRemoteToLocal;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
 
         public PowershellDebuggingService()
@@ -40,6 +44,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             HostUi = new HostUi(this);
             _localVariables = new Collection<PSVariable>();
             _propVariables = new Dictionary<string, object>();
+            _mapLocalToRemote = new Dictionary<string, string>();
+            _mapRemoteToLocal = new Dictionary<string, string>();
             InitializeRunspace(this);
         }
 
@@ -51,6 +57,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             get
             {
                 return _runspace;
+            }
+            set
+            {
+                _runspace = value;
             }
         }
 
@@ -149,7 +159,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 LineBreakpoint bp = (LineBreakpoint)e.Breakpoints[0];
                 if (_callback != null)
                 {
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(bp.Script, bp.Line, bp.Column));
+                    string file = bp.Script;
+                    if (_runspace.ConnectionInfo != null && _mapRemoteToLocal.ContainsKey(bp.Script))
+                    {
+                        file = _mapRemoteToLocal[bp.Script];
+                    }
+
+                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, bp.Line, bp.Column));
                 }
             }
             else
@@ -177,6 +193,46 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
                     e.ResumeAction = results.ResumeAction.Value;
                     resumed = true; // debugger resumed executing
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handling the remote file open event
+        /// </summary>
+        /// <param name="sender">sender</param>
+        /// <param name="args">remote file name</param>
+        private void HandleRemoteSessionForwardedEvent(object sender, PSEventArgs args)
+        {
+            if (args.SourceIdentifier.Equals("PSISERemoteSessionOpenFile", StringComparison.OrdinalIgnoreCase))
+            {
+                string text = null;
+                byte[] array = null;
+                try
+                {
+                    if (args.SourceArgs.Length == 2)
+                    {
+                        text = (args.SourceArgs[0] as string);
+                        array = (byte[])(args.SourceArgs[1] as PSObject).BaseObject;
+                    }
+                    if (!string.IsNullOrEmpty(text) && array != null)
+                    {
+                        string tmpFileName = Path.GetTempFileName();
+                        string dirPath = tmpFileName.Remove(tmpFileName.LastIndexOf('.'));
+                        Directory.CreateDirectory(dirPath);
+                        string fullFileName = Path.Combine(dirPath, new FileInfo(text).Name);
+
+                        _mapRemoteToLocal[text] = fullFileName;
+                        _mapLocalToRemote[fullFileName] = text;
+                        
+                        File.WriteAllBytes(fullFileName, array);
+
+                        _callback.OpenRemoteFile(fullFileName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ServiceCommon.Log("Failed to create local copy for downloaded file due to exception: {0}", ex);
                 }
             }
         }
@@ -220,7 +276,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             using (var pipeline = (_runspace.CreatePipeline()))
             {
                 var command = new Command("Set-PSBreakpoint");
-                command.Parameters.Add("Script", bp.ScriptFullPath);
+
+                string file = bp.ScriptFullPath;
+                if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                {
+                    file = _mapLocalToRemote[bp.ScriptFullPath];
+                }
+                
+                command.Parameters.Add("Script", file);
+                
                 command.Parameters.Add("Line", bp.Line);
 
                 pipeline.Commands.Add(command);
@@ -263,8 +327,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="commandLine">Command line to execute</param>
         public bool Execute(string commandLine)
         {
-            ServiceCommon.Log("Start executing ps script ...");
+            if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
+            {
+                Regex rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
+                string localFile = rgx.Match(commandLine).Value;
+                commandLine = rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
+            }
 
+            ServiceCommon.Log("Start executing ps script ...");
+            
             try
             {
                 if (_callback == null)
@@ -286,13 +357,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             bool error = false;
             try
             {
-                // Preset dte as PS variable if not yet
-                if (_runspace.SessionStateProxy.PSVariable.Get("dte") == null)
+                // only do this when we are working with a local runspace
+                if (_runspace.ConnectionInfo == null)
                 {
-                    DTE2 dte = DTEManager.GetDTE(Program.VsProcessId);
-                    if (dte != null)
+                    // Preset dte as PS variable if not yet
+                    if (_runspace.SessionStateProxy.PSVariable.Get("dte") == null)
                     {
-                        _runspace.SessionStateProxy.PSVariable.Set("dte", dte);
+                        DTE2 dte = DTEManager.GetDTE(Program.VsProcessId);
+                        if (dte != null)
+                        {
+                            _runspace.SessionStateProxy.PSVariable.Set("dte", dte);
+                        }
                     }
                 }
 
@@ -316,11 +391,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             catch (Exception ex)
             {
                 ServiceCommon.Log("Terminating error,  Exception: {0}", ex);
-                if (_callback != null)
-                {
-                    _callback.OutputString("Error: " + ex.Message + Environment.NewLine);
-                }
-
                 OnTerminatingException(ex);
                 return false;
             }
@@ -335,7 +405,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public void Stop()
         {
-            _currentPowerShell.Stop();
+            if (_currentPowerShell != null)
+            {
+                _currentPowerShell.Stop();
+            }
         }
 
         /// <summary>
@@ -348,12 +421,27 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             foreach (var psobj in _varaiables)
             {
-                var psVar = psobj.BaseObject as PSVariable;
-
-                if (psVar != null)
+                if (_runspace.ConnectionInfo == null)
                 {
-                    _localVariables.Add(psVar);
-                    variables.Add(new Variable(psVar));
+                    var psVar = psobj.BaseObject as PSVariable;
+
+                    if (psVar != null)
+                    {
+                        _localVariables.Add(psVar);
+                        variables.Add(new Variable(psVar));
+                    }
+                }
+                else
+                {
+                    dynamic psVar = (dynamic)psobj;
+                    if (psVar.Value == null)
+                    {
+                        variables.Add(new Variable(psVar.Name, string.Empty, string.Empty, false, false));
+                    }
+                    else
+                    {
+                        variables.Add(new Variable((string)psVar.Name.ToString(), (string)psVar.Value.ToString(), (string)psVar.Value.GetType().ToString(), psVar.Value is IEnumerable, psVar.Value is PSObject));
+                    }
                 }
             }
 
@@ -482,18 +570,31 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public IEnumerable<CallStack> GetCallStack()
         {
             ServiceCommon.Log("Obtaining the context for wcf callback");
-            List<CallStackFrame> callStackFrames = new List<CallStackFrame>();
+            List<CallStack> callStackFrames = new List<CallStack>();
 
             foreach (var psobj in _callstack)
             {
-                var frame = psobj.BaseObject as CallStackFrame;
-                if (frame != null)
+                if (_runspace.ConnectionInfo == null)
                 {
-                    callStackFrames.Add(frame);
+                    var frame = psobj.BaseObject as CallStackFrame;
+                    if (frame != null)
+                    {
+                        callStackFrames.Add(new CallStack(frame.ScriptName, frame.FunctionName, frame.ScriptLineNumber));
+                    }
+                }
+                else
+                {
+                    dynamic psFrame = (dynamic)psobj;
+
+                    callStackFrames.Add(
+                        new CallStack(
+                            psFrame.ScriptName == null ? string.Empty : _mapRemoteToLocal[(string)psFrame.ScriptName.ToString()],
+                            (string)psFrame.FunctionName.ToString(), 
+                            (int)psFrame.ScriptLineNumber));
                 }
             }
 
-            return callStackFrames.Select(c => new CallStack(c.ScriptName, c.FunctionName, c.ScriptLineNumber));
+            return callStackFrames;
         }
 
         /// <summary>
@@ -506,7 +607,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 _currentPowerShell.Runspace = _runspace;
                 _currentPowerShell.AddCommand("prompt");
-                return _currentPowerShell.Invoke<string>().FirstOrDefault();
+
+                string prompt = _currentPowerShell.Invoke<string>().FirstOrDefault();
+                if (_runspace.ConnectionInfo != null)
+                {
+                    prompt = string.Format("[{0}] {1}", _runspace.ConnectionInfo.ComputerName, prompt);
+                }
+
+                return prompt;
             }
         }
 
@@ -532,22 +640,44 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void RefreshScopedVariable()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all local variable in scope");
-            using (var pipeline = (_runspace.CreateNestedPipeline()))
+            if (_runspace.ConnectionInfo != null)
             {
-                var command = new Command("Get-Variable");
-                pipeline.Commands.Add(command);
-                _varaiables = pipeline.Invoke();
+                PSCommand psCommand = new PSCommand();
+                psCommand.AddScript("Get-Variable");
+                var output = new PSDataCollection<PSObject>();
+                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
+                _varaiables = output;
+            }
+            else
+            {
+                using (var pipeline = (_runspace.CreateNestedPipeline()))
+                {
+                    var command = new Command("Get-Variable");
+                    pipeline.Commands.Add(command);
+                    _varaiables = pipeline.Invoke();
+                }
             }
         }
 
         private void RefreshCallStack()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all call stack frames");
-            using (var pipeline = (_runspace.CreateNestedPipeline()))
+            if (_runspace.ConnectionInfo != null)
             {
-                var command = new Command("Get-PSCallstack");
-                pipeline.Commands.Add(command);
-                _callstack = pipeline.Invoke();
+                PSCommand psCommand = new PSCommand();
+                psCommand.AddScript("Get-PSCallstack");
+                var output = new PSDataCollection<PSObject>();
+                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
+                _callstack = output;
+            }
+            else
+            {
+                using (var pipeline = (_runspace.CreateNestedPipeline()))
+                {
+                    var command = new Command("Get-PSCallstack");
+                    pipeline.Commands.Add(command);
+                    _callstack = pipeline.Invoke();
+                }
             }
         }
 

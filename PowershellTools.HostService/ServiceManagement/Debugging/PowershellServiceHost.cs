@@ -1,8 +1,11 @@
-﻿using System;
+﻿using PowerShellTools.Common.Debugging;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Host;
+using System.Management.Automation.Runspaces;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +18,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// The identifier of this PSHost implementation.
         /// </summary>
         private Guid myId = Guid.NewGuid();
+
+        /// <summary>
+        /// A reference to the runspace used to start an interactive session.
+        /// </summary>
+        private Runspace _pushedRunspace = null;
 
         /// <summary>
         /// Gets a string that contains the name of this host implementation. 
@@ -142,38 +150,91 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             get { return this.originalUICultureInfo; }
         }
 
+        #region IHostSupportsInteractiveSession
 
         public bool IsRunspacePushed
         {
-            get { throw new NotImplementedException(); }
-
-            //get { return _runspaceRef.IsRunspaceOverridden; }
+            get { return _pushedRunspace != null; }
         }
 
         public void PopRunspace()
         {
-            throw new NotImplementedException();
-            
-            //UnregisterRemoteFileOpenEvent(Runspace);
-            //_runspaceRef.Revert();
+            UnregisterRemoteFileOpenEvent(Runspace);
+            Runspace = _pushedRunspace;
+            _pushedRunspace = null;
         }
 
 
         public void PushRunspace(System.Management.Automation.Runspaces.Runspace runspace)
         {
-            throw new NotImplementedException();
+            _pushedRunspace = Runspace;
+            Runspace = runspace;
+            Runspace.Debugger.SetDebugMode(DebugModes.RemoteScript);
 
-            //Pipeline runningCmd = EnterPSSessionCommandWrapper.ConnectRunningPipeline(newRunspace);
-            //_runspaceRef.Override(newRunspace);
-            //var oldRunspace = _runspaceRef.OldRunspace;
-            //// EnterPSSessionCommandWrapper.ContinueCommand(newRunspace, runningCmd, this, true, oldRunspace);
-            //RegisterRemoteFileOpenEvent(newRunspace);
+            RegisterRemoteFileOpenEvent(runspace);
         }
 
-        System.Management.Automation.Runspaces.Runspace IHostSupportsInteractiveSession.Runspace
+        Runspace IHostSupportsInteractiveSession.Runspace
         {
-            get { throw new NotImplementedException(); }
-            //get { return _runspaceRef.Runspace; }
+            get { return PowershellDebuggingService.Runspace; }
         }
+
+        #endregion IHostSupportsInteractiveSession
+
+        #region private helpers
+
+        /// <summary>
+        /// Register psedit command for remote file open event
+        /// </summary>
+        /// <param name="remoteRunspace"></param>
+        public void RegisterRemoteFileOpenEvent(Runspace remoteRunspace)
+        {
+            remoteRunspace.Events.ReceivedEvents.PSEventReceived += new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
+            if (remoteRunspace.RunspaceStateInfo.State != RunspaceState.Opened || remoteRunspace.RunspaceAvailability != RunspaceAvailability.Available)
+            {
+                return;
+            }
+            using (PowerShell powerShell = PowerShell.Create())
+            {
+                powerShell.Runspace = remoteRunspace;
+                powerShell.AddScript(DebugEngineConstants.RegisterPSEditScript).AddParameter(DebugEngineConstants.RegisterPSEditParameterName, DebugEngineConstants.PSEditFunctionScript);
+
+                try
+                {
+                    powerShell.Invoke();
+                }
+                catch (RemoteException)
+                {
+                }
+            }
+        }
+
+        /// <summary>
+        /// Unregister psedit function
+        /// </summary>
+        /// <param name="remoteRunspace"></param>
+        public void UnregisterRemoteFileOpenEvent(Runspace remoteRunspace)
+        {
+            remoteRunspace.Events.ReceivedEvents.PSEventReceived -= new PSEventReceivedEventHandler(this.HandleRemoteSessionForwardedEvent);
+            if (remoteRunspace.RunspaceStateInfo.State != RunspaceState.Opened || remoteRunspace.RunspaceAvailability != RunspaceAvailability.Available)
+            {
+                return;
+            }
+            using (PowerShell powerShell = PowerShell.Create())
+            {
+                powerShell.Runspace = remoteRunspace;
+                powerShell.AddScript(DebugEngineConstants.UnregisterPSEditScript);
+
+                try
+                {
+                    powerShell.Invoke();
+                }
+                catch (RemoteException)
+                {
+                }
+            }
+        }
+
+        #endregion
     }
 }
