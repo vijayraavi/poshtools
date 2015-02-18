@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
@@ -14,6 +15,11 @@ namespace PowerShellTools.Commands
     /// </summary>
     internal class ExecuteFromEditorContextMenuCommand : ExecuteAsScriptCommand
     {
+        internal ExecuteFromEditorContextMenuCommand(DependencyValidator validator)
+            : base(validator)
+        {
+        }
+
         protected override int Id
         {
             get { return (int)GuidList.CmdidExecuteAsScript; }
@@ -21,7 +27,8 @@ namespace PowerShellTools.Commands
 
         protected override string GetTargetFile(DTE2 dte2)
         {
-            return dte2.ActiveDocument.FullName;   
+            Debug.Assert(dte2.ActiveDocument != null, "Active document should always be non-null when executing script from editor.");
+            return dte2.ActiveDocument.FullName;
         }
 
         protected override bool ShouldShowCommand(DTE2 dte2)
@@ -35,6 +42,11 @@ namespace PowerShellTools.Commands
     /// </summary>
     internal class ExecuteFromSolutionExplorerContextMenuCommand : ExecuteAsScriptCommand
     {
+        internal ExecuteFromSolutionExplorerContextMenuCommand(DependencyValidator validator)
+            : base(validator)
+        {
+        }
+
         protected override int Id
         {
             get { return (int)GuidList.CmdidExecuteAsScriptSolution; }
@@ -43,7 +55,11 @@ namespace PowerShellTools.Commands
         protected override string GetTargetFile(DTE2 dte)
         {
             var selectedItem = GetSelectedItem(dte);
-            return selectedItem.ProjectItem.Document.FullName;
+
+            if (selectedItem != null && selectedItem.ProjectItem != null && selectedItem.ProjectItem.Document != null)
+                return selectedItem.ProjectItem.Document.FullName;
+
+            return null;
         }
 
         protected override bool ShouldShowCommand(DTE2 dte)
@@ -72,6 +88,13 @@ namespace PowerShellTools.Commands
     /// </remarks>
     internal abstract class ExecuteAsScriptCommand : ICommand
     {
+        private DependencyValidator _validator;
+
+        public ExecuteAsScriptCommand(DependencyValidator validator)
+        {
+            _validator = validator;
+        }
+
         protected abstract int Id { get; }
         protected abstract string GetTargetFile(DTE2 dte);
         protected abstract bool ShouldShowCommand(DTE2 dte);
@@ -83,13 +106,16 @@ namespace PowerShellTools.Commands
                 return new CommandID(new Guid(GuidList.CmdSetGuid), Id);
             }
         }
+
         public void Execute(object sender, EventArgs args)
         {
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            var launcher = new PowerShellProjectLauncher();
-            var file = GetTargetFile(dte2); 
+            var launcher = new PowerShellProjectLauncher(_validator.Validate());
 
-            if (String.IsNullOrEmpty(file)) return;
+            var file = GetTargetFile(dte2);
+
+            if (String.IsNullOrEmpty(file))
+                return;
 
             Utilities.SaveDirtyFiles();
             launcher.LaunchFile(file, true);
@@ -106,6 +132,5 @@ namespace PowerShellTools.Commands
                 menuItem.Visible = bVisible;
             }
         }
-
     }
 }
