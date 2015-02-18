@@ -1,34 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.ComponentModel.Design;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.ComponentModel.Design;
 using System.Windows;
-using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
+using log4net;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.Win32;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
-using PowerShellTools.Project;
-using log4net;
 using PowerShellTools.Project.PropertyPages;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
-using MessageBoxOptions = System.Windows.MessageBoxOptions;
 
 namespace PowerShellTools
 {
@@ -128,7 +124,7 @@ EnableCommenting = true)]
         public static PowerShellToolsPackage Instance { get; private set; }
 
         [Export]
-        internal DependencyValidator DependencyValidator { get; set; } 
+        internal DependencyValidator DependencyValidator { get; set; }
 
         public new object GetService(Type type)
         {
@@ -197,9 +193,10 @@ EnableCommenting = true)]
             InitializePowerShellHost();
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
-            RefreshCommands(new ExecuteSelectionCommand(),
-                            new ExecuteFromEditorContextMenuCommand(),
-                            new ExecuteFromSolutionExplorerContextMenuCommand(),
+
+            RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
+                            new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
+                            new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
                             _gotoDefinitionCommand,
                             new PrettyPrintCommand(Debugger.Runspace),
                             new OpenDebugReplCommand());
@@ -226,7 +223,6 @@ EnableCommenting = true)]
                     "PowerShell Tools for Visual Studio Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
 
         private IContentType _contentType;
         public IContentType ContentType
