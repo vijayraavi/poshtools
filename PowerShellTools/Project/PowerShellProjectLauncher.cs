@@ -13,7 +13,7 @@ namespace PowerShellTools.Project
 {
     internal class PowerShellProjectLauncher : IProjectLauncher
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellProjectLauncher));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellProjectLauncher));
         private readonly PowerShellProjectNode _project;
         private readonly bool _dependenciesResolved;
 
@@ -23,9 +23,12 @@ namespace PowerShellTools.Project
             _project = project;
         }
 
-        public PowerShellProjectLauncher()
+
+        public PowerShellProjectLauncher(bool dependenciesResolved)
+            : this(null, dependenciesResolved)
         {
         }
+
 
         public int LaunchProject(bool debug)
         {
@@ -187,7 +190,7 @@ namespace PowerShellTools.Project
                     info.bstrArg = null;
                 }
             }
-            
+
             info.bstrRemoteMachine = null; // debug locally
             info.fSendStdoutToOutputWindow = 0; // Let stdout stay with the application.
             info.clsidCustom = new Guid("{43ACAB74-8226-4920-B489-BFCF05372437}");

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using EnvDTE;
+using EnvDTE80;
 using log4net;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -53,7 +54,7 @@ namespace PowerShellTools
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(UIContextGuids.NoSolution)]
     [ProvideLanguageService(typeof(PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true,
-        EnableCommenting = true)]
+EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     // This attribute registers a tool window exposed by this package.
@@ -64,9 +65,11 @@ namespace PowerShellTools
     //         DefaultName = "CustomEditor")]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
     [Guid(GuidList.PowerShellToolsPackageGuid)]
-    //[ProvideObject(typeof (PowerShellGeneralPropertyPage))]
-    [ProvideObject(typeof(PowerShellModulePropertyPage))]
-    [ProvideObject(typeof(PowerShellDebugPropertyPage))]
+    [ProvideObject(typeof(InformationPropertyPage))]
+    [ProvideObject(typeof(ComponentsPropertyPage))]
+    [ProvideObject(typeof(ExportsPropertyPage))]
+    [ProvideObject(typeof(RequirementsPropertyPage))]
+    [ProvideObject(typeof(DebugPropertyPage))]
     [Microsoft.VisualStudio.Shell.ProvideDebugEngine("{43ACAB74-8226-4920-B489-BFCF05372437}", "PowerShell",
         PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}",
         ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true,
@@ -154,7 +157,7 @@ namespace PowerShellTools
         }
 
         [Export]
-        internal DependencyValidator DependencyValidator { get; set; }
+        internal DependencyValidator DependencyValidator { get; set; } 
 
         public new object GetService(Type type)
         {
@@ -223,9 +226,10 @@ namespace PowerShellTools
             InitializePowerShellHost();
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
-            RefreshCommands(new ExecuteSelectionCommand(),
-                            new ExecuteFromEditorContextMenuCommand(),
-                            new ExecuteFromSolutionExplorerContextMenuCommand(),
+
+            RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
+                            new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
+                            new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
                             _gotoDefinitionCommand,
                             new PrettyPrintCommand(Debugger.Runspace),
                             new OpenDebugReplCommand());
@@ -337,7 +341,7 @@ namespace PowerShellTools
 
             Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
         }
-        
+
         public T GetDialogPage<T>() where T : DialogPage
         {
             return (T)GetDialogPage(typeof(T));

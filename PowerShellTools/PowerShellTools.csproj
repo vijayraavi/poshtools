@@ -290,38 +290,70 @@
     <Compile Include="PackageProperties.cs" />
     <Compile Include="PowerShellConstants.cs" />
     <Compile Include="Classification\PowerShellEditorFactory.cs" />
+    <Compile Include="Project\PowerShellCodeDomProvider.cs" />
     <Compile Include="Project\LocDisplayNameAttribute.cs" />
     <Compile Include="Project\PowerShellConfigProvider.cs" />
-    <Compile Include="Project\PowerShellDebugPropertyPage.cs" />
-    <Compile Include="Project\PowerShellDebugPropertyPageControl.cs">
+    <Compile Include="Project\PropertyPages\ComponentsPropertyPage.cs" />
+    <Compile Include="Project\PropertyPages\ComponentsPropertyPageControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Project\PowerShellDebugPropertyPageControl.Designer.cs">
-      <DependentUpon>PowerShellDebugPropertyPageControl.cs</DependentUpon>
+    <Compile Include="Project\PropertyPages\ComponentsPropertyPageControl.Designer.cs">
+      <DependentUpon>ComponentsPropertyPageControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\PropertyPages\ExportsPropertyPage.cs" />
+    <Compile Include="Project\PropertyPages\ExportsPropertyPageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Project\PropertyPages\ExportsPropertyPageControl.Designer.cs">
+      <DependentUpon>ExportsPropertyPageControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\PropertyPages\InformationPropertyPage.cs" />
+    <Compile Include="Project\PropertyPages\InformationPropertyPageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Project\PropertyPages\InformationPropertyPageControl.Designer.cs">
+      <DependentUpon>InformationPropertyPageControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\PropertyPages\DebugPropertyPage.cs" />
+    <Compile Include="Project\PropertyPages\DebugPropertyPageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Project\PropertyPages\DebugPropertyPageControl.Designer.cs">
+      <DependentUpon>DebugPropertyPageControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\PowerShellFileNode.cs" />
-    <Compile Include="Project\PowerShellGeneralPropertyPageControl.cs">
+    <Compile Include="Project\PowerShellFileNodeProperties.cs" />
+    <Compile Include="Project\PropertyPages\GeneralPropertyPageControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Project\PowerShellGeneralPropertyPageControl.Designer.cs">
-      <DependentUpon>PowerShellGeneralPropertyPageControl.cs</DependentUpon>
+    <Compile Include="Project\PropertyPages\GeneralPropertyPageControl.Designer.cs">
+      <DependentUpon>GeneralPropertyPageControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\PowerShellLibraryManager.cs" />
-    <Compile Include="Project\PowerShellModulePropertyPage.cs" />
-    <Compile Include="Project\PowerShellModulePropertyPageControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Project\PowerShellModulePropertyPageControl.Designer.cs">
-      <DependentUpon>PowerShellModulePropertyPageControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="Project\PowerShellProjectConfig.cs" />
     <Compile Include="Project\PowerShellProjectFactory.cs" />
     <Compile Include="Project\PowerShellProjectLauncher.cs" />
     <Compile Include="Project\PowerShellProjectNode.cs" />
     <Compile Include="Project\PowerShellProjectNodeProperties.cs" />
     <Compile Include="Project\PowerShellProjectPackage.cs" />
-    <Compile Include="Project\PowerShellGeneralPropertyPage.cs" />
+    <Compile Include="Project\PropertyPages\GeneralPropertyPage.cs" />
     <Compile Include="Project\ProjectConstants.cs" />
+    <Compile Include="Project\PropertyPages\ItemCollection.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Project\PropertyPages\ItemCollection.Designer.cs">
+      <DependentUpon>ItemCollection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\PropertyPages\PropertyPageUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Project\PropertyPages\RequirementsPropertyPage.cs" />
+    <Compile Include="Project\PropertyPages\RequirementsPropertyPageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Project\PropertyPages\RequirementsPropertyPageControl.Designer.cs">
+      <DependentUpon>RequirementsPropertyPageControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\PSBuildTask.cs" />
     <Compile Include="Project\ResourcesCategoryAttribute.cs" />
     <Compile Include="Project\ResourcesDescriptionAttribute.cs" />
@@ -499,14 +531,26 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DebugEngine\ResourceStrings.resx" />
-    <EmbeddedResource Include="Project\PowerShellDebugPropertyPageControl.resx">
-      <DependentUpon>PowerShellDebugPropertyPageControl.cs</DependentUpon>
+    <EmbeddedResource Include="Project\PropertyPages\ComponentsPropertyPageControl.resx">
+      <DependentUpon>ComponentsPropertyPageControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\PowerShellGeneralPropertyPageControl.resx">
-      <DependentUpon>PowerShellGeneralPropertyPageControl.cs</DependentUpon>
+    <EmbeddedResource Include="Project\PropertyPages\ExportsPropertyPageControl.resx">
+      <DependentUpon>ExportsPropertyPageControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\PowerShellModulePropertyPageControl.resx">
-      <DependentUpon>PowerShellModulePropertyPageControl.cs</DependentUpon>
+    <EmbeddedResource Include="Project\PropertyPages\InformationPropertyPageControl.resx">
+      <DependentUpon>InformationPropertyPageControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\PropertyPages\DebugPropertyPageControl.resx">
+      <DependentUpon>DebugPropertyPageControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\PropertyPages\GeneralPropertyPageControl.resx">
+      <DependentUpon>GeneralPropertyPageControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\PropertyPages\ItemCollection.resx">
+      <DependentUpon>ItemCollection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\PropertyPages\RequirementsPropertyPageControl.resx">
+      <DependentUpon>RequirementsPropertyPageControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Resources\ProjectResources.resx" />
     <EmbeddedResource Include="Project\SharedProject\ProjectResources.resx">
@@ -548,6 +592,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
+    <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
@@ -607,8 +653,6 @@
     <None Include="Resources\Images.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Project\Resources\ProjectIcon.bmp" />
-    <EmbeddedResource Include="Project\Resources\imagelis.bmp" />
     <Content Include="Resources\Package.ico" />
     <Resource Include="Resources\PowerShell.ico" />
     <Resource Include="Resources\powershell_icon.png" />

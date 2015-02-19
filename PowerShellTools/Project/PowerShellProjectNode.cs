@@ -1,22 +1,33 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
+using PowerShellTools.Project.PropertyPages;
 
 namespace PowerShellTools.Project
 {
     internal class PowerShellProjectNode : CommonProjectNode
     {
         private readonly CommonProjectPackage _package;
+        private static readonly ImageList ProjectImageList =
+            Utilities.GetImageList(
+                typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream(
+                    "PowerShellTools.Project.Resources.ImageList.bmp"));
+
         private readonly bool _dependenciesResolved;
         public PowerShellProjectNode(CommonProjectPackage package, bool dependenciesResolved)
-            : base(package, Utilities.GetImageList(typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.ProjectIcon.bmp")))
+            : base(package, ProjectImageList)
         {
             _dependenciesResolved = dependenciesResolved;
             _package = package;
-            // TODO: Temporary!! AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
-            AddCATIDMapping(typeof(PowerShellDebugPropertyPage), typeof(PowerShellDebugPropertyPage).GUID);
-            AddCATIDMapping(typeof (PowerShellModulePropertyPage), typeof (PowerShellModulePropertyPage).GUID);
+            AddCATIDMapping(typeof(DebugPropertyPage), typeof(DebugPropertyPage).GUID);
+            AddCATIDMapping(typeof(InformationPropertyPage), typeof(InformationPropertyPage).GUID);
+            AddCATIDMapping(typeof(ComponentsPropertyPage), typeof(ComponentsPropertyPage).GUID);
+            AddCATIDMapping(typeof(ExportsPropertyPage), typeof(ExportsPropertyPage).GUID);
+            AddCATIDMapping(typeof(RequirementsPropertyPage), typeof(RequirementsPropertyPage).GUID);
         }
 
         public override Type GetProjectFactoryType()
@@ -41,14 +52,17 @@ namespace PowerShellTools.Project
 
         public override Type GetGeneralPropertyPageType()
         {
-            //TODO: Temporary!!  return typeof (PowerShellGeneralPropertyPage);
             return null;
         }
 
         protected override Guid[] GetConfigurationIndependentPropertyPages()
         {
-           //TODO: Temporary!! return new[] { typeof(PowerShellGeneralPropertyPage).GUID, typeof(PowerShellDebugPropertyPage).GUID, typeof(PowerShellModulePropertyPage).GUID };
-            return new[] { typeof(PowerShellDebugPropertyPage).GUID, typeof(PowerShellModulePropertyPage).GUID };
+            return new[] { 
+                typeof(DebugPropertyPage).GUID, 
+                typeof(InformationPropertyPage).GUID, 
+                typeof(ComponentsPropertyPage).GUID, 
+                typeof(ExportsPropertyPage).GUID, 
+                typeof(RequirementsPropertyPage).GUID };
         }
 
         public override Type GetLibraryManagerType()
@@ -65,13 +79,8 @@ namespace PowerShellTools.Project
         {
             get
             {
-                return typeof(ProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.imagelis.bmp");
+                return typeof(PowerShellProjectNode).Assembly.GetManifestResourceStream("PowerShellTools.Project.Resources.CommonImageList.bmp");
             }
-        }
-
-        public override int ImageIndex
-        {
-            get { return 52; } //TODO: Fix image index
         }
 
         public override string[] CodeFileExtensions
@@ -84,7 +93,19 @@ namespace PowerShellTools.Project
 
         public override CommonFileNode CreateCodeFileNode(ProjectElement item)
         {
-            return new PowerShellFileNode(this, item);
+            var node = new PowerShellFileNode(this, item);
+
+            node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
+
+            return node;
+        }
+
+        public override CommonFileNode CreateNonCodeFileNode(ProjectElement item)
+        {
+            var node = new PowerShellFileNode(this, item);
+            node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
+
+            return node;
         }
 
         protected override ConfigProvider CreateConfigProvider()
@@ -95,6 +116,29 @@ namespace PowerShellTools.Project
         protected override NodeProperties CreatePropertiesObject()
         {
             return new PowerShellProjectNodeProperties(this);
+        }
+
+        /// <summary>
+        /// Creates the services exposed by this project.
+        /// </summary>
+        protected object CreateServices(Type serviceType)
+        {
+            object service = null;
+            if (typeof(SVSMDCodeDomProvider) == serviceType)
+            {
+                service = new PowerShellCodeDomProvider();
+            }
+
+            return service;
+        }
+
+        public override bool IsCodeFile(string fileName)
+        {
+            if (String.IsNullOrEmpty(fileName)) return false;
+
+            var fi = new FileInfo(fileName);
+
+            return CodeFileExtensions.Any(x => x.Equals(fi.Extension, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

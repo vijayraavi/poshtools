@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.LanguageService;
@@ -14,6 +15,7 @@ namespace PowerShellTools.Classification
     /// While currently empty, editor factory has to be unique per language.
     /// </remarks>
     [Guid(PowerShellConstants.EditorFactoryGuid)]
+    [ProvideView(LogicalView.Designer, null)]
     public class PowerShellEditorFactory : CommonEditorFactory
     {
         private readonly bool _dependenciesResolved;
