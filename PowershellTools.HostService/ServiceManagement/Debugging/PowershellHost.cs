@@ -147,7 +147,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             string targetName,
             PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
-            CredentialsDialog dialog = new CredentialsDialog("Powershell requiring credential");
+            CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);
+            dialog.Name = userName;
             if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
             {
                 var secure = new SecureString();

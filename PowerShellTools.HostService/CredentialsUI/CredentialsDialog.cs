@@ -12,11 +12,6 @@ namespace PowerShellTools.HostService.CredentialUI
     /// <summary>Encapsulates dialog functionality from the Credential Management API.</summary>
     public sealed class CredentialsDialog
     {
-        /// <summary>The only valid bitmap height (in pixels) of a user-defined banner.</summary>
-        private const int ValidBannerHeight = 60;
-        /// <summary>The only valid bitmap width (in pixels) of a user-defined banner.</summary>
-        private const int ValidBannerWidth = 320;
-
         /// <summary>Initializes a new instance of the <see cref="T:SecureCredentialsLibrary.CredentialsDialog"/> class
         /// with the specified target.</summary>
         /// <param name="target">The name of the target for the credentials, typically a server name.</param>
@@ -173,7 +168,7 @@ namespace PowerShellTools.HostService.CredentialUI
         {
             get
             {
-                return _target;
+                return _target == String.Empty ? "target" : _target;
             }
             set
             {
@@ -397,6 +392,7 @@ namespace PowerShellTools.HostService.CredentialUI
 
             if (this.Persist)
             {
+                flags = flags | NativeCredentialsUI.FLAGS.PERSIST;
                 flags = flags | NativeCredentialsUI.FLAGS.EXPECT_CONFIRMATION;
             }
             else
