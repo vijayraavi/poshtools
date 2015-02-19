@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using EnvDTE;
-using EnvDTE80;
 using log4net;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -21,18 +21,15 @@ using PowerShellTools.Classification;
 using PowerShellTools.Commands;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
+using PowerShellTools.Contracts;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
-using PowerShellTools.Project;
+using PowerShellTools.Project.PropertyPages;
+using PowerShellTools.Service;
 using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
-using System.IO;
-using PowerShellTools.Contracts;
-using PowerShellTools.Service;
-using System.Diagnostics;
 using MessageBox = System.Windows.MessageBox;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools
 {
