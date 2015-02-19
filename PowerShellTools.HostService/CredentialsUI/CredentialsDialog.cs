@@ -12,6 +12,17 @@ namespace PowerShellTools.HostService.CredentialUI
     /// <summary>Encapsulates dialog functionality from the Credential Management API.</summary>
     public sealed class CredentialsDialog
     {
+        private bool _alwaysDisplay = false;
+        private bool _excludeCertificates = true;
+        private bool _persist = true;
+        private bool _keepName = false;
+        private string _name = String.Empty;
+        private string _password = String.Empty;
+        private bool _saveChecked = false;
+        private string _target = String.Empty;
+        private string _caption = String.Empty;
+        private string _message = String.Empty;
+
         /// <summary>Initializes a new instance of the <see cref="T:SecureCredentialsLibrary.CredentialsDialog"/> class
         /// with the specified target.</summary>
         /// <param name="target">The name of the target for the credentials, typically a server name.</param>
@@ -39,7 +50,6 @@ namespace PowerShellTools.HostService.CredentialUI
             this.Message = message;
         }
 
-        private bool _alwaysDisplay = false;
         /// <summary>
         /// Gets or sets if the dialog will be shown even if the credentials
         /// can be returned from an existing credential in the credential manager.
@@ -56,8 +66,9 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        private bool _excludeCertificates = true;
-        /// <summary>Gets or sets if the dialog is populated with name/password only.</summary>
+        /// <summary>
+        /// Gets or sets if the dialog is populated with name/password only.
+        /// </summary>
         public bool ExcludeCertificates
         {
             get
@@ -70,8 +81,9 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        private bool _persist = true;
-        /// <summary>Gets or sets if the credentials are to be persisted in the credential manager.</summary>
+        /// <summary>
+        /// Gets or sets if the credentials are to be persisted in the credential manager.
+        /// </summary>
         public bool Persist
         {
             get
@@ -84,8 +96,9 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        private bool _keepName = false;
-        /// <summary>Gets or sets if the name is read-only.</summary>
+        /// <summary>
+        /// Gets or sets if the name is read-only.
+        /// </summary>
         public bool KeepName
         {
             get
@@ -98,8 +111,9 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        private string _name = String.Empty;
-        /// <summary>Gets or sets the name for the credentials.</summary>
+        /// <summary>
+        /// Gets or sets the name for the credentials.
+        /// </summary>
         public string Name
         {
             get
@@ -123,8 +137,9 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        private string _password = String.Empty;
-        /// <summary>Gets or sets the password for the credentials.</summary>
+        /// <summary>
+        /// Gets or sets the password for the credentials.
+        /// </summary>
         public string Password
         {
             get
@@ -148,8 +163,9 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        private bool _saveChecked = false;
-        /// <summary>Gets or sets if the save checkbox status.</summary>
+        /// <summary>
+        /// Gets or sets if the save checkbox status.
+        /// </summary>
         public bool SaveChecked
         {
             get
@@ -162,8 +178,9 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        private string _target = String.Empty;
-        /// <summary>Gets or sets the name of the target for the credentials, typically a server name.</summary>
+        /// <summary>
+        /// Gets or sets the name of the target for the credentials, typically a server name.
+        /// </summary>
         public string Target
         {
             get
@@ -188,9 +205,13 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        private string _caption = String.Empty;
-        /// <summary>Gets or sets the caption of the dialog.</summary>
-        /// <remarks>A null value will cause a system default caption to be used.</remarks>
+        
+        /// <summary>
+        /// Gets or sets the caption of the dialog.
+        /// </summary>
+        /// <remarks>
+        /// A null value will cause a system default caption to be used.
+        /// </remarks>
         public string Caption
         {
             get
@@ -214,9 +235,13 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        private string _message = String.Empty;
-        /// <summary>Gets or sets the message of the dialog.</summary>
-        /// <remarks>A null value will cause a system default message to be used.</remarks>
+
+        /// <summary>
+        /// Gets or sets the message of the dialog.
+        /// </summary>
+        /// <remarks>
+        /// A null value will cause a system default message to be used.
+        /// </remarks>
         public string Message
         {
             get
@@ -240,14 +265,18 @@ namespace PowerShellTools.HostService.CredentialUI
             }
         }
 
-        /// <summary>Shows the credentials dialog.</summary>
+        /// <summary>
+        /// Shows the credentials dialog.
+        /// </summary>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
         public DialogResult Show()
         {
             return Show(null, this.Name, this.Password, this.SaveChecked);
         }
 
-        /// <summary>Shows the credentials dialog with the specified save checkbox status.</summary>
+        /// <summary>
+        /// Shows the credentials dialog with the specified save checkbox status.
+        /// </summary>
         /// <param name="saveChecked">True if the save checkbox is checked.</param>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
         public DialogResult Show(bool saveChecked)
@@ -255,7 +284,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return Show(null, this.Name, this.Password, saveChecked);
         }
 
-        /// <summary>Shows the credentials dialog with the specified name.</summary>
+        /// <summary>
+        /// Shows the credentials dialog with the specified name.
+        /// </summary>
         /// <param name="name">The name for the credentials.</param>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
         public DialogResult Show(string name)
@@ -263,7 +294,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return Show(null, name, this.Password, this.SaveChecked);
         }
 
-        /// <summary>Shows the credentials dialog with the specified name and password.</summary>
+        /// <summary>
+        /// Shows the credentials dialog with the specified name and password.
+        /// </summary>
         /// <param name="name">The name for the credentials.</param>
         /// <param name="password">The password for the credentials.</param>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
@@ -272,7 +305,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return Show(null, name, password, this.SaveChecked);
         }
 
-        /// <summary>Shows the credentials dialog with the specified name, password and save checkbox status.</summary>
+        /// <summary>
+        /// Shows the credentials dialog with the specified name, password and save checkbox status.
+        /// </summary>
         /// <param name="name">The name for the credentials.</param>
         /// <param name="password">The password for the credentials.</param>
         /// <param name="saveChecked">True if the save checkbox is checked.</param>
@@ -282,7 +317,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return Show(null, name, password, saveChecked);
         }
 
-        /// <summary>Shows the credentials dialog with the specified owner.</summary>
+        /// <summary>
+        /// Shows the credentials dialog with the specified owner.
+        /// </summary>
         /// <param name="owner">The System.Windows.Forms.IWin32Window the dialog will display in front of.</param>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
         public DialogResult Show(IWin32Window owner)
@@ -290,7 +327,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return Show(owner, this.Name, this.Password, this.SaveChecked);
         }
 
-        /// <summary>Shows the credentials dialog with the specified owner and save checkbox status.</summary>
+        /// <summary>
+        /// Shows the credentials dialog with the specified owner and save checkbox status.
+        /// </summary>
         /// <param name="owner">The System.Windows.Forms.IWin32Window the dialog will display in front of.</param>
         /// <param name="saveChecked">True if the save checkbox is checked.</param>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
@@ -299,7 +338,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return Show(owner, this.Name, this.Password, saveChecked);
         }
 
-        /// <summary>Shows the credentials dialog with the specified owner, name and password.</summary>
+        /// <summary>
+        /// Shows the credentials dialog with the specified owner, name and password.
+        /// </summary>
         /// <param name="owner">The System.Windows.Forms.IWin32Window the dialog will display in front of.</param>
         /// <param name="name">The name for the credentials.</param>
         /// <param name="password">The password for the credentials.</param>
@@ -309,7 +350,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return Show(owner, name, password, this.SaveChecked);
         }
 
-        /// <summary>Shows the credentials dialog with the specified owner, name, password and save checkbox status.</summary>
+        /// <summary>
+        /// Shows the credentials dialog with the specified owner, name, password and save checkbox status.
+        /// </summary>
         /// <param name="owner">The System.Windows.Forms.IWin32Window the dialog will display in front of.</param>
         /// <param name="name">The name for the credentials.</param>
         /// <param name="password">The password for the credentials.</param>
@@ -328,7 +371,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return ShowDialog(owner);
         }
 
-        /// <summary>Returns a DialogResult indicating the user action.</summary>
+        /// <summary>
+        /// Returns a DialogResult indicating the user action.
+        /// </summary>
         /// <param name="owner">The System.Windows.Forms.IWin32Window the dialog will display in front of.</param>
         /// <remarks>
         /// Sets the name, password and SaveChecked accessors to the state of the dialog as it was dismissed by the user.
@@ -366,7 +411,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return GetDialogResult(code);
         }
 
-        /// <summary>Returns the info structure for dialog display settings.</summary>
+        /// <summary>
+        /// Returns the info structure for dialog display settings.
+        /// </summary>
         /// <param name="owner">The System.Windows.Forms.IWin32Window the dialog will display in front of.</param>
         private NativeCredentialsUI.INFO GetInfo(IWin32Window owner)
         {
@@ -378,13 +425,12 @@ namespace PowerShellTools.HostService.CredentialUI
             return info;
         }
 
-        /// <summary>Returns the flags for dialog display options.</summary>
+        /// <summary>
+        /// Returns the flags for dialog display options.
+        /// </summary>
         private NativeCredentialsUI.FLAGS GetFlags()
         {
             NativeCredentialsUI.FLAGS flags = NativeCredentialsUI.FLAGS.GENERIC_CREDENTIALS;
-
-            // grrrr... can't seem to get this to work...
-            // if (incorrectPassword) flags = flags | NativeCredentialsUI.NativeCredentialsUI_FLAGS.INCORRECT_PASSWORD;
 
             if (this.AlwaysDisplay) flags = flags | NativeCredentialsUI.FLAGS.ALWAYS_SHOW_UI;
 
@@ -405,7 +451,9 @@ namespace PowerShellTools.HostService.CredentialUI
             return flags;
         }
 
-        /// <summary>Returns a DialogResult from the specified code.</summary>
+        /// <summary>
+        /// Returns a DialogResult from the specified code.
+        /// </summary>
         /// <param name="code">The credential return code.</param>
         private DialogResult GetDialogResult(NativeCredentialsUI.ReturnCodes code)
         {

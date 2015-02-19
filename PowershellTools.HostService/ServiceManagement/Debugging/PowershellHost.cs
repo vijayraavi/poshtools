@@ -147,19 +147,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             string targetName,
             PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
-            CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);
-            dialog.Name = userName;
-            if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
-            {
-                var secure = new SecureString();
-                foreach (char c in dialog.Password)
-                {
-                    secure.AppendChar(c);
-                }
-                return new PSCredential(dialog.Name, secure);
-            }
-
-            return null;
+            return CredUiPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes, 
+                options, IntPtr.Zero); 
         }
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices,
@@ -174,7 +163,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             IntPtr parentHwnd)
         {
             PSCredential result = null;
-            
+
+            CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);
+            dialog.Name = userName;
+            if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
+            {
+                var secure = new SecureString();
+                foreach (char c in dialog.Password)
+                {
+                    secure.AppendChar(c);
+                }
+                result = new PSCredential(dialog.Name, secure);
+            }
+
             return result;
         }
     }
