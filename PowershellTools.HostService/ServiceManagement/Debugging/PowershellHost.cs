@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualBasic;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.HostService.CredentialUI;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -146,8 +147,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             string targetName,
             PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
-            return CredUiPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes, options,
-                IntPtr.Zero);
+            CredentialsDialog dialog = new CredentialsDialog("Powershell requiring credential");
+            if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
+            {
+                var secure = new SecureString();
+                foreach (char c in dialog.Password)
+                {
+                    secure.AppendChar(c);
+                }
+                return new PSCredential(dialog.Name, secure);
+            }
+
+            return null;
         }
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices,
