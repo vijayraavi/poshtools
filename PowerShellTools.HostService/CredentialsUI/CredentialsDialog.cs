@@ -22,6 +22,7 @@ namespace PowerShellTools.HostService.CredentialUI
         private string _target = String.Empty;
         private string _caption = String.Empty;
         private string _message = String.Empty;
+        private bool _validName = false;
 
         /// <summary>Initializes a new instance of the <see cref="T:SecureCredentialsLibrary.CredentialsDialog"/> class
         /// with the specified target.</summary>
@@ -175,6 +176,21 @@ namespace PowerShellTools.HostService.CredentialUI
             set
             {
                 _saveChecked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets if validate the user name.
+        /// </summary>
+        public bool ValidName
+        {
+            get
+            {
+                return _validName;
+            }
+            set
+            {
+                _validName = value;
             }
         }
 
@@ -447,6 +463,8 @@ namespace PowerShellTools.HostService.CredentialUI
             }
 
             if (this.KeepName) flags = flags | NativeCredentialsUI.FLAGS.KEEP_USERNAME;
+
+            if (this.ValidName) flags = flags | NativeCredentialsUI.FLAGS.VALIDATE_USERNAME;
 
             return flags;
         }

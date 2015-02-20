@@ -166,6 +166,24 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);
             dialog.Name = userName;
+
+            switch (options)
+            {
+                case PSCredentialUIOptions.AlwaysPrompt:
+                    dialog.AlwaysDisplay = true;
+                    break;
+                case PSCredentialUIOptions.ReadOnlyUserName:
+                    dialog.KeepName = true;
+                    break;
+                case PSCredentialUIOptions.Default:
+                    dialog.ValidName = true;
+                    break;
+                case PSCredentialUIOptions.None:
+                    break;
+                default:
+                    break;
+            }
+
             if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
             {
                 var secure = new SecureString();
