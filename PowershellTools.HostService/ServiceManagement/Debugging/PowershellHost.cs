@@ -119,12 +119,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             Collection<FieldDescription> descriptions)
         {
             string promptMessage = caption + "\n" + message + " ";
-            this.Write(promptMessage);
             Dictionary<string, PSObject> results =
                      new Dictionary<string, PSObject>();
             foreach (FieldDescription fd in descriptions)
             {
-                string userData = this.ReadLineFromUI(promptMessage + fd.Name);
+                this.Write(promptMessage);
+                string userData = this.ReadLineFromUI(promptMessage + "\n" + fd.Name);
                 if (userData == null)
                 {
                     return null;
