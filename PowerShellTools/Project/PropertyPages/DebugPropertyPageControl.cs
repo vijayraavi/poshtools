@@ -1,23 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualStudioTools.Project;
 
-namespace PowerShellTools.Project
+namespace PowerShellTools.Project.PropertyPages
 {
-    public partial class PowerShellDebugPropertyPageControl : UserControl
+    public partial class DebugPropertyPageControl : UserControl
     {
         private CommonPropertyPage _page;
 
         public bool LoadingSettings { get; set; }
 
-        public PowerShellDebugPropertyPageControl(CommonPropertyPage page)
+        public DebugPropertyPageControl(CommonPropertyPage page)
         {
             _page = page;
             InitializeComponent();

@@ -16,6 +16,13 @@ namespace PowerShellTools.Commands
     /// </remarks>
     internal class ExecuteSelectionCommand : ICommand
     {
+        private DependencyValidator _validator;
+
+        public ExecuteSelectionCommand(DependencyValidator dependencyValidator)
+        {
+            _validator = dependencyValidator;
+        }
+
         public CommandID CommandId
         {
             get
@@ -29,7 +36,8 @@ namespace PowerShellTools.Commands
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             if (dte2 != null && dte2.ActiveDocument != null)
             {
-                var launcher = new PowerShellProjectLauncher();
+                var launcher = new PowerShellProjectLauncher(_validator.Validate());
+
                 TextSelection sel = (TextSelection)dte2.ActiveDocument.Selection;
                 dte2.ActiveDocument.Save();
                 if (sel.TopPoint.EqualTo(sel.ActivePoint))

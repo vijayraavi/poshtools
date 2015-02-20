@@ -25,21 +25,6 @@ namespace PowerShellTools.Service
             {
                 _debugger.HostUi.OutputString = OutputString;
             }
-
-            try
-            {
-                IVsOutputWindow outWindow = PowerShellToolsPackage.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
-                Guid generalPaneGuid = VSConstants.OutputWindowPaneGuid.GeneralPane_guid;
-                // By default this is no pane created in output window, so we need to create one by our own
-                // This call won't do anything if there is one exists
-                int hr = outWindow.CreatePane(generalPaneGuid, "General", 1, 1);
-                outWindow.GetPane(ref generalPaneGuid, out _generalPane);
-            }
-            catch(Exception ex)
-            {
-                Log.Error("Failed to create general pane of output window due to exception: ", ex);
-                throw;
-            }
         }
 
         private ExecutionEngine(bool test) {}
@@ -143,7 +128,25 @@ namespace PowerShellTools.Service
         /// <param name="output">string to output</param>
         private void OutputString(string output)
         {
-            if (_generalPane != null)
+            if (_generalPane == null)
+            {
+                try
+                {
+                    IVsOutputWindow outWindow = PowerShellToolsPackage.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+                    Guid generalPaneGuid = VSConstants.OutputWindowPaneGuid.GeneralPane_guid;
+                    // By default this is no pane created in output window, so we need to create one by our own
+                    // This call won't do anything if there is one exists
+                    int hr = outWindow.CreatePane(generalPaneGuid, "General", 1, 1);
+                    outWindow.GetPane(ref generalPaneGuid, out _generalPane);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Failed to create general pane of output window due to exception: ", ex);
+                    throw;
+                }
+            }
+
+            if(_generalPane != null)
             {
                 _generalPane.Activate(); // Brings this pane into view
                 _generalPane.OutputStringThreadSafe(output + Environment.NewLine); // Thread-safe so the the output order can be preserved

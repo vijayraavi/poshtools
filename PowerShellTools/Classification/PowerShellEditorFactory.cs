@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.LanguageService;
@@ -14,14 +15,20 @@ namespace PowerShellTools.Classification
     /// While currently empty, editor factory has to be unique per language.
     /// </remarks>
     [Guid(PowerShellConstants.EditorFactoryGuid)]
+    [ProvideView(LogicalView.Designer, null)]
     public class PowerShellEditorFactory : CommonEditorFactory
     {
-        public PowerShellEditorFactory(CommonProjectPackage package) : base(package) { }
+        private readonly bool _dependenciesResolved;
 
-        public PowerShellEditorFactory(CommonProjectPackage package, bool promptForEncoding) : base(package, promptForEncoding) { }
+        public PowerShellEditorFactory(CommonProjectPackage package, bool dependenciesResolved) : base(package)
+        {
+            _dependenciesResolved = dependenciesResolved;
+        }
 
         protected override void InitializeLanguageService(IVsTextLines textLines)
         {
+            if (!_dependenciesResolved) return;
+
             var userData = textLines as IVsUserData;
             if (userData == null) return;
             var langSid = typeof(PowerShellLanguageInfo).GUID;

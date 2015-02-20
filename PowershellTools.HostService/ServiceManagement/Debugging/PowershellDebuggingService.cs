@@ -198,10 +198,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Unused at the moment. Will be used for remote debugging scripts.
+        /// Handling the remote file open event
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
+        /// <param name="sender">sender</param>
+        /// <param name="args">remote file name</param>
         private void HandleRemoteSessionForwardedEvent(object sender, PSEventArgs args)
         {
             if (args.SourceIdentifier.Equals("PSISERemoteSessionOpenFile", StringComparison.OrdinalIgnoreCase))
@@ -608,14 +608,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.Runspace = _runspace;
                 _currentPowerShell.AddCommand("prompt");
 
-                string prompt;
-                if (_runspace.ConnectionInfo == null)
+                string prompt = _currentPowerShell.Invoke<string>().FirstOrDefault();
+                if (_runspace.ConnectionInfo != null)
                 {
-                    prompt = _currentPowerShell.Invoke<string>().FirstOrDefault();
-                }
-                else
-                {
-                    prompt = string.Format("[{0}] {1}", _runspace.ConnectionInfo.ComputerName, _currentPowerShell.Invoke<string>().FirstOrDefault());
+                    prompt = string.Format("[{0}] {1}", _runspace.ConnectionInfo.ComputerName, prompt);
                 }
 
                 return prompt;
