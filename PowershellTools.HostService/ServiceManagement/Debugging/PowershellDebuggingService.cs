@@ -421,6 +421,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     try
                     {
                         val = prop.Value;
+                        var psObj = val as PSObject;
+                        if (psObj != null && !(psObj.BaseObject is string))
+                        {
+                            val = psObj.BaseObject;
+                        }
                     }
                     catch
                     {
