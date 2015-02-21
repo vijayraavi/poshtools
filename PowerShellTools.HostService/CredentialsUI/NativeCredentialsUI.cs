@@ -12,7 +12,7 @@ namespace PowerShellTools.HostService.CredentialUI
         private NativeCredentialsUI()
         { }
 
-        /// <summary>http://msdn.microsoft.com/library/default.asp?url=/library/en-us/secauthn/security/authentication_constants.asp</summary>
+        /// <summary>https://msdn.microsoft.com/en-us/library/windows/desktop/aa374728(v=vs.85).aspx</summary>
         public const int MAX_MESSAGE_LENGTH = 100;
         public const int MAX_CAPTION_LENGTH = 100;
         public const int MAX_GENERIC_TARGET_LENGTH = 100;
@@ -22,8 +22,7 @@ namespace PowerShellTools.HostService.CredentialUI
 
         /// <summary>
         /// http://www.pinvoke.net/default.aspx/Enums.CREDUI_FLAGS
-        /// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnnetsec/html/dpapiusercredentials.asp
-        /// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/secauthn/security/creduipromptforcredentials.asp
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa375177(v=vs.85).aspx
         /// </summary>
         [Flags]
         public enum FLAGS
@@ -47,7 +46,10 @@ namespace PowerShellTools.HostService.CredentialUI
             KEEP_USERNAME = 0x100000,
         }
 
-        /// <summary>http://www.pinvoke.net/default.aspx/Enums.CredUIReturnCodes</summary>
+        /// <summary>
+        /// http://www.pinvoke.net/default.aspx/Enums.CredUIReturnCodes
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa375177(v=vs.85).aspx
+        /// </summary>
         public enum ReturnCodes
         {
             NO_ERROR = 0,
@@ -62,7 +64,7 @@ namespace PowerShellTools.HostService.CredentialUI
 
         /// <summary>
         /// http://www.pinvoke.net/default.aspx/Structures.CREDUI_INFO
-        /// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/secauthn/security/credui_info.asp
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa375177(v=vs.85).aspx
         /// </summary>
         public struct INFO
         {
@@ -77,7 +79,7 @@ namespace PowerShellTools.HostService.CredentialUI
 
         /// <summary>
         /// http://www.pinvoke.net/default.aspx/credui.CredUIPromptForCredentialsW
-        /// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/secauthn/security/creduipromptforcredentials.asp
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa375177(v=vs.85).aspx
         /// </summary>
         [DllImport("credui", EntryPoint = "CredUIPromptForCredentialsW", CharSet = CharSet.Unicode)]
         public static extern ReturnCodes PromptForCredentials(
@@ -95,7 +97,7 @@ namespace PowerShellTools.HostService.CredentialUI
 
         /// <summary>
         /// http://www.pinvoke.net/default.aspx/credui.CredUIConfirmCredentials
-        /// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/secauthn/security/creduiconfirmcredentials.asp
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa375177(v=vs.85).aspx
         /// </summary>
         [DllImport("credui.dll", EntryPoint = "CredUIConfirmCredentialsW", CharSet = CharSet.Unicode)]
         public static extern ReturnCodes ConfirmCredentials(

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace PowerShellTools.HostService.CredentialUI
         private bool _persist = true;
         private bool _keepName = false;
         private string _name = String.Empty;
-        private string _password = String.Empty;
+        private SecureString _password = new SecureString();
         private bool _saveChecked = false;
         private string _target = String.Empty;
         private string _caption = String.Empty;
@@ -141,7 +142,7 @@ namespace PowerShellTools.HostService.CredentialUI
         /// <summary>
         /// Gets or sets the password for the credentials.
         /// </summary>
-        public string Password
+        public SecureString Password
         {
             get
             {
@@ -316,7 +317,7 @@ namespace PowerShellTools.HostService.CredentialUI
         /// <param name="name">The name for the credentials.</param>
         /// <param name="password">The password for the credentials.</param>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
-        public DialogResult Show(string name, string password)
+        public DialogResult Show(string name, SecureString password)
         {
             return Show(null, name, password, this.SaveChecked);
         }
@@ -328,7 +329,7 @@ namespace PowerShellTools.HostService.CredentialUI
         /// <param name="password">The password for the credentials.</param>
         /// <param name="saveChecked">True if the save checkbox is checked.</param>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
-        public DialogResult Show(string name, string password, bool saveChecked)
+        public DialogResult Show(string name, SecureString password, bool saveChecked)
         {
             return Show(null, name, password, saveChecked);
         }
@@ -361,7 +362,7 @@ namespace PowerShellTools.HostService.CredentialUI
         /// <param name="name">The name for the credentials.</param>
         /// <param name="password">The password for the credentials.</param>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
-        public DialogResult Show(IWin32Window owner, string name, string password)
+        public DialogResult Show(IWin32Window owner, string name, SecureString password)
         {
             return Show(owner, name, password, this.SaveChecked);
         }
@@ -374,7 +375,7 @@ namespace PowerShellTools.HostService.CredentialUI
         /// <param name="password">The password for the credentials.</param>
         /// <param name="saveChecked">True if the save checkbox is checked.</param>
         /// <returns>Returns a DialogResult indicating the user action.</returns>
-        public DialogResult Show(IWin32Window owner, string name, string password, bool saveChecked)
+        public DialogResult Show(IWin32Window owner, string name, SecureString password, bool saveChecked)
         {
             if (Environment.OSVersion.Version.Major < 5)
             {
@@ -421,7 +422,11 @@ namespace PowerShellTools.HostService.CredentialUI
 
             // set the accessors from the api call parameters
             this.Name = name.ToString();
-            this.Password = password.ToString();
+            foreach (char c in password.ToString())
+            {
+                this.Password.AppendChar(c);
+            }
+            this.Password.MakeReadOnly();
             this.SaveChecked = Convert.ToBoolean(saveChecked);
 
             return GetDialogResult(code);

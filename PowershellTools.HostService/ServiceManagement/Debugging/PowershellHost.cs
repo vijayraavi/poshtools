@@ -118,13 +118,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public override Dictionary<string, PSObject> Prompt(string caption, string message,
             Collection<FieldDescription> descriptions)
         {
-            string promptMessage = caption + "\n" + message + " ";
+            string promptMessage = caption + Environment.NewLine + message + " ";
             Dictionary<string, PSObject> results =
                      new Dictionary<string, PSObject>();
             foreach (FieldDescription fd in descriptions)
             {
                 this.Write(promptMessage);
-                string userData = this.ReadLineFromUI(promptMessage + "\n" + fd.Name);
+                string userData = this.ReadLineFromUI(promptMessage + Environment.NewLine + fd.Name);
                 if (userData == null)
                 {
                     return null;
@@ -186,12 +186,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
             {
-                var secure = new SecureString();
-                foreach (char c in dialog.Password)
-                {
-                    secure.AppendChar(c);
-                }
-                result = new PSCredential(dialog.Name, secure);
+                result = new PSCredential(dialog.Name, dialog.Password);
             }
 
             return result;
