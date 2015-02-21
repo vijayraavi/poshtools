@@ -21,7 +21,7 @@
         <OldToolsVersion>4.0</OldToolsVersion>
       </PropertyGroup>
     </When>
-	<When Condition=" '$(VisualStudioVersion)'=='14.0'  Or '$(TargetVisualStudioVersion)'=='VS140' ">
+    <When Condition=" '$(VisualStudioVersion)'=='14.0'  Or '$(TargetVisualStudioVersion)'=='VS140' ">
       <PropertyGroup>
         <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
         <FileUpgradeFlags>
@@ -110,6 +110,8 @@
     <Compile Include="PowerShellServiceHostBehaviorAttribute.cs" />
     <Compile Include="ServiceManagement\Debugging\DTEManager.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellDebuggingService.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellHost.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellServiceHost.cs" />
     <Compile Include="ServiceManagement\IntelliSense\PowershellIntelliSenseService.cs" />
