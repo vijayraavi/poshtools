@@ -332,13 +332,26 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 int i = 0;
                 foreach (var item in (IEnumerable)psVariable)
                 {
-                    expandedVariable.Add(new Variable(String.Format("[{0}]", i), item.ToString(), item.GetType().ToString(), item is IEnumerable, item is PSObject));
+                    object obj;
+                    var psObj = item as PSObject;
+                    if (psObj != null && !(psObj.BaseObject is string))
+                    {
+                        obj = psObj.BaseObject;
+                    }
+                    else
+                    {
+                        obj = item;
+                    }
 
-                    if (!item.GetType().IsPrimitive)
+                    expandedVariable.Add(new Variable(String.Format("[{0}]", i), obj.ToString(), obj.GetType().ToString(), obj is IEnumerable, obj is PSObject));
+
+                    if (!obj.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, String.Format("[{0}]", i));
-                        if(!_propVariables.ContainsKey(key))
-                            _propVariables.Add(key, item);
+                        if (!_propVariables.ContainsKey(key))
+                        {
+                            _propVariables.Add(key, obj);
+                        }
                     }
 
                     i++;
