@@ -261,11 +261,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 PSVariable psVar = null;
                 if (_runspace.ConnectionInfo == null)
                 {
+                    // Local debugging variable
                     psVar = psobj.BaseObject as PSVariable;
-                    variables.Add(new Variable(psVar));
+                    
+                    if (psVar != null)
+                    {
+                        variables.Add(new Variable(psVar));
+                    }
                 }
                 else
                 {
+                    // Remote debugging variable
                     dynamic dyVar = (dynamic)psobj;
 
                     if (dyVar.Value == null)
@@ -274,10 +280,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                     else
                     {
+                        // Variable was wrapped into Deserialized.PSObject, which contains a deserialized representation of public properties of the corresponding remote, live objects.
                         if (dyVar.Value is PSObject)
                         {
+                            // Non-primitive types
                             if (((PSObject)dyVar.Value).BaseObject is string)
                             {
+                                // BaseObject is string indicates the original object is real PSObject
                                 psVar = new PSVariable(
                                     (string)dyVar.Name,
                                     (PSObject)dyVar.Value,
@@ -285,6 +294,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             }
                             else
                             {
+                                // Otherwise we should look into its BaseObject to obtain the original object
                                 psVar = new PSVariable(
                                     (string)dyVar.Name,
                                     ((PSObject)dyVar.Value).BaseObject,
@@ -295,6 +305,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         }
                         else
                         {
+                            // Primitive types
                             psVar = new PSVariable(
                                 (string)dyVar.Name,
                                 dyVar.Value.ToString(),
@@ -332,15 +343,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 int i = 0;
                 foreach (var item in (IEnumerable)psVariable)
                 {
-                    object obj;
-                    var psObj = item as PSObject;
-                    if (psObj != null && !(psObj.BaseObject is string))
+                    object obj = item;
+                    var psObj = obj as PSObject;
+                    if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.BaseObject is string))
                     {
                         obj = psObj.BaseObject;
-                    }
-                    else
-                    {
-                        obj = item;
                     }
 
                     expandedVariable.Add(new Variable(String.Format("[{0}]", i), obj.ToString(), obj.GetType().ToString(), obj is IEnumerable, obj is PSObject));
@@ -348,10 +355,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     if (!obj.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, String.Format("[{0}]", i));
-                        if (!_propVariables.ContainsKey(key))
-                        {
-                            _propVariables.Add(key, obj);
-                        }
+                        _propVariables[key] = obj;
                     }
 
                     i++;
@@ -386,8 +390,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     if (!val.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
-                        if (!_propVariables.ContainsKey(key))
-                            _propVariables.Add(key, val);
+                        _propVariables[key] = val;
                     }
                 }
             }
@@ -422,7 +425,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     {
                         val = prop.Value;
                         var psObj = val as PSObject;
-                        if (psObj != null && !(psObj.BaseObject is string))
+                        if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.BaseObject is string))
                         {
                             val = psObj.BaseObject;
                         }
@@ -437,8 +440,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     if (!val.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, prop.Name);
-                        if (!_propVariables.ContainsKey(key))
-                            _propVariables.Add(key, val);
+                        _propVariables[key] = val;
                     }
                 }
             }
