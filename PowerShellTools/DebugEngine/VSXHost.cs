@@ -25,6 +25,7 @@ namespace PowerShellTools.DebugEngine
     using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using Microsoft.VisualStudio.Shell.Interop;
     using PowerShellTools.ServiceManagement;
+    using PowerShellTools.Common.Debugging;
 #endif
 
 
@@ -139,9 +140,9 @@ using Microsoft.VisualStudio.Shell.Interop;
         /// Read host from user input
         /// </summary>
         /// <returns>user input string</returns>
-        public string ReadLine()
+        public string ReadLine(string message)
         {
-            return Interaction.InputBox("Read-Host", "Read-Host");
+            return Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
         }
 
         /// <summary>

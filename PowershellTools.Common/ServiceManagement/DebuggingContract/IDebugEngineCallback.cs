@@ -32,7 +32,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void RefreshPrompt();
 
         [OperationContract(IsOneWay = false)]
-        string ReadHostPrompt();
+        string ReadHostPrompt(string message);
 
         [OperationContract(IsOneWay = false)]
         void OpenRemoteFile(string fullName);
