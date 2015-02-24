@@ -54,6 +54,7 @@ namespace Microsoft.VisualStudio.Repl {
     using IReplWindowCreationListener = IPowerShellReplWindowCreationListener;
     using ReplRoleAttribute = PowerShellReplRoleAttribute;
     using IReplCommand2 = IPowerShellReplCommand2;
+    using Microsoft.VisualStudio.Repl.DialogWindows;
 #endif
 
     /// <summary>
@@ -1404,7 +1405,7 @@ namespace Microsoft.VisualStudio.Repl {
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidEnterSession:
-                        AbortCommand();
+                        EnterRemoteSessionCommand();
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidResetRepl:
@@ -1451,6 +1452,20 @@ namespace Microsoft.VisualStudio.Repl {
             }
 
             return nextTarget.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+        }
+
+        private void EnterRemoteSessionCommand()
+        {
+            var viewModel = new RemoteSessionWindowViewModel();
+            var view = new RemoteSessionEnterWindow(viewModel);
+            if (view.ShowModal() == true)
+            {
+                string computerName = viewModel.ComputerName;
+            }
+            else
+            {
+                throw new ApplicationException("Failed to initialize the window dialog, please try to use cmdlet in debugging interactive window.");
+            }
         }
 
         #endregion
