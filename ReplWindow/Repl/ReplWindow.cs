@@ -1386,6 +1386,10 @@ namespace Microsoft.VisualStudio.Repl {
                         prgCmds[0].cmdf = _isRunning || _stdInputStart != null ? CommandEnabled : CommandDisabled;
                         return VSConstants.S_OK;
 
+                    case PkgCmdIDList.cmdidEnterSession:
+                        prgCmds[0].cmdf = !_isRunning ? CommandEnabled : CommandDisabled;
+                        return VSConstants.S_OK;
+
                     case PkgCmdIDList.cmdidResetRepl:
                         prgCmds[0].cmdf = _commands.OfType<ResetReplCommand>().Count() != 0 ? CommandEnabled : CommandDisabledAndHidden;
                         return VSConstants.S_OK;
