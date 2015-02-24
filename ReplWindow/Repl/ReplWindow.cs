@@ -1462,10 +1462,6 @@ namespace Microsoft.VisualStudio.Repl {
             {
                 string computerName = viewModel.ComputerName;
             }
-            else
-            {
-                throw new ApplicationException("Failed to initialize the window dialog, please try to use cmdlet in debugging interactive window.");
-            }
         }
 
         #endregion

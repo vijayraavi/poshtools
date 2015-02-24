@@ -166,6 +166,11 @@
       <DependentUpon>RemoteSessionEnterWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Repl\DialogWindows\RemoteSessionWindowViewModel.cs" />
+    <Compile Include="Repl\DialogWindows\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Repl\InlineReplAdornmentManager.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -218,6 +223,10 @@
     <Compile Include="PkgCmdID.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Repl\DialogWindows\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
