@@ -22,7 +22,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.Win32;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 #if INTERACTIVE_WINDOW
     using IReplWindow = IInteractiveWindow;
     using IReplWindowProvider = IInteractiveWindowProvider;

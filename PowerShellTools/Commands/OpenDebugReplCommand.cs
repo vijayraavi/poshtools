@@ -15,7 +15,7 @@
 using System;
 using System.ComponentModel.Design;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Repl;
+using PowerShellTools.Repl;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools;

@@ -15,11 +15,12 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 #if INTERACTIVE_WINDOW
     using IReplWindowProvider = IInteractiveWindowProvider;
 #elif POWERSHELL

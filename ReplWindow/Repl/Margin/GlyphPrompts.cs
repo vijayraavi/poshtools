@@ -25,7 +25,7 @@ using Microsoft.VisualStudio.Text.Formatting;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 
 // An alternative implementation of prompt margin using GlyphMargin.
 // Unfortunately bug in GlyphMargin causes disappearance of the last REPL prompt under certain circumstances which deteriorates user experience.

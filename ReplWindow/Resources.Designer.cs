@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.VisualStudio {
+namespace PowerShellTools.Repl {
     using System;
     
     

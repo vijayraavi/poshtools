@@ -14,7 +14,7 @@
 
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     /// <summary>
     /// This is a custom span which is like an EdgeInclusive span.  We need a custom span because elision buffers
     /// do not allow EdgeInclusive unless it spans the entire buffer.  We create snippets of our language spans

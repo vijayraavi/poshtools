@@ -15,7 +15,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     /// <summary>
     /// The result of command execution.  
     /// </summary>

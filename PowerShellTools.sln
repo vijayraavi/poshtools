@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Test", "Pow
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.TestAdapter", "PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj", "{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplWindow", "ReplWindow\ReplWindow.csproj", "{20BB6FAC-44D2-4D76-ABFE-0C1E163A1A4F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Repl", "ReplWindow\PowerShellTools.Repl.csproj", "{20BB6FAC-44D2-4D76-ABFE-0C1E163A1A4F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8} = {C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}
 	EndProjectSection

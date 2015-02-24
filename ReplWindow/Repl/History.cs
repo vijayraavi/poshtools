@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     internal class History {
         private readonly int _maxLength;
         private int _pos;

@@ -41,7 +41,7 @@ using Microsoft.VisualStudio.Text.Projection;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 #if INTERACTIVE_WINDOW
     using IReplCommand = IInteractiveWindowCommand;
     using IReplWindow = IInteractiveWindow;
@@ -66,7 +66,7 @@ namespace Microsoft.VisualStudio.Repl {
     /// </summary>
     [Guid(ReplWindow.TypeGuid)]
     class ReplWindow : ToolWindowPane, IOleCommandTarget, IReplWindow, IVsFindTarget {
-        public const string TypeGuid = "5adb6033-611f-4d39-a193-57a717115c0f";
+        public const string TypeGuid = "2227C503-8DAF-44E6-BFF6-222088DE83E0";
 
         private bool _adornmentToMinimize = false;
         private bool _showOutput, _useSmartUpDown;

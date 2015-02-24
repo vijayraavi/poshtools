@@ -15,7 +15,7 @@
 using System;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     internal sealed class ColoredSpan {
         public readonly Span Span;
         public readonly ConsoleColor Color;

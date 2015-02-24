@@ -13,7 +13,7 @@
  * ***************************************************************************/
 
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Repl;
+using PowerShellTools.Repl;
 
 namespace PowerShellTools.Repl {
 #if POWERSHELL
