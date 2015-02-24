@@ -18,7 +18,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools;
 
-namespace Microsoft.PythonTools.Language
+namespace PowerShellTools.Language
 {
     /// <summary>
     /// IVsTextViewFilter is implemented to statisfy new VS2012 requirement for debugger tooltips.

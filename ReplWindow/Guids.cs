@@ -13,15 +13,14 @@
  * ***************************************************************************/
 
 // Guids.cs
-// MUST match guids.h
 using System;
 
-namespace Microsoft.VisualStudio.Repl
+namespace PowerShellTools.Repl
 {
     static class GuidList
     {
-        public const string guidReplWindowPkgString = "ce8d8e55-ad29-423e-aca2-810d0b16cdc4";
-        public const string guidReplWindowCmdSetString = "68cb76e6-98c5-464a-aba9-9f2db66fa0fd";
+        public const string guidReplWindowPkgString = "702AA1B3-556E-4AEE-AFB6-DCFA7FC420D3";
+        public const string guidReplWindowCmdSetString = "A82B8BE2-8794-40EB-B77A-7B4D2FCF69EB";
 
         public static readonly Guid guidReplWindowCmdSet = new Guid(guidReplWindowCmdSetString);
     };

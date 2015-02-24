@@ -15,15 +15,15 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     /// <summary>
     /// The result of command execution.  
     /// </summary>
     public struct ExecutionResult {
         public static readonly ExecutionResult Success = new ExecutionResult(true);
         public static readonly ExecutionResult Failure = new ExecutionResult(false);
-        public static readonly Task<ExecutionResult> Succeeded;
-        public static readonly Task<ExecutionResult> Failed;
+        public static readonly Task<ExecutionResult> Succeeded = MakeSucceeded();
+        public static readonly Task<ExecutionResult> Failed = MakeFailed();
  
         private readonly bool _successful;
 
@@ -37,14 +37,16 @@ namespace Microsoft.VisualStudio.Repl {
             }
         }
 
-        static ExecutionResult() {
+        private static Task<ExecutionResult> MakeSucceeded() {
             var taskSource = new TaskCompletionSource<ExecutionResult>();
             taskSource.SetResult(Success);
-            Succeeded = taskSource.Task;
+            return taskSource.Task;
+        }
 
-            taskSource = new TaskCompletionSource<ExecutionResult>();
+        private static Task<ExecutionResult> MakeFailed() {
+            var taskSource = new TaskCompletionSource<ExecutionResult>();
             taskSource.SetResult(Failure);
-            Failed = taskSource.Task;
+            return taskSource.Task;
         }
     }
 }

@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -26,6 +27,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -41,7 +43,7 @@ using Microsoft.VisualStudio.Text.Projection;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 #if INTERACTIVE_WINDOW
     using IReplCommand = IInteractiveWindowCommand;
     using IReplWindow = IInteractiveWindow;
@@ -65,7 +67,7 @@ namespace Microsoft.VisualStudio.Repl {
     /// </summary>
     [Guid(ReplWindow.TypeGuid)]
     class ReplWindow : ToolWindowPane, IOleCommandTarget, IReplWindow, IVsFindTarget {
-        public const string TypeGuid = "5adb6033-611f-4d39-a193-57a717115c0f";
+        public const string TypeGuid = "2227C503-8DAF-44E6-BFF6-222088DE83E0";
 
         private bool _adornmentToMinimize = false;
         private bool _showOutput, _useSmartUpDown;
@@ -152,7 +154,7 @@ namespace Microsoft.VisualStudio.Repl {
         private int _currentInputId = 1;
         private string _inputValue;
         private string _uncommittedInput;
-        private AutoResetEvent _inputEvent = new AutoResetEvent(false);
+        private readonly AutoResetEvent _inputEvent = new AutoResetEvent(false);
         
         //
         // Output buffering.
@@ -163,8 +165,8 @@ namespace Microsoft.VisualStudio.Repl {
 
         private string _commandPrefix = "%";
         private string _prompt = "» ";        // prompt for primary input
-        private string _secondPrompt = "";    // prompt for 2nd and additional lines
-        private string _stdInputPrompt = "";  // prompt for standard input
+        private string _secondPrompt = String.Empty;    // prompt for 2nd and additional lines
+        private string _stdInputPrompt = String.Empty;  // prompt for standard input
         private bool _displayPromptInMargin, _formattedPrompts, _multiline;
 
         private static readonly char[] _whitespaceChars = new[] { '\r', '\n', ' ', '\t' };
@@ -498,9 +500,12 @@ namespace Microsoft.VisualStudio.Repl {
                 Evaluator.Dispose();
 
                 _buffer.Dispose();
+                _inputEvent.Dispose();
 
                 _commands = null;
             }
+
+            base.Dispose(disposing);
         }
 
         /// <summary>
@@ -706,7 +711,7 @@ namespace Microsoft.VisualStudio.Repl {
         /// Sets the current value for the specified option.
         /// </summary>
         public void SetOptionValue(ReplOptions option, object value) {
-            Exception toThrow = null;
+            ExceptionDispatchInfo toThrow = null;
             UIThread(() => {
                 try {
                     switch (option) {
@@ -725,11 +730,11 @@ namespace Microsoft.VisualStudio.Repl {
                                 }
 
                                 if (_displayPromptInMargin) {
-                                    UpdatePrompts(ReplSpanKind.Prompt, _prompt, "");
-                                    UpdatePrompts(ReplSpanKind.SecondaryPrompt, _secondPrompt, "");
+                                    UpdatePrompts(ReplSpanKind.Prompt, _prompt, String.Empty);
+                                    UpdatePrompts(ReplSpanKind.SecondaryPrompt, _secondPrompt, String.Empty);
                                 } else {
-                                    UpdatePrompts(ReplSpanKind.Prompt, "", _prompt);
-                                    UpdatePrompts(ReplSpanKind.SecondaryPrompt, "", _secondPrompt);
+                                    UpdatePrompts(ReplSpanKind.Prompt, String.Empty, _prompt);
+                                    UpdatePrompts(ReplSpanKind.SecondaryPrompt, String.Empty, _secondPrompt);
                                 }
                             }
                             break;
@@ -744,7 +749,7 @@ namespace Microsoft.VisualStudio.Repl {
                             break;
                         case ReplOptions.CurrentSecondaryPrompt:
                             oldPrompt = _secondPrompt;
-                            _secondPrompt = CheckOption<string>(option, value) ?? "";
+                            _secondPrompt = CheckOption<string>(option, value) ?? String.Empty;
                             if (!_isRunning && !_displayPromptInMargin) {
                                 // we need to update the current prompt though
                                 UpdatePrompts(ReplSpanKind.SecondaryPrompt, oldPrompt, _secondPrompt, currentOnly: true);
@@ -764,7 +769,7 @@ namespace Microsoft.VisualStudio.Repl {
 
                         case ReplOptions.SecondaryPrompt:
                             oldPrompt = _secondPrompt;
-                            _secondPrompt = CheckOption<string>(option, value) ?? "";
+                            _secondPrompt = CheckOption<string>(option, value) ?? String.Empty;
                             if (!_displayPromptInMargin) {
                                 UpdatePrompts(ReplSpanKind.SecondaryPrompt, oldPrompt, _secondPrompt);
                             }
@@ -812,12 +817,12 @@ namespace Microsoft.VisualStudio.Repl {
                             throw new InvalidOperationException(String.Format("Unknown option: {0}", option));
                     }
                 } catch (Exception e) {
-                    toThrow = e;
+                    toThrow = ExceptionDispatchInfo.Capture(e);
                 }
             });
             if (toThrow != null) {
                 // throw exception on original thread, not the UI thread.
-                throw toThrow;
+                toThrow.Throw();
             }
         }
 
@@ -1644,6 +1649,9 @@ namespace Microsoft.VisualStudio.Repl {
             } else if (pguidCmdGroup == VSConstants.GUID_VSStandardCommandSet97) {
                 switch ((VSConstants.VSStd97CmdID)nCmdID) {
                     case VSConstants.VSStd97CmdID.Paste:
+                        if (!(_stdInputStart != null ? CaretInStandardInputRegion : CaretInActiveCodeRegion)) {
+                            MoveCaretToCurrentInputEnd();
+                        }
                         PasteClipboard();
                         return VSConstants.S_OK;
 
@@ -1994,6 +2002,11 @@ namespace Microsoft.VisualStudio.Repl {
                 _uncommittedInput = null;
                 _stdInputStart = _stdInputBuffer.CurrentSnapshot.Length;
             });
+
+            var ready = ReadyForInput;
+            if (ready != null) {
+                ready();
+            }
 
             _inputEvent.WaitOne();
             _stdInputStart = null;
@@ -2356,7 +2369,7 @@ namespace Microsoft.VisualStudio.Repl {
                     _pendingSubmissions.Clear();
                 }
             }
-
+            _addedLineBreakOnLastOutput = false;
             PrepareForInput();
         }
 
@@ -2378,7 +2391,11 @@ namespace Microsoft.VisualStudio.Repl {
         }
 
         // Returns null if the text isn't recognized as a command
-        private Task<ExecutionResult> ExecuteCommand(string text) {
+        public Task<ExecutionResult> ExecuteCommand(string text) {
+            return ExecuteCommand(text, updateHistory: false);
+        }
+
+        private Task<ExecutionResult> ExecuteCommand(string text, bool updateHistory) {
             if (!text.StartsWith(_commandPrefix)) {
                 return null;
             }
@@ -2407,7 +2424,9 @@ namespace Microsoft.VisualStudio.Repl {
                 }
             }
 
-            _history.Last.Command = true;
+            if (updateHistory) {
+                _history.Last.Command = true;
+            }
 
             try {
                 return commandHandler.Execute(this, args) ?? ExecutionResult.Failed;
@@ -2521,7 +2540,7 @@ namespace Microsoft.VisualStudio.Repl {
             var lastLine = GetLastLine();
             _promptLineMapping.Add(new KeyValuePair<int, int>(lastLine.LineNumber, _projectionSpans.Count));
 
-            prompt = _displayPromptInMargin ? "" : FormatPrompt(prompt, _currentInputId);
+            prompt = _displayPromptInMargin ? String.Empty : FormatPrompt(prompt, _currentInputId);
             return new ReplSpan(prompt, promptKind);
         }
 
@@ -2537,7 +2556,7 @@ namespace Microsoft.VisualStudio.Repl {
         }
 
         private ReplSpan CreateSecondaryPrompt() {
-            string secondPrompt = _displayPromptInMargin ? "" : FormatPrompt(_secondPrompt, _currentInputId - 1);
+            string secondPrompt = _displayPromptInMargin ? String.Empty : FormatPrompt(_secondPrompt, _currentInputId - 1);
             return new ReplSpan(secondPrompt, ReplSpanKind.SecondaryPrompt);
         }
         

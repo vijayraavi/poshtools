@@ -15,7 +15,7 @@
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Utilities;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     /// <summary>
     /// Provides the content type for our REPL error buffer.
     /// </summary>

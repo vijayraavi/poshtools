@@ -26,7 +26,7 @@ using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     internal sealed class PromptMarginVisualManager {
         private readonly PromptMargin _margin;
         private readonly IEditorFormatMap _editorFormatMap;

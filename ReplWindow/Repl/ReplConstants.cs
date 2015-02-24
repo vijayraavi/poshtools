@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     public static class ReplConstants {
         public const string ReplContentTypeName = "REPLCode";
         public const string ReplOutputContentTypeName = "REPLOutput";

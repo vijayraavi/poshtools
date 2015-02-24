@@ -16,7 +16,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     internal sealed class ReplSpan {
         private readonly object _span; // ITrackingSpan or string
         public readonly ReplSpanKind Kind;

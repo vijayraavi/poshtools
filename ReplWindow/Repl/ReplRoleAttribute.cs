@@ -15,7 +15,7 @@
 using System;
 using System.ComponentModel.Composition;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     /// <summary>
     /// Represents an interactive window role.
     /// 
