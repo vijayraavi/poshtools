@@ -1403,6 +1403,10 @@ namespace Microsoft.VisualStudio.Repl {
                         AbortCommand();
                         return VSConstants.S_OK;
 
+                    case PkgCmdIDList.cmdidEnterSession:
+                        AbortCommand();
+                        return VSConstants.S_OK;
+
                     case PkgCmdIDList.cmdidResetRepl:
                         Reset();
                         return VSConstants.S_OK;
