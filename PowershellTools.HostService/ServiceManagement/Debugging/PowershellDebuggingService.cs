@@ -50,7 +50,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        ///     The runspace used by the current PowerShell host.
+        /// The runspace used by the current PowerShell host.
         /// </summary>
         public static Runspace Runspace 
         {
@@ -75,169 +75,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _callback = value;
             }
         }
-
-        #region Event handlers for debugger events inside service
-
-        /// <summary>
-        /// Runspace state change event handler
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void _runspace_StateChanged(object sender, RunspaceStateEventArgs e)
-        {
-            ServiceCommon.Log("Runspace State Changed: {0}", e.RunspaceStateInfo.State);
-
-            switch (e.RunspaceStateInfo.State)
-            {
-                case RunspaceState.Broken:
-                case RunspaceState.Closed:
-                case RunspaceState.Disconnected:
-                    if (_callback != null)
-                    {
-                        _callback.DebuggerFinished();
-                    }
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Breakpoint updates (such as enabled/disabled)
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
-        {
-            ServiceCommon.Log("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
-
-            if (_callback != null)
-            {
-                var lbp = e.Breakpoint as LineBreakpoint;
-                _callback.BreakpointUpdated(new DebuggerBreakpointUpdatedEventArgs(new PowershellBreakpoint(e.Breakpoint.Script, lbp.Line, lbp.Column), e.UpdateType));
-            }
-        }
-
-        /// <summary>
-        /// Debugging output event handler
-        /// </summary>
-        /// <param name="value">String to output</param>
-        public void NotifyOutputString(string value)
-        {
-            ServiceCommon.LogCallbackEvent("Callback to client for string output in VS");
-            if (_callback != null)
-            {
-                _callback.OutputString(value);
-            }
-        }
-
-        /// <summary>
-        /// Debugging output event handler
-        /// </summary>
-        /// <param name="value">String to output</param>
-        public void NotifyOutputProgress(string label, int percentage)
-        {
-            ServiceCommon.LogCallbackEvent("Callback to client to show progress");
-            if (_callback != null)
-            {
-                _callback.OutputProgress(label, percentage);
-            }
-        }
-
-        /// <summary>
-        /// PS debugger stopped event handler
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
-        {
-            ServiceCommon.Log("Debugger stopped ...");
-            RefreshScopedVariable();
-            RefreshCallStack();
-
-            ServiceCommon.LogCallbackEvent("Callback to client, and wait for debuggee to resume");
-            if (e.Breakpoints.Count > 0)
-            {
-                LineBreakpoint bp = (LineBreakpoint)e.Breakpoints[0];
-                if (_callback != null)
-                {
-                    string file = bp.Script;
-                    if (_runspace.ConnectionInfo != null && _mapRemoteToLocal.ContainsKey(bp.Script))
-                    {
-                        file = _mapRemoteToLocal[bp.Script];
-                    }
-
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, bp.Line, bp.Column));
-                }
-            }
-            else
-            {
-                if (_callback != null)
-                {
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
-                }
-            }
-
-            bool resumed = false;
-            while (!resumed)
-            {
-                _pausedEvent.WaitOne();
-
-                PSCommand psCommand = new PSCommand();
-                psCommand.AddScript(_debuggingCommand).AddCommand("out-default");
-                psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                var output = new PSDataCollection<PSObject>();
-                output.DataAdded += objects_DataAdded;
-                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-
-                if (results.ResumeAction != null)
-                {
-                    ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
-                    e.ResumeAction = results.ResumeAction.Value;
-                    resumed = true; // debugger resumed executing
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handling the remote file open event
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="args">remote file name</param>
-        private void HandleRemoteSessionForwardedEvent(object sender, PSEventArgs args)
-        {
-            if (args.SourceIdentifier.Equals("PSISERemoteSessionOpenFile", StringComparison.OrdinalIgnoreCase))
-            {
-                string text = null;
-                byte[] array = null;
-                try
-                {
-                    if (args.SourceArgs.Length == 2)
-                    {
-                        text = (args.SourceArgs[0] as string);
-                        array = (byte[])(args.SourceArgs[1] as PSObject).BaseObject;
-                    }
-                    if (!string.IsNullOrEmpty(text) && array != null)
-                    {
-                        string tmpFileName = Path.GetTempFileName();
-                        string dirPath = tmpFileName.Remove(tmpFileName.LastIndexOf('.'));
-                        Directory.CreateDirectory(dirPath);
-                        string fullFileName = Path.Combine(dirPath, new FileInfo(text).Name);
-
-                        _mapRemoteToLocal[text] = fullFileName;
-                        _mapLocalToRemote[fullFileName] = text;
-                        
-                        File.WriteAllBytes(fullFileName, array);
-
-                        _callback.OpenRemoteFile(fullFileName);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ServiceCommon.Log("Failed to create local copy for downloaded file due to exception: {0}", ex);
-                }
-            }
-        }
-
-        #endregion
 
         #region Debugging service calls
 
@@ -421,27 +258,66 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             foreach (var psobj in _varaiables)
             {
+                PSVariable psVar = null;
                 if (_runspace.ConnectionInfo == null)
                 {
-                    var psVar = psobj.BaseObject as PSVariable;
-
+                    // Local debugging variable
+                    psVar = psobj.BaseObject as PSVariable;
+                    
                     if (psVar != null)
                     {
-                        _localVariables.Add(psVar);
                         variables.Add(new Variable(psVar));
                     }
                 }
                 else
                 {
-                    dynamic psVar = (dynamic)psobj;
-                    if (psVar.Value == null)
+                    // Remote debugging variable
+                    dynamic dyVar = (dynamic)psobj;
+
+                    if (dyVar.Value == null)
                     {
-                        variables.Add(new Variable(psVar.Name, string.Empty, string.Empty, false, false));
+                        variables.Add(new Variable(dyVar.Name, string.Empty, string.Empty, false, false));
                     }
                     else
                     {
-                        variables.Add(new Variable((string)psVar.Name.ToString(), (string)psVar.Value.ToString(), (string)psVar.Value.GetType().ToString(), psVar.Value is IEnumerable, psVar.Value is PSObject));
+                        // Variable was wrapped into Deserialized.PSObject, which contains a deserialized representation of public properties of the corresponding remote, live objects.
+                        if (dyVar.Value is PSObject)
+                        {
+                            // Non-primitive types
+                            if (((PSObject)dyVar.Value).BaseObject is string)
+                            {
+                                // BaseObject is string indicates the original object is real PSObject
+                                psVar = new PSVariable(
+                                    (string)dyVar.Name,
+                                    (PSObject)dyVar.Value,
+                                    ScopedItemOptions.None);
+                            }
+                            else
+                            {
+                                // Otherwise we should look into its BaseObject to obtain the original object
+                                psVar = new PSVariable(
+                                    (string)dyVar.Name,
+                                    ((PSObject)dyVar.Value).BaseObject,
+                                    ScopedItemOptions.None);
+                            }
+
+                            variables.Add(new Variable(psVar));
+                        }
+                        else
+                        {
+                            // Primitive types
+                            psVar = new PSVariable(
+                                (string)dyVar.Name,
+                                dyVar.Value.ToString(),
+                                ScopedItemOptions.None);
+                            variables.Add(new Variable(psVar.Name, psVar.Value.ToString(), dyVar.Value.GetType().ToString(), false, false));
+                        }
                     }
+                }
+
+                if (psVar != null)
+                {
+                    _localVariables.Add(psVar);
                 }
             }
 
@@ -467,13 +343,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 int i = 0;
                 foreach (var item in (IEnumerable)psVariable)
                 {
-                    expandedVariable.Add(new Variable(String.Format("[{0}]", i), item.ToString(), item.GetType().ToString(), item is IEnumerable, item is PSObject));
+                    object obj = item;
+                    var psObj = obj as PSObject;
+                    if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.BaseObject is string))
+                    {
+                        obj = psObj.BaseObject;
+                    }
 
-                    if (!item.GetType().IsPrimitive)
+                    expandedVariable.Add(new Variable(String.Format("[{0}]", i), obj.ToString(), obj.GetType().ToString(), obj is IEnumerable, obj is PSObject));
+
+                    if (!obj.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, String.Format("[{0}]", i));
-                        if(!_propVariables.ContainsKey(key))
-                            _propVariables.Add(key, item);
+                        _propVariables[key] = obj;
                     }
 
                     i++;
@@ -508,8 +390,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     if (!val.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
-                        if (!_propVariables.ContainsKey(key))
-                            _propVariables.Add(key, val);
+                        _propVariables[key] = val;
                     }
                 }
             }
@@ -543,6 +424,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     try
                     {
                         val = prop.Value;
+                        var psObj = val as PSObject;
+                        if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.BaseObject is string))
+                        {
+                            val = psObj.BaseObject;
+                        }
                     }
                     catch
                     {
@@ -554,8 +440,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     if (!val.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, prop.Name);
-                        if (!_propVariables.ContainsKey(key))
-                            _propVariables.Add(key, val);
+                        _propVariables[key] = val;
                     }
                 }
             }
@@ -619,195 +504,5 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         #endregion
-
-        #region private helper
-
-        private void SetRunspace(Runspace runspace)
-        {
-            if (_runspace != null)
-            {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
-            }
-
-            _runspace = runspace;
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
-        }
-
-        private void RefreshScopedVariable()
-        {
-            ServiceCommon.Log("Debuggger stopped, let us retreive all local variable in scope");
-            if (_runspace.ConnectionInfo != null)
-            {
-                PSCommand psCommand = new PSCommand();
-                psCommand.AddScript("Get-Variable");
-                var output = new PSDataCollection<PSObject>();
-                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-                _varaiables = output;
-            }
-            else
-            {
-                using (var pipeline = (_runspace.CreateNestedPipeline()))
-                {
-                    var command = new Command("Get-Variable");
-                    pipeline.Commands.Add(command);
-                    _varaiables = pipeline.Invoke();
-                }
-            }
-        }
-
-        private void RefreshCallStack()
-        {
-            ServiceCommon.Log("Debuggger stopped, let us retreive all call stack frames");
-            if (_runspace.ConnectionInfo != null)
-            {
-                PSCommand psCommand = new PSCommand();
-                psCommand.AddScript("Get-PSCallstack");
-                var output = new PSDataCollection<PSObject>();
-                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-                _callstack = output;
-            }
-            else
-            {
-                using (var pipeline = (_runspace.CreateNestedPipeline()))
-                {
-                    var command = new Command("Get-PSCallstack");
-                    pipeline.Commands.Add(command);
-                    _callstack = pipeline.Invoke();
-                }
-            }
-        }
-
-
-        private void OnTerminatingException(Exception ex)
-        {
-            ServiceCommon.Log("OnTerminatingException");
-            _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-            _runspace.StateChanged -= _runspace_StateChanged;
-            if (_callback != null)
-            {
-                _callback.TerminatingException(new DebuggingServiceException(ex));
-            }
-        }
-
-        private void DebuggerFinished()
-        {
-            ServiceCommon.Log("DebuggerFinished");
-            if (_callback != null)
-            {
-                _callback.RefreshPrompt();
-            }
-
-            if (_runspace != null)
-            {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
-            }
-
-            if (_callback != null)
-            {
-                _callback.DebuggerFinished();
-            }
-
-            if (_currentPowerShell != null)
-            {
-                _currentPowerShell.Stop();
-                _currentPowerShell = null;
-            }
-
-            _debuggingCommand = string.Empty;
-            _localVariables.Clear();
-            _propVariables.Clear();
-        }
-
-        private void objects_DataAdded(object sender, DataAddedEventArgs e)
-        {
-            var list = sender as PSDataCollection<PSObject>;
-            log += list[e.Index] + Environment.NewLine;
-        }
-
-        private void InitializeRunspace(PSHost psHost)
-        {
-            ServiceCommon.Log("Initializing run space with debugger");
-            InitialSessionState iss = InitialSessionState.CreateDefault();
-            iss.ApartmentState = ApartmentState.STA;
-            iss.ThreadOptions = PSThreadOptions.ReuseThread;
-
-            _runspace = RunspaceFactory.CreateRunspace(psHost, iss);
-            _runspace.Open();
-
-            ImportPoshToolsModule();
-            LoadProfile();
-        }
-
-        private void ImportPoshToolsModule()
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-                ps.Runspace = _runspace;
-                ps.AddScript("Import-Module '" + assemblyLocation + "'");
-                ps.Invoke();
-            }
-        }
-
-        private void LoadProfile()
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                var windowsPowerShell = Path.Combine(myDocuments, "WindowsPowerShell");
-                var profile = Path.Combine(windowsPowerShell, "PoshTools_profile.ps1");
-
-                var fi = new FileInfo(profile);
-                if (!fi.Exists)
-                {
-                    return;
-                }
-
-                ps.Runspace = _runspace;
-                ps.AddScript(". '" + profile + "'");
-                ps.Invoke();
-            }
-        }
-
-        private void SetupExecutionPolicy()
-        {
-            SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
-        }
-
-        private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                ps.Runspace = _runspace;
-                ps.AddCommand("Set-ExecutionPolicy")
-                    .AddParameter("ExecutionPolicy", policy)
-                    .AddParameter("Scope", scope)
-                    .AddParameter("Force");
-                ps.Invoke();
-            }
-        }
-
-        private object RetrieveVariable(string varName)
-        {
-            var psVar = _localVariables.FirstOrDefault(v => v.Name == varName);
-            object psVariable = (psVar == null) ? null : psVar.Value;
-
-            if (psVariable == null && _propVariables.ContainsKey(varName))
-            {
-                psVariable = _propVariables[varName];
-            }
-
-            return psVariable;
-        }
-
-        #endregion
-
     }
 }

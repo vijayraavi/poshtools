@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 #if INTERACTIVE_WINDOW
     using IReplCommand = IInteractiveWindowCommand;
     using IReplWindow = IInteractiveWindow;

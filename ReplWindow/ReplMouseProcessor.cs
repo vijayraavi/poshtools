@@ -13,11 +13,10 @@
  * ***************************************************************************/
 
 using System.ComponentModel.Composition;
-using Microsoft.VisualStudio.Repl;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
 
-namespace Microsoft.VisualStudio {
+namespace PowerShellTools.Repl{
     /// <summary>
     /// Processes right click events in the REPL window to handle our adornment
     /// context menu.

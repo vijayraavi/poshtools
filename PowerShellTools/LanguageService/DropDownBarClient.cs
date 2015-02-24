@@ -71,7 +71,7 @@ namespace PowerShellTools.LanguageService
         public DropDownBarClient(IWpfTextView textView, Ast ast)
         {
             Utilities.ArgumentNotNull("textView", textView);
-            Utilities.ArgumentNotNull("pythonProjectEntry", ast);
+            Utilities.ArgumentNotNull("ast", ast);
 
             _ast = ast;
             //_projectEntry.OnNewParseTree += ParserOnNewParseTree;

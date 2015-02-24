@@ -1,7 +1,7 @@
 ﻿
 using System.Management.Automation.Runspaces;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Repl;
+using PowerShellTools.Repl;
 using Microsoft.VisualStudio.Text;
 using PowerShellTools.Classification;
 using PowerShellTools.DebugEngine;

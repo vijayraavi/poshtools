@@ -15,7 +15,7 @@
 // PkgCmdID.cs
 // MUST match PkgCmdID.h
 
-namespace Microsoft.VisualStudio.Repl
+namespace PowerShellTools.Repl
 {
     static class PkgCmdIDList
     {

@@ -19,7 +19,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Tagging;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     class InlineReplAdornmentManager : ITagger<IntraTextAdornmentTag> {
         private readonly ITextView _textView;
         private readonly List<Tuple<SnapshotPoint, ZoomableInlineAdornment>> _tags;
@@ -45,7 +45,7 @@ namespace Microsoft.VisualStudio.Repl {
                 var span = new SnapshotSpan(_textView.TextSnapshot, _tags[i].Item1, 0);
                 bool intersects = false;
                 foreach (var applicableSpan in spans) {
-                    if (applicableSpan.IntersectsWith(span)) {
+                    if (applicableSpan.TranslateTo(_textView.TextSnapshot, SpanTrackingMode.EdgeInclusive).IntersectsWith(span)) {
                         intersects = true;
                         break;
                     }

@@ -20,7 +20,7 @@
         </UpgradeBackupLocation>
         <OldToolsVersion>4.0</OldToolsVersion>
       </PropertyGroup>
-    </When>  
+    </When>
     <When Condition=" '$(VisualStudioVersion)'=='14.0'  Or '$(TargetVisualStudioVersion)'=='VS140' ">
       <PropertyGroup>
         <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
@@ -696,9 +696,9 @@
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>
       <Name>PowerShellTools.TestAdapter</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ReplWindow\ReplWindow.csproj">
+    <ProjectReference Include="..\ReplWindow\PowerShellTools.Repl.csproj">
       <Project>{20bb6fac-44d2-4d76-abfe-0c1e163a1a4f}</Project>
-      <Name>ReplWindow</Name>
+      <Name>PowerShellTools.Repl</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3bVSIXContainerProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>

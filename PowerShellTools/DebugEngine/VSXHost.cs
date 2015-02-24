@@ -15,7 +15,7 @@ using System.Threading;
 using EnvDTE80;
 using Microsoft.PowerShell;
 using Microsoft.VisualBasic;
-using Microsoft.VisualStudio.Repl;
+using PowerShellTools.Repl;
 using Thread = System.Threading.Thread;
 
 namespace PowerShellTools.DebugEngine

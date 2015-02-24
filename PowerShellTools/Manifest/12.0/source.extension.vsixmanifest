@@ -29,8 +29,8 @@
     <Asset Type="Microsoft.VisualStudio.ItemTemplate" d:Source="File" Path="ItemTemplates" d:TargetPath="ItemTemplates\PowerShell Script Data File.zip" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%.TestAdapter" Path="|PowerShellTools.TestAdapter|" />
     <Asset Type="UnitTestExtension" d:Source="Project" d:ProjectName="%CurrentProject%.TestAdapter" Path="|PowerShellTools.TestAdapter|" />
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="ReplWindow" Path="|ReplWindow;PkgdefProjectOutputGroup|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="ReplWindow" Path="|ReplWindow|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%.Repl" Path="|PowerShellTools.Repl;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%.Repl" Path="|PowerShellTools.Repl|" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%.HostService" Path="|PowerShellTools.HostService|" AssemblyName="|PowerShellTools.HostService;AssemblyName|" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" Path="|PowerShellTools.Common|" AssemblyName="|PowerShellTools.Common;AssemblyName|" d:ProjectName="%CurrentProject%.Common" />
   </Assets>

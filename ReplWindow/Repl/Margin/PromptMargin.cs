@@ -27,7 +27,7 @@ using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.Text.Classification;
 using System.Diagnostics;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 
     [Export(typeof(IWpfTextViewMarginProvider))]
     [Name(PromptMargin.MarginName)]

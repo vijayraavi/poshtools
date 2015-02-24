@@ -14,7 +14,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     public interface IContentTypeMetadata {
         IEnumerable<string> ContentTypes { get; }
     }

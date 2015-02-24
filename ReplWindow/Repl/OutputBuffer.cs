@@ -18,7 +18,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Windows.Threading;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     internal sealed class OutputBuffer : IDisposable {
         private readonly DispatcherTimer _timer;
         private int _maxSize;

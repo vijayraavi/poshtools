@@ -19,7 +19,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     internal class ResizingAdorner : Adorner {
         private readonly VisualCollection _visualChildren;
         private readonly Thumb _bottomRight;

@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.Composition;
-using Microsoft.VisualStudio.Repl;
+using PowerShellTools.Repl;
 using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Repl
