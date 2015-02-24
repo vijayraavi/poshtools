@@ -9,6 +9,8 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualBasic;
+using PowerShellTools.Common.Debugging;
+using PowerShellTools.HostService.CredentialUI;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -32,9 +34,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public override string ReadLine()
         {
+            return ReadLineFromUI(DebugEngineConstants.ReadHostDialogTitle);
+        }
+
+        private string ReadLineFromUI(string message)
+        {
             if (_debuggingService.CallbackService != null)
             {
-                return _debuggingService.CallbackService.ReadHostPrompt();
+                return _debuggingService.CallbackService.ReadHostPrompt(message);
             }
 
             return string.Empty;
@@ -111,7 +118,22 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public override Dictionary<string, PSObject> Prompt(string caption, string message,
             Collection<FieldDescription> descriptions)
         {
-            return null;
+            string promptMessage = caption + Environment.NewLine + message + " ";
+            Dictionary<string, PSObject> results =
+                     new Dictionary<string, PSObject>();
+            foreach (FieldDescription fd in descriptions)
+            {
+                this.Write(promptMessage);
+                string userData = this.ReadLineFromUI(promptMessage + Environment.NewLine + fd.Name);
+                if (userData == null)
+                {
+                    return null;
+                }
+                this.Write(userData);
+                results[fd.Name] = PSObject.AsPSObject(userData);
+            }
+
+            return results;
         }
 
         public override PSCredential PromptForCredential(string caption, string message, string userName,
@@ -125,8 +147,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             string targetName,
             PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
-            return CredUiPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes, options,
-                IntPtr.Zero);
+            return CredUiPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes, 
+                options, IntPtr.Zero); 
         }
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices,
@@ -135,15 +157,38 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return 0;
         }
 
-
         // System.Management.Automation.HostUtilities
         internal static PSCredential CredUiPromptForCredential(string caption, string message, string userName,
             string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
             IntPtr parentHwnd)
         {
-            
             PSCredential result = null;
-            
+
+            CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);
+            dialog.Name = userName;
+
+            switch (options)
+            {
+                case PSCredentialUIOptions.AlwaysPrompt:
+                    dialog.AlwaysDisplay = true;
+                    break;
+                case PSCredentialUIOptions.ReadOnlyUserName:
+                    dialog.KeepName = true;
+                    break;
+                case PSCredentialUIOptions.Default:
+                    dialog.ValidName = true;
+                    break;
+                case PSCredentialUIOptions.None:
+                    break;
+                default:
+                    break;
+            }
+
+            if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
+            {
+                result = new PSCredential(dialog.Name, dialog.Password);
+            }
+
             return result;
         }
     }

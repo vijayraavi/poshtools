@@ -92,5 +92,7 @@ param (
 
         #endregion
 
+
+        public const string ReadHostDialogTitle = "Read-Host";
     }
 }

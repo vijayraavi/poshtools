@@ -13,20 +13,27 @@ namespace PowerShellTools.Project
 {
     internal class PowerShellProjectLauncher : IProjectLauncher
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellProjectLauncher));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellProjectLauncher));
         private readonly PowerShellProjectNode _project;
+        private readonly bool _dependenciesResolved;
 
-        public PowerShellProjectLauncher(PowerShellProjectNode project)
+        public PowerShellProjectLauncher(PowerShellProjectNode project, bool dependenciesResolved)
         {
+            _dependenciesResolved = dependenciesResolved;
             _project = project;
         }
 
-        public PowerShellProjectLauncher()
+
+        public PowerShellProjectLauncher(bool dependenciesResolved)
+            : this(null, dependenciesResolved)
         {
         }
 
+
         public int LaunchProject(bool debug)
         {
+            if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
+
             Log.Debug("PowerShellProjectLauncher.LaunchProject");
             var debugger = (IVsDebugger)Package.GetGlobalService(typeof(IVsDebugger));
             var shell = (IVsUIShell)Package.GetGlobalService(typeof(IVsUIShell));
@@ -100,6 +107,8 @@ namespace PowerShellTools.Project
 
         public int LaunchSelection(string selection)
         {
+            if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
+
             Log.Debug("PowerShellProjectLauncher.LaunchSelection");
             var debugger = (IVsDebugger)Package.GetGlobalService(typeof(IVsDebugger));
             var shell = (IVsUIShell)Package.GetGlobalService(typeof(IVsUIShell));
@@ -157,6 +166,8 @@ namespace PowerShellTools.Project
 
         public int LaunchFile(string file, bool debug)
         {
+            if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
+
             Log.Debug("PowerShellProjectLauncher.LaunchFile");
             var debugger = (IVsDebugger)Package.GetGlobalService(typeof(IVsDebugger));
             var shell = (IVsUIShell)Package.GetGlobalService(typeof(IVsUIShell));
@@ -179,7 +190,7 @@ namespace PowerShellTools.Project
                     info.bstrArg = null;
                 }
             }
-            
+
             info.bstrRemoteMachine = null; // debug locally
             info.fSendStdoutToOutputWindow = 0; // Let stdout stay with the application.
             info.clsidCustom = new Guid("{43ACAB74-8226-4920-B489-BFCF05372437}");

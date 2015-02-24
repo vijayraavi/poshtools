@@ -1,6 +1,6 @@
-﻿namespace PowerShellTools.Project
+﻿namespace PowerShellTools.Project.PropertyPages
 {
-    partial class PowerShellDebugPropertyPageControl
+    partial class DebugPropertyPageControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -35,7 +35,7 @@
             // txtArguments
             // 
             this.txtArguments.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtArguments.Location = new System.Drawing.Point(114, 16);
+            this.txtArguments.Location = new System.Drawing.Point(8, 32);
             this.txtArguments.Multiline = true;
             this.txtArguments.Name = "txtArguments";
             this.txtArguments.Size = new System.Drawing.Size(374, 81);
@@ -44,20 +44,20 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(21, 19);
+            this.label1.Location = new System.Drawing.Point(8, 8);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(87, 13);
+            this.label1.Size = new System.Drawing.Size(90, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Script Arguments";
+            this.label1.Text = "Script Arguments:";
             // 
-            // PowerShellDebugPropertyPageControl
+            // DebugPropertyPageControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtArguments);
-            this.Name = "PowerShellDebugPropertyPageControl";
-            this.Size = new System.Drawing.Size(500, 116);
+            this.Name = "DebugPropertyPageControl";
+            this.Size = new System.Drawing.Size(397, 121);
             this.ResumeLayout(false);
             this.PerformLayout();
 

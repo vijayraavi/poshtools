@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.VisualStudioTools.Project;
 
-namespace PowerShellTools.Project
+namespace PowerShellTools.Project.PropertyPages
 {
-    [Guid(GuidList.PowerShellDebugPropertiesPageGuid)]
-    public class PowerShellDebugPropertyPage : CommonPropertyPage
+    [Guid(GuidList.DebugPropertiesPageGuid)]
+    public class DebugPropertyPage : CommonPropertyPage
     {
-        private readonly PowerShellDebugPropertyPageControl _control;
+        private readonly DebugPropertyPageControl _control;
 
-        public PowerShellDebugPropertyPage()
+        public DebugPropertyPage()
         {
-            _control = new PowerShellDebugPropertyPageControl(this);
+            _control = new DebugPropertyPageControl(this);
         }
 
         public override Control Control

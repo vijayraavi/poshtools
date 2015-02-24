@@ -25,6 +25,7 @@ namespace PowerShellTools.DebugEngine
     using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using Microsoft.VisualStudio.Shell.Interop;
     using PowerShellTools.ServiceManagement;
+    using PowerShellTools.Common.Debugging;
 #endif
 
 
@@ -139,9 +140,9 @@ using Microsoft.VisualStudio.Shell.Interop;
         /// Read host from user input
         /// </summary>
         /// <returns>user input string</returns>
-        public string ReadLine()
+        public string ReadLine(string message)
         {
-            return Interaction.InputBox("Read-Host", "Read-Host");
+            return Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
         }
 
         /// <summary>
@@ -170,13 +171,17 @@ using Microsoft.VisualStudio.Shell.Interop;
 
         public void VSOutputProgress(string label, int percentage)
         {
-            var statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
+            var statusBar = (IVsStatusbar)PowerShellToolsPackage.GetGlobalService(typeof(SVsStatusbar));
             uint cookie = 0;
-            statusBar.Progress(ref cookie, 1, label, (uint)percentage, 100);
 
-            if (percentage == 100)
+            if (statusBar != null)
             {
-                statusBar.Progress(ref cookie, 1, "", 0, 0);
+                statusBar.Progress(ref cookie, 1, label, (uint)percentage, 100);
+
+                if (percentage == 100)
+                {
+                    statusBar.Progress(ref cookie, 1, "", 0, 0);
+                }
             }
         }
     }
