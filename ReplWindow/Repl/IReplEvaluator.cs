@@ -103,5 +103,10 @@ namespace Microsoft.VisualStudio.Repl {
         /// Enter remote powershell session.
         /// </summary>
         Task<ExecutionResult> EnterRemoteSession(string computerName);
+
+        /// <summary>
+        /// Exit remote powershell session.
+        /// </summary>
+        Task<ExecutionResult> ExitRemoteSession();
     }
 }

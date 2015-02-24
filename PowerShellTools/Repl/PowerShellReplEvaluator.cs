@@ -91,6 +91,12 @@ namespace PowerShellTools.Repl
             string cmdEnterRemoteSession = string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, computerName);
             return ExecuteText(cmdEnterRemoteSession);
         }
+
+        public Task<ExecutionResult> ExitRemoteSession()
+        {
+            string cmdExitRemoteSession = string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
+            return ExecuteText(cmdExitRemoteSession);
+        }
     }
  
 }

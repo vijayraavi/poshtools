@@ -1390,6 +1390,10 @@ namespace Microsoft.VisualStudio.Repl {
                         prgCmds[0].cmdf = !_isRunning ? CommandEnabled : CommandDisabled;
                         return VSConstants.S_OK;
 
+                    case PkgCmdIDList.cmdidExitSession:
+                        prgCmds[0].cmdf = !_isRunning ? CommandEnabled : CommandDisabled;
+                        return VSConstants.S_OK;
+
                     case PkgCmdIDList.cmdidResetRepl:
                         prgCmds[0].cmdf = _commands.OfType<ResetReplCommand>().Count() != 0 ? CommandEnabled : CommandDisabledAndHidden;
                         return VSConstants.S_OK;
@@ -1410,6 +1414,10 @@ namespace Microsoft.VisualStudio.Repl {
 
                     case PkgCmdIDList.cmdidEnterSession:
                         EnterRemoteSessionCommand();
+                        return VSConstants.S_OK;
+
+                    case PkgCmdIDList.cmdidExitSession:
+                        ExitRemoteSessionCommand();
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidResetRepl:
@@ -1456,6 +1464,11 @@ namespace Microsoft.VisualStudio.Repl {
             }
 
             return nextTarget.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+        }
+
+        private void ExitRemoteSessionCommand()
+        {
+            Evaluator.ExitRemoteSession();
         }
 
         private void EnterRemoteSessionCommand()
