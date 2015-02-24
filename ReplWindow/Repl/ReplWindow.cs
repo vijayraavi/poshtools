@@ -1461,6 +1461,10 @@ namespace Microsoft.VisualStudio.Repl {
             if (view.ShowModal() == true)
             {
                 string computerName = viewModel.ComputerName;
+                if (!_isRunning)
+                {
+                    Evaluator.EnterRemoteSession(computerName);
+                }
             }
         }
 

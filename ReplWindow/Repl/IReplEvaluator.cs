@@ -98,5 +98,10 @@ namespace Microsoft.VisualStudio.Repl {
         /// Aborts the current running command.
         /// </summary>
         void AbortCommand();
+
+        /// <summary>
+        /// Enter remote powershell session.
+        /// </summary>
+        Task<ExecutionResult> EnterRemoteSession(string computerName);
     }
 }

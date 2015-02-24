@@ -6,9 +6,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:shell="clr-namespace:PowerShellTools.Common;assembly=PowerShellTools.Common"
         xmlns:w="clr-namespace:Microsoft.VisualStudio.Repl.DialogWindows"
-        MinHeight="120"
         MinWidth="360"
         Width="360"
+        MinHeight="120"
         Height="120"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
@@ -17,7 +17,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0"
                 HorizontalAlignment="Stretch"

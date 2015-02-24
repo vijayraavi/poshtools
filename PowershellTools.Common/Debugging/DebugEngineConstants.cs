@@ -94,5 +94,13 @@ param (
 
 
         public const string ReadHostDialogTitle = "Read-Host";
+
+        /// <summary>
+        /// The default cmdlet we used to connect PowerShell remote session
+        /// </summary>
+        /// <remarks>
+        /// {0} - remote computer name
+        /// </remarks>
+        public const string EnterRemoteSessionDefaultCommand = "Enter-PSSession -ComputerName {0} -Credential ''"; 
     }
 }
