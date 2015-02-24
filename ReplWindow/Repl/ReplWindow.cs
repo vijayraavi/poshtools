@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -26,6 +27,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -54,7 +56,6 @@ namespace PowerShellTools.Repl {
     using IReplWindowCreationListener = IPowerShellReplWindowCreationListener;
     using ReplRoleAttribute = PowerShellReplRoleAttribute;
     using IReplCommand2 = IPowerShellReplCommand2;
-    using System.Runtime.ExceptionServices;
 #endif
 
     /// <summary>
