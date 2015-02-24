@@ -230,6 +230,15 @@
                     <ButtonText>Enter PowerShell Session</ButtonText>
                 </Strings>
             </Button>
+        
+            <Button guid="guidReplWindowCmdSet" id="cmdidExitSession" priority="0x0300" type="Button">
+              <Parent guid="guidReplWindowCmdSet" id="replToolbarGroup"/>
+              <Icon guid="guidReplToolbarImages" id="bmpExitSession" />
+              <Strings>
+                    <CommandName>bmpExitSession</CommandName>
+                    <ButtonText>Exit PowerShell Session</ButtonText>
+                </Strings>
+            </Button>
         </Buttons>
 
         <Combos>
@@ -253,11 +262,11 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used 
             inside a button definition. An important aspect of this declaration is that the element id 
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-          <Bitmap guid="guidReplToolbarImages" href="..\Icons\Dev12.0\ReplToolBarImages.bmp" usedList="bmpCancelEval, bmpResetSession, bmpClearScreen, bmpEnterSession"
+          <Bitmap guid="guidReplToolbarImages" href="..\Icons\Dev12.0\ReplToolBarImages.bmp" usedList="bmpCancelEval, bmpResetSession, bmpClearScreen, bmpEnterSession, bmpExitSession"
                   Condition="Defined(DEV12)"/>
-          <Bitmap guid="guidReplToolbarImages" href="..\Icons\Dev11.0\ReplToolBarImages.bmp" usedList="bmpCancelEval, bmpResetSession, bmpClearScreen, bmpEnterSession"
+          <Bitmap guid="guidReplToolbarImages" href="..\Icons\Dev11.0\ReplToolBarImages.bmp" usedList="bmpCancelEval, bmpResetSession, bmpClearScreen, bmpEnterSession, bmpExitSession"
                   Condition="Defined(DEV11)"/>
-          <Bitmap guid="guidReplToolbarImages" href="..\Icons\Dev10.0\ReplToolBarImages.png" usedList="bmpCancelEval, bmpResetSession, bmpClearScreen, bmpEnterSession"
+          <Bitmap guid="guidReplToolbarImages" href="..\Icons\Dev10.0\ReplToolBarImages.png" usedList="bmpCancelEval, bmpResetSession, bmpClearScreen, bmpEnterSession, bmpExitSession"
                   Condition="Defined(DEV10)"/>
         </Bitmaps>
 
@@ -307,6 +316,7 @@
             <IDSymbol name="cmdidReplSearchHistoryNext" value="0x010A"/>
             <IDSymbol name="cmdidReplSearchHistoryPrevious" value="0x010B"/>
             <IDSymbol name="cmdidEnterSession" value="0x010C"/>
+            <IDSymbol name="cmdidExitSession" value="0x010D"/>
 
           <!-- Groups -->
             <IDSymbol name="ConsoleMenuGroup" value="0x1050" />
@@ -329,6 +339,7 @@
             <IDSymbol name="bmpResetSession" value="0x02" />
             <IDSymbol name="bmpClearScreen" value="0x03" />
             <IDSymbol name="bmpEnterSession" value="0x04" />
+            <IDSymbol name="bmpExitSession" value="0x05" />
         </GuidSymbol>
     </Symbols>
 </CommandTable>
