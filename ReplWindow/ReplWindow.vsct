@@ -284,11 +284,11 @@
 
     <Symbols>
         <!-- This is the package guid. -->
-        <GuidSymbol name="guidReplWindowPkg" value="{ce8d8e55-ad29-423e-aca2-810d0b16cdc4}" />
-        <GuidSymbol name="guidReplWindow" value="{5adb6033-611f-4d39-a193-57a717115c0f}" />
+        <GuidSymbol name="guidReplWindowPkg" value="{702AA1B3-556E-4AEE-AFB6-DCFA7FC420D3}" />
+        <GuidSymbol name="guidReplWindow" value="{2227C503-8DAF-44E6-BFF6-222088DE83E0}" />
 
         <!-- This is the guid used to group the menu commands together -->
-        <GuidSymbol name="guidReplWindowCmdSet" value="{68cb76e6-98c5-464a-aba9-9f2db66fa0fd}">
+        <GuidSymbol name="guidReplWindowCmdSet" value="{A82B8BE2-8794-40EB-B77A-7B4D2FCF69EB}">
             <!-- Commandd -->
             <IDSymbol name="cmdidSmartExecute" value="0x0103"/>
             <IDSymbol name="cmdidBreakRepl" value="0x0104"/>
