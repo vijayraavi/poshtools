@@ -20,7 +20,6 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools;
 using PowerShellTools.LanguageService;
-using PowerShellTools.Repl;
 
 namespace PowerShellTools.Commands
 {
@@ -30,7 +29,7 @@ namespace PowerShellTools.Commands
 #endif
 
     /// <summary>
-    /// Provides the command for starting the Python Debug REPL window.
+    /// Provides the command for starting the PowerShell Debug REPL window.
     /// </summary>
     class OpenDebugReplCommand : ICommand
     {

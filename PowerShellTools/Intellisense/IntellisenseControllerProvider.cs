@@ -66,7 +66,7 @@ namespace PowerShellTools.Intellisense
     }
 
     /// <summary>
-    /// Monitors creation of text view adapters for Python code so that we can attach
+    /// Monitors creation of text view adapters for PowerShell code so that we can attach
     /// our keyboard filter.  This enables not using a keyboard pre-preprocessor
     /// so we can process all keys for text views which we attach to.  We cannot attach
     /// our command filter on the text view when our intellisense controller is created

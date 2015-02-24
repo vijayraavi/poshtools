@@ -36,6 +36,9 @@ class AssemblyVersionInfo {
 #elif DEV12
     public const string VSMajorVersion = "12";
     const string VSVersionSuffix = "2013";
+#elif DEV14
+    public const string VSMajorVersion = "14";
+    const string VSVersionSuffix = "2015";
 #else
 #error Unrecognized VS Version.
 #endif
