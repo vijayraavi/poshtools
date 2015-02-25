@@ -14,6 +14,12 @@
         ShowInTaskbar="False"
         Title="{x:Static w:Resources.RemoteSessionEnterTitle}"
         WindowStartupLocation="CenterOwner">
+    <shell:VsShellDialogWindow.Resources>
+        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="MinHeight" Value="23" />
+            <Setter Property="MinWidth" Value="75" />
+        </Style>
+    </shell:VsShellDialogWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
