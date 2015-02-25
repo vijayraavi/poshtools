@@ -87,6 +87,11 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public bool DebuggingCommandReady { get; private set; }
 
+        /// <summary>
+        /// Indicate if runspace is hosting remote session
+        /// </summary>
+        public bool RemoteSession { get; set; }
+
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
 
         /// <summary>

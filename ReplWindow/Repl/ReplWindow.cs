@@ -1392,11 +1392,11 @@ namespace PowerShellTools.Repl {
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidEnterSession:
-                        prgCmds[0].cmdf = !_isRunning ? CommandEnabled : CommandDisabled;
+                        prgCmds[0].cmdf = !_isRunning && !Evaluator.IsRemoteSession() ? CommandEnabled : CommandDisabled;
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidExitSession:
-                        prgCmds[0].cmdf = !_isRunning ? CommandEnabled : CommandDisabled;
+                        prgCmds[0].cmdf = Evaluator.IsRemoteSession() ? CommandEnabled : CommandDisabled;
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidResetRepl:
@@ -1485,7 +1485,7 @@ namespace PowerShellTools.Repl {
                 string computerName = viewModel.ComputerName;
                 if (!_isRunning)
                 {
-                    Evaluator.EnterRemoteSession(computerName);
+                    Evaluator.EnterRemoteSession(computerName);                   
                 }
             }
         }

@@ -124,12 +124,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             foreach (FieldDescription fd in descriptions)
             {
                 this.Write(promptMessage);
-                string userData = this.ReadLineFromUI(promptMessage + Environment.NewLine + fd.Name);
+                string userData = this.ReadLineFromUI(string.Format("{0}{2}{1}{2}", promptMessage, fd.Name, Environment.NewLine));
                 if (userData == null)
                 {
                     return null;
                 }
-                this.Write(userData);
+
                 results[fd.Name] = PSObject.AsPSObject(userData);
             }
 

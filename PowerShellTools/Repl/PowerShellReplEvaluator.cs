@@ -86,16 +86,21 @@ namespace PowerShellTools.Repl
             Debugger.Stop();
         }
 
-        public Task<ExecutionResult> EnterRemoteSession(string computerName)
+        public ExecutionResult EnterRemoteSession(string computerName)
         {
             string cmdEnterRemoteSession = string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, computerName);
-            return ExecuteText(cmdEnterRemoteSession);
+            return ExecuteText(cmdEnterRemoteSession).Result;
         }
 
-        public Task<ExecutionResult> ExitRemoteSession()
+        public ExecutionResult ExitRemoteSession()
         {
             string cmdExitRemoteSession = string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
-            return ExecuteText(cmdExitRemoteSession);
+            return ExecuteText(cmdExitRemoteSession).Result;
+        }
+
+        public bool IsRemoteSession()
+        {
+            return Debugger.RemoteSession;
         }
     }
  
