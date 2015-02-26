@@ -19,12 +19,12 @@ namespace PowerShellTools.Project
     [Export]
     public class PowerShellProjectPackage : CommonProjectPackage
     {
-        private readonly DependencyValidator _validator;
+        private readonly IDependencyValidator _validator;
 
         public PowerShellProjectPackage()
         {
             var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
-            _validator = componentModel.GetService<DependencyValidator>();
+            _validator = (IDependencyValidator)componentModel.GetService<IDependencyValidator>();
         }
 
         public override ProjectFactory CreateProjectFactory()

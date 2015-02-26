@@ -38,7 +38,7 @@ namespace PowerShellTools.Classification
         [Import]
         public IClassificationTypeRegistryService ClassificationTypeRegistryService { get; set; }
 
-        [Import] private DependencyValidator _validator;
+        [Import] private IDependencyValidator _validator;
 
 		public IClassifier GetClassifier(ITextBuffer textBuffer)
 		{

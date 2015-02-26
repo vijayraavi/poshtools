@@ -3,18 +3,20 @@ using System.Windows;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.Win32;
+using System.ComponentModel.Composition;
 
 namespace PowerShellTools
 {
-    internal class DependencyValidator
+    [Export(typeof(IDependencyValidator))]
+    internal class DependencyValidator : IDependencyValidator
     {
         private static readonly Version RequiredPowerShellVersion = new Version(3, 0);
 
         private readonly Package _package;
 
-        public DependencyValidator(Package package)
+        public DependencyValidator()
         {
-            _package = package;
+            _package = PowerShellToolsPackage.Instance;
         }
 
         private bool? _previousResult;

@@ -10,7 +10,7 @@ namespace PowerShellTools.Classification
 	internal class PowerShellErrorTaggerProvider : IViewTaggerProvider
 	{
         [Import]
-	    internal DependencyValidator _validator;
+	    internal IDependencyValidator _validator;
 
 		public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
 		{

@@ -272,6 +272,7 @@
     <Compile Include="GeneralDialogPage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="IDependencyValidator.cs" />
     <Compile Include="Intellisense\BraceCompletionController.cs" />
     <Compile Include="Intellisense\IntellisenseController.cs" />
     <Compile Include="Intellisense\IntellisenseControllerProvider.cs" />
