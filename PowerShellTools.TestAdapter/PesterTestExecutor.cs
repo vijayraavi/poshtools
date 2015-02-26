@@ -21,8 +21,23 @@ namespace PowerShellTools.TestAdapter
             var module = FindModule("Pester", runContext);
             powerShell.AddCommand("Import-Module").AddParameter("Name", module);
             powerShell.Invoke();
-
             powerShell.Commands.Clear();
+
+            if (powerShell.HadErrors)
+            {
+                var errorRecord = powerShell.Streams.Error.FirstOrDefault();
+                var errorMessage = errorRecord == null ? String.Empty : errorRecord.ToString();
+                return new PowerShellTestResult(TestOutcome.Failed, "Failed to load Pester module. " + errorMessage, String.Empty);
+            }
+
+            powerShell.AddCommand("Get-Module").AddParameter("Name", "Pester");
+            var moduleInfo = powerShell.Invoke<PSModuleInfo>().FirstOrDefault();
+            powerShell.Commands.Clear();
+
+            if (moduleInfo == null)
+            {
+                return new PowerShellTestResult(TestOutcome.Failed, "Failed to get Pester module version.", String.Empty);
+            }
 
             var fi = new FileInfo(testCase.CodeFilePath);
 
@@ -31,10 +46,23 @@ namespace PowerShellTools.TestAdapter
             var describeName = testCase.FullyQualifiedName.Split(new[] {"||"}, StringSplitOptions.None)[1];
             var testCaseName = testCase.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[3];
 
-            powerShell.AddCommand("Invoke-Pester")
-                .AddParameter("relative_path", fi.Directory.FullName)
-                .AddParameter("TestName", describeName)
-                .AddParameter("OutputXml", tempFile);
+            if (moduleInfo.Version < new Version(3, 3, 5))
+            {
+                powerShell.AddCommand("Invoke-Pester")
+                    .AddParameter("relative_path", fi.Directory.FullName)
+                    .AddParameter("TestName", describeName)
+                    .AddParameter("OutputXml", tempFile);
+            }
+            else
+            {
+                powerShell.AddCommand("Invoke-Pester")
+                    .AddParameter("Script", fi.Directory.FullName)
+                    .AddParameter("TestName", describeName)
+                    .AddParameter("OutputFile", tempFile)
+                    .AddParameter("OutputFormat", "NUnitXml");
+            }
+
+
 
             powerShell.Invoke();
 
@@ -55,6 +83,7 @@ namespace PowerShellTools.TestAdapter
                     return new PowerShellTestResult(TestOutcome.NotFound);
                 }
 
+                //Pester Pre-Version 3.3.5 uses the directory.
                 var suite =
                     root.Elements("test-suite")
                         .FirstOrDefault(
@@ -62,7 +91,15 @@ namespace PowerShellTools.TestAdapter
 
                 if (suite == null)
                 {
-                    return new PowerShellTestResult(TestOutcome.NotFound);
+                    //Pester Version 3.3.5 uses "Pester"
+                    suite = root.Elements("test-suite")
+                    .FirstOrDefault(
+                        m => m.Attribute("name").Value.Equals("Pester", StringComparison.OrdinalIgnoreCase));
+
+                    if (suite == null)
+                    {
+                        return new PowerShellTestResult(TestOutcome.NotFound);
+                    }
                 }
 
                 var describe =
@@ -89,6 +126,22 @@ namespace PowerShellTools.TestAdapter
                                     m =>
                                         m.Attribute("name")
                                             .Value.Equals(testCaseName, StringComparison.OrdinalIgnoreCase));
+
+                        if (testcase == null)
+                        {
+                            //Describe.TestCase for 3.3.5+
+                            testcase =
+                            res.Elements("test-case")
+                                .FirstOrDefault(
+                                    m =>
+                                        m.Attribute("name")
+                                            .Value.Equals(describeName + "." + testCaseName, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        if (testcase == null)
+                        {
+                            return new PowerShellTestResult(TestOutcome.NotFound);
+                        }
                                 
                             var name = testcase.Attribute("name").Value;
                             var result = testcase.Attribute("result").Value;
