@@ -20,7 +20,6 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
     /// <summary>
     /// Represents an automation object for a folder in a project
     /// </summary>
-    [SuppressMessage("Microsoft.Interoperability", "CA1405:ComVisibleTypeBaseTypesShouldBeComVisible")]
     [ComVisible(true)]
     public class OAFolderItem : OAProjectItem {
         #region ctors
@@ -40,14 +39,14 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         #region overridden methods
         public override ProjectItems Collection {
             get {
-                ProjectItems items = new OAProjectItems(this.Project, this.Node);
+                ProjectItems items = new OAProjectItems(this.Project, this.Node.Parent);
                 return items;
             }
         }
 
         public override ProjectItems ProjectItems {
             get {
-                return this.Collection;
+                return new OAProjectItems(Project, Node);
             }
         }
         #endregion

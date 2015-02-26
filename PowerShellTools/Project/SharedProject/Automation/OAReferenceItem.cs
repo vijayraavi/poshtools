@@ -21,7 +21,6 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
     /// <summary>
     /// Represents the automation object equivalent to a ReferenceNode object
     /// </summary>
-    [SuppressMessage("Microsoft.Interoperability", "CA1405:ComVisibleTypeBaseTypesShouldBeComVisible")]
     [ComVisible(true), CLSCompliant(false)]
     public class OAReferenceItem : OAProjectItem {
         #region ctors
@@ -40,7 +39,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         #region overridden methods
         /// <summary>
         /// Not implemented. If called throws invalid operation exception.
-        /// </summary>	
+        /// </summary>
         public override void Delete() {
             throw new InvalidOperationException();
         }

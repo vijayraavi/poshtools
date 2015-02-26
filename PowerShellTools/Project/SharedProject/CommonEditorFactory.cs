@@ -13,6 +13,7 @@
  * ***************************************************************************/
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Designer.Interfaces;
@@ -28,16 +29,17 @@ namespace Microsoft.VisualStudioTools.Project {
     /// <summary>
     /// Common factory for creating our editor
     /// </summary>    
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public abstract class CommonEditorFactory : IVsEditorFactory {
-        private CommonProjectPackage _package;
+        private Package _package;
         private ServiceProvider _serviceProvider;
         private readonly bool _promptEncodingOnLoad;
 
-        public CommonEditorFactory(CommonProjectPackage package) {
+        public CommonEditorFactory(Package package) {
             _package = package;
         }
 
-        public CommonEditorFactory(CommonProjectPackage package, bool promptEncodingOnLoad) {
+        public CommonEditorFactory(Package package, bool promptEncodingOnLoad) {
             _package = package;
             _promptEncodingOnLoad = promptEncodingOnLoad;
         }
@@ -307,5 +309,27 @@ namespace Microsoft.VisualStudioTools.Project {
         }
 
         #endregion
+
+        protected void InitializeLanguageService(IVsTextLines textLines, Guid langSid) {
+            IVsUserData userData = textLines as IVsUserData;
+            if (userData != null) {
+                if (langSid != Guid.Empty) {
+                    Guid vsCoreSid = new Guid("{8239bec4-ee87-11d0-8c98-00c04fc2ab22}");
+                    Guid currentSid;
+                    ErrorHandler.ThrowOnFailure(textLines.GetLanguageServiceID(out currentSid));
+                    // If the language service is set to the default SID, then
+                    // set it to our language
+                    if (currentSid == vsCoreSid) {
+                        ErrorHandler.ThrowOnFailure(textLines.SetLanguageServiceID(ref langSid));
+                    } else if (currentSid != langSid) {
+                        // Some other language service has it, so return VS_E_INCOMPATIBLEDOCDATA
+                        throw new COMException("Incompatible doc data", VSConstants.VS_E_INCOMPATIBLEDOCDATA);
+                    }
+
+                    Guid bufferDetectLang = VSConstants.VsTextBufferUserDataGuid.VsBufferDetectLangSID_guid;
+                    ErrorHandler.ThrowOnFailure(userData.SetData(ref bufferDetectLang, false));
+                }
+            }
+        }
     }
 }

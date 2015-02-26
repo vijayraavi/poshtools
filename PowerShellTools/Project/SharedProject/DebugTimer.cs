@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudioTools {
             var res = new Stopwatch();
             res.Start();
             return res;
-        } 
+        }
 #endif
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Microsoft.VisualStudioTools {
             _minReportTime = minReportTime;
 #endif
         }
-        
+
 
         #region IDisposable Members
 
@@ -51,6 +51,7 @@ namespace Microsoft.VisualStudioTools {
             var elapsed = _timer.ElapsedMilliseconds - _start;
             if (elapsed >= _minReportTime) {
                 Debug.WriteLine(String.Format("{0}: {1}ms elapsed", _description, elapsed));
+                Console.WriteLine(String.Format("{0}: {1}ms elapsed", _description, elapsed));
             }
 #endif
         }

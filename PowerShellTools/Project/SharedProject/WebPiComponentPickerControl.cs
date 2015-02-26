@@ -15,20 +15,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.XPath;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.VisualStudioTools.Project {
     [Guid("B7773A32-2EE5-4844-9630-F14768A5D03C")]
     partial class WebPiComponentPickerControl : UserControl {
         private readonly List<PackageInfo> _packages = new List<PackageInfo>();
-        private const string _defaultFeeds = "https://www.microsoft.com/web/webpi/4.0/toolsproductlist.xml";
+        private const string _defaultFeeds = "https://www.microsoft.com/web/webpi/5.0/webproductlist.xml";
         private ListViewSorter _sorter = new ListViewSorter();
 
         public WebPiComponentPickerControl() {
@@ -74,11 +75,22 @@ namespace Microsoft.VisualStudioTools.Project {
             );
         }
 
-        private void RequestFeeds(object dummy) {
+        private async Task RequestFeeds(string feedSource) {
             try {
-                GetFeeds((string)dummy);
-            } catch (WebException ex) {
-                MessageBox.Show(String.Format("Unable to get feeds from {0}\r\n\r\n{1}", (string)dummy, ex.Message));
+                await Task.Run(() => GetFeeds(feedSource));
+            } catch (Exception ex) {
+                if (ex.IsCriticalException()) {
+                    throw;
+                }
+
+                MessageBox.Show(SR.GetString(SR.WebPiFeedError, feedSource, ex.Message));
+
+                var fullMessage = SR.GetString(SR.WebPiFeedError, feedSource, ex);
+                Trace.WriteLine(fullMessage);
+                try {
+                    ActivityLog.LogError("WebPiComponentPickerControl", fullMessage);
+                } catch (InvalidOperationException) {
+                }
             }
         }
 
@@ -122,7 +134,11 @@ namespace Microsoft.VisualStudioTools.Project {
 
                     _packages.Add(newPackage);
 
-                    BeginInvoke(new Action<object>(AddPackage), newPackage);
+                    try {
+                        BeginInvoke(new Action<object>(AddPackage), newPackage);
+                    } catch (InvalidOperationException) {
+                        break;
+                    }
                 }
             }
         }
@@ -192,7 +208,7 @@ namespace Microsoft.VisualStudioTools.Project {
             #endregion
         }
         private void AddNewFeedClick(object sender, EventArgs e) {
-            ThreadPool.QueueUserWorkItem(RequestFeeds, _newFeedUrl.Text);
+            RequestFeeds(_newFeedUrl.Text).DoNotWait();
         }
 
         protected override void DefWndProc(ref Message m) {
@@ -201,7 +217,7 @@ namespace Microsoft.VisualStudioTools.Project {
                     SetWindowStyleOnStaticHostControl();
                     goto default;
                 case VSConstants.CPPM_INITIALIZELIST:
-                    ThreadPool.QueueUserWorkItem(RequestFeeds, _defaultFeeds);
+                    RequestFeeds(_defaultFeeds).DoNotWait();
                     break;
                 case VSConstants.CPPM_SETMULTISELECT:
                     _productsList.MultiSelect = (m.WParam != IntPtr.Zero);

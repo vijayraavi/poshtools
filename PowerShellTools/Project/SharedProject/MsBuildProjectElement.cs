@@ -24,6 +24,7 @@ using MSBuild = Microsoft.Build.Evaluation;
 namespace Microsoft.VisualStudioTools.Project {
     internal class MsBuildProjectElement : ProjectElement {
         private MSBuild.ProjectItem _item;
+        private string _url; // cached Url
 
         /// <summary>
         /// Constructor to create a new MSBuild.ProjectItem and add it to the project
@@ -38,7 +39,7 @@ namespace Microsoft.VisualStudioTools.Project {
             // create and add the item to the project
 
             _item = project.BuildProject.AddItem(itemType, Microsoft.Build.Evaluation.ProjectCollection.Escape(itemPath))[0];
-            ItemProject.SetProjectFileDirty(true);
+            _url = base.Url;
         }
 
         /// <summary>
@@ -55,6 +56,7 @@ namespace Microsoft.VisualStudioTools.Project {
 
             // Keep a reference to project and item
             _item = existingItem;
+            _url = base.Url;
         }
 
         protected override string ItemType {
@@ -63,6 +65,7 @@ namespace Microsoft.VisualStudioTools.Project {
             }
             set {
                 _item.ItemType = value;
+                OnItemTypeChanged();
             }
         }
 
@@ -90,8 +93,6 @@ namespace Microsoft.VisualStudioTools.Project {
             } else {
                 _item.SetMetadataValue(attributeName, attributeValue);
             }
-
-            ItemProject.SetProjectFileDirty(true);
         }
 
         /// <summary>
@@ -123,6 +124,8 @@ namespace Microsoft.VisualStudioTools.Project {
         public override void RefreshProperties() {
             ItemProject.BuildProject.ReevaluateIfNecessary();
 
+            _url = base.Url;
+
             IEnumerable<ProjectItem> items = ItemProject.BuildProject.GetItems(_item.ItemType);
             foreach (ProjectItem projectItem in items) {
                 if (projectItem != null && projectItem.UnevaluatedInclude.Equals(_item.UnevaluatedInclude)) {
@@ -140,7 +143,6 @@ namespace Microsoft.VisualStudioTools.Project {
         public override void RemoveFromProjectFile() {
             if (!Deleted) {
                 ItemProject.BuildProject.RemoveItem(_item);
-                ItemProject.SetProjectFileDirty(true);
             }
 
             base.RemoveFromProjectFile();
@@ -149,6 +151,12 @@ namespace Microsoft.VisualStudioTools.Project {
         internal MSBuild.ProjectItem Item {
             get {
                 return _item;
+            }
+        }
+
+        public override string Url {
+            get {
+                return _url;
             }
         }
 

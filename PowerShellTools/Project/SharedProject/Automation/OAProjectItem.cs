@@ -249,8 +249,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 CheckProjectIsValid();
 
                 using (AutomationScope scope = new AutomationScope(this.Node.ProjectMgr.Site)) {
-                    UIThread.Instance.RunSync(() =>
-                        this.node.SetEditLabel(value));
+                    Node.ProjectMgr.Site.GetUIThread().Invoke(() => this.node.SetEditLabel(value));
                 }
             }
         }
@@ -271,8 +270,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
             CheckProjectIsValid();
 
             using (AutomationScope scope = new AutomationScope(this.Node.ProjectMgr.Site)) {
-                UIThread.Instance.RunSync(() =>
-                    this.node.Remove(false));
+                Node.ProjectMgr.Site.GetUIThread().Invoke(() => this.node.Remove(false));
             }
         }
 
@@ -283,8 +281,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
             CheckProjectIsValid();
 
             using (AutomationScope scope = new AutomationScope(this.Node.ProjectMgr.Site)) {
-                UIThread.Instance.RunSync(() =>
-                    this.node.Remove(true));
+                Node.ProjectMgr.Site.GetUIThread().Invoke(() => this.node.Remove(true));
             }
         }
 
@@ -331,9 +328,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
             CheckProjectIsValid();
 
             using (AutomationScope scope = new AutomationScope(this.Node.ProjectMgr.Site)) {
-                UIThread.Instance.RunSync(() => {
-                    node.ExpandItem(EXPANDFLAGS.EXPF_ExpandFolder);
-                });
+                Node.ProjectMgr.Site.GetUIThread().Invoke(() => node.ExpandItem(EXPANDFLAGS.EXPF_ExpandFolder));
             }
         }
 
@@ -346,6 +341,20 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
             throw new NotImplementedException();
         }
 
+        // We're managed and we don't use COM’s IDispatch which would resolve parametrized property FileNames and IsOpen correctly. 
+        // Powershell scripts are using reflection to find (or rather, not find) the methodss. Thus FileNames call ends with exception: method's not defined.
+        // Implementing these as regular methods satisfies the situation.
+        // This is required for Nuget support.
+
+        public string FileNames(short index) {
+            return get_FileNames(index);
+        }
+
+        public bool IsOpen(string viewKind) {
+            return get_IsOpen(viewKind);
+        }
+
         #endregion
+
     }
 }

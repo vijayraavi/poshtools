@@ -36,6 +36,8 @@ namespace Microsoft.VisualStudioTools {
         /// </summary>
         internal const string AddReferenceMRUPageGuid = "{19B97F03-9594-4c1c-BE28-25FF030113B3}";
 
+        internal const string TextEditorPackage = "{F5E7E720-1401-11D1-883B-0000F87579D2}";
+
         /// <summary>
         /// Do not change this constant. This is Visual Studio core text editor GUID.
         /// </summary>
@@ -57,21 +59,11 @@ namespace Microsoft.VisualStudioTools {
         public const int ConsoleHorizontalScrollbar = 0;
         public const int ConsoleVerticalScrollbar = 1;
 
-        //Search Paths container node context menu
-        public const int AddSearchPathCommandId = 0x4002;
-        public const int AddSearchPathZipCommandId = 0x4003;
-
         //Start Without Debugging command
         public const int StartWithoutDebuggingCmdId = 0x4004;
 
         //Start Debugging command
         public const int StartDebuggingCmdId = 0x4005;
-
-        //Search Path project property
-        public const string SearchPath = "SearchPath";
-
-        //Interpreter Path project property
-        public const string InterpreterPath = "InterpreterPath";
 
         //Working Directory project property
         public const string WorkingDirectory = "WorkingDirectory";
@@ -84,13 +76,6 @@ namespace Microsoft.VisualStudioTools {
         //We want this node to be the first node in the Search Path subtree
         public const int WorkingDirectorySortPriority = 100;
 
-        //Sort priority for the Search Path container node
-        //We want this node to come after References, but before project home folders
-        public const int SearchPathContainerNodeSortPriority = 400;
-
-        //Maximal sort priority for Search Path nodes
-        public const int SearchPathNodeMaxSortPriority = 110;
-        
         //Project Home project property
         public const string ProjectHome = "ProjectHome";
 
@@ -104,8 +89,6 @@ namespace Microsoft.VisualStudioTools {
 
         public const string PublishUrl = "PublishUrl";
 
-        public const string InterpreterArguments = "InterpreterArguments";
-
         //These are VS internal constants - don't change them
         public static Guid Std97CmdGroupGuid = typeof(VSConstants.VSStd97CmdID).GUID;
         public static Guid Std2KCmdGroupGuid = typeof(VSConstants.VSStd2KCmdID).GUID;
@@ -113,7 +96,7 @@ namespace Microsoft.VisualStudioTools {
         //Command statuses
         public const int NotSupportedInvisibleCmdStatus = (int)OleConstants.OLECMDERR_E_NOTSUPPORTED |
                             (int)OleConstants.OLECMDSTATE_INVISIBLE;
-        public const int SupportedEnabledCmdStatus = (int)(OLECMDF.OLECMDF_SUPPORTED | 
+        public const int SupportedEnabledCmdStatus = (int)(OLECMDF.OLECMDF_SUPPORTED |
                             OLECMDF.OLECMDF_ENABLED);
         public const int SupportedCmdStatus = (int)OLECMDF.OLECMDF_SUPPORTED;
 
@@ -130,5 +113,9 @@ namespace Microsoft.VisualStudioTools {
         /// </summary>
         public const string ProjectView = "ProjectView";
 
+        /// <summary>
+        /// Item meta data for whether or not a item in msbuild is visible in the project
+        /// </summary>
+        public const string Visible = "Visible";
     }
 }

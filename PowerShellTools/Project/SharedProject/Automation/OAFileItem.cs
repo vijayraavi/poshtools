@@ -13,7 +13,6 @@
  * ***************************************************************************/
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -28,7 +27,6 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
     /// <summary>
     /// Represents an automation object for a file in a project
     /// </summary>
-    [SuppressMessage("Microsoft.Interoperability", "CA1405:ComVisibleTypeBaseTypesShouldBeComVisible")]
     [ComVisible(true)]
     public class OAFileItem : OAProjectItem {
         #region ctors
@@ -49,8 +47,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 return this.Node.FileName;
             }
             set {
-                UIThread.Instance.RunSync(() =>
-                    base.Name = value);
+                Node.ProjectMgr.Site.GetUIThread().Invoke(() => base.Name = value);
             }
         }
 
@@ -67,14 +64,11 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 bool isDirty = false;
 
                 using (AutomationScope scope = new AutomationScope(this.Node.ProjectMgr.Site)) {
-                    UIThread.Instance.RunSync(() => {
+                    Node.ProjectMgr.Site.GetUIThread().Invoke(() => {
                         DocumentManager manager = this.Node.GetDocumentManager();
                         Utilities.CheckNotNull(manager);
 
-                        bool isOpen, isOpenedByUs;
-                        uint docCookie;
-                        IVsPersistDocData persistDocData;
-                        manager.GetDocInfo(out isOpen, out isDirty, out isOpenedByUs, out docCookie, out persistDocData);
+                        isDirty = manager.IsDirty;
                     });
                 }
                 return isDirty;
@@ -92,7 +86,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 EnvDTE.Document document = null;
 
                 using (AutomationScope scope = new AutomationScope(this.Node.ProjectMgr.Site)) {
-                    UIThread.Instance.RunSync(() => {
+                    Node.ProjectMgr.Site.GetUIThread().Invoke(() => {
                         IVsUIHierarchy hier;
                         uint itemid;
 
@@ -129,7 +123,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
             IntPtr docData = IntPtr.Zero;
 
             using (AutomationScope scope = new AutomationScope(this.Node.ProjectMgr.Site)) {
-                UIThread.Instance.RunSync(() => {
+                Node.ProjectMgr.Site.GetUIThread().Invoke(() => {
                     try {
                         // Validate input params
                         Guid logicalViewGuid = VSConstants.LOGVIEWID_Primary;
@@ -139,7 +133,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                             }
                         } catch (FormatException) {
                             // Not a valid guid
-                            throw new ArgumentException(SR.GetString(SR.ParameterMustBeAValidGuid, CultureInfo.CurrentUICulture), "viewKind");
+                            throw new ArgumentException(SR.GetString(SR.ParameterMustBeAValidGuid), "viewKind");
                         }
 
                         uint itemid;
@@ -175,7 +169,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// <exception cref="InvalidOperationException">Is thrown if the save operation failes.</exception>
         /// <exception cref="ArgumentNullException">Is thrown if fileName is null.</exception>
         public override void Save(string fileName) {
-            UIThread.Instance.RunSync(() => {
+            Node.ProjectMgr.Site.GetUIThread().Invoke(() => {
                 this.DoSave(false, fileName);
             });
         }
@@ -187,7 +181,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// <returns>true if the rename was successful. False if Save as failes</returns>
         public override bool SaveAs(string fileName) {
             try {
-                UIThread.Instance.RunSync(() => {
+                Node.ProjectMgr.Site.GetUIThread().Invoke(() => {
                     this.DoSave(true, fileName);
                 });
             } catch (InvalidOperationException) {
@@ -215,13 +209,13 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 }
             } catch (FormatException) {
                 // Not a valid guid
-                throw new ArgumentException(SR.GetString(SR.ParameterMustBeAValidGuid, CultureInfo.CurrentUICulture), "viewKind");
+                throw new ArgumentException(SR.GetString(SR.ParameterMustBeAValidGuid), "viewKind");
             }
 
             bool isOpen = false;
 
             using (AutomationScope scope = new AutomationScope(this.Node.ProjectMgr.Site)) {
-                UIThread.Instance.RunSync(() => {
+                Node.ProjectMgr.Site.GetUIThread().Invoke(() => {
                     IVsUIHierarchy hier;
                     uint itemid;
 
@@ -239,7 +233,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// </summary>
         public override ProjectItems ProjectItems {
             get {
-                return UIThread.Instance.RunSync<ProjectItems>(() => {
+                return Node.ProjectMgr.Site.GetUIThread().Invoke<ProjectItems>(() => {
                     if (this.Project.ProjectNode.CanFileNodesHaveChilds)
                         return new OAProjectItems(this.Project, this.Node);
                     else
@@ -264,7 +258,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
 
             using (AutomationScope scope = new AutomationScope(this.Node.ProjectMgr.Site)) {
 
-                UIThread.Instance.RunSync(() => {
+                Node.ProjectMgr.Site.GetUIThread().Invoke(() => {
                     IntPtr docData = IntPtr.Zero;
 
                     try {

@@ -54,7 +54,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 CheckProjectIsValid();
 
                 using (AutomationScope scope = new AutomationScope(this.project.Site)) {
-                    UIThread.Instance.RunSync(() => {
+                    ProjectNode.Site.GetUIThread().Invoke(() => {
                         project.SetEditLabel(value);
                     });
                 }
@@ -84,8 +84,8 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 CheckProjectIsValid();
 
                 using (AutomationScope scope = new AutomationScope(this.project.Site)) {
-                    UIThread.Instance.RunSync(() => {
-                        project.SetProjectFileDirty(value);
+                    ProjectNode.Site.GetUIThread().Invoke(() => {
+                        project.isDirty = value;
                     });
                 }
             }
@@ -226,20 +226,26 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// </summary>
         public virtual EnvDTE.ConfigurationManager ConfigurationManager {
             get {
-                if (this.configurationManager == null) {
-                    IVsExtensibility3 extensibility = this.project.Site.GetService(typeof(IVsExtensibility)) as IVsExtensibility3;
+                return ProjectNode.Site.GetUIThread().Invoke(() => {
+                    if (this.configurationManager == null) {
+                        IVsExtensibility3 extensibility = this.project.Site.GetService(typeof(IVsExtensibility)) as IVsExtensibility3;
 
-                    Utilities.CheckNotNull(extensibility);
+                        Utilities.CheckNotNull(extensibility);
 
-                    object configurationManagerAsObject;
-                    ErrorHandler.ThrowOnFailure(extensibility.GetConfigMgr(this.project, VSConstants.VSITEMID_ROOT, out configurationManagerAsObject));
+                        object configurationManagerAsObject;
+                        ErrorHandler.ThrowOnFailure(extensibility.GetConfigMgr(
+                            this.project.GetOuterInterface<IVsHierarchy>(),
+                            VSConstants.VSITEMID_ROOT,
+                            out configurationManagerAsObject
+                        ));
 
-                    Utilities.CheckNotNull(configurationManagerAsObject);
+                        Utilities.CheckNotNull(configurationManagerAsObject);
 
-                    this.configurationManager = (ConfigurationManager)configurationManagerAsObject;
-                }
+                        this.configurationManager = (ConfigurationManager)configurationManagerAsObject;
+                    }
 
-                return this.configurationManager;
+                    return this.configurationManager;
+                });
             }
         }
 
@@ -271,7 +277,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// <exception cref="InvalidOperationException">Is thrown if the save operation failes.</exception>
         /// <exception cref="ArgumentNullException">Is thrown if fileName is null.</exception>        
         public virtual void SaveAs(string fileName) {
-            UIThread.Instance.RunSync(() => {
+            ProjectNode.Site.GetUIThread().Invoke(() => {
                 this.DoSave(true, fileName);
             });
         }
@@ -283,7 +289,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// <exception cref="InvalidOperationException">Is thrown if the save operation failes.</exception>
         /// <exception cref="ArgumentNullException">Is thrown if fileName is null.</exception>        
         public virtual void Save(string fileName) {
-            UIThread.Instance.RunSync(() => {
+            ProjectNode.Site.GetUIThread().Invoke(() => {
                 this.DoSave(false, fileName);
             });
         }
@@ -295,7 +301,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
             CheckProjectIsValid();
 
             using (AutomationScope scope = new AutomationScope(this.project.Site)) {
-                UIThread.Instance.RunSync(() => {
+                ProjectNode.Site.GetUIThread().Invoke(() => {
                     this.project.Remove(false);
                 });
             }
@@ -373,7 +379,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                     }
                         // We want to be consistent in the error message and exception we throw. fileName could be for example #¤&%"¤&"%  and that would trigger an ArgumentException on Path.IsRooted.
                     catch (ArgumentException ex) {
-                        throw new InvalidOperationException(String.Format(SR.GetString(SR.ErrorInvalidFileName, CultureInfo.CurrentUICulture), fileName), ex);
+                        throw new InvalidOperationException(SR.GetString(SR.ErrorInvalidFileName, fileName), ex);
                     }
 
                     // It might be redundant but we validate the file and the full path of the file being valid. The SaveAs would also validate the path.

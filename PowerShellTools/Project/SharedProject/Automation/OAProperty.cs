@@ -14,11 +14,15 @@
 
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudioTools.Project.Automation {
     [ComVisible(true)]
     public class OAProperty : EnvDTE.Property {
+        private const string WrappedStacktraceKey =
+            "$$Microsoft.VisualStudioTools.Project.Automation.WrappedStacktraceKey$$";
+
         #region fields
         private OAProperties parent;
         private PropertyInfo pi;
@@ -128,7 +132,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// <param name="value">The value to set.</param>
         public void set_IndexedValue(object index1, object index2, object index3, object index4, object value) {
             Debug.Assert(pi.GetIndexParameters().Length == 0);
-            UIThread.Instance.RunSync(() => {
+            parent.Target.HierarchyNode.ProjectMgr.Site.GetUIThread().Invoke(() => {
                 this.Value = value;
             });
         }
@@ -137,11 +141,37 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// Gets or sets the value of the property returned by the Property object.
         /// </summary>
         public object Value {
-            get { return pi.GetValue(this.parent.Target, null); }
+            get {
+                using (AutomationScope scope = new AutomationScope(this.parent.Target.HierarchyNode.ProjectMgr.Site)) {
+                    return parent.Target.HierarchyNode.ProjectMgr.Site.GetUIThread().Invoke(() => {
+                        try {
+                            return pi.GetValue(this.parent.Target, null);
+                        } catch (TargetInvocationException ex) {
+                            // If the property raised an exception, we want to
+                            // rethrow that exception and not the outer one.
+                            if (ex.InnerException != null) {
+                                ex.InnerException.Data[WrappedStacktraceKey] = ex.InnerException.StackTrace;
+                                throw ex.InnerException;
+                            }
+                            throw;
+                        }
+                    });
+                }
+            }
             set {
                 using (AutomationScope scope = new AutomationScope(this.parent.Target.HierarchyNode.ProjectMgr.Site)) {
-                    UIThread.Instance.RunSync(() => {
-                        this.pi.SetValue(this.parent.Target, value, null);
+                    parent.Target.HierarchyNode.ProjectMgr.Site.GetUIThread().Invoke(() => {
+                        try {
+                            this.pi.SetValue(this.parent.Target, value, null);
+                        } catch (TargetInvocationException ex) {
+                            // If the property raised an exception, we want to
+                            // rethrow that exception and not the outer one.
+                            if (ex.InnerException != null) {
+                                ex.InnerException.Data[WrappedStacktraceKey] = ex.InnerException.StackTrace;
+                                throw ex.InnerException;
+                            }
+                            throw;
+                        }
                     });
                 }
             }

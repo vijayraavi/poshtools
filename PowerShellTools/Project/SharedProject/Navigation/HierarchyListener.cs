@@ -129,6 +129,9 @@ namespace Microsoft.VisualStudioTools.Navigation {
             }
 
             public int OnPropertyChanged(uint itemid, int propid, uint flags) {
+                if ((null == _hierarchy) || (0 == _cookie)) {
+                    return VSConstants.S_OK;
+                }
                 string name;
                 if (!IsAnalyzableSource(itemid, out name)) {
                     return VSConstants.S_OK;
@@ -141,7 +144,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
             #endregion
 
             private bool InternalStopListening(bool throwOnError) {
-                if ((null != _hierarchy) || (0 == _cookie)) {
+                if ((null == _hierarchy) || (0 == _cookie)) {
                     return false;
                 }
                 int hr = _hierarchy.UnadviseHierarchyEvents(_cookie);
@@ -228,12 +231,18 @@ namespace Microsoft.VisualStudioTools.Navigation {
             /// <param name="variantValue">VARIANT holding an itemid.</param>
             /// <returns>Item Id of the concerned node</returns>
             private static uint GetItemId(object variantValue) {
-                if (variantValue == null) return VSConstants.VSITEMID_NIL;
-                if (variantValue is int) return (uint)(int)variantValue;
-                if (variantValue is uint) return (uint)variantValue;
-                if (variantValue is short) return (uint)(short)variantValue;
-                if (variantValue is ushort) return (uint)(ushort)variantValue;
-                if (variantValue is long) return (uint)(long)variantValue;
+                if (variantValue == null)
+                    return VSConstants.VSITEMID_NIL;
+                if (variantValue is int)
+                    return (uint)(int)variantValue;
+                if (variantValue is uint)
+                    return (uint)variantValue;
+                if (variantValue is short)
+                    return (uint)(short)variantValue;
+                if (variantValue is ushort)
+                    return (uint)(ushort)variantValue;
+                if (variantValue is long)
+                    return (uint)(long)variantValue;
                 return VSConstants.VSITEMID_NIL;
             }
         }
