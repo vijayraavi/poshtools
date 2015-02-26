@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.VisualStudio.Repl.DialogWindows
+namespace PowerShellTools.Repl.DialogWindows
 {
     class RemoteSessionWindowViewModel : ObservableObject
     {
