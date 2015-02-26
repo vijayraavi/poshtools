@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.VisualStudio.Repl.DialogWindows {
+namespace PowerShellTools.Repl.Repl.DialogWindows {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.Repl.DialogWindows {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.VisualStudio.Repl.DialogWindows.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PowerShellTools.Repl.Repl.DialogWindows.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,11 +61,29 @@ namespace Microsoft.VisualStudio.Repl.DialogWindows {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string CancelButtonText {
+            get {
+                return ResourceManager.GetString("CancelButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ComputerName:.
         /// </summary>
         public static string ComputerNameLabel {
             get {
                 return ResourceManager.GetString("ComputerNameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter.
+        /// </summary>
+        public static string EnterButtonText {
+            get {
+                return ResourceManager.GetString("EnterButtonText", resourceCulture);
             }
         }
         
