@@ -56,6 +56,7 @@ namespace PowerShellTools.Repl {
     using IReplWindowCreationListener = IPowerShellReplWindowCreationListener;
     using ReplRoleAttribute = PowerShellReplRoleAttribute;
     using IReplCommand2 = IPowerShellReplCommand2;
+    using Microsoft.VisualStudio.Repl.DialogWindows;
 #endif
 
     /// <summary>
@@ -1390,6 +1391,14 @@ namespace PowerShellTools.Repl {
                         prgCmds[0].cmdf = _isRunning || _stdInputStart != null ? CommandEnabled : CommandDisabled;
                         return VSConstants.S_OK;
 
+                    case PkgCmdIDList.cmdidEnterSession:
+                        prgCmds[0].cmdf = !_isRunning && !Evaluator.IsRemoteSession() ? CommandEnabled : CommandDisabled;
+                        return VSConstants.S_OK;
+
+                    case PkgCmdIDList.cmdidExitSession:
+                        prgCmds[0].cmdf = Evaluator.IsRemoteSession() ? CommandEnabled : CommandDisabled;
+                        return VSConstants.S_OK;
+
                     case PkgCmdIDList.cmdidResetRepl:
                         prgCmds[0].cmdf = _commands.OfType<ResetReplCommand>().Count() != 0 ? CommandEnabled : CommandDisabledAndHidden;
                         return VSConstants.S_OK;
@@ -1406,6 +1415,14 @@ namespace PowerShellTools.Repl {
                 switch (nCmdID) {
                     case PkgCmdIDList.cmdidBreakRepl:
                         AbortCommand();
+                        return VSConstants.S_OK;
+
+                    case PkgCmdIDList.cmdidEnterSession:
+                        EnterRemoteSessionCommand();
+                        return VSConstants.S_OK;
+
+                    case PkgCmdIDList.cmdidExitSession:
+                        ExitRemoteSessionCommand();
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidResetRepl:
@@ -1452,6 +1469,25 @@ namespace PowerShellTools.Repl {
             }
 
             return nextTarget.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+        }
+
+        private void ExitRemoteSessionCommand()
+        {
+            Evaluator.ExitRemoteSession();
+        }
+
+        private void EnterRemoteSessionCommand()
+        {
+            var viewModel = new RemoteSessionWindowViewModel();
+            var view = new RemoteSessionEnterWindow(viewModel);
+            if (view.ShowModal() == true)
+            {
+                string computerName = viewModel.ComputerName;
+                if (!_isRunning)
+                {
+                    Evaluator.EnterRemoteSession(computerName);                   
+                }
+            }
         }
 
         #endregion

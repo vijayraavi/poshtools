@@ -118,18 +118,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public override Dictionary<string, PSObject> Prompt(string caption, string message,
             Collection<FieldDescription> descriptions)
         {
-            string promptMessage = caption + Environment.NewLine + message + " ";
+            string promptMessage = string.Format("{0}{2}{1}", caption, message, Environment.NewLine);
+            this.WriteLine(promptMessage);
+
             Dictionary<string, PSObject> results =
                      new Dictionary<string, PSObject>();
             foreach (FieldDescription fd in descriptions)
             {
-                this.Write(promptMessage);
-                string userData = this.ReadLineFromUI(promptMessage + Environment.NewLine + fd.Name);
+                this.Write(fd.Name + ": ");
+                string userData = this.ReadLineFromUI(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
                 if (userData == null)
                 {
                     return null;
                 }
-                this.Write(userData);
+                this.WriteLine(userData);
+
                 results[fd.Name] = PSObject.AsPSObject(userData);
             }
 

@@ -162,6 +162,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             UnregisterRemoteFileOpenEvent(Runspace);
             Runspace = _pushedRunspace;
             _pushedRunspace = null;
+            _callback.SetRemoteRunspace(false);
         }
 
 
@@ -170,6 +171,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _pushedRunspace = Runspace;
             Runspace = runspace;
             Runspace.Debugger.SetDebugMode(DebugModes.RemoteScript);
+            _callback.SetRemoteRunspace(true);
 
             RegisterRemoteFileOpenEvent(runspace);
         }
