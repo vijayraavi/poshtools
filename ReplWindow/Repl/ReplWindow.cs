@@ -56,7 +56,7 @@ namespace PowerShellTools.Repl {
     using IReplWindowCreationListener = IPowerShellReplWindowCreationListener;
     using ReplRoleAttribute = PowerShellReplRoleAttribute;
     using IReplCommand2 = IPowerShellReplCommand2;
-    using Microsoft.VisualStudio.Repl.DialogWindows;
+    using PowerShellTools.Repl.DialogWindows;
 #endif
 
     /// <summary>

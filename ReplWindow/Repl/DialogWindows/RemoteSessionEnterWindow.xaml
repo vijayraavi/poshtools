@@ -1,11 +1,11 @@
-﻿<shell:VsShellDialogWindow x:Class="Microsoft.VisualStudio.Repl.DialogWindows.RemoteSessionEnterWindow"          
+﻿<shell:VsShellDialogWindow x:Class="PowerShellTools.Repl.DialogWindows.RemoteSessionEnterWindow"          
         x:ClassModifier="internal"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:shell="clr-namespace:PowerShellTools.Common;assembly=PowerShellTools.Common"
-        xmlns:w="clr-namespace:Microsoft.VisualStudio.Repl.DialogWindows"
+        xmlns:w="clr-namespace:PowerShellTools.Repl.Repl.DialogWindows"
         MinWidth="360"
         Width="360"
         MinHeight="140"
@@ -41,10 +41,10 @@
                     Margin="0,10,10,20"
                     Orientation="Horizontal">
             <Button Click="OnOkButtonClick"
-                    Content="Enter"
+                    Content="{x:Static w:Resources.EnterButtonText}"
                     IsDefault="True" 
                     IsEnabled="{Binding ElementName=txtComputerName, Path=Text.Length, Mode=OneWay}"/>
-            <Button Content="Cancel"
+            <Button Content="{x:Static w:Resources.CancelButtonText}"
                     IsCancel="True" />
         </StackPanel>
     </Grid>

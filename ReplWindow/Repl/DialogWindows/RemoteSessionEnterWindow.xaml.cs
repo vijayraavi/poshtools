@@ -15,7 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
 
-namespace Microsoft.VisualStudio.Repl.DialogWindows
+namespace PowerShellTools.Repl.DialogWindows
 {
     /// <summary>
     /// Interaction logic for RemoteSessionEnterWindow.xaml
