@@ -116,5 +116,14 @@ namespace PowerShellTools.DebugEngine
         {
             Debugger.OpenRemoteFile(fullName);
         }
+
+        /// <summary>
+        /// Set flag to indicate if runspace is hosting remote session
+        /// </summary>
+        /// <param name="enabled">Boolean indicate remote session is enable or not</param>
+        public void SetRemoteRunspace(bool enabled)
+        {
+            Debugger.RemoteSession = enabled;
+        }
     }
 }

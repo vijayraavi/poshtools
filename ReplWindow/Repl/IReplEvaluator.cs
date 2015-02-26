@@ -98,5 +98,21 @@ namespace PowerShellTools.Repl {
         /// Aborts the current running command.
         /// </summary>
         void AbortCommand();
+
+        /// <summary>
+        /// Enter remote powershell session.
+        /// </summary>
+        ExecutionResult EnterRemoteSession(string computerName);
+
+        /// <summary>
+        /// Exit remote powershell session.
+        /// </summary>
+        ExecutionResult ExitRemoteSession();
+
+        /// <summary>
+        /// Check if runspace contains remote session
+        /// </summary>
+        /// <returns>Boolean indicate if runspace is currently hosting remote session</returns>
+        bool IsRemoteSession();
     }
 }
