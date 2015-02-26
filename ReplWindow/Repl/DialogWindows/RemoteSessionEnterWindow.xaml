@@ -8,16 +8,17 @@
         xmlns:w="clr-namespace:Microsoft.VisualStudio.Repl.DialogWindows"
         MinWidth="360"
         Width="360"
-        MinHeight="120"
-        Height="120"
+        MinHeight="140"
+        Height="140"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
         Title="{x:Static w:Resources.RemoteSessionEnterTitle}"
         WindowStartupLocation="CenterOwner">
     <shell:VsShellDialogWindow.Resources>
         <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="MinHeight" Value="23" />
-            <Setter Property="MinWidth" Value="75" />
+            <Setter Property="Height" Value="23" />
+            <Setter Property="Width" Value="75" />
+            <Setter Property="Margin" Value="5,0,0,0"/>
         </Style>
     </shell:VsShellDialogWindow.Resources>
     <Grid>
@@ -37,15 +38,14 @@
         </Grid>
         <StackPanel Grid.Row="1"
                     HorizontalAlignment="Right"
-                    Margin="0,10,10,10"
+                    Margin="0,10,10,20"
                     Orientation="Horizontal">
             <Button Click="OnOkButtonClick"
                     Content="Enter"
                     IsDefault="True" 
                     IsEnabled="{Binding ElementName=txtComputerName, Path=Text.Length, Mode=OneWay}"/>
             <Button Content="Cancel"
-                    IsCancel="True"
-                    Margin="5,0,0,0" />
+                    IsCancel="True" />
         </StackPanel>
     </Grid>
 </shell:VsShellDialogWindow>
