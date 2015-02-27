@@ -493,31 +493,24 @@ namespace PowerShellTools.HostService.CredentialUI
 
                 case NativeCredentialsUI.ReturnCodes.ERROR_NO_SUCH_LOGON_SESSION:
                     throw new ApplicationException("No such logon session.");
-                    break;
 
                 case NativeCredentialsUI.ReturnCodes.ERROR_NOT_FOUND:
                     throw new ApplicationException("Not found.");
-                    break;
 
                 case NativeCredentialsUI.ReturnCodes.ERROR_INVALID_ACCOUNT_NAME:
                     throw new ApplicationException("Invalid account name.");
-                    break;
 
                 case NativeCredentialsUI.ReturnCodes.ERROR_INSUFFICIENT_BUFFER:
                     throw new ApplicationException("Insufficient buffer.");
-                    break;
 
                 case NativeCredentialsUI.ReturnCodes.ERROR_INVALID_PARAMETER:
                     throw new ApplicationException("Invalid parameter.");
-                    break;
 
                 case NativeCredentialsUI.ReturnCodes.ERROR_INVALID_FLAGS:
                     throw new ApplicationException("Invalid flags.");
-                    break;
 
                 default:
                     throw new ApplicationException("Unknown credential result encountered.");
-                    break;
             }
             return result;
         }
