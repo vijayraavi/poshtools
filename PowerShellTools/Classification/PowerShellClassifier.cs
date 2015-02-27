@@ -11,7 +11,7 @@ namespace PowerShellTools.Classification
 {
 	internal class PowerShellClassifier : Classifier
 	{
-#pragma warning disable 649
+#pragma warning disable 169, 649
         [BaseDefinition(PredefinedClassificationTypeNames.SymbolDefinition), Name(Classifications.PowerShellAttribute), Export(typeof(ClassificationTypeDefinition))]
 		private static ClassificationTypeDefinition attributeTypeDefinition;
         [BaseDefinition(PredefinedClassificationTypeNames.SymbolDefinition), Name(Classifications.PowerShellCommand), Export(typeof(ClassificationTypeDefinition))]
@@ -56,7 +56,7 @@ namespace PowerShellTools.Classification
         private static ClassificationTypeDefinition scriptGapsTypeDefinition;
         private static Dictionary<PSTokenType, IClassificationType> tokenClassificationTypeMap;
         private static IClassificationType scriptGaps;
-#pragma warning restore 649
+#pragma warning restore 169, 649
         static PowerShellClassifier()
 	    {
             tokenClassificationTypeMap = new Dictionary<PSTokenType, IClassificationType>();
