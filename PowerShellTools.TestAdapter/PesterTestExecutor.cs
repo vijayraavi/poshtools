@@ -198,7 +198,7 @@ namespace PowerShellTools.TestAdapter
             return TestOutcome.None;
         }
 
-        private static Version Version335 = new Version(3, 3, 5);
+        private static readonly Version Version335 = new Version(3, 3, 5);
     }
 
     /// <summary>
