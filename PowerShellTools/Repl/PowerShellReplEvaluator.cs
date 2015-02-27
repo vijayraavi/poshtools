@@ -13,6 +13,7 @@ namespace PowerShellTools.Repl
     using ReplRoleAttribute = PowerShellReplRoleAttribute;
     using IReplEvaluator = IPowerShellReplEvaluator;
     using IReplWindow = IPowerShellReplWindow;
+    using PowerShellTools.Common.Debugging;
 #endif
 
     [ReplRole("Debug")]
@@ -85,7 +86,22 @@ namespace PowerShellTools.Repl
             Debugger.Stop();
         }
 
+        public ExecutionResult EnterRemoteSession(string computerName)
+        {
+            string cmdEnterRemoteSession = string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, computerName);
+            return ExecuteText(cmdEnterRemoteSession).Result;
+        }
 
+        public ExecutionResult ExitRemoteSession()
+        {
+            string cmdExitRemoteSession = string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
+            return ExecuteText(cmdExitRemoteSession).Result;
+        }
+
+        public bool IsRemoteSession()
+        {
+            return Debugger.RemoteSession;
+        }
     }
  
 }

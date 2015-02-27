@@ -160,7 +160,10 @@ namespace PowerShellTools.DebugEngine
             {
                 pPropertyInfo[0].dwFields |= enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_ATTRIB;
                 pPropertyInfo[0].dwAttrib |= enum_DBG_ATTRIB_FLAGS.DBG_ATTRIB_VALUE_READONLY;
-                pPropertyInfo[0].dwAttrib |= enum_DBG_ATTRIB_FLAGS.DBG_ATTRIB_OBJ_IS_EXPANDABLE;
+                if (!ScriptPropertyCollection.PsBaseTypes.Contains(TypeName))
+                {
+                    pPropertyInfo[0].dwAttrib |= enum_DBG_ATTRIB_FLAGS.DBG_ATTRIB_OBJ_IS_EXPANDABLE;
+                }
             }
 
             pPropertyInfo[0].pProperty = this;
@@ -250,7 +253,7 @@ namespace PowerShellTools.DebugEngine
     {
         private uint _count;
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptPropertyCollection));
-        private static List<string> PsBaseTypes = new List<string>() { "System.String", "System.Char", "System.Byte", "System.Int32", "System.Int64", "System.Boolean", "System.Decimal", "System.Single", "System.Double" };
+        public static List<string> PsBaseTypes = new List<string>() { "System.String", "System.Char", "System.Byte", "System.Int32", "System.Int64", "System.Boolean", "System.Decimal", "System.Single", "System.Double" };
 
         public ScriptPropertyCollection(ScriptDebugger debugger)
         {
