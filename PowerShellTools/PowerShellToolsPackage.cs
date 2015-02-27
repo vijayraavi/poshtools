@@ -30,6 +30,7 @@ using PowerShellTools.Service;
 using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
+using PowerShellTools.Project;
 
 namespace PowerShellTools
 {
@@ -162,17 +163,31 @@ EnableCommenting = true)]
 
         public override Type GetLibraryManagerType()
         {
-            return null;
+            return typeof(PowerShellLibraryManager);
         }
 
         internal override LibraryManager CreateLibraryManager(CommonPackage package)
         {
-            throw new NotImplementedException();
+            return new PowerShellLibraryManager(package);
         }
 
         public override bool IsRecognizedFile(string filename)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(filename))
+            {
+                return false;
+            }
+
+
+            string ext = filename.Substring(filename.LastIndexOf('.') + 1);
+
+
+            // TODO: POLISH
+            if (ext == ".ps1")
+                return true;
+
+
+            return false;
         }
 
         private void RefreshCommands(params ICommand[] commands)

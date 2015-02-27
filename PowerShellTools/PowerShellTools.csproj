@@ -538,14 +538,9 @@
     <Compile Include="Project\SharedProject\Wpf\Commands.cs" />
     <Compile Include="Project\SharedProject\Wpf\ConfigurationControl.cs" />
     <Compile Include="Project\SharedProject\Wpf\Controls.cs" />
-    <Compile Include="Project\SharedProject\Wpf\Controls.xaml" />
     <Compile Include="Project\SharedProject\Wpf\Dialogs.cs" />
     <Compile Include="Project\SharedProject\Wpf\LabelledButton.cs" />
     <Compile Include="Project\SharedProject\Wpf\LabelledControl.cs" />
-    <Compile Include="Project\SharedProject\Wpf\LambdaConverter\ILambdaConverterProvider.cs" />
-    <Compile Include="Project\SharedProject\Wpf\LambdaConverter\LambdaConverter.cs" />
-    <Compile Include="Project\SharedProject\Wpf\LambdaConverter\LambdaExtension.cs" />
-    <Compile Include="Project\SharedProject\Wpf\LambdaConverter\LambdaProperties.cs" />
     <Compile Include="Project\SharedProject\Wpf\NativeMethods.cs" />
     <Compile Include="Project\Utils\DropDownListProperty.cs" />
     <Compile Include="Project\Utils\DropDownListPropertyEditor.cs" />
@@ -605,6 +600,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Project\SharedProject\Resources.resx">
       <DependentUpon>Resources.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\SharedProject\WebPiComponentPickerControl.resx">
       <DependentUpon>WebPiComponentPickerControl.cs</DependentUpon>

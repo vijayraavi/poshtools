@@ -85,8 +85,9 @@ namespace Microsoft.VisualStudioTools.Project {
             }
         }
 
-        internal DynamicProjectSR() {
-            _resources = new ResourceManager("PowerShellTools.Project.Resources.ProjectResources", this.GetType().Assembly);
+        internal DynamicProjectSR()
+        {
+            _resources = new ResourceManager("Microsoft.VisualStudioTools.SharedProject", this.GetType().Assembly);
         }
 
         private static DynamicProjectSR GetLoader() {
