@@ -16,8 +16,8 @@ namespace PowerShellTools.Common
 
         public const string ReadyEventPrefix = "VsPowershellToolProcess:";
 
-        // 2 seconds
-        public const int HostProcessStartupTimeout = 2000;
+        // 10 seconds
+        public const int HostProcessStartupTimeout = 10000;
 
         public const string PowershellHostExeName = "PowerShellToolsProcessHost.exe";
 
