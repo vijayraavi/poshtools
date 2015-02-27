@@ -91,11 +91,20 @@ namespace PowerShellTools.Project
             }
         }
 
+        internal override string IssueTrackerUrl
+        {
+            get
+            {
+                return "https://github.com/adamdriscoll/poshtools/issues"; //TODO: FWLink
+            }
+        }
+
         public override CommonFileNode CreateCodeFileNode(ProjectElement item)
         {
             var node = new PowerShellFileNode(this, item);
 
-            node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
+            // TODO: Uncomment?
+            //node.OleServiceProvider.AddSevice(typeof(SVSMDCodeDomProvider), CreateServices, false);
 
             return node;
         }
@@ -103,7 +112,7 @@ namespace PowerShellTools.Project
         public override CommonFileNode CreateNonCodeFileNode(ProjectElement item)
         {
             var node = new PowerShellFileNode(this, item);
-            node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
+            //node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
 
             return node;
         }
