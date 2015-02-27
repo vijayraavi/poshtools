@@ -140,10 +140,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             ImportPoshToolsModule();
             LoadProfile();
+            ServiceCommon.Log("Done initializing runspace");
         }
 
         private void ImportPoshToolsModule()
         {
+            ServiceCommon.Log("Importing posh tools module");
             using (PowerShell ps = PowerShell.Create())
             {
                 var assemblyLocation = Assembly.GetExecutingAssembly().Location;
@@ -155,6 +157,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void LoadProfile()
         {
+            ServiceCommon.Log("Loading PowerShell Profile");
             using (PowerShell ps = PowerShell.Create())
             {
                 var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -180,6 +183,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
         {
+            ServiceCommon.Log("Setting execution policy");
             using (PowerShell ps = PowerShell.Create())
             {
                 ps.Runspace = _runspace;
