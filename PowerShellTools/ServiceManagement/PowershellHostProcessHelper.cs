@@ -46,6 +46,7 @@ namespace PowerShellTools.ServiceManagement
 
             if (!success)
             {
+                int processId = powershellHostProcess.Id;
                 try
                 {
                     powershellHostProcess.Kill();
@@ -61,7 +62,7 @@ namespace PowerShellTools.ServiceManagement
                 }
                 throw new PowershellHostProcessException(String.Format(CultureInfo.CurrentCulture,
                                                                         Resources.ErrorFailToCreateProcess,
-                                                                        powershellHostProcess.Id));
+                                                                        processId.ToString()));
             }
 
             return new PowershellHostProcess(powershellHostProcess, endPointGuid);
