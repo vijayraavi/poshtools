@@ -114,7 +114,7 @@ EnableCommenting = true)]
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
             Instance = this;
             _commands = new Dictionary<ICommand, MenuCommand>();
-            DependencyValidator = new DependencyValidator(this);
+            DependencyValidator = new DependencyValidator();
         }
 
         private ITextBufferFactoryService _textBufferFactoryService;
@@ -153,7 +153,6 @@ EnableCommenting = true)]
             }
         }
 
-        [Export]
         internal DependencyValidator DependencyValidator { get; set; } 
 
         public new object GetService(Type type)

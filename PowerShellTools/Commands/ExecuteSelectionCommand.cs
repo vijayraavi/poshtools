@@ -16,9 +16,9 @@ namespace PowerShellTools.Commands
     /// </remarks>
     internal class ExecuteSelectionCommand : ICommand
     {
-        private DependencyValidator _validator;
+        private IDependencyValidator _validator;
 
-        public ExecuteSelectionCommand(DependencyValidator dependencyValidator)
+        public ExecuteSelectionCommand(IDependencyValidator dependencyValidator)
         {
             _validator = dependencyValidator;
         }
