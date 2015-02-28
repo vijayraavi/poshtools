@@ -46,7 +46,7 @@ namespace PowerShellTools.TestAdapter
             var describeName = testCase.FullyQualifiedName.Split(new[] {"||"}, StringSplitOptions.None)[1];
             var testCaseName = testCase.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[3];
 
-            if (moduleInfo.Version < new Version(3, 3, 5))
+            if (moduleInfo.Version < Version335)
             {
                 powerShell.AddCommand("Invoke-Pester")
                     .AddParameter("relative_path", fi.Directory.FullName)
@@ -197,6 +197,8 @@ namespace PowerShellTools.TestAdapter
 
             return TestOutcome.None;
         }
+
+        private static readonly Version Version335 = new Version(3, 3, 5);
     }
 
     /// <summary>
