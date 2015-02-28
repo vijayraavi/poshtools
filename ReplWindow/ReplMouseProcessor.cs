@@ -22,7 +22,7 @@ namespace PowerShellTools.Repl{
     /// context menu.
     /// </summary>
     [Export(typeof(IMouseProcessorProvider))]
-    [Name("ReplWindowMouseProcessor")]
+    [Name(ReplConstants.ReplMouseProcessor)]
     [Order(Before = "VisualStudioMouseProcessor")]
     [ContentType("text")] // or whatever your adornment is specific to
     [TextViewRole(ReplConstants.ReplTextViewRole)]

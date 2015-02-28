@@ -336,7 +336,7 @@
             <IDSymbol name="comboIdReplScopesGetList" value="0x3001"/>
         </GuidSymbol>
 
-        <GuidSymbol name="guidReplToolbarImages" value="{BF5B77A1-4427-4958-9638-82C4029F1D0C}" >
+        <GuidSymbol name="guidReplToolbarImages" value="{F0F921FC-8315-43EB-861F-CFA40AD47C34}" >
             <IDSymbol name="bmpCancelEval" value="0x01" />
             <IDSymbol name="bmpResetSession" value="0x02" />
             <IDSymbol name="bmpClearScreen" value="0x03" />
