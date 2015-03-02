@@ -402,7 +402,6 @@ namespace PowerShellTools.HostService.CredentialUI
             name.Append(this.Name);
 
             StringBuilder password = new StringBuilder(NativeCredentialsUI.MAX_PASSWORD_LENGTH);
-            password.Append(this.Password);
 
             int saveChecked = Convert.ToInt32(this.SaveChecked);
 
