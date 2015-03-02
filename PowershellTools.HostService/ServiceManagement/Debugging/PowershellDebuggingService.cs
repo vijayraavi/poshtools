@@ -52,7 +52,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         /// The runspace used by the current PowerShell host.
         /// </summary>
-        public static Runspace Runspace 
+        public static Runspace Runspace
         {
             get
             {
@@ -70,7 +70,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 return _callback;
             }
-            set 
+            set
             {
                 _callback = value;
             }
@@ -109,7 +109,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public void SetBreakpoint(PowershellBreakpoint bp)
         {
             ServiceCommon.Log("Setting breakpoint ...");
-            
+
             using (var pipeline = (_runspace.CreatePipeline()))
             {
                 var command = new Command("Set-PSBreakpoint");
@@ -119,9 +119,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     file = _mapLocalToRemote[bp.ScriptFullPath];
                 }
-                
+
                 command.Parameters.Add("Script", file);
-                
+
                 command.Parameters.Add("Line", bp.Line);
 
                 pipeline.Commands.Add(command);
@@ -172,7 +172,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             ServiceCommon.Log("Start executing ps script ...");
-            
+
             try
             {
                 if (_callback == null)
@@ -187,7 +187,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
             {
-                _callback.OutputString("Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.");
+                _callback.OutputString("Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently." + Environment.NewLine);
+
+                ServiceCommon.Log("Pipeline not executed with Runspace status: {0}", _runspace.RunspaceAvailability);
+
                 return false;
             }
 
@@ -254,7 +257,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns>Collection of variable to client</returns>
         public Collection<Variable> GetScopedVariable()
         {
-            Collection<Variable>  variables = new Collection<Variable>();
+            Collection<Variable> variables = new Collection<Variable>();
 
             foreach (var psobj in _varaiables)
             {
@@ -490,7 +493,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     callStackFrames.Add(
                         new CallStack(
                             psFrame.ScriptName == null ? string.Empty : _mapRemoteToLocal[(string)psFrame.ScriptName.ToString()],
-                            (string)psFrame.FunctionName.ToString(), 
+                            (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
                 }
             }

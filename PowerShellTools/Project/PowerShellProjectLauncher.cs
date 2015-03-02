@@ -32,6 +32,20 @@ namespace PowerShellTools.Project
 
         public int LaunchProject(bool debug)
         {
+            string script = String.Empty;
+            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            if (dte2 != null)
+            {
+                if (dte2.ActiveDocument != null)
+                {
+                    script = dte2.ActiveDocument.FullName;
+                }
+                else
+                {
+                    return VSConstants.E_INVALIDARG;
+                }
+            }
+
             if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
 
             Log.Debug("PowerShellProjectLauncher.LaunchProject");
@@ -41,15 +55,6 @@ namespace PowerShellTools.Project
             var info = new VsDebugTargetInfo();
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
-
-            string script = String.Empty;
-            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null)
-            {
-                script = dte2.ActiveDocument.FullName;
-            }
-
-
             info.bstrExe = script;
             info.bstrCurDir = Path.GetDirectoryName(info.bstrCurDir);
 

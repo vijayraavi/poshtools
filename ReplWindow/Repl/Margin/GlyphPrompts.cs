@@ -38,7 +38,7 @@ namespace PowerShellTools.Repl {
     /// Implements prompt glyphs in a GlyphMargin. 
     /// </summary>
     internal static class ReplGlyphPrompts {
-        internal const string GlyphName = "ReplPromptGlyph";
+        internal const string GlyphName = "PowerShellReplPromptGlyph";
 
         internal sealed class ReplGlyphTag : IGlyphTag {
             internal static readonly ReplGlyphTag MainPrompt = new ReplGlyphTag();
