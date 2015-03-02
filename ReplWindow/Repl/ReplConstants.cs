@@ -19,12 +19,22 @@ using System.Text;
 
 namespace PowerShellTools.Repl {
     public static class ReplConstants {
-        public const string ReplContentTypeName = "REPLCode";
-        public const string ReplOutputContentTypeName = "REPLOutput";
+        public const string ReplContentTypeName = "PowerShellREPLCode";
+        public const string ReplOutputContentTypeName = "PowerShellREPLOutput";
 
         /// <summary>
-        /// The additional role found in any REPL editor window.
+        /// The additional role found in any PowerShell REPL editor window.
         /// </summary>
-        public const string ReplTextViewRole = "REPL";
+        public const string ReplTextViewRole = "PowerShellREPL";
+
+        internal const string ReplMouseProcessor = "PowerShellReplWindowMouseProcessor";
+
+        // These are used for Registry serialization.
+        internal const string ActiveReplsKey = "PowerShellActiveRepls";
+        internal const string ContentTypeKey = "PowerShellContentType";
+        internal const string RolesKey = "PowerShellRoles";
+        internal const string TitleKey = "PowerShellTitle";
+        internal const string ReplIdKey = "PowerShellReplId";
+        internal const string LanguageServiceGuidKey = "PowerShellLanguageServiceGuid";
     }
 }
