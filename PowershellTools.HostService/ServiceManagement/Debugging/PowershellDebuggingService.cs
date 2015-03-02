@@ -263,9 +263,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     // Local debugging variable
                     psVar = psobj.BaseObject as PSVariable;
-                    
+
                     if (psVar != null)
                     {
+                        if (psVar.Value is PSObject &&
+                            !(((PSObject)psVar.Value).ImmediateBaseObject is PSCustomObject))
+                        {
+                            psVar = new PSVariable(
+                                (string)psVar.Name,
+                                ((PSObject)psVar.Value).ImmediateBaseObject,
+                                ScopedItemOptions.None);
+                        }
+
                         variables.Add(new Variable(psVar));
                     }
                 }
@@ -381,16 +390,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             if (psVariable != null && !(psVariable is IEnumerable) && !(psVariable is PSObject))
             {
                 var props = psVariable.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-                
+
                 foreach (var propertyInfo in props)
                 {
-                    object val = propertyInfo.GetValue(psVariable, null);
-                    expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
-
-                    if (!val.GetType().IsPrimitive)
+                    try
                     {
-                        string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
-                        _propVariables[key] = val;
+                        object val = propertyInfo.GetValue(psVariable, null);
+                        expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
+
+                        if (!val.GetType().IsPrimitive)
+                        {
+                            string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
+                            _propVariables[key] = val;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ServiceCommon.Log("Property infomation is not able to be retrieved through refletion due to exception: {0}", ex.Message);
                     }
                 }
             }
