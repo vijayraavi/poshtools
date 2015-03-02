@@ -318,6 +318,7 @@
 Would you like to download now?</value>
   </data>
   <data name="ErrorFailToCreateProcess" xml:space="preserve">
-    <value>Failed to create the process {0} due to an unknown error...</value>
+    <value>Timed out to create and initialize the process {0}</value>
+    <comment>{0} - process id</comment>
   </data>
 </root>

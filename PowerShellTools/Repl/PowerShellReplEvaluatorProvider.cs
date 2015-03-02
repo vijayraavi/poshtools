@@ -10,11 +10,13 @@ namespace PowerShellTools.Repl
 #endif
 
     [Export(typeof(IReplEvaluatorProvider))]
+    [PartCreationPolicy(CreationPolicy.Shared)]
     internal class PowerShellReplEvaluatorProvider : IReplEvaluatorProvider
     {
         public PowerShellReplEvaluator psEval;
 
-        [Import] internal DependencyValidator _validator;
+        [Import]
+        internal IDependencyValidator _validator;
         
         public IReplEvaluator GetEvaluator(string replId)
         {
