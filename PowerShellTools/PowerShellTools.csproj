@@ -643,6 +643,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="PowerShellToolsProcessHost.exe.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="Project\SharedProject\SharedProject.proj" />
     <None Include="Templates\Files\Script.ps1" />
   </ItemGroup>
