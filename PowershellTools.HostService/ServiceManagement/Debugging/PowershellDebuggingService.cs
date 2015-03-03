@@ -296,7 +296,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         if (dyVar.Value is PSObject)
                         {
                             // Non-primitive types
-                            if (((PSObject)dyVar.Value).BaseObject is string)
+                            if (((PSObject)dyVar.Value).ImmediateBaseObject is string)
                             {
                                 // BaseObject is string indicates the original object is real PSObject
                                 psVar = new PSVariable(
@@ -309,7 +309,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 // Otherwise we should look into its BaseObject to obtain the original object
                                 psVar = new PSVariable(
                                     (string)dyVar.Name,
-                                    ((PSObject)dyVar.Value).BaseObject,
+                                    ((PSObject)dyVar.Value).ImmediateBaseObject,
                                     ScopedItemOptions.None);
                             }
 
@@ -357,9 +357,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     object obj = item;
                     var psObj = obj as PSObject;
-                    if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.BaseObject is string))
+                    if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.ImmediateBaseObject is string))
                     {
-                        obj = psObj.BaseObject;
+                        obj = psObj.ImmediateBaseObject;
                     }
 
                     expandedVariable.Add(new Variable(String.Format("[{0}]", i), obj.ToString(), obj.GetType().ToString(), obj is IEnumerable, obj is PSObject));
@@ -409,7 +409,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                     catch (Exception ex)
                     {
-                        ServiceCommon.Log("Property infomation is not able to be retrieved through refletion due to exception: {0}", ex.Message);
+                        ServiceCommon.Log("Property infomation is not able to be retrieved through reflection due to exception: {0}", ex.Message);
                     }
                 }
             }
@@ -444,9 +444,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     {
                         val = prop.Value;
                         var psObj = val as PSObject;
-                        if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.BaseObject is string))
+                        if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.ImmediateBaseObject is string))
                         {
-                            val = psObj.BaseObject;
+                            val = psObj.ImmediateBaseObject;
                         }
                     }
                     catch
