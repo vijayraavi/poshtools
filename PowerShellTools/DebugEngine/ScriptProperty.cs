@@ -198,7 +198,7 @@ namespace PowerShellTools.DebugEngine
 
         protected virtual IEnumerable<ScriptProperty> GetChildren()
         {
-            string varFullName = string.IsNullOrEmpty(_path) ? Value : string.Format("{0}\\{1}", _path, Name);
+            string varFullName = string.IsNullOrEmpty(_path) ? Name : string.Format("{0}\\{1}", _path, Name);
 
             Collection<Variable> propVars = _debugger.DebuggingService.GetObjectVariable(varFullName);
 
