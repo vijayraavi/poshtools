@@ -111,6 +111,11 @@
     <Compile Include="CredentialsUI\CredentialsDialog.cs" />
     <Compile Include="CredentialsUI\NativeCredentialsUI.cs" />
     <Compile Include="PowerShellServiceHostBehaviorAttribute.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="ServiceManagement\Debugging\DTEManager.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellDebuggingService.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
@@ -127,6 +132,12 @@
       <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
       <Name>PowerShellTools.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Build\ProjectAfter.settings" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
