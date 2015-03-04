@@ -23,17 +23,16 @@ namespace PowerShellTools.DebugEngine
 #if POWERSHELL
     using IReplWindow = IPowerShellReplWindow;
     using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-using Microsoft.VisualStudio.Shell.Interop;
+    using Microsoft.VisualStudio.Shell.Interop;
     using PowerShellTools.ServiceManagement;
     using PowerShellTools.Common.Debugging;
+    using System.Diagnostics;
 #endif
 
-
-
     /// <summary>
-    ///     The PoshTools PowerShell host and debugger.
+    /// The PoshTools PowerShell host and debugger; the part that interaces with the host (Visual Studio).
     /// </summary>
-    public partial class ScriptDebugger 
+    public partial class ScriptDebugger
     {
         private readonly Guid _instanceId = Guid.NewGuid();
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
@@ -125,16 +124,96 @@ using Microsoft.VisualStudio.Shell.Interop;
             }
             catch
             {
-                return String.Empty;
+                return string.Empty;
             }
         }
     }
 
+    /// <summary>
+    /// Hanldes interaction with the HostUi.
+    /// </summary>
     public class HostUi
     {
         public IReplWindow ReplWindow { get; set; }
 
-        public Action<String> OutputString { get; set; }
+        private static readonly object AnimationIconGeneralIndex = (short)STATUSBARCONSTS.SBAI_Gen; //General Status Bar Animation
+        private static readonly object AnimationProgressSyncObject = new object();  // Needed to keep the animation count correct.
+
+        private static HashSet<long> _animationProgressSources = new HashSet<long>();
+
+        internal void VSOutputProgress(long sourceId, ProgressRecord record)
+        {
+            if (record == null)
+            {
+                throw new ArgumentNullException("record");
+            }
+
+            //TODO: If Visual studio ever has a global event/task pane, this would be a perfect place to tie into here.
+
+            var statusBar = (IVsStatusbar)PowerShellToolsPackage.GetGlobalService(typeof(SVsStatusbar));
+
+            if (statusBar != null)
+            {
+                uint cookie = 0;
+
+                ProgressRecordType progressStatus = record.RecordType;
+
+                string label = string.Format(ResourceStrings.ProgressBarFormat, record.Activity, record.StatusDescription);
+
+                switch (progressStatus)
+                {
+                    case ProgressRecordType.Processing:
+                        {
+                            if (record.PercentComplete >= 0)
+                            {
+                                statusBar.Progress(ref cookie, 1, label, (uint)record.PercentComplete, 100);
+                            }
+                            else
+                            {
+                                // According to PS ProgressRecord docs, Negative values means a progress bar should not be displayed.
+
+                                lock (AnimationProgressSyncObject)
+                                {
+                                    if (_animationProgressSources.Add(sourceId)) //Returns false if already exists.
+                                    {
+                                        // This is needed because Visual Studio keeps a count of each animation. 
+                                        // Animation is removed only when count goes to zero.
+                                        statusBar.Animation(1, AnimationIconGeneralIndex);
+                                    }
+
+                                    statusBar.SetText(label);
+                                }
+                            }
+                            //Currently, we do not show Seconds Remaining
+                            break;
+                        }
+                    case ProgressRecordType.Completed:
+                        {
+                            //Only other value is ProgressRecordType.Completed
+
+                            if (record.PercentComplete >= 0)
+                            {
+                                statusBar.Progress(ref cookie, 0, string.Empty, 0, 0);
+                            }
+                            else
+                            {
+                                lock (AnimationProgressSyncObject)
+                                {
+                                    if (_animationProgressSources.Remove(sourceId))  //returns false if item not found.
+                                    {
+                                        statusBar.Animation(0, AnimationIconGeneralIndex);
+                                    }
+
+                                    statusBar.SetText(label);
+                                }
+                            }
+                            break;
+                        }
+                }
+            }
+        }
+
+        public Action<string> OutputString { get; set; }
 
         /// <summary>
         /// Read host from user input
@@ -166,22 +245,6 @@ using Microsoft.VisualStudio.Shell.Interop;
             if (OutputString != null)
             {
                 OutputString(output);
-            }
-        }
-
-        public void VSOutputProgress(string label, int percentage)
-        {
-            var statusBar = (IVsStatusbar)PowerShellToolsPackage.GetGlobalService(typeof(SVsStatusbar));
-            uint cookie = 0;
-
-            if (statusBar != null)
-            {
-                statusBar.Progress(ref cookie, 1, label, (uint)percentage, 100);
-
-                if (percentage == 100)
-                {
-                    statusBar.Progress(ref cookie, 1, "", 0, 0);
-                }
             }
         }
     }

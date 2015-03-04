@@ -403,10 +403,8 @@ namespace Microsoft.VisualStudioTools.Project
             }
             finally
             {
-                if (data != null)
-                {
-                    UnsafeNativeMethods.GlobalUnLock(data);
-                }
+                // data is an IntPtr struct; no need for nullcheck.
+                UnsafeNativeMethods.GlobalUnLock(data);
             }
 
             return null;
