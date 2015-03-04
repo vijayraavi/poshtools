@@ -168,7 +168,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 Regex rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
                 string localFile = rgx.Match(commandLine).Value;
-                commandLine = rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
+
+                if (_mapLocalToRemote.ContainsKey(localFile))
+                {
+                    commandLine = rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
+                }
+                else
+                {
+                    _callback.OutputString(string.Format(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile));
+
+                    ServiceCommon.Log(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile);
+
+                    DebuggerFinished();
+
+                    return false;
+                }
             }
 
             ServiceCommon.Log("Start executing ps script ...");
@@ -187,7 +201,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
             {
-                _callback.OutputString("Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently." + Environment.NewLine);
+                _callback.OutputString(Resources.Error_PipelineBusy + Environment.NewLine);
 
                 ServiceCommon.Log("Pipeline not executed with Runspace status: {0}", _runspace.RunspaceAvailability);
 
@@ -329,6 +343,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 if (psVar != null)
                 {
+                    PSVariable existingVar = _localVariables.FirstOrDefault(v => v.Name == psVar.Name);
+                    if (existingVar != null)
+                    {
+                        _localVariables.Remove(existingVar);
+                    }
+
                     _localVariables.Add(psVar);
                 }
             }
@@ -399,12 +419,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     try
                     {
                         object val = propertyInfo.GetValue(psVariable, null);
-                        expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
-
-                        if (!val.GetType().IsPrimitive)
+                        if (val != null)
                         {
-                            string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
-                            _propVariables[key] = val;
+                            expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
+
+                            if (!val.GetType().IsPrimitive)
+                            {
+                                string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
+                                _propVariables[key] = val;
+                            }
                         }
                     }
                     catch (Exception ex)
