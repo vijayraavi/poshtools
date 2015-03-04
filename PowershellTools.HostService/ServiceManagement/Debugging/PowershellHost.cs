@@ -23,9 +23,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _debuggingService = debugger;
         }
 
-        public Action<String, int> OutputProgress { get; set; }
+        public Action<long, ProgressRecord> OutputProgress { get; set; }
 
-        public Action<String> OutputString { get; set; }
+        public Action<string> OutputString { get; set; }
 
         public override PSHostRawUserInterface RawUI
         {
@@ -59,12 +59,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return s;
         }
 
-        private void TryOutputProgress(string label, int percentage)
+        private void TryOutputProgress(long sourceId, ProgressRecord record)
         {
-            _debuggingService.NotifyOutputProgress(label, percentage);
+            _debuggingService.NotifyOutputProgress(sourceId, record);
 
             if (OutputProgress != null)
-                OutputProgress(label, percentage);
+                OutputProgress(sourceId, record);
         }
 
         private void TryOutputString(string val)
@@ -102,7 +102,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
-            TryOutputProgress(record.Activity + " - " + record.StatusDescription, record.PercentComplete);
+            TryOutputProgress(sourceId, record);
         }
 
         public override void WriteVerboseLine(string message)
@@ -150,8 +150,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             string targetName,
             PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
-            return CredUiPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes, 
-                options, IntPtr.Zero); 
+            return CredUiPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes,
+                options, IntPtr.Zero);
         }
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices,

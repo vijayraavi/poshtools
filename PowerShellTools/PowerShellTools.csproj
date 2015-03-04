@@ -253,7 +253,11 @@
     <Compile Include="DebugEngine\PInvoke.cs" />
     <Compile Include="DebugEngine\PrivateReflectionDynamicObject.cs" />
     <Compile Include="DebugEngine\Profiler.cs" />
-    <Compile Include="DebugEngine\ResourceStrings.Designer.cs" />
+    <Compile Include="DebugEngine\ResourceStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ResourceStrings.resx</DependentUpon>
+    </Compile>
     <Compile Include="DebugEngine\ScirptProgramNode.cs" />
     <Compile Include="DebugEngine\ScriptBreakpoint.cs" />
     <Compile Include="DebugEngine\ScriptDebugger.cs" />
@@ -262,7 +266,7 @@
     <Compile Include="DebugEngine\ScriptProgramProvider.cs" />
     <Compile Include="DebugEngine\ScriptProperty.cs" />
     <Compile Include="DebugEngine\ScriptStackFrame.cs" />
-    <Compile Include="DebugEngine\VSXHost.cs" />
+    <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
     <Compile Include="Diagnostics\DiagnosticConfiguration.cs" />
@@ -533,7 +537,11 @@
     <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DebugEngine\ResourceStrings.resx" />
+    <EmbeddedResource Include="DebugEngine\ResourceStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>ResourceStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Project\PropertyPages\ComponentsPropertyPageControl.resx">
       <DependentUpon>ComponentsPropertyPageControl.cs</DependentUpon>
     </EmbeddedResource>

@@ -67,15 +67,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Debugging output event handler
+        /// Debugging output event handler, to show progress status.
         /// </summary>
-        /// <param name="value">String to output</param>
-        public void NotifyOutputProgress(string label, int percentage)
+        /// <param name="sourceId">The id of the record with progress.</param>
+        /// <param name="record">The record itself.</param>
+        public void NotifyOutputProgress(long sourceId, ProgressRecord record)
         {
             ServiceCommon.LogCallbackEvent("Callback to client to show progress");
+
             if (_callback != null)
             {
-                _callback.OutputProgress(label, percentage);
+                _callback.OutputProgress(sourceId, record);
             }
         }
 
