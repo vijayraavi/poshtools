@@ -329,6 +329,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 if (psVar != null)
                 {
+                    PSVariable existingVar = _localVariables.FirstOrDefault(v => v.Name == psVar.Name);
+                    if (existingVar != null)
+                    {
+                        _localVariables.Remove(existingVar);
+                    }
+
                     _localVariables.Add(psVar);
                 }
             }
@@ -399,12 +405,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     try
                     {
                         object val = propertyInfo.GetValue(psVariable, null);
-                        expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
-
-                        if (!val.GetType().IsPrimitive)
+                        if (val != null)
                         {
-                            string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
-                            _propVariables[key] = val;
+                            expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
+
+                            if (!val.GetType().IsPrimitive)
+                            {
+                                string key = string.Format("{0}\\{1}", varName, propertyInfo.Name);
+                                _propVariables[key] = val;
+                            }
                         }
                     }
                     catch (Exception ex)
