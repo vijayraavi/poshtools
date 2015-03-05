@@ -38,7 +38,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Dictionary<string, string> _mapLocalToRemote;
         private Dictionary<string, string> _mapRemoteToLocal;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
-        private Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
+        private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
 
         public PowershellDebuggingService()
         {
