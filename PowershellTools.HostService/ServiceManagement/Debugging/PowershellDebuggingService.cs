@@ -38,6 +38,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Dictionary<string, string> _mapLocalToRemote;
         private Dictionary<string, string> _mapRemoteToLocal;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
+        private Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
 
         public PowershellDebuggingService()
         {
@@ -195,16 +196,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 bool error = false;
                 if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
                 {
-                    Regex rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
-                    string localFile = rgx.Match(commandLine).Value;
+                    string localFile = _rgx.Match(commandLine).Value;
 
                     if (_mapLocalToRemote.ContainsKey(localFile))
                     {
-                        commandLine = rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
+                        commandLine = _rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
                     }
                     else
                     {
-                        _callback.OutputString(string.Format(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile));
+                        _callback.OutputStringLine(string.Format(Resources.Error_LocalScriptInRemoteSession, localFile));
 
                         ServiceCommon.Log(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile);
 
