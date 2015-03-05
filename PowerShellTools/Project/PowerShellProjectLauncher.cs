@@ -32,6 +32,11 @@ namespace PowerShellTools.Project
 
         public int LaunchProject(bool debug)
         {
+            if (PowerShellToolsPackage.Debugger.IsDebugging)
+            {
+                return VSConstants.S_OK;
+            }
+
             string script = String.Empty;
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             if (dte2 != null)

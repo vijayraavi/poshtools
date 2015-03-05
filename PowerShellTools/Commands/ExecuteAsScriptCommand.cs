@@ -134,6 +134,11 @@ namespace PowerShellTools.Commands
 
         public void Execute(object sender, EventArgs args)
         {
+            if (PowerShellToolsPackage.Debugger.IsDebugging)
+            {
+                return;
+            }
+
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
             var launcher = new PowerShellProjectLauncher(_validator.Validate());
 

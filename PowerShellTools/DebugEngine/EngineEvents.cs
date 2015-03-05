@@ -78,6 +78,7 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("EngineLoaded");
             var iid = new Guid(LoadCompleteEvent.IID);
             _callback.Event(_engine, null, null, null, new LoadCompleteEvent(), ref iid, LoadCompleteEvent.Attributes);
+            PowerShellToolsPackage.Debugger.IsDebugging = true;
         }
 
         /// <summary>
@@ -116,6 +117,7 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("ProgramDestroyed");
             var iid = new Guid(ProgramDestoryedEvent.IID);
             _callback.Event(_engine, null, program, null, new ProgramDestoryedEvent(), ref iid, ProgramDestoryedEvent.Attributes);
+            PowerShellToolsPackage.Debugger.IsDebugging = false;
         }
 
         public void OutputString(string str)
