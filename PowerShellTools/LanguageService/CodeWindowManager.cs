@@ -12,13 +12,11 @@
  *
  * ***************************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.Language.Intellisense;
-using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
@@ -100,17 +98,7 @@ namespace PowerShellTools.LanguageService
         {
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
 
-            _textView.TextBuffer.PostChanged += (x, y) =>
-            {
-                var currentText = _textView.TextBuffer.CurrentSnapshot.GetText();
-                Token[] currentTokens;
-                ParseError[] currentErrors;
-
-                var currentAst = Parser.ParseInput(currentText, out currentTokens, out currentErrors);
-
-                if (_client != null)
-                    _client.UpdateAst(currentAst);
-            };
+            _textView.TextBuffer.PostChanged += TextBuffer_PostChanged;
 
             Token[] tokens;
             ParseError[] errors;
@@ -138,6 +126,18 @@ namespace PowerShellTools.LanguageService
                 _textView.TextBuffer.Properties[typeof(DropDownBarClient)] = dropDown;
             }
             return res;
+        }
+
+        private void TextBuffer_PostChanged(object sender, EventArgs e)
+        {
+            var currentText = _textView.TextBuffer.CurrentSnapshot.GetText();
+            Token[] currentTokens;
+            ParseError[] currentErrors;
+
+            var currentAst = Parser.ParseInput(currentText, out currentTokens, out currentErrors);
+
+            if (_client != null)
+                _client.UpdateAst(currentAst);
         }
 
         private int RemoveDropDownBar()
