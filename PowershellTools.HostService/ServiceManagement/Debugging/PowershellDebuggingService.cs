@@ -174,46 +174,44 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="commandLine">Command line to execute</param>
         public bool Execute(string commandLine)
         {
-            if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
-            {
-                Regex rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
-                string localFile = rgx.Match(commandLine).Value;
+            Debug.Assert(_runspace.RunspaceAvailability == RunspaceAvailability.Available, Resources.Error_PipelineBusy);
 
-                if (_mapLocalToRemote.ContainsKey(localFile))
-                {
-                    commandLine = rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
-                }
-                else
-                {
-                    _callback.OutputString(string.Format(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile));
-
-                    ServiceCommon.Log(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile);
-
-                    DebuggerFinished();
-
-                    return false;
-                }
-            }
-
-            ServiceCommon.Log("Start executing ps script ...");
-
+            ServiceCommon.Log("Start executing ps script ...");         
+            
             try
             {
+                // Retrieve callback context
                 if (_callback == null)
                 {
                     _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
                 }
-            }
-            catch (Exception)
-            {
-                ServiceCommon.Log("No instance context retrieved.");
-            }
 
-            Debug.Assert(_runspace.RunspaceAvailability == RunspaceAvailability.Available, Resources.Error_PipelineBusy);
-            
-            bool error = false;
-            try
-            {
+                if (_callback == null)
+                {
+                    ServiceCommon.Log("No instance context retrieved.");
+                    return false;
+                }
+
+                bool error = false;
+                if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
+                {
+                    Regex rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
+                    string localFile = rgx.Match(commandLine).Value;
+
+                    if (_mapLocalToRemote.ContainsKey(localFile))
+                    {
+                        commandLine = rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
+                    }
+                    else
+                    {
+                        _callback.OutputString(string.Format(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile));
+
+                        ServiceCommon.Log(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile);
+
+                        return false;
+                    }
+                }
+
                 // only do this when we are working with a local runspace
                 if (_runspace.ConnectionInfo == null)
                 {
