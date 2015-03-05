@@ -10,7 +10,7 @@
     <PreviewImage>preview.png</PreviewImage>
     <Tags>PowerShell</Tags>
   </Metadata>
-  <Installation InstalledByMsi="false">
+  <Installation InstalledByMsi="false" AllUsers="true">
     <InstallationTarget Version="[11.0]" Id="Microsoft.VisualStudio.IntegratedShell" />
     <InstallationTarget Version="[11.0]" Id="Microsoft.VisualStudio.Pro" />
     <InstallationTarget Version="11.0" Id="Microsoft.VisualStudio.Pro" />
