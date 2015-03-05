@@ -45,6 +45,7 @@ namespace PowerShellTools.DebugEngine
         private readonly IDebugEngine2 _engine;
         private readonly IDebugEventCallback2 _callback;
         private static readonly ILog Log = LogManager.GetLogger(typeof (EngineEvents));
+        private static Object _debuggingStateLock = new Object();
         #endregion
 
         #region Constructor
@@ -78,7 +79,10 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("EngineLoaded");
             var iid = new Guid(LoadCompleteEvent.IID);
             _callback.Event(_engine, null, null, null, new LoadCompleteEvent(), ref iid, LoadCompleteEvent.Attributes);
-            PowerShellToolsPackage.Debugger.IsDebugging = true;
+            lock (_debuggingStateLock)
+            {
+                PowerShellToolsPackage.Debugger.IsDebugging = true;
+            }
         }
 
         /// <summary>
@@ -117,7 +121,10 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("ProgramDestroyed");
             var iid = new Guid(ProgramDestoryedEvent.IID);
             _callback.Event(_engine, null, program, null, new ProgramDestoryedEvent(), ref iid, ProgramDestoryedEvent.Attributes);
-            PowerShellToolsPackage.Debugger.IsDebugging = false;
+            lock (_debuggingStateLock)
+            {
+                PowerShellToolsPackage.Debugger.IsDebugging = false;
+            }
         }
 
         public void OutputString(string str)
