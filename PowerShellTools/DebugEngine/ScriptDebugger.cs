@@ -372,10 +372,17 @@ namespace PowerShellTools.DebugEngine
         /// <param name="commandLine">Command line to execute.</param>
         public bool Execute(string commandLine)
         {
-             Log.Info("Execute");
+            Log.Info("Execute");
 
             try
             {
+                if(DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available)
+                {
+                    OutputString(this, new EventArgs<string>(Resources.ErrorPipelineBusy));
+                    DebuggerFinished();
+                    return false;
+                }
+
                 return ExecuteInternal(commandLine);
             }
             catch (Exception ex)

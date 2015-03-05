@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System.Text.RegularExpressions;
 using PowerShellTools.Common.Debugging;
+using System.Diagnostics;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -159,6 +160,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Get runspace availability
+        /// </summary>
+        /// <returns>runspace availability enum</returns>
+        public RunspaceAvailability GetRunspaceAvailability()
+        {
+            return _runspace.RunspaceAvailability;
+        }
+
+        /// <summary>
         /// Execute the specified command line from client
         /// </summary>
         /// <param name="commandLine">Command line to execute</param>
@@ -199,15 +209,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 ServiceCommon.Log("No instance context retrieved.");
             }
 
-            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
-            {
-                _callback.OutputString(Resources.Error_PipelineBusy + Environment.NewLine);
-
-                ServiceCommon.Log("Pipeline not executed with Runspace status: {0}", _runspace.RunspaceAvailability);
-
-                return false;
-            }
-
+            Debug.Assert(_runspace.RunspaceAvailability == RunspaceAvailability.Available, Resources.Error_PipelineBusy);
+            
             bool error = false;
             try
             {
@@ -432,7 +435,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                     catch (Exception ex)
                     {
-                        ServiceCommon.Log("Property infomation is not able to be retrieved through reflection due to exception: {0}", ex.Message);
+                        ServiceCommon.Log("Property infomation is not able to be retrieved through reflection due to exception: {0} {2} InnerException: {1}", ex, ex.InnerException, Environment.NewLine);
                     }
                 }
             }

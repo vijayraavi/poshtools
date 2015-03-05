@@ -97,10 +97,8 @@ namespace PowerShellTools.DebugEngine
                 while (PendingBreakpoints.Count() > bps.Count)
                 {
                     Thread.Sleep(1000);
-                }    
+                }
             }
-
-            Debugger.SetBreakpoints(bps);
 
             Debugger.HostUi.OutputString = _events.OutputString;
             Debugger.OutputString += Debugger_OutputString;
@@ -111,11 +109,19 @@ namespace PowerShellTools.DebugEngine
             Debugger.TerminatingException += Debugger_TerminatingException;
             _node.Debugger = Debugger;
 
-            Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
+            if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
+            {
+                Debugger.SetBreakpoints(bps);
+                Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
 
-            _initializingRunspace = false;
+                _initializingRunspace = false;
 
-            Debugger.Execute(_node);
+                Debugger.Execute(_node);
+            }
+            else
+            {
+                Debugger.DebuggerFinished();
+            }
         }
 
         /// <summary>
