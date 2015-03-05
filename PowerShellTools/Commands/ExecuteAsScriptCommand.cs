@@ -149,7 +149,7 @@ namespace PowerShellTools.Commands
         public void QueryStatus(object sender, EventArgs args)
         {
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            var bVisible = ShouldShowCommand(dte2);
+            var bVisible = ShouldShowCommand(dte2) && !PowerShellToolsPackage.Debugger.IsDebugging;
 
             var menuItem = sender as OleMenuCommand;
             if (menuItem != null)

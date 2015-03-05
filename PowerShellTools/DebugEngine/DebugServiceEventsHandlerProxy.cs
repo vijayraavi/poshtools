@@ -65,6 +65,15 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
+        /// Debugger has string to output
+        /// </summary>
+        /// <param name="output">string to output</param>
+        public void OutputStringLine(string output)
+        {
+            Debugger.HostUi.VsOutputString(output + Environment.NewLine);
+        }
+
+        /// <summary>
         /// Debugger finished
         /// </summary>
         public void DebuggerFinished()

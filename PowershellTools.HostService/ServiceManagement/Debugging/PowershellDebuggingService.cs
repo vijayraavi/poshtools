@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System.Text.RegularExpressions;
 using PowerShellTools.Common.Debugging;
+using System.Diagnostics;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -37,6 +38,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Dictionary<string, string> _mapLocalToRemote;
         private Dictionary<string, string> _mapRemoteToLocal;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
+        private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
 
         public PowershellDebuggingService()
         {
@@ -159,58 +161,57 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Get runspace availability
+        /// </summary>
+        /// <returns>runspace availability enum</returns>
+        public RunspaceAvailability GetRunspaceAvailability()
+        {
+            return _runspace.RunspaceAvailability;
+        }
+
+        /// <summary>
         /// Execute the specified command line from client
         /// </summary>
         /// <param name="commandLine">Command line to execute</param>
         public bool Execute(string commandLine)
         {
-            if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
-            {
-                Regex rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
-                string localFile = rgx.Match(commandLine).Value;
+            Debug.Assert(_runspace.RunspaceAvailability == RunspaceAvailability.Available, Resources.Error_PipelineBusy);
 
-                if (_mapLocalToRemote.ContainsKey(localFile))
-                {
-                    commandLine = rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
-                }
-                else
-                {
-                    _callback.OutputString(string.Format(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile));
-
-                    ServiceCommon.Log(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile);
-
-                    DebuggerFinished();
-
-                    return false;
-                }
-            }
-
-            ServiceCommon.Log("Start executing ps script ...");
-
+            ServiceCommon.Log("Start executing ps script ...");         
+            
             try
             {
+                // Retrieve callback context
                 if (_callback == null)
                 {
                     _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
                 }
-            }
-            catch (Exception)
-            {
-                ServiceCommon.Log("No instance context retrieved.");
-            }
 
-            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
-            {
-                _callback.OutputString(Resources.Error_PipelineBusy + Environment.NewLine);
+                if (_callback == null)
+                {
+                    ServiceCommon.Log("No instance context retrieved.");
+                    return false;
+                }
 
-                ServiceCommon.Log("Pipeline not executed with Runspace status: {0}", _runspace.RunspaceAvailability);
+                bool error = false;
+                if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
+                {
+                    string localFile = _rgx.Match(commandLine).Value;
 
-                return false;
-            }
+                    if (_mapLocalToRemote.ContainsKey(localFile))
+                    {
+                        commandLine = _rgx.Replace(commandLine, _mapLocalToRemote[localFile]);
+                    }
+                    else
+                    {
+                        _callback.OutputStringLine(string.Format(Resources.Error_LocalScriptInRemoteSession, localFile));
 
-            bool error = false;
-            try
-            {
+                        ServiceCommon.Log(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile);
+
+                        return false;
+                    }
+                }
+
                 // only do this when we are working with a local runspace
                 if (_runspace.ConnectionInfo == null)
                 {
@@ -432,7 +433,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                     catch (Exception ex)
                     {
-                        ServiceCommon.Log("Property infomation is not able to be retrieved through reflection due to exception: {0}", ex.Message);
+                        ServiceCommon.Log("Property infomation is not able to be retrieved through reflection due to exception: {0} {2} InnerException: {1}", ex, ex.InnerException, Environment.NewLine);
                     }
                 }
             }

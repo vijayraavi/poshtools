@@ -232,6 +232,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently..
+        /// </summary>
+        public static string ErrorPipelineBusy {
+            get {
+                return ResourceManager.GetString("ErrorPipelineBusy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to install and register the PowerGUI VSX debug engine. The first execution of this extension must be run as Administrator to allow a file to be copied to the PowerGUI installation directory and for it to be registered with Visual Studio. For more information see http:\\powerguivsx.codeplex.com. The error that was reported was [{0}]..
         /// </summary>
         public static string FailedToInstallDebugEngine {

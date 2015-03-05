@@ -85,7 +85,12 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Indicate if debugger is ready for accepting command
         /// </summary>
-        public bool DebuggingCommandReady { get; private set; }
+        public bool IsDebuggingCommandReady { get; private set; }
+
+        /// <summary>
+        /// Indicate if there is on-going debugging, coz we should only allow one debugging session 
+        /// </summary>
+        public bool IsDebugging { get; set; }
 
         /// <summary>
         /// Indicate if runspace is hosting remote session
@@ -172,7 +177,7 @@ namespace PowerShellTools.DebugEngine
 
             Log.Debug("Waiting for debuggee to resume.");
 
-            DebuggingCommandReady = true;
+            IsDebuggingCommandReady = true;
 
             //Wait for the user to step, continue or stop
             _pausedEvent.WaitOne();
@@ -180,7 +185,7 @@ namespace PowerShellTools.DebugEngine
 
             DebuggingService.ExecuteDebuggingCommand(_debuggingCommand);
 
-            DebuggingCommandReady = false;
+            IsDebuggingCommandReady = false;
         }
 
         /// <summary>
@@ -214,7 +219,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void DebuggerFinished()
         {
-            DebuggingCommandReady = false;
+            IsDebuggingCommandReady = false;
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());
@@ -305,7 +310,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if (DebuggingCommandReady)
+                if (IsDebuggingCommandReady)
                 {
                     _debuggingCommand = PowerShellConstants.Debugger_Stop;
                     _pausedEvent.Set();
@@ -372,10 +377,17 @@ namespace PowerShellTools.DebugEngine
         /// <param name="commandLine">Command line to execute.</param>
         public bool Execute(string commandLine)
         {
-             Log.Info("Execute");
+            Log.Info("Execute");
 
             try
             {
+                if(DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available)
+                {
+                    OutputString(this, new EventArgs<string>(Resources.ErrorPipelineBusy));
+                    DebuggerFinished();
+                    return false;
+                }
+
                 return ExecuteInternal(commandLine);
             }
             catch (Exception ex)
@@ -392,7 +404,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="commandLine">Command line to execute.</param>
         public bool ExecuteInternal(string commandLine)
         {
-            DebuggingCommandReady = false;
+            IsDebuggingCommandReady = false;
             return DebuggingService.Execute(commandLine);
         }
 
@@ -404,7 +416,7 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Info("Execute debugging command");
 
-            if (DebuggingCommandReady)
+            if (IsDebuggingCommandReady)
             {
                 try
                 {

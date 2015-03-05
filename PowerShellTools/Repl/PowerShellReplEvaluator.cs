@@ -65,7 +65,7 @@ namespace PowerShellTools.Repl
 
         public Task<ExecutionResult> ExecuteText(string text)
         {
-            if (Debugger.DebuggingCommandReady)
+            if (Debugger.IsDebuggingCommandReady)
                 return tf.StartNew(() => { Debugger.ExecuteDebuggingCommand(text); return new ExecutionResult(true); });
             else
                 return tf.StartNew(() => { Debugger.Execute(text); return new ExecutionResult(true); }); 

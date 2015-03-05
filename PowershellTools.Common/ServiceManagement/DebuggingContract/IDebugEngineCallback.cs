@@ -20,6 +20,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void OutputString(string output);
 
         [OperationContract(IsOneWay = true)]
+        void OutputStringLine(string output);
+
+        [OperationContract(IsOneWay = true)]
         void OutputProgress(long sourceId, ProgressRecord record);
 
         [OperationContract(IsOneWay = true)]
