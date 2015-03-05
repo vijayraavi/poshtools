@@ -20,7 +20,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void OutputString(string output);
 
         [OperationContract(IsOneWay = true)]
-        void OutputProgress(string lable, int percentage);
+        void OutputProgress(long sourceId, ProgressRecord record);
 
         [OperationContract(IsOneWay = true)]
         void TerminatingException(DebuggingServiceException ex);

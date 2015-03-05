@@ -99,16 +99,6 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
-        /// Output the progress of writing output
-        /// </summary>
-        /// <param name="label">label</param>
-        /// <param name="percentage">percentage</param>
-        public void OutputProgress(string label, int percentage)
-        {
-            Debugger.HostUi.VSOutputProgress(label, percentage);
-        }
-
-        /// <summary>
         /// To open specific file in client
         /// </summary>
         /// <param name="fullName">Full name of remote file(mapped into local)</param>
@@ -124,6 +114,16 @@ namespace PowerShellTools.DebugEngine
         public void SetRemoteRunspace(bool enabled)
         {
             Debugger.RemoteSession = enabled;
+        }
+
+        /// <summary>
+        /// Outputs the Progress of the operation.
+        /// </summary>
+        /// <param name="sourceId">The id of the operation.</param>
+        /// <param name="record">The record of the operation.</param>
+        public void OutputProgress(long sourceId, ProgressRecord record)
+        {
+            Debugger.HostUi.VSOutputProgress(sourceId, record);
         }
     }
 }
