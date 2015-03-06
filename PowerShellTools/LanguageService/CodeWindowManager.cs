@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools;
+using PowerShellTools.Classification;
 using PowerShellTools.Language;
 
 namespace PowerShellTools.LanguageService
@@ -32,16 +33,18 @@ namespace PowerShellTools.LanguageService
         private readonly IWpfTextView _textView;
         private static readonly Dictionary<IWpfTextView, CodeWindowManager> _windows = new Dictionary<IWpfTextView, CodeWindowManager>();
         private DropDownBarClient _client;
+        private readonly IPowerShellTokenizationService _tokenizer;
 
         static CodeWindowManager()
         {
             PowerShellToolsPackage.Instance.OnIdle += OnIdle;
         }
 
-        public CodeWindowManager(IVsCodeWindow codeWindow, IWpfTextView textView)
+        public CodeWindowManager(IVsCodeWindow codeWindow, IWpfTextView textView, IPowerShellTokenizationService tokenizer )
         {
             _window = codeWindow;
             _textView = textView;
+            _tokenizer = tokenizer;
 
             var model = CommonPackage.ComponentModel;
             var adaptersFactory = model.GetService<IVsEditorAdaptersFactoryService>();
@@ -53,6 +56,14 @@ namespace PowerShellTools.LanguageService
 
             var viewFilter = new TextViewFilter();
             viewFilter.AttachFilter(textViewAdapter);
+
+            tokenizer.TokenizationComplete += Tokenizer_TokenizationComplete; ;
+        }
+
+        private void Tokenizer_TokenizationComplete(object sender, Ast ast)
+        {
+            if (_client != null)
+                _client.UpdateAst(ast);
         }
 
         private static void OnIdle(object sender, ComponentManagerEventArgs e)
