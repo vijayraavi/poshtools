@@ -137,7 +137,7 @@ EnableCommenting = true)]
                         Resources.PowerShellHostInitializingNotComplete,
                         Resources.MessageBoxErrorTitle, 
                         MessageBoxButton.OK, 
-                        MessageBoxImage.Error);
+                        MessageBoxImage.Information);
                 }
                 return _debugger;
             }
@@ -239,24 +239,37 @@ EnableCommenting = true)]
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            Threading.Task.Run(
-                () =>
-                {
-                    _gotoDefinitionCommand = new GotoDefinitionCommand();
+            try
+            {
+                Threading.Task.Run(
+                    () =>
+                    {
+                        _gotoDefinitionCommand = new GotoDefinitionCommand();
 
-                    InitializePowerShellHost();
-                }
-            ).ContinueWith(
-                refreshcmd =>
-                {
-                    RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
-                                    new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
-                                    new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
-                                    _gotoDefinitionCommand,
-                                    new PrettyPrintCommand(_debugger.Runspace),
-                                    new OpenDebugReplCommand());
-                }
-            );                
+                        InitializePowerShellHost();
+                    }
+                ).ContinueWith(
+                    refreshcmd =>
+                    {
+                        RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
+                                        new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
+                                        new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
+                                        _gotoDefinitionCommand,
+                                        new PrettyPrintCommand(_debugger.Runspace),
+                                        new OpenDebugReplCommand());
+                    }
+                );
+            }
+            catch (AggregateException ae)
+            {
+                MessageBox.Show(
+                    Resources.PowerShellHostInitializeFailed,
+                    Resources.MessageBoxErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                throw ae.Flatten();
+            }
         }
 
         /// <summary>
@@ -271,17 +284,12 @@ EnableCommenting = true)]
                 {
                     return;
                 }
-                InitializeInternal();
-                _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
-                RegisterServices();
 
-                //Threading.Task.Run(() => InitializeInternal()).ContinueWith(
-                //    InitPSServiceTask => 
-                //    {
-                //        _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
-                //        RegisterServices();
-                //    }
-                //);                
+                InitializeInternal();
+                
+                _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
+                
+                RegisterServices();            
             }
             catch (Exception ex)
             {

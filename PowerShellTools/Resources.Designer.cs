@@ -486,6 +486,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to initialize PowerShell host for PowerShell Tools.
+        /// </summary>
+        public static string PowerShellHostInitializeFailed {
+            get {
+                return ResourceManager.GetString("PowerShellHostInitializeFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PowerShell host initializing has not yet completed, please try again later..
         /// </summary>
         public static string PowerShellHostInitializingNotComplete {
