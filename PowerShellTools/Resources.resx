@@ -327,6 +327,9 @@ Would you like to download now?</value>
   <data name="MessageBoxErrorTitle" xml:space="preserve">
     <value>PowerShell Tools for Visual Studio Error</value>
   </data>
+  <data name="PowerShellHostInitializeFailed" xml:space="preserve">
+    <value>Failed to initialize PowerShell host for PowerShell Tools</value>
+  </data>
   <data name="PowerShellHostInitializingNotComplete" xml:space="preserve">
     <value>PowerShell host initializing has not yet completed, please try again later.</value>
   </data>
