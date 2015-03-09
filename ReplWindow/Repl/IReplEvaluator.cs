@@ -114,5 +114,11 @@ namespace PowerShellTools.Repl {
         /// </summary>
         /// <returns>Boolean indicate if runspace is currently hosting remote session</returns>
         bool IsRemoteSession();
+
+        /// <summary>
+        /// Check if the debugger is initialized
+        /// </summary>
+        /// <returns>Boolean indicate if the debugger is initialized</returns>
+        bool IsDebuggerInitialized();
     }
 }

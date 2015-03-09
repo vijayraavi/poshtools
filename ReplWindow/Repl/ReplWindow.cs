@@ -165,13 +165,30 @@ namespace PowerShellTools.Repl {
         private bool _addedLineBreakOnLastOutput;
 
         private string _commandPrefix = "%";
-        private string _prompt = "» ";        // prompt for primary input
+        private string _powerShellPrompt = "» ";        // prompt for primary input
         private string _secondPrompt = String.Empty;    // prompt for 2nd and additional lines
         private string _stdInputPrompt = String.Empty;  // prompt for standard input
         private bool _displayPromptInMargin, _formattedPrompts, _multiline;
 
         private static readonly char[] _whitespaceChars = new[] { '\r', '\n', ' ', '\t' };
         private const string _boxSelectionCutCopyTag = "MSDEVColumnSelect";
+
+        public string PowerShellPrompt
+        {
+            get 
+            {
+                if (!Evaluator.IsDebuggerInitialized())
+                {
+                    _powerShellPrompt = Resources.PowerShellHostInitializing;
+                }
+
+                return _powerShellPrompt;
+            }
+            set 
+            {
+                _powerShellPrompt = value;
+            }
+        }
 
         public ReplWindow(IComponentModel/*!*/ model, IReplEvaluator/*!*/ evaluator, IContentType/*!*/ contentType, string[] roles, string/*!*/ title, Guid languageServiceGuid, string replId) {
             Contract.Assert(evaluator != null);
@@ -190,8 +207,8 @@ namespace PowerShellTools.Repl {
             _evaluator = evaluator;
             _languageContentType = contentType;
             _roles = roles;
-            
-            Contract.Requires(_commandPrefix != null && _prompt != null);
+
+            Contract.Requires(_commandPrefix != null && _powerShellPrompt != null);
             
             _history = new History();
 
@@ -731,21 +748,21 @@ namespace PowerShellTools.Repl {
                                 }
 
                                 if (_displayPromptInMargin) {
-                                    UpdatePrompts(ReplSpanKind.Prompt, _prompt, String.Empty);
+                                    UpdatePrompts(ReplSpanKind.Prompt, PowerShellPrompt, String.Empty);
                                     UpdatePrompts(ReplSpanKind.SecondaryPrompt, _secondPrompt, String.Empty);
                                 } else {
-                                    UpdatePrompts(ReplSpanKind.Prompt, String.Empty, _prompt);
+                                    UpdatePrompts(ReplSpanKind.Prompt, String.Empty, PowerShellPrompt);
                                     UpdatePrompts(ReplSpanKind.SecondaryPrompt, String.Empty, _secondPrompt);
                                 }
                             }
                             break;
 
                         case ReplOptions.CurrentPrimaryPrompt:
-                            string oldPrompt = _prompt;
-                            _prompt = CheckOption<string>(option, value);
+                            string oldPrompt = PowerShellPrompt;
+                            PowerShellPrompt = CheckOption<string>(option, value);
                             if (!_isRunning && !_displayPromptInMargin) {
                                 // we need to update the current prompt though
-                                UpdatePrompts(ReplSpanKind.Prompt, oldPrompt, _prompt, currentOnly: true);
+                                UpdatePrompts(ReplSpanKind.Prompt, oldPrompt, PowerShellPrompt, currentOnly: true);
                             }
                             break;
                         case ReplOptions.CurrentSecondaryPrompt:
@@ -760,11 +777,11 @@ namespace PowerShellTools.Repl {
                             if (value == null) {
                                 throw new InvalidOperationException("Primary prompt cannot be null");
                             }
-                            oldPrompt = _prompt;
-                            _prompt = CheckOption<string>(option, value);
+                            oldPrompt = PowerShellPrompt;
+                            PowerShellPrompt = CheckOption<string>(option, value);
                             if (!_displayPromptInMargin) {
                                 // update the prompts
-                                UpdatePrompts(ReplSpanKind.Prompt, oldPrompt, _prompt);
+                                UpdatePrompts(ReplSpanKind.Prompt, oldPrompt, PowerShellPrompt);
                             }
                             break;
 
@@ -807,7 +824,7 @@ namespace PowerShellTools.Repl {
                             _formattedPrompts = CheckOption<bool>(option, value);
                             if (oldFormattedPrompts != _formattedPrompts) {
                                 UpdatePrompts(ReplSpanKind.StandardInputPrompt, null, _stdInputPrompt);
-                                UpdatePrompts(ReplSpanKind.Prompt, null, _prompt);
+                                UpdatePrompts(ReplSpanKind.Prompt, null, PowerShellPrompt);
                                 UpdatePrompts(ReplSpanKind.SecondaryPrompt, null, _secondPrompt);
                             }
                             break;
@@ -847,7 +864,7 @@ namespace PowerShellTools.Repl {
                 case ReplOptions.CommandPrefix: return _commandPrefix;
                 case ReplOptions.DisplayPromptInMargin: return _displayPromptInMargin;
                 case ReplOptions.CurrentPrimaryPrompt:
-                case ReplOptions.PrimaryPrompt: return _prompt;
+                case ReplOptions.PrimaryPrompt: return PowerShellPrompt;
                 case ReplOptions.CurrentSecondaryPrompt:
                 case ReplOptions.SecondaryPrompt: return _secondPrompt;
                 case ReplOptions.StandardInputPrompt: return _stdInputPrompt;
@@ -864,7 +881,7 @@ namespace PowerShellTools.Repl {
         internal string GetPromptText(ReplSpanKind kind) {
             switch (kind) {
                 case ReplSpanKind.Prompt:
-                    return _prompt;
+                    return PowerShellPrompt;
 
                 case ReplSpanKind.SecondaryPrompt:
                     return _secondPrompt;
@@ -1380,27 +1397,27 @@ namespace PowerShellTools.Repl {
                     case PkgCmdIDList.cmdidReplHistoryNext:
                     case PkgCmdIDList.cmdidReplHistoryPrevious:
                     case PkgCmdIDList.cmdidSmartExecute:
-                        prgCmds[0].cmdf = (_currentLanguageBuffer != null) ? CommandEnabled : CommandDisabledAndHidden;
+                        prgCmds[0].cmdf = Evaluator.IsDebuggerInitialized() && (_currentLanguageBuffer != null) ? CommandEnabled : CommandDisabledAndHidden;
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.comboIdReplScopes:
-                        prgCmds[0].cmdf = _scopeListVisible ? CommandEnabled : CommandDisabledAndHidden;
+                        prgCmds[0].cmdf = Evaluator.IsDebuggerInitialized() && _scopeListVisible ? CommandEnabled : CommandDisabledAndHidden;
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidBreakRepl:
-                        prgCmds[0].cmdf = _isRunning || _stdInputStart != null ? CommandEnabled : CommandDisabled;
+                        prgCmds[0].cmdf = Evaluator.IsDebuggerInitialized() && _isRunning || _stdInputStart != null ? CommandEnabled : CommandDisabled;
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidEnterSession:
-                        prgCmds[0].cmdf = !_isRunning && !Evaluator.IsRemoteSession() ? CommandEnabled : CommandDisabled;
+                        prgCmds[0].cmdf = Evaluator.IsDebuggerInitialized() && !_isRunning && !Evaluator.IsRemoteSession() ? CommandEnabled : CommandDisabled;
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidExitSession:
-                        prgCmds[0].cmdf = Evaluator.IsRemoteSession() ? CommandEnabled : CommandDisabled;
+                        prgCmds[0].cmdf = Evaluator.IsDebuggerInitialized() && Evaluator.IsRemoteSession() ? CommandEnabled : CommandDisabled;
                         return VSConstants.S_OK;
 
                     case PkgCmdIDList.cmdidResetRepl:
-                        prgCmds[0].cmdf = _commands.OfType<ResetReplCommand>().Count() != 0 ? CommandEnabled : CommandDisabledAndHidden;
+                        prgCmds[0].cmdf = Evaluator.IsDebuggerInitialized() && _commands.OfType<ResetReplCommand>().Count() != 0 ? CommandEnabled : CommandDisabledAndHidden;
                         return VSConstants.S_OK;
                 }
             }
@@ -2314,6 +2331,11 @@ namespace PowerShellTools.Repl {
         private bool CanExecuteActiveCode() {
             Debug.Assert(_currentLanguageBuffer != null);
 
+            if (!Evaluator.IsDebuggerInitialized())
+            {
+                return false;
+            }
+
             var input = GetActiveCode();
             if (input.Trim().Length == 0) {
                 // Always allow "execution" of a blank line.
@@ -2565,7 +2587,7 @@ namespace PowerShellTools.Repl {
         }
 
         private ReplSpan CreatePrimaryPrompt() {
-            var result = CreatePrompt(_prompt, ReplSpanKind.Prompt);
+            var result = CreatePrompt(PowerShellPrompt, ReplSpanKind.Prompt);
             _currentInputId++;
             return result;
         }
@@ -2652,7 +2674,7 @@ namespace PowerShellTools.Repl {
         }
 
         internal string/*!*/ Prompt {
-            get { return _prompt; }
+            get { return PowerShellPrompt; }
         }
 
         internal string/*!*/ SecondaryPrompt {
