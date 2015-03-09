@@ -94,7 +94,7 @@ EnableCommenting = true)]
          "PowerShell",        // Name of Language attribute in snippet template
          @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
          SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
-    
+
     [ProvideService(typeof(IPowerShellService))]
 
     public sealed class PowerShellToolsPackage : CommonPackage
@@ -153,7 +153,7 @@ EnableCommenting = true)]
             }
         }
 
-        internal DependencyValidator DependencyValidator { get; set; } 
+        internal DependencyValidator DependencyValidator { get; set; }
 
         public new object GetService(Type type)
         {
@@ -296,32 +296,34 @@ EnableCommenting = true)]
             }
         }
 
-
-
         private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
         {
-            e.TextBuffer.ContentTypeChanged += TextBuffer_ContentTypeChanged;
+            ITextBuffer buffer = e.TextBuffer;
 
-            if (e.TextBuffer.ContentType.IsOfType("PowerShell"))
-            {
-                var psts = new PowerShellTokenizationService(e.TextBuffer);
-                _gotoDefinitionCommand.AddTextBuffer(e.TextBuffer);
-                e.TextBuffer.ChangedLowPriority += (o, args) => psts.StartTokenization();
-                e.TextBuffer.Properties.AddProperty("HasTokenizer", true);
-            }
+            buffer.ContentTypeChanged += TextBuffer_ContentTypeChanged;
+
+            EnsureBufferHasTokenizer(e.TextBuffer.ContentType, buffer);
         }
 
-        static void TextBuffer_ContentTypeChanged(object sender, ContentTypeChangedEventArgs e)
+        private static void TextBuffer_ContentTypeChanged(object sender, ContentTypeChangedEventArgs e)
         {
             var buffer = sender as ITextBuffer;
-            if (buffer == null) return;
 
-            if (e.AfterContentType.IsOfType("PowerShell") && !buffer.Properties.ContainsProperty("HasTokenizer"))
+            Debug.Assert(buffer != null, "buffer is null");
+
+            EnsureBufferHasTokenizer(e.AfterContentType, buffer);
+        }
+
+        private static void EnsureBufferHasTokenizer(IContentType contentType, ITextBuffer buffer)
+        {
+            if (contentType.IsOfType("PowerShell") && !buffer.Properties.ContainsProperty("PowerShellTokenizer"))
             {
-                var psts = new PowerShellTokenizationService(buffer);
+                IPowerShellTokenizationService psts = new PowerShellTokenizationService(buffer);
+
                 _gotoDefinitionCommand.AddTextBuffer(buffer);
                 buffer.ChangedLowPriority += (o, args) => psts.StartTokenization();
-                buffer.Properties.AddProperty("HasTokenizer", true);
+
+                buffer.Properties.AddProperty("PowerShellTokenizer", psts);
             }
         }
 
