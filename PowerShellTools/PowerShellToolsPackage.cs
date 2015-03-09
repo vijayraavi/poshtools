@@ -376,7 +376,6 @@ EnableCommenting = true)]
         /// </summary>
         private void InitializePowerShellHost()
         {
-            System.Threading.Thread.Sleep(30000);
             var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
             OverrideExecutionPolicyConfiguration = page.OverrideExecutionPolicyConfiguration;
 

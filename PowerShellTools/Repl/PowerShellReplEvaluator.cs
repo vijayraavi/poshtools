@@ -35,6 +35,11 @@ namespace PowerShellTools.Repl
 
         public Task<ExecutionResult> Initialize(IReplWindow window)
         {
+            if (PowerShellToolsPackage.Debugger == null)
+            {
+                return Task.FromResult(new ExecutionResult(true));
+            }
+
             PowerShellToolsPackage.Debugger.ReplWindow = window;
 
             var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();

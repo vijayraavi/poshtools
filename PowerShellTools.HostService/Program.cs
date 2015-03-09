@@ -23,6 +23,7 @@ namespace PowerShellTools.HostService
         [LoaderOptimization(LoaderOptimization.SingleDomain)]
         internal static int Main(string[] args)
         {
+            Thread.Sleep(5 * 60 * 1000);
             if (args.Length != 3 ||
                 !(args[0].StartsWith(Constants.UniqueEndpointArg, StringComparison.OrdinalIgnoreCase)
                 && args[1].StartsWith(Constants.VsProcessIdArg, StringComparison.OrdinalIgnoreCase)

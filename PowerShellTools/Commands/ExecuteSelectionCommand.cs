@@ -58,7 +58,11 @@ namespace PowerShellTools.Commands
             bool bVisible = false;
 
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == "PowerShell" && !PowerShellToolsPackage.Debugger.IsDebugging)
+            if (dte2 != null &&
+                dte2.ActiveDocument != null &&
+                dte2.ActiveDocument.Language == "PowerShell" &&
+                PowerShellToolsPackage.Debugger != null &&
+                !PowerShellToolsPackage.Debugger.IsDebugging)
             {
                 bVisible = true;
             }
