@@ -131,14 +131,6 @@ EnableCommenting = true)]
         {
             get
             {
-                if (_debugger == null)
-                {
-                    MessageBox.Show(
-                        Resources.PowerShellHostInitializingNotComplete,
-                        Resources.MessageBoxErrorTitle, 
-                        MessageBoxButton.OK, 
-                        MessageBoxImage.Information);
-                }
                 return _debugger;
             }
         }
@@ -239,24 +231,21 @@ EnableCommenting = true)]
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
+            _gotoDefinitionCommand = new GotoDefinitionCommand();
+
+            RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
+                            new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
+                            new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
+                            _gotoDefinitionCommand,
+                            new PrettyPrintCommand(),
+                            new OpenDebugReplCommand());
+
             try
             {
                 Threading.Task.Run(
                     () =>
                     {
-                        _gotoDefinitionCommand = new GotoDefinitionCommand();
-
                         InitializePowerShellHost();
-                    }
-                ).ContinueWith(
-                    refreshcmd =>
-                    {
-                        RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
-                                        new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
-                                        new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
-                                        _gotoDefinitionCommand,
-                                        new PrettyPrintCommand(_debugger.Runspace),
-                                        new OpenDebugReplCommand());
                     }
                 );
             }

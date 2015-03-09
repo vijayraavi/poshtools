@@ -8,6 +8,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
+using System.Windows;
 
 namespace PowerShellTools.Project
 {
@@ -119,6 +120,17 @@ namespace PowerShellTools.Project
         {
             if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
 
+            if (PowerShellToolsPackage.Debugger == null)
+            {
+                MessageBox.Show(
+                        Resources.PowerShellHostInitializingNotComplete,
+                        Resources.MessageBoxErrorTitle,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                return VSConstants.S_OK;
+            }
+
             Log.Debug("PowerShellProjectLauncher.LaunchSelection");
             var debugger = (IVsDebugger)Package.GetGlobalService(typeof(IVsDebugger));
             var shell = (IVsUIShell)Package.GetGlobalService(typeof(IVsUIShell));
@@ -140,11 +152,6 @@ namespace PowerShellTools.Project
 
             IntPtr pInfo = Marshal.AllocCoTaskMem((int)info.cbSize);
             Marshal.StructureToPtr(info, pInfo, false);
-
-            if (PowerShellToolsPackage.Debugger == null)
-            {
-                return VSConstants.S_OK;
-            }
 
             var eventManager = new DebugEventManager(PowerShellToolsPackage.Debugger.Runspace);
 
@@ -183,6 +190,17 @@ namespace PowerShellTools.Project
         {
             if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
 
+            if (PowerShellToolsPackage.Debugger == null)
+            {
+                MessageBox.Show(
+                           Resources.PowerShellHostInitializingNotComplete,
+                           Resources.MessageBoxErrorTitle,
+                           MessageBoxButton.OK,
+                           MessageBoxImage.Information);
+
+                return VSConstants.S_OK;
+            }
+
             Log.Debug("PowerShellProjectLauncher.LaunchFile");
             var debugger = (IVsDebugger)Package.GetGlobalService(typeof(IVsDebugger));
             var shell = (IVsUIShell)Package.GetGlobalService(typeof(IVsUIShell));
@@ -215,11 +233,6 @@ namespace PowerShellTools.Project
 
             IntPtr pInfo = Marshal.AllocCoTaskMem((int)info.cbSize);
             Marshal.StructureToPtr(info, pInfo, false);
-
-            if (PowerShellToolsPackage.Debugger == null)
-            {
-                return VSConstants.S_OK;
-            }
 
             var eventManager = new DebugEventManager(PowerShellToolsPackage.Debugger.Runspace);
 
