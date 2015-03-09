@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Management.Automation.Language;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
@@ -40,11 +41,13 @@ namespace PowerShellTools.LanguageService
             PowerShellToolsPackage.Instance.OnIdle += OnIdle;
         }
 
-        public CodeWindowManager(IVsCodeWindow codeWindow, IWpfTextView textView, IPowerShellTokenizationService tokenizer )
+        public CodeWindowManager(IVsCodeWindow codeWindow, IWpfTextView textView)
         {
             _window = codeWindow;
             _textView = textView;
-            _tokenizer = tokenizer;
+            _tokenizer = _textView.TextBuffer.Properties.GetProperty<IPowerShellTokenizationService>("PowerShellTokenizer");
+
+            Debug.Assert(_tokenizer != null, "PowerShell Tokenizer not found on textBuffer from CodeWindowManager");
 
             var model = CommonPackage.ComponentModel;
             var adaptersFactory = model.GetService<IVsEditorAdaptersFactoryService>();
@@ -57,13 +60,15 @@ namespace PowerShellTools.LanguageService
             var viewFilter = new TextViewFilter();
             viewFilter.AttachFilter(textViewAdapter);
 
-            tokenizer.TokenizationComplete += Tokenizer_TokenizationComplete; ;
+            _tokenizer.TokenizationComplete += Tokenizer_TokenizationComplete;
         }
 
         private void Tokenizer_TokenizationComplete(object sender, Ast ast)
         {
             if (_client != null)
                 _client.UpdateAst(ast);
+
+            //TODO: A deeper refactoring to make the client handle the update from the tokenizer.
         }
 
         private static void OnIdle(object sender, ComponentManagerEventArgs e)
@@ -109,8 +114,6 @@ namespace PowerShellTools.LanguageService
         {
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
 
-            _textView.TextBuffer.PostChanged += TextBuffer_PostChanged;
-
             Token[] tokens;
             ParseError[] errors;
 
@@ -137,18 +140,6 @@ namespace PowerShellTools.LanguageService
                 _textView.TextBuffer.Properties[typeof(DropDownBarClient)] = dropDown;
             }
             return res;
-        }
-
-        private void TextBuffer_PostChanged(object sender, EventArgs e)
-        {
-            var currentText = _textView.TextBuffer.CurrentSnapshot.GetText();
-            Token[] currentTokens;
-            ParseError[] currentErrors;
-
-            var currentAst = Parser.ParseInput(currentText, out currentTokens, out currentErrors);
-
-            if (_client != null)
-                _client.UpdateAst(currentAst);
         }
 
         private int RemoveDropDownBar()

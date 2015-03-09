@@ -322,7 +322,6 @@ EnableCommenting = true)]
 
                 _gotoDefinitionCommand.AddTextBuffer(buffer);
                 buffer.ChangedLowPriority += (o, args) => psts.StartTokenization();
-                buffer.Properties.AddProperty("HasTokenizer", true);
 
                 buffer.Properties.AddProperty("PowerShellTokenizer", psts);
             }
