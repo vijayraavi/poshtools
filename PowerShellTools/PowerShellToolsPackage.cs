@@ -31,6 +31,7 @@ using System.Windows;
 using Threading = System.Threading.Tasks;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
+using System.Threading;
 
 namespace PowerShellTools
 {
@@ -134,6 +135,8 @@ EnableCommenting = true)]
                 return _debugger;
             }
         }
+
+        public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
 
         /// <summary>
         /// Indicate if override the execution policy
@@ -371,6 +374,8 @@ EnableCommenting = true)]
             Log.Info("InitializePowerShellHost");
 
             _debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
+
+            DebuggerReadyEvent.Set();
         }
 
         public T GetDialogPage<T>() where T : DialogPage

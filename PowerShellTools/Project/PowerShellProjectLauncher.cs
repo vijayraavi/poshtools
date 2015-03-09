@@ -1,13 +1,14 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using EnvDTE80;
+﻿using EnvDTE80;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
+using PowerShellTools.ServiceManagement;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 
 namespace PowerShellTools.Project
@@ -78,10 +79,7 @@ namespace PowerShellTools.Project
             IntPtr pInfo = Marshal.AllocCoTaskMem((int)info.cbSize);
             Marshal.StructureToPtr(info, pInfo, false);
 
-            if (PowerShellToolsPackage.Debugger == null)
-            {
-                return VSConstants.S_OK;
-            }
+            PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
 
             var eventManager = new DebugEventManager(PowerShellToolsPackage.Debugger.Runspace);
 

@@ -15,6 +15,8 @@ namespace PowerShellTools.ServiceManagement
     {
         public static PowershellHostProcess CreatePowershellHostProcess()
         {
+            PowerShellToolsPackage.DebuggerReadyEvent.Reset();
+
             Process powershellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
             Guid endPointGuid = Guid.NewGuid();
