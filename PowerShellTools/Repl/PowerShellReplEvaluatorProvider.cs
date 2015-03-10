@@ -25,7 +25,7 @@ namespace PowerShellTools.Repl
 
             if (psEval == null)
             {
-                psEval = new PowerShellReplEvaluator(PowerShellToolsPackage.Debugger);
+                psEval = new PowerShellReplEvaluator();
             }
 
             return psEval;

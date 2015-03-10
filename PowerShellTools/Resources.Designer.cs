@@ -349,6 +349,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PowerShell Tools for Visual Studio Error.
+        /// </summary>
+        public static string MessageBoxErrorTitle {
+            get {
+                return ResourceManager.GetString("MessageBoxErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Missing Dependency.
         /// </summary>
         public static string MissingDependency {
@@ -477,6 +486,24 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to initialize PowerShell host for PowerShell Tools.
+        /// </summary>
+        public static string PowerShellHostInitializeFailed {
+            get {
+                return ResourceManager.GetString("PowerShellHostInitializeFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerShell host initializing has not yet completed, please try again later..
+        /// </summary>
+        public static string PowerShellHostInitializingNotComplete {
+            get {
+                return ResourceManager.GetString("PowerShellHostInitializingNotComplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the name of the Windows PowerShell host program that the module requires. Enter the name of the host program, such as &quot;Windows PowerShell ISE Host&quot; or &quot;ConsoleHost&quot;. Wildcards are not permitted..
         /// </summary>
         public static string PowerShellHostName_Description {
@@ -509,6 +536,15 @@ namespace PowerShellTools {
         public static string PowerShellHostVersion_DisplayName {
             get {
                 return ResourceManager.GetString("PowerShellHostVersion_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to initialize PowerShell Tools for Visual Studio.
+        /// </summary>
+        public static string PowerShellToolsInitializeFailed {
+            get {
+                return ResourceManager.GetString("PowerShellToolsInitializeFailed", resourceCulture);
             }
         }
         

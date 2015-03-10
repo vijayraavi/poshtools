@@ -55,14 +55,17 @@ namespace PowerShellTools.Commands
 
         public void QueryStatus(object sender, EventArgs args)
         {
-            bool bVisible = false;
-
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == "PowerShell" && !PowerShellToolsPackage.Debugger.IsDebugging)
-            {
-                bVisible = true;
-            }
 
+            bool bVisible = dte2 != null &&
+                    dte2.ActiveDocument != null &&
+                    dte2.ActiveDocument.Language == "PowerShell";
+
+            if (PowerShellToolsPackage.Debugger != null)
+            {
+                bVisible = bVisible && !PowerShellToolsPackage.Debugger.IsDebugging;
+            }
+            
             var menuItem = sender as OleMenuCommand;
             if (menuItem != null)
             {

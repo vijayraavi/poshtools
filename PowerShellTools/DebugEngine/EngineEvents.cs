@@ -81,7 +81,10 @@ namespace PowerShellTools.DebugEngine
             _callback.Event(_engine, null, null, null, new LoadCompleteEvent(), ref iid, LoadCompleteEvent.Attributes);
             lock (_debuggingStateLock)
             {
-                PowerShellToolsPackage.Debugger.IsDebugging = true;
+                if (PowerShellToolsPackage.Debugger != null)
+                {
+                    PowerShellToolsPackage.Debugger.IsDebugging = true;
+                }
             }
         }
 
@@ -123,7 +126,10 @@ namespace PowerShellTools.DebugEngine
             _callback.Event(_engine, null, program, null, new ProgramDestoryedEvent(), ref iid, ProgramDestoryedEvent.Attributes);
             lock (_debuggingStateLock)
             {
-                PowerShellToolsPackage.Debugger.IsDebugging = false;
+                if (PowerShellToolsPackage.Debugger != null)
+                {
+                    PowerShellToolsPackage.Debugger.IsDebugging = false;
+                }
             }
         }
 

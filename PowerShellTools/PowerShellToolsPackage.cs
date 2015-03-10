@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Globalization;
-using System.Runtime.InteropServices;
-using System.Windows;
-using EnvDTE;
+﻿using EnvDTE;
 using log4net;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -28,8 +20,18 @@ using PowerShellTools.LanguageService;
 using PowerShellTools.Project.PropertyPages;
 using PowerShellTools.Service;
 using PowerShellTools.ServiceManagement;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Design;
+using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Windows;
+using Threading = System.Threading.Tasks;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
+using System.Threading;
 
 namespace PowerShellTools
 {
@@ -101,6 +103,7 @@ EnableCommenting = true)]
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
         private Lazy<PowerShellService> _powershellService;
+        private static ScriptDebugger _debugger;
 
         /// <summary>
         /// Default constructor of the package.
@@ -125,7 +128,15 @@ EnableCommenting = true)]
         /// <summary>
         /// Returns the PowerShell host for the package.
         /// </summary>
-        internal static ScriptDebugger Debugger { get; private set; }
+        internal static ScriptDebugger Debugger 
+        {
+            get
+            {
+                return _debugger;
+            }
+        }
+
+        public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
 
         /// <summary>
         /// Indicate if override the execution policy
@@ -201,7 +212,6 @@ EnableCommenting = true)]
             }
 
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this));
-            base.Initialize();
 
             var langService = new PowerShellLanguageInfo(this);
             ((IServiceContainer)this).AddService(langService.GetType(), langService, true);
@@ -212,14 +222,15 @@ EnableCommenting = true)]
             EditorImports.ClassificationFormatMap = componentModel.GetService<IClassificationFormatMapService>();
             _visualStudioEvents = componentModel.GetService<VisualStudioEvents>();
 
-            _visualStudioEvents.SettingsChanged += _visualStudioEvents_SettingsChanged;
+            if (_visualStudioEvents != null)
+            {
+                _visualStudioEvents.SettingsChanged += _visualStudioEvents_SettingsChanged;
+            }
 
             if (_textBufferFactoryService != null)
             {
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
-
-            InitializePowerShellHost();
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
 
@@ -227,8 +238,28 @@ EnableCommenting = true)]
                             new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
                             new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
                             _gotoDefinitionCommand,
-                            new PrettyPrintCommand(Debugger.Runspace),
+                            new PrettyPrintCommand(),
                             new OpenDebugReplCommand());
+
+            try
+            {
+                Threading.Task.Run(
+                    () =>
+                    {
+                        InitializePowerShellHost();
+                    }
+                );
+            }
+            catch (AggregateException ae)
+            {
+                MessageBox.Show(
+                    Resources.PowerShellHostInitializeFailed,
+                    Resources.MessageBoxErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                throw ae.Flatten();
+            }
         }
 
         /// <summary>
@@ -244,14 +275,21 @@ EnableCommenting = true)]
                     return;
                 }
 
+                base.Initialize();
+
                 InitializeInternal();
+                
                 _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
-                RegisterServices();
+                
+                RegisterServices();            
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to initialize PowerShell Tools for Visual Studio." + ex,
-                    "PowerShell Tools for Visual Studio Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    Resources.PowerShellToolsInitializeFailed + ex,
+                    Resources.MessageBoxErrorTitle, 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
             }
         }
 
@@ -337,7 +375,9 @@ EnableCommenting = true)]
 
             Log.Info("InitializePowerShellHost");
 
-            Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
+            _debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
+
+            DebuggerReadyEvent.Set();
         }
 
         public T GetDialogPage<T>() where T : DialogPage
