@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.Text.Tagging;
 
 namespace PowerShellTools.Classification
 {
-    internal class PowerShellTokenizationService
+    internal class PowerShellTokenizationService : IPowerShellTokenizationService
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellTokenizationService));
 
@@ -32,7 +32,8 @@ namespace PowerShellTools.Classification
         private List<TagInformation<IOutliningRegionTag>> _regions;
         private Dictionary<int, int> _startBraces;
         private IEnumerable<ClassificationInfo> _tokenSpans;
-        internal event EventHandler<EventArgs> TokenizationComplete;
+
+        public event EventHandler<Ast> TokenizationComplete;
 
         internal ITrackingSpan SpanToTokenize { get; set; }
         private ITextBuffer Buffer { get; set; }
@@ -53,7 +54,7 @@ namespace PowerShellTools.Classification
             StartTokenization();
         }
 
-        internal void StartTokenization()
+        public void StartTokenization()
         {
             var spanToTokenizeCache = SpanToTokenize;
 
@@ -61,6 +62,7 @@ namespace PowerShellTools.Classification
             {
                 return;
             }
+
             if (_isBufferTokenizing)
             {
                 Log.Debug("Already tokenizing...");
@@ -79,6 +81,8 @@ namespace PowerShellTools.Classification
 
             var tokenizationText = spanToTokenizeCache.GetText(Buffer.CurrentSnapshot);
 
+            // TODO: Do we need to refactor to prevent potential race conditions around tokenizing here?
+
             ThreadPool.QueueUserWorkItem(delegate
             {
                 var done = false;
@@ -95,7 +99,9 @@ namespace PowerShellTools.Classification
                     SetTokenizationProperties();
                     RemoveCachedTokenizationProperties();
                     SetBufferProperty(BufferProperties.SpanTokenized, spanToTokenizeCache);
+
                     OnTokenizationComplete();
+
                     _isBufferTokenizing = false;
                     done = true;
 
@@ -129,11 +135,11 @@ namespace PowerShellTools.Classification
         {
             if (TokenizationComplete != null)
             {
-                TokenizationComplete(this, new EventArgs());
+                TokenizationComplete(this, _generatedAst);
             }
         }
 
-        internal void SetEmptyTokenizationProperties()
+        private void SetEmptyTokenizationProperties()
         {
             SetBufferProperty(BufferProperties.Tokens, EmptyTokens);
             SetBufferProperty(BufferProperties.Ast, null);
@@ -264,7 +270,7 @@ namespace PowerShellTools.Classification
         public const string RegionTags = "PSRegionTags";
         public const string Classifier = "PowerShellClassifier";
         public const string ErrorTagger = "PowerShellErrorTagger";
-        public const string FromRepl = "REPL";
+        public const string FromRepl = "PowerShellREPL";
         public const string LastWordReplacementSpan = "LastWordReplacementSpan";
         public const string LineUpToReplacementSpan = "LineUpToReplacementSpan";
         public const string SessionOriginIntellisense = "SessionOrigin_Intellisense";
