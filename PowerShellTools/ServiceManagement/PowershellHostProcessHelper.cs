@@ -43,7 +43,11 @@ namespace PowerShellTools.ServiceManagement
 
             powershellHostProcess.Start();
             powershellHostProcess.EnableRaisingEvents = true;
-            bool success = readyEvent.WaitOne(Constants.HostProcessStartupTimeout, false);
+
+            // For now we dont set timeout and wait infinitely
+            // Further UI work might enable some better UX like retry logic for case where remote process being unresponsive
+            // By then we will bring timeout back here.
+            bool success = readyEvent.WaitOne();
             readyEvent.Close();
 
             if (!success)
