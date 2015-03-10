@@ -204,8 +204,6 @@ EnableCommenting = true)]
 
         private void InitializeInternal()
         {
-            base.Initialize();
-
             var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
 
             if (page.EnableDiagnosticLogging)
@@ -276,6 +274,8 @@ EnableCommenting = true)]
                 {
                     return;
                 }
+
+                base.Initialize();
 
                 InitializeInternal();
                 

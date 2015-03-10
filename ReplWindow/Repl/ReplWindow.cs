@@ -179,7 +179,7 @@ namespace PowerShellTools.Repl {
             {
                 if (!Evaluator.IsDebuggerInitialized())
                 {
-                    _powerShellPrompt = Resources.PowerShellHostInitializing;
+                    _powerShellPrompt = Resources.PowerShellHostInitialization;
                 }
 
                 return _powerShellPrompt;

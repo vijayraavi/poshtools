@@ -70,11 +70,11 @@ namespace PowerShellTools.Repl {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PowerShell host is initializing, it won&apos;t be able to execute any PowerShell script till it is initialized..
+        ///   Looks up a localized string similar to PowerShell host is initializing, it won&apos;t be able to execute any PowerShell script untill it is initialized..
         /// </summary>
-        public static string PowerShellHostInitializing {
+        public static string PowerShellHostInitialization {
             get {
-                return ResourceManager.GetString("PowerShellHostInitializing", resourceCulture);
+                return ResourceManager.GetString("PowerShellHostInitialization", resourceCulture);
             }
         }
     }

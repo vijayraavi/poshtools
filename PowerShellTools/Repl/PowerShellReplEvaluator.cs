@@ -29,7 +29,7 @@ namespace PowerShellTools.Repl
             }
         }
 
-        TaskFactory<ExecutionResult> tf = new TaskFactory<ExecutionResult>();
+        private TaskFactory<ExecutionResult> tf = new TaskFactory<ExecutionResult>();
 
         public void Dispose()
         {
