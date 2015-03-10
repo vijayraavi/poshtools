@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
@@ -50,16 +49,13 @@ namespace PowerShellTools
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(UIContextGuids.NoSolution)]
-    [ProvideLanguageService(typeof(PowerShellLanguageInfo), "PowerShell", 101, ShowDropDownOptions = true,
-EnableCommenting = true)]
+    [ProvideLanguageService(typeof(PowerShellLanguageInfo),
+                            PowerShellConstants.LanguageName,
+                            101,
+                            ShowDropDownOptions = true,
+                            EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    // This attribute registers a tool window exposed by this package.
-    //[ProvideEditorExtension(typeof(EditorFactory), ".xml", 50,
-    //         ProjectGuid = "{A2FE74E1-B743-11d0-AE1A-00A0C90FFFC3}",
-    //         TemplateDir = "Templates",
-    //         NameResourceID = 105,
-    //         DefaultName = "CustomEditor")]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
     [Guid(GuidList.PowerShellToolsPackageGuid)]
     [ProvideObject(typeof(InformationPropertyPage))]
@@ -68,33 +64,33 @@ EnableCommenting = true)]
     [ProvideObject(typeof(RequirementsPropertyPage))]
     [ProvideObject(typeof(DebugPropertyPage))]
     [Microsoft.VisualStudio.Shell.ProvideDebugEngine("{43ACAB74-8226-4920-B489-BFCF05372437}", "PowerShell",
-        PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}",
-        ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true,
-        CLSID = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}")]
-    [Clsid(Clsid = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}", Assembly = "PowerGuiVsx.Core.DebugEngine",
-        Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
-    [Clsid(Clsid = "{08F3B557-C153-4F6C-8745-227439E55E79}", Assembly = "PowerGuiVsx.Core.DebugEngine",
-        Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
-    [Microsoft.VisualStudioTools.ProvideDebugEngine("PowerShell", typeof(ScriptProgramProvider), typeof(Engine),
-        "{43ACAB74-8226-4920-B489-BFCF05372437}")]
+                                                     PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}",
+                                                     ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true,
+                                                     CLSID = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}")]
+    [Clsid(Clsid = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}",
+           Assembly = "PowerGuiVsx.Core.DebugEngine",
+           Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
+    [Clsid(Clsid = "{08F3B557-C153-4F6C-8745-227439E55E79}",
+           Assembly = "PowerGuiVsx.Core.DebugEngine",
+           Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
+    [Microsoft.VisualStudioTools.ProvideDebugEngine("PowerShell",
+                                                    typeof(ScriptProgramProvider),
+                                                    typeof(Engine),
+                                                    "{43ACAB74-8226-4920-B489-BFCF05372437}")]
     [ProvideIncompatibleEngineInfo("{92EF0900-2251-11D2-B72E-0000F87572EF}")]
-    //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
-    //[ProvideIncompatibleEngineInfo("{449EC4CC-30D2-4032-9256-EE18EB41B62B}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
-    [ProvideOptionPage(typeof(GeneralDialogPage), "PowerShell Tools", "General", 101, 106, true)]
-    [ProvideOptionPage(typeof(DiagnosticsDialogPage), "PowerShell Tools", "Diagnostics", 101, 106, true)]
+    [ProvideOptionPage(typeof(GeneralDialogPage), PowerShellConstants.LanguageDisplayName, "General", 101, 106, true)]
+    [ProvideOptionPage(typeof(DiagnosticsDialogPage), PowerShellConstants.LanguageDisplayName, "Diagnostics", 101, 106, true)]
     [ProvideDiffSupportedContentType(".ps1;.psm1;.psd1", ";")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
-    [ProvideLanguageCodeExpansion(
-         typeof(PowerShellLanguageInfo),
-         "PowerShell",          // Name of language used as registry key
-         0,                               // Resource ID of localized name of language service
-         "PowerShell",        // Name of Language attribute in snippet template
-         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
-         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
-
+    [ProvideLanguageCodeExpansion(typeof(PowerShellLanguageInfo),
+                                  "PowerShell",        // Name of language used as registry key
+                                  0,                   // Resource ID of localized name of language service
+                                  "PowerShell",        // Name of Language attribute in snippet template
+                                  @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
+                                  SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
     [ProvideService(typeof(IPowerShellService))]
 
     public sealed class PowerShellToolsPackage : CommonPackage

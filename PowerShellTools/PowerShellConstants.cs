@@ -5,6 +5,7 @@ namespace PowerShellTools
     public static class PowerShellConstants
     {
         public const string LanguageName = "PowerShell";
+        public const string LanguageDisplayName = "PowerShell Tools";
         public const string PS1File = ".ps1";
         public const string PSD1File = ".psd1";
         public const string PSM1File = ".psm1";
@@ -25,7 +26,7 @@ namespace PowerShellTools
     {
         public static bool IsPowerShellFile(string fileName)
         {
-            return fileName.EndsWith(PowerShellConstants.PS1File,  StringComparison.OrdinalIgnoreCase) ||
+            return fileName.EndsWith(PowerShellConstants.PS1File, StringComparison.OrdinalIgnoreCase) ||
                    fileName.EndsWith(PowerShellConstants.PSD1File, StringComparison.OrdinalIgnoreCase) ||
                    fileName.EndsWith(PowerShellConstants.PSM1File, StringComparison.OrdinalIgnoreCase);
         }
