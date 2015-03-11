@@ -101,7 +101,6 @@ namespace PowerShellTools.Intellisense
                             return VSConstants.S_OK;
                         }
                     }
-                    SetBraceCompleteState(false);
                     break;
                 case (uint)VSConstants.VSStd2KCmdID.RETURN:
                     // Return in Repl windows would execute the current command 
@@ -124,6 +123,7 @@ namespace PowerShellTools.Intellisense
                         SetBraceCompleteState(false);
                         break;
                     }
+                    
                     if (ProcessBackspaceKey())
                     {
                         SetBraceCompleteState(false);
@@ -133,26 +133,33 @@ namespace PowerShellTools.Intellisense
                     break;
                 case (uint)VSConstants.VSStd2KCmdID.DELETE:
                 case (uint)VSConstants.VSStd2KCmdID.UNDO:
-                case (uint)VSConstants.VSStd2KCmdID.PASTE:
                 case (uint)VSConstants.VSStd2KCmdID.CUT:
                 case (uint)VSConstants.VSStd2KCmdID.COMMENT_BLOCK:
                 case (uint)VSConstants.VSStd2KCmdID.COMMENTBLOCK:
                 case (uint)VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
                 case (uint)VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
+                case (uint)VSConstants.VSStd2KCmdID.LEFT:
+                case (uint)VSConstants.VSStd2KCmdID.RIGHT:
+                case (uint)VSConstants.VSStd2KCmdID.UP:
+                case (uint)VSConstants.VSStd2KCmdID.DOWN:
                     SetBraceCompleteState(false);
                     break;
                 default:
                     break;
             }
-
             return VSConstants.S_FALSE;
         }
 
         private bool IsInCommentArea()
         {
             int caretPosition = _textView.Caret.Position.BufferPosition.Position;
+            return IsInCommentArea(caretPosition, _textView.TextBuffer);
+        }
+
+        public bool IsInCommentArea(int caretPosition, ITextBuffer textBuffer)
+        {
             Token[] pstokens;
-            if (_textView.TextBuffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out pstokens))
+            if (textBuffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out pstokens))
             {
                 var commentTokens = pstokens.Where(t => t.Kind == TokenKind.Comment).ToArray();
                 foreach (var token in commentTokens)
@@ -228,11 +235,12 @@ namespace PowerShellTools.Intellisense
 
         private bool ProcessBackspaceKey()
         {
-            if (_isLastCmdBraceComplete && IsCaretInMiddleOfPairedBrace())
+            var isBackspaceKeyProcessed = _isLastCmdBraceComplete && IsCaretInMiddleOfPairedBrace();
+            if (isBackspaceKeyProcessed)
             {
                 _undoHistory.Undo(1);
             }
-            return _isLastCmdBraceComplete;
+            return isBackspaceKeyProcessed;
         }
 
         private void SetBraceCompleteState(bool isBraceComplete)
