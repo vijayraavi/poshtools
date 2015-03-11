@@ -133,6 +133,8 @@ namespace PowerShellTools.ServiceManagement
 
         private void ConnectionExceptionHandler(object sender, EventArgs e)
         {
+            PowerShellToolsPackage.DebuggerReadyEvent.Reset();
+
             EnsureClearServiceChannel();
 
             if (ConnectionException != null)

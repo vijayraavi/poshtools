@@ -120,7 +120,12 @@ namespace PowerShellTools.DebugEngine
         {
             try
             {
-                return DebuggingService.GetPrompt();
+                if (DebuggingService != null)
+                {
+                    return DebuggingService.GetPrompt();
+                }
+
+                return string.Empty;
             }
             catch
             {

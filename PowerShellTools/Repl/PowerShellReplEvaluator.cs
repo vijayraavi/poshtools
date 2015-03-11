@@ -20,22 +20,30 @@ namespace PowerShellTools.Repl
     internal class PowerShellReplEvaluator : IReplEvaluator
     {
         public IReplWindow Window { get; set; }
-        private ScriptDebugger Debugger { get; set; }
-        TaskFactory<ExecutionResult> tf = new TaskFactory<ExecutionResult>();
-
-        public PowerShellReplEvaluator(ScriptDebugger debugger)
+        
+        public ScriptDebugger Debugger 
         {
-            Debugger = debugger;
+            get
+            {
+                return PowerShellToolsPackage.Debugger;
+            }
         }
+
+        private TaskFactory<ExecutionResult> tf = new TaskFactory<ExecutionResult>();
 
         public void Dispose()
         {
-            
         }
 
         public Task<ExecutionResult> Initialize(IReplWindow window)
         {
-            PowerShellToolsPackage.Debugger.ReplWindow = window;
+            Task.Run(
+                    () =>
+                    {
+                        PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
+                        Debugger.ReplWindow = window;
+                    }
+                );
 
             var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
 
@@ -101,6 +109,11 @@ namespace PowerShellTools.Repl
         public bool IsRemoteSession()
         {
             return Debugger.RemoteSession;
+        }
+
+        public bool IsDebuggerInitialized()
+        {
+            return Debugger != null;
         }
     }
  

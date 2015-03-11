@@ -8,6 +8,7 @@ using System.Reflection;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using System.Windows;
 
 namespace PowerShellTools.Commands
 {
@@ -64,9 +65,20 @@ namespace PowerShellTools.Commands
                 var scriptContents = File.ReadAllText(path);
                 string prettyContents;
 
+                if (PowerShellToolsPackage.Debugger == null)
+                {
+                    MessageBox.Show(
+                            Resources.PowerShellHostInitializingNotComplete,
+                            Resources.MessageBoxErrorTitle,
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+
+                    return;
+                }
+
                 using (var ps = PowerShell.Create())
                 {
-                    ps.Runspace = _runspace;
+                    ps.Runspace = PowerShellToolsPackage.Debugger.Runspace;
 
                     var script = Path.Combine(AssemblyDirectory, "PrettyPrint.ps1");
                     ps.Commands.AddScript("Import-Module '" + script + "'");
@@ -80,13 +92,6 @@ namespace PowerShellTools.Commands
 
                 dte2.ActiveDocument.ReplaceText(scriptContents, prettyContents);
             }
-        }
-
-        private readonly Runspace _runspace;
-
-        public PrettyPrintCommand(Runspace runspace)
-        {
-            _runspace = runspace;
         }
     }
 }

@@ -27,8 +27,18 @@ using PowerShellTools.LanguageService;
 using PowerShellTools.Project.PropertyPages;
 using PowerShellTools.Service;
 using PowerShellTools.ServiceManagement;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Design;
+using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Windows;
+using Threading = System.Threading.Tasks;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
+using System.Threading;
 
 namespace PowerShellTools
 {
@@ -53,7 +63,7 @@ namespace PowerShellTools
                             PowerShellConstants.LanguageName,
                             101,
                             ShowDropDownOptions = true,
-                            EnableCommenting = true)]
+EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
@@ -64,19 +74,19 @@ namespace PowerShellTools
     [ProvideObject(typeof(RequirementsPropertyPage))]
     [ProvideObject(typeof(DebugPropertyPage))]
     [Microsoft.VisualStudio.Shell.ProvideDebugEngine("{43ACAB74-8226-4920-B489-BFCF05372437}", "PowerShell",
-                                                     PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}",
-                                                     ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true,
-                                                     CLSID = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}")]
+        PortSupplier = "{708C1ECA-FF48-11D2-904F-00C04FA302A1}",
+        ProgramProvider = "{08F3B557-C153-4F6C-8745-227439E55E79}", Attach = true,
+        CLSID = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}")]
     [Clsid(Clsid = "{C7F9F131-53AB-4FD0-8517-E54D124EA392}",
            Assembly = "PowerGuiVsx.Core.DebugEngine",
-           Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
+        Class = "PowerGuiVsx.Core.DebugEngine.Engine")]
     [Clsid(Clsid = "{08F3B557-C153-4F6C-8745-227439E55E79}",
            Assembly = "PowerGuiVsx.Core.DebugEngine",
-           Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
+        Class = "PowerGuiVsx.Core.DebugEngine.ScriptProgramProvider")]
     [Microsoft.VisualStudioTools.ProvideDebugEngine("PowerShell",
                                                     typeof(ScriptProgramProvider),
                                                     typeof(Engine),
-                                                    "{43ACAB74-8226-4920-B489-BFCF05372437}")]
+        "{43ACAB74-8226-4920-B489-BFCF05372437}")]
     [ProvideIncompatibleEngineInfo("{92EF0900-2251-11D2-B72E-0000F87572EF}")]
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
     [ProvideOptionPage(typeof(GeneralDialogPage), PowerShellConstants.LanguageDisplayName, "General", 101, 106, true)]
@@ -88,15 +98,16 @@ namespace PowerShellTools
     [ProvideLanguageCodeExpansion(typeof(PowerShellLanguageInfo),
                                   "PowerShell",        // Name of language used as registry key
                                   0,                   // Resource ID of localized name of language service
-                                  "PowerShell",        // Name of Language attribute in snippet template
-                                  @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
-                                  SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
+         "PowerShell",        // Name of Language attribute in snippet template
+         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
+         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
     [ProvideService(typeof(IPowerShellService))]
 
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
         private Lazy<PowerShellService> _powershellService;
+        private static ScriptDebugger _debugger;
 
         /// <summary>
         /// Default constructor of the package.
@@ -121,7 +132,15 @@ namespace PowerShellTools
         /// <summary>
         /// Returns the PowerShell host for the package.
         /// </summary>
-        internal static ScriptDebugger Debugger { get; private set; }
+        internal static ScriptDebugger Debugger 
+        {
+            get
+            {
+                return _debugger;
+            }
+        }
+
+        public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
 
         /// <summary>
         /// Indicate if override the execution policy
@@ -197,7 +216,6 @@ namespace PowerShellTools
             }
 
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering Initialize() of: {0}", this));
-            base.Initialize();
 
             var langService = new PowerShellLanguageInfo(this);
             ((IServiceContainer)this).AddService(langService.GetType(), langService, true);
@@ -208,14 +226,15 @@ namespace PowerShellTools
             EditorImports.ClassificationFormatMap = componentModel.GetService<IClassificationFormatMapService>();
             _visualStudioEvents = componentModel.GetService<VisualStudioEvents>();
 
+            if (_visualStudioEvents != null)
+            {
             _visualStudioEvents.SettingsChanged += _visualStudioEvents_SettingsChanged;
+            }
 
             if (_textBufferFactoryService != null)
             {
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
-
-            InitializePowerShellHost();
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
 
@@ -223,8 +242,28 @@ namespace PowerShellTools
                             new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
                             new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
                             _gotoDefinitionCommand,
-                            new PrettyPrintCommand(Debugger.Runspace),
+                            new PrettyPrintCommand(),
                             new OpenDebugReplCommand());
+
+            try
+            {
+                Threading.Task.Run(
+                    () =>
+                    {
+                        InitializePowerShellHost();
+                    }
+                );
+            }
+            catch (AggregateException ae)
+            {
+                MessageBox.Show(
+                    Resources.PowerShellHostInitializeFailed,
+                    Resources.MessageBoxErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                throw ae.Flatten();
+            }
         }
 
         /// <summary>
@@ -240,14 +279,21 @@ namespace PowerShellTools
                     return;
                 }
 
+                base.Initialize();
+
                 InitializeInternal();
+                
                 _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
+                
                 RegisterServices();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to initialize PowerShell Tools for Visual Studio." + ex,
-                    "PowerShell Tools for Visual Studio Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    Resources.PowerShellToolsInitializeFailed + ex,
+                    Resources.MessageBoxErrorTitle, 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
             }
         }
 
@@ -333,7 +379,9 @@ namespace PowerShellTools
 
             Log.Info("InitializePowerShellHost");
 
-            Debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
+            _debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
+
+            DebuggerReadyEvent.Set();
         }
 
         public T GetDialogPage<T>() where T : DialogPage
