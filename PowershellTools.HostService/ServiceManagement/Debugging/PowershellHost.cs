@@ -12,6 +12,7 @@ using Microsoft.VisualBasic;
 using PowerShellTools.Common.Debugging;
 using PowerShellTools.HostService.CredentialUI;
 using System.Runtime.InteropServices;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -63,6 +64,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             return s;
+        }
+
+        private PSCredential ReadPSCredential()
+        {
+            PSCredential psCred = null;
+
+            if (_debuggingService.CallbackService != null)
+            {
+                psCred = _debuggingService.CallbackService.ReadPSCredentialPrompt();
+            }
+
+            return psCred;
         }
 
         private void TryOutputProgress(long sourceId, ProgressRecord record)
@@ -133,22 +146,28 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 this.Write(fd.Name + ": ");
 
-                if (!fd.ParameterTypeFullName.Equals("System.Security.SecureString", StringComparison.OrdinalIgnoreCase))
+                switch (fd.ParameterTypeFullName.ToLower())
                 {
-                    string userData = this.ReadLineFromUI(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
-                    if (userData == null)
-                    {
-                        return null;
-                    }
-                    this.WriteLine(userData);
+                    case Constants.SecureStringFullTypeName:
+                        SecureString secString = this.ReadLineAsSecureString(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
+                        results[fd.Name] = PSObject.AsPSObject(secString);
+                        break;
 
-                    results[fd.Name] = PSObject.AsPSObject(userData);
-                }
-                else
-                {
-                    SecureString secString = this.ReadLineAsSecureString(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
+                    case Constants.PSCredentialFullTypeName:
+                        PSCredential psCred = this.ReadPSCredential();
+                        results[fd.Name] = PSObject.AsPSObject(psCred);
+                        break;
 
-                    results[fd.Name] = PSObject.AsPSObject(secString);
+                    default:
+                        string userData = this.ReadLineFromUI(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
+                        if (userData == null)
+                        {
+                            return null;
+                        }
+                        this.WriteLine(userData);
+
+                        results[fd.Name] = PSObject.AsPSObject(userData);
+                        break;
                 }
             }
 

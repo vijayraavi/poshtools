@@ -143,5 +143,14 @@ namespace PowerShellTools.DebugEngine
         {
             Debugger.HostUi.VSOutputProgress(sourceId, record);
         }
+
+        /// <summary>
+        /// Ask for user input PSCredential from VS
+        /// </summary>
+        /// <returns></returns>
+        public PSCredential ReadPSCredentialPrompt()
+        {
+            return Debugger.HostUi.GetPSCredential();
+        }
     }
 }

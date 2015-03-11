@@ -28,5 +28,8 @@ namespace PowerShellTools.Common
         public const string VsProcessIdArg = "/vsPid:";
         public const string UniqueEndpointArg = "/endpoint:";
         public const string ReadyEventUniqueNameArg = "/readyEventUniqueName:";
+
+        public const string SecureStringFullTypeName = "system.security.securestring";
+        public const string PSCredentialFullTypeName = "system.management.automation.pscredential";
     }
 }
