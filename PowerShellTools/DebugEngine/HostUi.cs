@@ -225,6 +225,21 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
+        /// Read host from user input
+        /// </summary>
+        /// <returns>user input string</returns>
+        public PSCredential ReadSecureStringAsPSCredential(string message)
+        {
+            SecureString s = new SecureString();
+            foreach (var ch in "password")
+                {
+                    s.AppendChar(ch);
+                }
+
+            return new PSCredential("securestring", s);
+        }
+
+        /// <summary>
         /// Output string from debugger in VS output/REPL pane window
         /// </summary>
         /// <param name="output"></param>

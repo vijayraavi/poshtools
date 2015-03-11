@@ -38,6 +38,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         string ReadHostPrompt(string message);
 
         [OperationContract(IsOneWay = false)]
+        PSCredential ReadSecureStringPrompt(string message);
+
+        [OperationContract(IsOneWay = false)]
         void OpenRemoteFile(string fullName);
 
         [OperationContract(IsOneWay = false)]

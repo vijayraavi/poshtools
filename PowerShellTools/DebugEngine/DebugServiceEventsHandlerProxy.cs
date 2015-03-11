@@ -108,6 +108,15 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
+        /// Ask for user input securestring from VS
+        /// </summary>
+        /// <returns>PSCredential object conteains the SecureString</returns>
+        public PSCredential ReadSecureStringPrompt(string message)
+        {
+            return Debugger.HostUi.ReadSecureStringAsPSCredential(message);
+        }
+
+        /// <summary>
         /// To open specific file in client
         /// </summary>
         /// <param name="fullName">Full name of remote file(mapped into local)</param>

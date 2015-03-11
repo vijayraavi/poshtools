@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualBasic;
 using PowerShellTools.Common.Debugging;
 using PowerShellTools.HostService.CredentialUI;
+using System.Runtime.InteropServices;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -49,13 +50,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public override SecureString ReadLineAsSecureString()
         {
-            var str = "";
+            return new SecureString();
+        }
 
+        private SecureString ReadLineAsSecureString(string message)
+        {
             var s = new SecureString();
-            foreach (var ch in str)
+
+            if (_debuggingService.CallbackService != null)
             {
-                s.AppendChar(ch);
+                s = _debuggingService.CallbackService.ReadSecureStringPrompt(message).Password;
             }
+
             return s;
         }
 
@@ -126,14 +132,24 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             foreach (FieldDescription fd in descriptions)
             {
                 this.Write(fd.Name + ": ");
-                string userData = this.ReadLineFromUI(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
-                if (userData == null)
-                {
-                    return null;
-                }
-                this.WriteLine(userData);
 
-                results[fd.Name] = PSObject.AsPSObject(userData);
+                if (!fd.ParameterTypeFullName.Equals("System.Security.SecureString", StringComparison.OrdinalIgnoreCase))
+                {
+                    string userData = this.ReadLineFromUI(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
+                    if (userData == null)
+                    {
+                        return null;
+                    }
+                    this.WriteLine(userData);
+
+                    results[fd.Name] = PSObject.AsPSObject(userData);
+                }
+                else
+                {
+                    SecureString secString = this.ReadLineAsSecureString(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
+
+                    results[fd.Name] = PSObject.AsPSObject(secString);
+                }
             }
 
             return results;
