@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.PlatformUI;
-using PowerShellTools.Common;
+﻿using PowerShellTools.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,17 +11,17 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-
-namespace PowerShellTools.Repl.DialogWindows
+namespace PowerShellTools.CredentialUI
 {
     /// <summary>
-    /// Interaction logic for RemoteSessionEnterWindow.xaml
+    /// Interaction logic for SecureStringDialog.xaml
     /// </summary>
-    internal partial class RemoteSessionEnterWindow : VsShellDialogWindow
+    public partial class SecureStringDialog : VsShellDialogWindow
     {
-        public RemoteSessionEnterWindow(RemoteSessionWindowViewModel viewModel)
+        public SecureStringDialog(SecureStringDialogViewModel viewModel)
         {
             if (viewModel == null)
             {
