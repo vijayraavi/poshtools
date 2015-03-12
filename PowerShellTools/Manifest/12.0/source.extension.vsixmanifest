@@ -2,7 +2,7 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
     <Identity Id="58dce676-42b0-4dd6-9ee4-afbc8e582b8a" Version="1.0.5" Language="en-US" Publisher="Adam Driscoll" />
-    <DisplayName>PowerShell Tools for Visual Studio 2013</DisplayName>
+    <DisplayName>PowerShell Tools for Visual Studio</DisplayName>
     <Description xml:space="preserve">A set of tools for developing and debugging PowerShell scripts and modules in Visual Studio.</Description>
     <MoreInfo>http://adamdriscoll.github.io/poshtools</MoreInfo>
     <License>License.txt</License>
