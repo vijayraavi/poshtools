@@ -210,11 +210,12 @@ namespace PowerShellTools.Intellisense
             // Procedures for correctly supporting IntelliSense in REPL window.
             // Step 1, determine if this is REPL windows IntelliSense. If no, continue with normal IntelliSense triggering process. Otherwise, continue with the following steps.            
             // Step 2, map the caret position in current REPL window text buffer to the one in current POWERSHELL text buffer.
-            // Step 3, get the current POWERSHELL text which only ranges from 0 to the caret position from Step 2.
+            // Step 3, get the current POWERSHELL text.
             // Step 4, get the command completion results using the script text from Step 3 and the mapped caret position from Step 2.
             // Step 5, from this point on, make sure we go back to the original text buffer and caret position so that we can show the completion window in the right place.
             string script = String.Empty;
             int scriptParsePosition = 0;
+            int replacementIndexOffset = 0; // This index offset is to caculate the existing text length minus the powershell code users are editing of Repl window.
             if (_textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
             {
                 script = _textView.TextBuffer.CurrentSnapshot.GetText();
@@ -229,7 +230,9 @@ namespace PowerShellTools.Intellisense
                                                                                currentActiveReplBuffer,
                                                                                PositionAffinity.Successor);
                 scriptParsePosition = currentBufferPoint.Value.Position;
-                script = currentActiveReplBuffer.CurrentSnapshot.GetText(0, scriptParsePosition);
+                script = currentActiveReplBuffer.CurrentSnapshot.GetText();
+
+                replacementIndexOffset = _textView.TextBuffer.CurrentSnapshot.GetText().Length - script.Length;
             }
             else
             {
@@ -248,8 +251,9 @@ namespace PowerShellTools.Intellisense
                                                                  item.ListItemText,
                                                                  (CompletionResultType)item.ResultType,
                                                                  item.ToolTip)).ToList();
+
             completionReplacementLength = commandCompletion.ReplacementLength;
-            completionReplacementIndex = caretPosition - completionReplacementLength;
+            completionReplacementIndex = commandCompletion.ReplacementIndex + replacementIndexOffset;
 
             var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
             var caretInLine = (caretPosition - line.Start);
@@ -289,13 +293,12 @@ namespace PowerShellTools.Intellisense
             var lastWordReplacementSpan = textBuffer.CurrentSnapshot.CreateTrackingSpan(replacementIndex, replacementLength, SpanTrackingMode.EdgeInclusive);
             var lineUpToReplacementSpan = textBuffer.CurrentSnapshot.CreateTrackingSpan(lineStartPosition, length, SpanTrackingMode.EdgeExclusive);
 
-            var triggerPoint = textBuffer.CurrentSnapshot.CreateTrackingPoint(startCaretPosition, PointTrackingMode.Positive);
+            var triggerPoint = textBuffer.CurrentSnapshot.CreateTrackingPoint(startCaretPosition, PointTrackingMode.Positive);            
             textBuffer.Properties.AddProperty(typeof(IList<CompletionResult>), completionResults);
             textBuffer.Properties.AddProperty(BufferProperties.LastWordReplacementSpan, lastWordReplacementSpan);
             textBuffer.Properties.AddProperty(BufferProperties.LineUpToReplacementSpan, lineUpToReplacementSpan);
 
             Log.Debug("Dismissing all sessions...");
-
 
             if (Application.Current.Dispatcher.Thread == Thread.CurrentThread)
             {
