@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Documents;
-using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
-using PowerShellTools.Repl;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
-using Microsoft.VisualStudio.TextManager.Interop;
+using PowerShellTools.Classification;
+using PowerShellTools.Repl;
 
 namespace PowerShellTools.Intellisense
 {
@@ -30,8 +26,8 @@ namespace PowerShellTools.Intellisense
 
         private bool _isLastCmdBraceComplete = false;
 
-        public BraceCompletionController(ITextView textView, 
-                                         IEditorOperations editorOperations, 
+        public BraceCompletionController(ITextView textView,
+                                         IEditorOperations editorOperations,
                                          ITextUndoHistory undoHistory,
                                          SVsServiceProvider serviceProvider)
         {
@@ -69,16 +65,26 @@ namespace PowerShellTools.Intellisense
                 return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             }
 
-            // pass along the command so the char is added to the buffer
-            //int execResult = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+            return ProcessKeystroke(nCmdID, pvaIn) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+        }
+
+        public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
+        {
+            return NextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
+        }
+
+        #endregion
+
+        private int ProcessKeystroke(uint nCmdID, IntPtr pvaIn)
+        {
             switch (nCmdID)
             {
                 case (uint)VSConstants.VSStd2KCmdID.TYPECHAR:
                     var typedChar = Char.MinValue;
                     typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
-                    
+
                     // If we processed the typed left brace, no need to pass along the command as the char is already added to the buffer.
-                    if (IsLeftBrace(typedChar))
+                    if (IsLeftBrace(typedChar) && !IsInCommentArea())
                     {
                         CompleteBrace(typedChar);
                         SetBraceCompleteState(true);
@@ -95,7 +101,6 @@ namespace PowerShellTools.Intellisense
                             return VSConstants.S_OK;
                         }
                     }
-                    SetBraceCompleteState(false);
                     break;
                 case (uint)VSConstants.VSStd2KCmdID.RETURN:
                     // Return in Repl windows would execute the current command 
@@ -118,6 +123,7 @@ namespace PowerShellTools.Intellisense
                         SetBraceCompleteState(false);
                         break;
                     }
+                    
                     if (ProcessBackspaceKey())
                     {
                         SetBraceCompleteState(false);
@@ -125,30 +131,48 @@ namespace PowerShellTools.Intellisense
                     }
                     SetBraceCompleteState(false);
                     break;
-                case (uint)VSConstants.VSStd2KCmdID.DELETE:                    
+                case (uint)VSConstants.VSStd2KCmdID.DELETE:
                 case (uint)VSConstants.VSStd2KCmdID.UNDO:
-                case (uint)VSConstants.VSStd2KCmdID.PASTE:
                 case (uint)VSConstants.VSStd2KCmdID.CUT:
                 case (uint)VSConstants.VSStd2KCmdID.COMMENT_BLOCK:
                 case (uint)VSConstants.VSStd2KCmdID.COMMENTBLOCK:
                 case (uint)VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
                 case (uint)VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
+                case (uint)VSConstants.VSStd2KCmdID.LEFT:
+                case (uint)VSConstants.VSStd2KCmdID.RIGHT:
+                case (uint)VSConstants.VSStd2KCmdID.UP:
+                case (uint)VSConstants.VSStd2KCmdID.DOWN:
                     SetBraceCompleteState(false);
                     break;
                 default:
                     break;
             }
-
-            return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+            return VSConstants.S_FALSE;
         }
 
-        public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
+        private bool IsInCommentArea()
         {
-            return NextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
+            int caretPosition = _textView.Caret.Position.BufferPosition.Position;
+            return IsInCommentArea(caretPosition, _textView.TextBuffer);
         }
 
-        #endregion
-        
+        public bool IsInCommentArea(int caretPosition, ITextBuffer textBuffer)
+        {
+            Token[] pstokens;
+            if (textBuffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out pstokens))
+            {
+                var commentTokens = pstokens.Where(t => t.Kind == TokenKind.Comment).ToArray();
+                foreach (var token in commentTokens)
+                {
+                    if (token.Extent.StartOffset <= caretPosition && caretPosition <= token.Extent.EndOffset)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// Complete the left brace with matched right brace
         /// </summary>
@@ -171,9 +195,9 @@ namespace PowerShellTools.Intellisense
 
                 _editorOperations.AddAfterTextBufferChangePrimitive();
                 undo.Complete();
-            }     
+            }
         }
-        
+
         private bool ProcessTypedRightBrace(char typedChar)
         {
             if (_isLastCmdBraceComplete)
@@ -186,7 +210,7 @@ namespace PowerShellTools.Intellisense
 
         private bool ProcessReturnKey()
         {
-            bool isReturnKeyProcessed = IsCaretInMiddleOfPairedCurlyBrace();
+            bool isReturnKeyProcessed = _isLastCmdBraceComplete && IsCaretInMiddleOfPairedCurlyBrace();
             if (isReturnKeyProcessed)
             {
                 using (var undo = _undoHistory.CreateTransaction("Insert new line."))
@@ -211,18 +235,19 @@ namespace PowerShellTools.Intellisense
 
         private bool ProcessBackspaceKey()
         {
-            if (_isLastCmdBraceComplete && IsCaretInMiddleOfPairedBrace())
+            var isBackspaceKeyProcessed = _isLastCmdBraceComplete && IsCaretInMiddleOfPairedBrace();
+            if (isBackspaceKeyProcessed)
             {
                 _undoHistory.Undo(1);
             }
-            return _isLastCmdBraceComplete;
+            return isBackspaceKeyProcessed;
         }
-    
+
         private void SetBraceCompleteState(bool isBraceComplete)
         {
             _isLastCmdBraceComplete = isBraceComplete;
         }
-        
+
         private bool IsCaretInMiddleOfPairedBrace()
         {
             int currentCaret = _textView.Caret.Position.BufferPosition.Position;
@@ -252,7 +277,7 @@ namespace PowerShellTools.Intellisense
             int currentCaret = _textView.Caret.Position.BufferPosition.Position;
             return IsPreviousCharLeftCurlyBrace(currentCaret) && IsNextCharRightCurlyBrace(currentCaret);
         }
-    
+
         private bool IsPreviousCharLeftCurlyBrace(int currentCaret)
         {
             if (currentCaret == 0) return false;
