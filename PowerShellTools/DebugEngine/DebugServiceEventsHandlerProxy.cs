@@ -99,7 +99,7 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
-        /// Ask for user input from VS
+        /// Ask for user input
         /// </summary>
         /// <returns>output string</returns>
         public string ReadHostPrompt(string message)
@@ -108,9 +108,11 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
-        /// Ask for user input securestring from VS
+        /// Ask for securestring from user
         /// </summary>
-        /// <returns>PSCredential object conteains the SecureString</returns>
+        /// <param name="message">Message of dialog window.</param>
+        /// <param name="name">Name of the parameter.</param>
+        /// <returns>A PSCredential object that contains the credentials for the target.</returns>
         public PSCredential ReadSecureStringPrompt(string message, string name)
         {
             return Debugger.HostUi.ReadSecureStringAsPSCredential(message, name).Result;
@@ -147,13 +149,18 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Ask for user input PSCredential from VS
         /// </summary>
-        /// <returns></returns>
+        /// <param name="caption">The caption for the message window.</param>
+        /// <param name="message">The text of the message.</param>
+        /// <param name="userName">The user name whose credential is to be prompted for. If this parameter set to null or an empty string, the function will prompt for the user name first.</param>
+        /// <param name="targetName">The name of the target for which the credential is collected.</param>
+        /// <param name="allowedCredentialTypes">A bitwise combination of the PSCredentialTypes enumeration values that identify the types of credentials that can be returned.</param>
+        /// <param name="options">A bitwise combination of the PSCredentialUIOptions enumeration values that identify the UI behavior when it gathers the credentials.</param>
+        /// <returns>A PSCredential object that contains the credentials for the target.</returns>
         public PSCredential GetPSCredentialPrompt(string caption, string message, string userName,
-            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
-            IntPtr parentHwnd)
+            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
             return Debugger.HostUi.GetPSCredential(caption, message, userName,
-                targetName, allowedCredentialTypes, options, parentHwnd);
+                targetName, allowedCredentialTypes, options);
         }
     }
 }

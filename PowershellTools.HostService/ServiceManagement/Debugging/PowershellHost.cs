@@ -38,62 +38,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return ReadLineFromUI(DebugEngineConstants.ReadHostDialogTitle);
         }
 
-        private string ReadLineFromUI(string message)
-        {
-            if (_debuggingService.CallbackService != null)
-            {
-                return _debuggingService.CallbackService.ReadHostPrompt(message);
-            }
-
-            return string.Empty;
-        }
-
         public override SecureString ReadLineAsSecureString()
         {
             return new SecureString();
-        }
-
-        private SecureString ReadLineAsSecureString(string message, string name)
-        {
-            var s = new SecureString();
-
-            if (_debuggingService.CallbackService != null)
-            {
-                s = _debuggingService.CallbackService.ReadSecureStringPrompt(message, name).Password;
-            }
-
-            return s;
-        }
-
-        private PSCredential ReadPSCredential(string caption, string message, string userName,
-            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
-            IntPtr parentHwnd)
-        {
-            PSCredential psCred = null;
-
-            if (_debuggingService.CallbackService != null)
-            {
-                psCred = _debuggingService.CallbackService.GetPSCredentialPrompt(caption, message, userName, targetName, 
-                    allowedCredentialTypes, options, parentHwnd);
-            }
-
-            return psCred;
-        }
-
-        private void TryOutputProgress(long sourceId, ProgressRecord record)
-        {
-            _debuggingService.NotifyOutputProgress(sourceId, record);
-
-            if (OutputProgress != null)
-                OutputProgress(sourceId, record);
-        }
-
-        private void TryOutputString(string val)
-        {
-            _debuggingService.NotifyOutputString(val);
-
-            if (OutputString != null)
-                OutputString(val);
         }
 
         public override void Write(string value)
@@ -162,8 +109,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             string.Empty, 
                             string.Empty,
                             PSCredentialTypes.Generic | PSCredentialTypes.Domain, 
-                            PSCredentialUIOptions.Default, 
-                            IntPtr.Zero);
+                            PSCredentialUIOptions.Default);
                         if (psCred != null)
                         {
                             results[fd.Name] = PSObject.AsPSObject(psCred);
@@ -190,7 +136,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             string targetName)
         {
             return CredUiPromptForCredential(caption, message, userName, targetName, PSCredentialTypes.Default,
-                PSCredentialUIOptions.Default, IntPtr.Zero);
+                PSCredentialUIOptions.Default);
         }
 
         public override PSCredential PromptForCredential(string caption, string message, string userName,
@@ -198,7 +144,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
             return CredUiPromptForCredential(caption, message, userName, targetName, allowedCredentialTypes,
-                options, IntPtr.Zero);
+                options);
         }
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices,
@@ -209,11 +155,64 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         // System.Management.Automation.HostUtilities
         internal PSCredential CredUiPromptForCredential(string caption, string message, string userName,
-            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
-            IntPtr parentHwnd)
+            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
             return this.ReadPSCredential(caption, message, userName, targetName,
-                    allowedCredentialTypes, options, parentHwnd);
+                    allowedCredentialTypes, options);
+        }
+
+        private SecureString ReadLineAsSecureString(string message, string name)
+        {
+            var s = new SecureString();
+
+            if (_debuggingService.CallbackService != null)
+            {
+                // SecureString is not serializable, so we have to encapsulate it into an PSCredential(ISeralizable) object
+                // So that is can pass over the wcf channel between VS and remote PowerShell host process.
+                s = _debuggingService.CallbackService.ReadSecureStringPrompt(message, name).Password;
+            }
+
+            return s;
+        }
+
+        private PSCredential ReadPSCredential(string caption, string message, string userName,
+            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
+        {
+            PSCredential psCred = null;
+
+            if (_debuggingService.CallbackService != null)
+            {
+                psCred = _debuggingService.CallbackService.GetPSCredentialPrompt(caption, message, userName, targetName,
+                    allowedCredentialTypes, options);
+            }
+
+            return psCred;
+        }
+
+        private void TryOutputProgress(long sourceId, ProgressRecord record)
+        {
+            _debuggingService.NotifyOutputProgress(sourceId, record);
+
+            if (OutputProgress != null)
+                OutputProgress(sourceId, record);
+        }
+
+        private void TryOutputString(string val)
+        {
+            _debuggingService.NotifyOutputString(val);
+
+            if (OutputString != null)
+                OutputString(val);
+        }
+
+        private string ReadLineFromUI(string message)
+        {
+            if (_debuggingService.CallbackService != null)
+            {
+                return _debuggingService.CallbackService.ReadHostPrompt(message);
+            }
+
+            return string.Empty;
         }
     }
 

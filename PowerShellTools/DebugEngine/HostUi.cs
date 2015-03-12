@@ -230,9 +230,11 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
-        /// Read host from user input
+        /// Ask for securestring from user
         /// </summary>
-        /// <returns>user input string</returns>
+        /// <param name="message">Message of dialog window.</param>
+        /// <param name="name">Name of the parameter.</param>
+        /// <returns>A PSCredential object that contains the credentials for the target.</returns>
         public async Task<PSCredential> ReadSecureStringAsPSCredential(string message, string name)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -251,19 +253,17 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
-        /// Read PSCredential from user input
+        /// Ask for user input PSCredential from VS
         /// </summary>
-        /// <param name="caption">Caption of dialog</param>
-        /// <param name="message">Message of dialog</param>
-        /// <param name="userName">User name</param>
-        /// <param name="targetName"></param>
-        /// <param name="allowedCredentialTypes"></param>
-        /// <param name="options"></param>
-        /// <param name="parentHwnd"></param>
-        /// <returns></returns>
+        /// <param name="caption">The caption for the message window.</param>
+        /// <param name="message">The text of the message.</param>
+        /// <param name="userName">The user name whose credential is to be prompted for. If this parameter set to null or an empty string, the function will prompt for the user name first.</param>
+        /// <param name="targetName">The name of the target for which the credential is collected.</param>
+        /// <param name="allowedCredentialTypes">A bitwise combination of the PSCredentialTypes enumeration values that identify the types of credentials that can be returned.</param>
+        /// <param name="options">A bitwise combination of the PSCredentialUIOptions enumeration values that identify the UI behavior when it gathers the credentials.</param>
+        /// <returns>A PSCredential object that contains the credentials for the target.</returns>
         public PSCredential GetPSCredential(string caption, string message, string userName,
-            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
-            IntPtr parentHwnd)
+            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
         {
             PSCredential result = null;
 

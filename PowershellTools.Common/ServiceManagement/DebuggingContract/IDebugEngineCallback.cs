@@ -49,8 +49,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             string userName,
             string targetName, 
             PSCredentialTypes allowedCredentialTypes, 
-            PSCredentialUIOptions options,
-            IntPtr parentHwnd);
+            PSCredentialUIOptions options);
 
         [OperationContract(IsOneWay = false)]
         void OpenRemoteFile(string fullName);

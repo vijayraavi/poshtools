@@ -7,6 +7,9 @@ using System.Text;
 
 namespace PowerShellTools.CredentialUI
 {
+    /// <summary>
+    /// View model of SecureString prompt dialog
+    /// </summary>
     public class SecureStringDialogViewModel : INotifyPropertyChanged
     {
         private SecureString _secString;
@@ -42,7 +45,7 @@ namespace PowerShellTools.CredentialUI
         }
 
         /// <summary>
-        /// Selected template item
+        /// SecureString get from password box
         /// </summary>
         public SecureString SecString
         {

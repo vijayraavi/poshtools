@@ -36,6 +36,11 @@ namespace PowerShellTools.CredentialUI
             DataContext = viewModel;
         }
 
+        /// <summary>
+        /// Password box is friendly with MVVM binding, so we have to separately handle it here
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnOkButtonClick(object sender, RoutedEventArgs e)
         {
             _viewModel.SecString = passwordBox.SecurePassword;
