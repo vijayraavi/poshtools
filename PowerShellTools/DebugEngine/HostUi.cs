@@ -261,12 +261,10 @@ namespace PowerShellTools.DebugEngine
         /// <param name="options"></param>
         /// <param name="parentHwnd"></param>
         /// <returns></returns>
-        public async Task<PSCredential> GetPSCredential(string caption, string message, string userName,
+        public PSCredential GetPSCredential(string caption, string message, string userName,
             string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
             IntPtr parentHwnd)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             PSCredential result = null;
 
             CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);
