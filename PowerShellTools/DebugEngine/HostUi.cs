@@ -234,7 +234,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         /// <param name="message">Message of dialog window.</param>
         /// <param name="name">Name of the parameter.</param>
-        /// <returns>A PSCredential object that contains the credentials for the target.</returns>
+        /// <returns>A PSCredential object that contains the securestring.</returns>
         public async Task<PSCredential> ReadSecureStringAsPSCredential(string message, string name)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -253,7 +253,7 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
-        /// Ask for user input PSCredential from VS
+        /// Ask for PSCredential from user
         /// </summary>
         /// <param name="caption">The caption for the message window.</param>
         /// <param name="message">The text of the message.</param>
