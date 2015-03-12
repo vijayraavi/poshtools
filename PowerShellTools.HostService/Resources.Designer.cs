@@ -61,6 +61,24 @@ namespace PowerShellTools.HostService {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Windows PowerShell credential request.
+        /// </summary>
+        public static string CredentialDialogCaption {
+            get {
+                return ResourceManager.GetString("CredentialDialogCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter your credentials..
+        /// </summary>
+        public static string CredentialDialogMessage {
+            get {
+                return ResourceManager.GetString("CredentialDialogMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Local script ({0}) cannot be run through remote PowerShell session.
         /// </summary>
         public static string Error_LocalScriptInRemoteSession {

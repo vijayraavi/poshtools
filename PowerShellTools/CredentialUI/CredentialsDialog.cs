@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace PowerShellTools.HostService.CredentialUI
+namespace PowerShellTools.CredentialUI
 {
     /// <summary>Encapsulates dialog functionality from the Credential Management API.</summary>
     public sealed class CredentialsDialog

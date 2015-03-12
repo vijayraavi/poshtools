@@ -148,9 +148,12 @@ namespace PowerShellTools.DebugEngine
         /// Ask for user input PSCredential from VS
         /// </summary>
         /// <returns></returns>
-        public PSCredential ReadPSCredentialPrompt()
+        public PSCredential GetPSCredentialPrompt(string caption, string message, string userName,
+            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
+            IntPtr parentHwnd)
         {
-            return Debugger.HostUi.GetPSCredential();
+            return Debugger.HostUi.GetPSCredential(caption, message, userName,
+                targetName, allowedCredentialTypes, options, parentHwnd);
         }
     }
 }

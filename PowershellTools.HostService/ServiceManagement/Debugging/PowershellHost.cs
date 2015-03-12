@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualBasic;
 using PowerShellTools.Common.Debugging;
-using PowerShellTools.HostService.CredentialUI;
 using System.Runtime.InteropServices;
 using PowerShellTools.Common;
 
@@ -66,13 +65,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return s;
         }
 
-        private PSCredential ReadPSCredential()
+        private PSCredential ReadPSCredential(string caption, string message, string userName,
+            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
+            IntPtr parentHwnd)
         {
             PSCredential psCred = null;
 
             if (_debuggingService.CallbackService != null)
             {
-                psCred = _debuggingService.CallbackService.ReadPSCredentialPrompt();
+                psCred = _debuggingService.CallbackService.GetPSCredentialPrompt(caption, message, userName, targetName, 
+                    allowedCredentialTypes, options, parentHwnd);
             }
 
             return psCred;
@@ -154,7 +156,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         break;
 
                     case Constants.PSCredentialFullTypeName:
-                        PSCredential psCred = this.ReadPSCredential();
+                        PSCredential psCred = this.ReadPSCredential(
+                            Resources.CredentialDialogCaption,
+                            Resources.CredentialDialogMessage, 
+                            string.Empty, 
+                            string.Empty,
+                            PSCredentialTypes.Generic | PSCredentialTypes.Domain, 
+                            PSCredentialUIOptions.Default, 
+                            IntPtr.Zero);
                         results[fd.Name] = PSObject.AsPSObject(psCred);
                         break;
 
@@ -196,38 +205,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         // System.Management.Automation.HostUtilities
-        internal static PSCredential CredUiPromptForCredential(string caption, string message, string userName,
+        internal PSCredential CredUiPromptForCredential(string caption, string message, string userName,
             string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
             IntPtr parentHwnd)
         {
-            PSCredential result = null;
-
-            CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);
-            dialog.Name = userName;
-
-            switch (options)
-            {
-                case PSCredentialUIOptions.AlwaysPrompt:
-                    dialog.AlwaysDisplay = true;
-                    break;
-                case PSCredentialUIOptions.ReadOnlyUserName:
-                    dialog.KeepName = true;
-                    break;
-                case PSCredentialUIOptions.Default:
-                    dialog.ValidName = true;
-                    break;
-                case PSCredentialUIOptions.None:
-                    break;
-                default:
-                    break;
-            }
-
-            if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
-            {
-                result = new PSCredential(dialog.Name, dialog.Password);
-            }
-
-            return result;
+            return this.ReadPSCredential(caption, message, userName, targetName,
+                    allowedCredentialTypes, options, parentHwnd);
         }
     }
 

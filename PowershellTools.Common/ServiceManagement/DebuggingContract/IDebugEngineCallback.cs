@@ -41,7 +41,14 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         PSCredential ReadSecureStringPrompt(string message);
 
         [OperationContract(IsOneWay = false)]
-        PSCredential ReadPSCredentialPrompt();
+        PSCredential GetPSCredentialPrompt(
+            string caption, 
+            string message, 
+            string userName,
+            string targetName, 
+            PSCredentialTypes allowedCredentialTypes, 
+            PSCredentialUIOptions options,
+            IntPtr parentHwnd);
 
         [OperationContract(IsOneWay = false)]
         void OpenRemoteFile(string fullName);

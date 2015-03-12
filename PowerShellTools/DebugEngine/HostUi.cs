@@ -27,6 +27,7 @@ namespace PowerShellTools.DebugEngine
     using PowerShellTools.ServiceManagement;
     using PowerShellTools.Common.Debugging;
     using System.Diagnostics;
+    using PowerShellTools.CredentialUI;
 #endif
 
     /// <summary>
@@ -242,16 +243,46 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Read PSCredential from user input
         /// </summary>
-        /// <returns>PSCredential</returns>
-        public PSCredential GetPSCredential()
+        /// <param name="caption">Caption of dialog</param>
+        /// <param name="message">Message of dialog</param>
+        /// <param name="userName">User name</param>
+        /// <param name="targetName"></param>
+        /// <param name="allowedCredentialTypes"></param>
+        /// <param name="options"></param>
+        /// <param name="parentHwnd"></param>
+        /// <returns></returns>
+        public PSCredential GetPSCredential(string caption, string message, string userName,
+            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
+            IntPtr parentHwnd)
         {
-            SecureString s = new SecureString();
-            foreach (var ch in "password")
+            PSCredential result = null;
+
+            CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);
+            dialog.Name = userName;
+
+            switch (options)
             {
-                s.AppendChar(ch);
+                case PSCredentialUIOptions.AlwaysPrompt:
+                    dialog.AlwaysDisplay = true;
+                    break;
+                case PSCredentialUIOptions.ReadOnlyUserName:
+                    dialog.KeepName = true;
+                    break;
+                case PSCredentialUIOptions.Default:
+                    dialog.ValidName = true;
+                    break;
+                case PSCredentialUIOptions.None:
+                    break;
+                default:
+                    break;
             }
 
-            return new PSCredential("securestring", s);
+            if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
+            {
+                result = new PSCredential(dialog.Name, dialog.Password);
+            }
+
+            return result;
         }
 
         /// <summary>
