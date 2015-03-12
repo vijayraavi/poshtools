@@ -153,7 +153,7 @@ namespace PowerShellTools.DebugEngine
             IntPtr parentHwnd)
         {
             return Debugger.HostUi.GetPSCredential(caption, message, userName,
-                targetName, allowedCredentialTypes, options, parentHwnd);
+                targetName, allowedCredentialTypes, options, parentHwnd).Result;
         }
     }
 }

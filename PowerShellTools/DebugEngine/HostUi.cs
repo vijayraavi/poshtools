@@ -237,18 +237,16 @@ namespace PowerShellTools.DebugEngine
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            return GetPSCredential(message, name);
-        }
-
-        private PSCredential GetPSCredential(string message, string name)
-        {
             SecureString secString = new SecureString();
             SecureStringDialogViewModel viewModel = new SecureStringDialogViewModel(message, name);
             SecureStringDialog dialog = new SecureStringDialog(viewModel);
 
-            dialog.ShowModal();
-            secString = viewModel.SecString;
-            
+            var ret = dialog.ShowModal();
+            if(ret.HasValue && ret.Value == true)
+            {
+                secString = viewModel.SecString;
+            }
+
             return new PSCredential("securestring", secString);
         }
 
@@ -263,10 +261,12 @@ namespace PowerShellTools.DebugEngine
         /// <param name="options"></param>
         /// <param name="parentHwnd"></param>
         /// <returns></returns>
-        public PSCredential GetPSCredential(string caption, string message, string userName,
+        public async Task<PSCredential> GetPSCredential(string caption, string message, string userName,
             string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options,
             IntPtr parentHwnd)
         {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             PSCredential result = null;
 
             CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);

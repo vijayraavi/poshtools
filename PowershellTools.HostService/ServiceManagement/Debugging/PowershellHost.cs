@@ -164,7 +164,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             PSCredentialTypes.Generic | PSCredentialTypes.Domain, 
                             PSCredentialUIOptions.Default, 
                             IntPtr.Zero);
-                        results[fd.Name] = PSObject.AsPSObject(psCred);
+                        if (psCred != null)
+                        {
+                            results[fd.Name] = PSObject.AsPSObject(psCred);
+                        }
                         break;
 
                     default:
