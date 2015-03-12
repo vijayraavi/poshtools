@@ -17,6 +17,7 @@ using Microsoft.PowerShell;
 using Microsoft.VisualBasic;
 using PowerShellTools.Repl;
 using Thread = System.Threading.Thread;
+using Microsoft.VisualStudioTools.Project;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -29,6 +30,8 @@ namespace PowerShellTools.DebugEngine
     using System.Diagnostics;
     using PowerShellTools.CredentialUI;
     using System.Windows.Forms;
+    using Microsoft.VisualStudio.Shell;
+    using System.Threading.Tasks;
 #endif
 
     /// <summary>
@@ -230,17 +233,22 @@ namespace PowerShellTools.DebugEngine
         /// Read host from user input
         /// </summary>
         /// <returns>user input string</returns>
-        public PSCredential ReadSecureStringAsPSCredential(string message, string name)
+        public async Task<PSCredential> ReadSecureStringAsPSCredential(string message, string name)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            return GetPSCredential(message, name);
+        }
+
+        private PSCredential GetPSCredential(string message, string name)
         {
             SecureString secString = new SecureString();
             SecureStringDialogViewModel viewModel = new SecureStringDialogViewModel(message, name);
             SecureStringDialog dialog = new SecureStringDialog(viewModel);
 
-            if (dialog.ShowModal().HasValue ? (bool)dialog.ShowModal() : false)
-            {
-                secString = viewModel.SecString;
-            }
-
+            dialog.ShowModal();
+            secString = viewModel.SecString;
+            
             return new PSCredential("securestring", secString);
         }
 

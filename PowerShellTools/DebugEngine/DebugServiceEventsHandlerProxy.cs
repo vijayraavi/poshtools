@@ -113,7 +113,7 @@ namespace PowerShellTools.DebugEngine
         /// <returns>PSCredential object conteains the SecureString</returns>
         public PSCredential ReadSecureStringPrompt(string message, string name)
         {
-            return Debugger.HostUi.ReadSecureStringAsPSCredential(message, name);
+            return Debugger.HostUi.ReadSecureStringAsPSCredential(message, name).Result;
         }
 
         /// <summary>
