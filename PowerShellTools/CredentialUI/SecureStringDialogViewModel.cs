@@ -52,12 +52,7 @@ namespace PowerShellTools.CredentialUI
             }
             set
             {
-                if (_secString != value)
-                {
-                    _secString = value;
-
-                    OnPropertyChanged("SecString");
-                }
+                _secString = value;
             }
         }
 

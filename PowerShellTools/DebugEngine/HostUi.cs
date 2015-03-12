@@ -28,6 +28,7 @@ namespace PowerShellTools.DebugEngine
     using PowerShellTools.Common.Debugging;
     using System.Diagnostics;
     using PowerShellTools.CredentialUI;
+    using System.Windows.Forms;
 #endif
 
     /// <summary>
@@ -229,15 +230,18 @@ namespace PowerShellTools.DebugEngine
         /// Read host from user input
         /// </summary>
         /// <returns>user input string</returns>
-        public PSCredential ReadSecureStringAsPSCredential(string message)
+        public PSCredential ReadSecureStringAsPSCredential(string message, string name)
         {
-            SecureString s = new SecureString();
-            foreach (var ch in "password")
-                {
-                    s.AppendChar(ch);
-                }
+            SecureString secString = new SecureString();
+            SecureStringDialogViewModel viewModel = new SecureStringDialogViewModel(message, name);
+            SecureStringDialog dialog = new SecureStringDialog(viewModel);
 
-            return new PSCredential("securestring", s);
+            if (dialog.ShowModal().HasValue ? (bool)dialog.ShowModal() : false)
+            {
+                secString = viewModel.SecString;
+            }
+
+            return new PSCredential("securestring", secString);
         }
 
         /// <summary>
@@ -277,7 +281,7 @@ namespace PowerShellTools.DebugEngine
                     break;
             }
 
-            if (dialog.Show() == System.Windows.Forms.DialogResult.OK)
+            if (dialog.Show() == DialogResult.OK)
             {
                 result = new PSCredential(dialog.Name, dialog.Password);
             }

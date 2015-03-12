@@ -111,9 +111,9 @@ namespace PowerShellTools.DebugEngine
         /// Ask for user input securestring from VS
         /// </summary>
         /// <returns>PSCredential object conteains the SecureString</returns>
-        public PSCredential ReadSecureStringPrompt(string message)
+        public PSCredential ReadSecureStringPrompt(string message, string name)
         {
-            return Debugger.HostUi.ReadSecureStringAsPSCredential(message);
+            return Debugger.HostUi.ReadSecureStringAsPSCredential(message, name);
         }
 
         /// <summary>

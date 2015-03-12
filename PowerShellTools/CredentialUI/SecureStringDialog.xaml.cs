@@ -21,6 +21,8 @@ namespace PowerShellTools.CredentialUI
     /// </summary>
     public partial class SecureStringDialog : VsShellDialogWindow
     {
+        SecureStringDialogViewModel _viewModel;
+
         public SecureStringDialog(SecureStringDialogViewModel viewModel)
         {
             if (viewModel == null)
@@ -30,11 +32,13 @@ namespace PowerShellTools.CredentialUI
 
             InitializeComponent();
 
+            _viewModel = viewModel;
             DataContext = viewModel;
         }
 
         private void OnOkButtonClick(object sender, RoutedEventArgs e)
         {
+            _viewModel.SecString = passwordBox.SecurePassword;
             DialogResult = true;
         }
     }

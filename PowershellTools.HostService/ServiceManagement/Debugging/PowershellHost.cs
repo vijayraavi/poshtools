@@ -53,13 +53,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return new SecureString();
         }
 
-        private SecureString ReadLineAsSecureString(string message)
+        private SecureString ReadLineAsSecureString(string message, string name)
         {
             var s = new SecureString();
 
             if (_debuggingService.CallbackService != null)
             {
-                s = _debuggingService.CallbackService.ReadSecureStringPrompt(message).Password;
+                s = _debuggingService.CallbackService.ReadSecureStringPrompt(message, name).Password;
             }
 
             return s;
@@ -151,7 +151,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 switch (fd.ParameterTypeFullName.ToLower())
                 {
                     case Constants.SecureStringFullTypeName:
-                        SecureString secString = this.ReadLineAsSecureString(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
+                        SecureString secString = this.ReadLineAsSecureString(promptMessage, fd.Name);
                         results[fd.Name] = PSObject.AsPSObject(secString);
                         break;
 
