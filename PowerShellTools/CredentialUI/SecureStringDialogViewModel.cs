@@ -13,34 +13,34 @@ namespace PowerShellTools.CredentialUI
     public class SecureStringDialogViewModel : INotifyPropertyChanged
     {
         private SecureString _secString;
-        private string _paramName;
-        private string _paramMessage;
+        private string _parameterName;
+        private string _parameterMessage;
 
         public SecureStringDialogViewModel(string paramMessage, string paramName)
         {
-            _paramMessage = paramMessage;
-            _paramName = paramName;
+            _parameterMessage = paramMessage;
+            _parameterName = paramName;
         }
 
         /// <summary>
         /// Message of parameter
         /// </summary>
-        public string ParamMessage
+        public string ParameterMessage
         {
             get
             {
-                return _paramMessage;
+                return _parameterMessage;
             }
         }
 
         /// <summary>
         /// Name of parameter
         /// </summary>
-        public string ParamName
+        public string ParameterName
         {
             get
             {
-                return _paramName;
+                return _parameterName;
             }
         }
 

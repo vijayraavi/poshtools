@@ -101,7 +101,7 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Ask for user input
         /// </summary>
-        /// <returns>output string</returns>
+        /// <returns>Output string</returns>
         public string ReadHostPrompt(string message)
         {
             return Debugger.HostUi.ReadLine(message);

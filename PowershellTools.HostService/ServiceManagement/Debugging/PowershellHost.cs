@@ -95,7 +95,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 this.Write(fd.Name + ": ");
 
-                switch (fd.ParameterTypeFullName.ToLower())
+                switch (fd.ParameterTypeFullName.ToLowerInvariant())
                 {
                     case Constants.SecureStringFullTypeName:
                         SecureString secString = this.ReadLineAsSecureString(promptMessage, fd.Name);

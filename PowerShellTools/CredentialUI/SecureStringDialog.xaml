@@ -12,7 +12,7 @@
             Height="200"
             ResizeMode="NoResize"
             ShowInTaskbar="False"
-            Title="{Binding Path=ParamName}"
+            Title="{Binding Path=ParameterName}"
             WindowStartupLocation="CenterOwner">
     <shell:VsShellDialogWindow.Resources>
         <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
@@ -30,7 +30,7 @@
         <Grid Grid.Row="0"
                 HorizontalAlignment="Stretch"
                 Margin="10,10,10,10">
-            <Label Grid.Column="0" Content="{Binding Path=ParamMessage}"/>
+            <Label Grid.Column="0" Content="{Binding Path=ParameterMessage}"/>
         </Grid>
         <Grid Grid.Row="1"
                 HorizontalAlignment="Stretch"
@@ -39,7 +39,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="{Binding Path=ParamName}"/>
+            <Label Grid.Column="0" Content="{Binding Path=ParameterName}"/>
             <PasswordBox Name="passwordBox" Grid.Column="1" VerticalContentAlignment="Center"/>
         </Grid>
         <StackPanel Grid.Row="2"
