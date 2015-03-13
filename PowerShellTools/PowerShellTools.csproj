@@ -138,6 +138,7 @@
     <Reference Include="Microsoft.VisualStudio.Shell.$(VSTarget)" />
     <Reference Include="Microsoft.VisualStudio.Shell.Immutable.$(VSTarget)" />
     <Reference Include="Microsoft.VisualStudio.TextManager.Interop.8.0" />
+    <Reference Include="Microsoft.VisualStudio.Threading, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Windows.Design.Host">
       <HintPath>$(MSBuildProgramFiles32)\Microsoft Visual Studio $(VSTarget)\Common7\IDE\PrivateAssemblies\Microsoft.Windows.Design.Host.dll</HintPath>
     </Reference>
@@ -238,6 +239,17 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
+    <Compile Include="CredentialUI\CredentialsDialog.cs" />
+    <Compile Include="CredentialUI\NativeCredentialsUI.cs" />
+    <Compile Include="CredentialUI\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="CredentialUI\SecureStringDialog.xaml.cs">
+      <DependentUpon>SecureStringDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CredentialUI\SecureStringDialogViewModel.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
     <Compile Include="DebugEngine\Definitions\Enums.cs" />
@@ -538,6 +550,10 @@
     <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="CredentialUI\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="DebugEngine\ResourceStrings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
@@ -674,6 +690,10 @@
     <Resource Include="Resources\powershell_icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="CredentialUI\SecureStringDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Project\SharedProject\OverwriteFileDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

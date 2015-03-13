@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PowerShellTools.HostService {
+namespace PowerShellTools.CredentialUI {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace PowerShellTools.HostService {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PowerShellTools.HostService.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PowerShellTools.CredentialUI.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,38 +61,20 @@ namespace PowerShellTools.HostService {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows PowerShell credential request.
+        ///   Looks up a localized string similar to Cancel.
         /// </summary>
-        public static string CredentialDialogCaption {
+        public static string CancelButtonText {
             get {
-                return ResourceManager.GetString("CredentialDialogCaption", resourceCulture);
+                return ResourceManager.GetString("CancelButtonText", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enter your credentials..
+        ///   Looks up a localized string similar to OK.
         /// </summary>
-        public static string CredentialDialogMessage {
+        public static string EnterButtonText {
             get {
-                return ResourceManager.GetString("CredentialDialogMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Local script ({0}) cannot be run through remote PowerShell session.
-        /// </summary>
-        public static string Error_LocalScriptInRemoteSession {
-            get {
-                return ResourceManager.GetString("Error_LocalScriptInRemoteSession", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently..
-        /// </summary>
-        public static string Error_PipelineBusy {
-            get {
-                return ResourceManager.GetString("Error_PipelineBusy", resourceCulture);
+                return ResourceManager.GetString("EnterButtonText", resourceCulture);
             }
         }
     }

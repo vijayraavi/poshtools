@@ -17,6 +17,7 @@ using Microsoft.PowerShell;
 using Microsoft.VisualBasic;
 using PowerShellTools.Repl;
 using Thread = System.Threading.Thread;
+using Microsoft.VisualStudioTools.Project;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -27,6 +28,10 @@ namespace PowerShellTools.DebugEngine
     using PowerShellTools.ServiceManagement;
     using PowerShellTools.Common.Debugging;
     using System.Diagnostics;
+    using PowerShellTools.CredentialUI;
+    using System.Windows.Forms;
+    using Microsoft.VisualStudio.Shell;
+    using System.Threading.Tasks;
 #endif
 
     /// <summary>
@@ -227,6 +232,72 @@ namespace PowerShellTools.DebugEngine
         public string ReadLine(string message)
         {
             return Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
+        }
+
+        /// <summary>
+        /// Ask for securestring from user
+        /// </summary>
+        /// <param name="message">Message of dialog window.</param>
+        /// <param name="name">Name of the parameter.</param>
+        /// <returns>A PSCredential object that contains the securestring.</returns>
+        public async Task<PSCredential> ReadSecureStringAsPSCredential(string message, string name)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            SecureString secString = new SecureString();
+            SecureStringDialogViewModel viewModel = new SecureStringDialogViewModel(message, name);
+            SecureStringDialog dialog = new SecureStringDialog(viewModel);
+
+            var ret = dialog.ShowModal();
+            if(ret.HasValue && ret.Value == true)
+            {
+                secString = viewModel.SecString;
+            }
+
+            return new PSCredential("securestring", secString);
+        }
+
+        /// <summary>
+        /// Ask for PSCredential from user
+        /// </summary>
+        /// <param name="caption">The caption for the message window.</param>
+        /// <param name="message">The text of the message.</param>
+        /// <param name="userName">The user name whose credential is to be prompted for. If this parameter set to null or an empty string, the function will prompt for the user name first.</param>
+        /// <param name="targetName">The name of the target for which the credential is collected.</param>
+        /// <param name="allowedCredentialTypes">A bitwise combination of the PSCredentialTypes enumeration values that identify the types of credentials that can be returned.</param>
+        /// <param name="options">A bitwise combination of the PSCredentialUIOptions enumeration values that identify the UI behavior when it gathers the credentials.</param>
+        /// <returns>A PSCredential object that contains the credentials for the target.</returns>
+        public PSCredential GetPSCredential(string caption, string message, string userName,
+            string targetName, PSCredentialTypes allowedCredentialTypes, PSCredentialUIOptions options)
+        {
+            PSCredential result = null;
+
+            CredentialsDialog dialog = new CredentialsDialog(targetName, caption, message);
+            dialog.Name = userName;
+
+            switch (options)
+            {
+                case PSCredentialUIOptions.AlwaysPrompt:
+                    dialog.AlwaysDisplay = true;
+                    break;
+                case PSCredentialUIOptions.ReadOnlyUserName:
+                    dialog.KeepName = true;
+                    break;
+                case PSCredentialUIOptions.Default:
+                    dialog.ValidName = true;
+                    break;
+                case PSCredentialUIOptions.None:
+                    break;
+                default:
+                    break;
+            }
+
+            if (dialog.Show() == DialogResult.OK)
+            {
+                result = new PSCredential(dialog.Name, dialog.Password);
+            }
+
+            return result;
         }
 
         /// <summary>

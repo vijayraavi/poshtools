@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PowerShellTools.HostService.CredentialUI
+namespace PowerShellTools.CredentialUI
 {
     public sealed class NativeCredentialsUI
     {

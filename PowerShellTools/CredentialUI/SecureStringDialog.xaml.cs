@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.PlatformUI;
-using PowerShellTools.Common;
+﻿using PowerShellTools.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,17 +11,19 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-
-namespace PowerShellTools.Repl.DialogWindows
+namespace PowerShellTools.CredentialUI
 {
     /// <summary>
-    /// Interaction logic for RemoteSessionEnterWindow.xaml
+    /// Interaction logic for SecureStringDialog.xaml
     /// </summary>
-    internal partial class RemoteSessionEnterWindow : VsShellDialogWindow
+    public partial class SecureStringDialog : VsShellDialogWindow
     {
-        public RemoteSessionEnterWindow(RemoteSessionWindowViewModel viewModel)
+        SecureStringDialogViewModel _viewModel;
+
+        public SecureStringDialog(SecureStringDialogViewModel viewModel)
         {
             if (viewModel == null)
             {
@@ -31,11 +32,18 @@ namespace PowerShellTools.Repl.DialogWindows
 
             InitializeComponent();
 
+            _viewModel = viewModel;
             DataContext = viewModel;
         }
 
+        /// <summary>
+        /// Password box is friendly with MVVM binding, so we have to separately handle it here
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnOkButtonClick(object sender, RoutedEventArgs e)
         {
+            _viewModel.SecString = passwordBox.SecurePassword;
             DialogResult = true;
         }
     }

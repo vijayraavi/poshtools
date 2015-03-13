@@ -117,17 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CredentialDialogCaption" xml:space="preserve">
-    <value>Windows PowerShell credential request</value>
+  <data name="CancelButtonText" xml:space="preserve">
+    <value>Cancel</value>
   </data>
-  <data name="CredentialDialogMessage" xml:space="preserve">
-    <value>Enter your credentials.</value>
-  </data>
-  <data name="Error_LocalScriptInRemoteSession" xml:space="preserve">
-    <value>Local script ({0}) cannot be run through remote PowerShell session</value>
-    <comment>{0} - Script file path</comment>
-  </data>
-  <data name="Error_PipelineBusy" xml:space="preserve">
-    <value>Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.</value>
+  <data name="EnterButtonText" xml:space="preserve">
+    <value>OK</value>
   </data>
 </root>

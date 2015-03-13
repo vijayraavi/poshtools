@@ -108,8 +108,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CredentialsUI\CredentialsDialog.cs" />
-    <Compile Include="CredentialsUI\NativeCredentialsUI.cs" />
     <Compile Include="PowerShellServiceHostBehaviorAttribute.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
