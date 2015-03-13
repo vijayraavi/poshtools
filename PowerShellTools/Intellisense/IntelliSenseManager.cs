@@ -212,7 +212,6 @@ namespace PowerShellTools.Intellisense
         {
             if (_intellisenseRunning)
             {
-                Debug.Print("_intelliSenseRunning = {0}", _intellisenseRunning);
                 return;
             } 
 
