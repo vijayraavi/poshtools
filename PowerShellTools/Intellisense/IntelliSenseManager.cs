@@ -119,7 +119,14 @@ namespace PowerShellTools.Intellisense
                 return VSConstants.S_OK;
             }
 
-            //pass along the command so the char is added to the buffer 
+            // Check the char at caret before pass along the command
+            // If command is backspace and completion session is active, then we need to see if the char to be deleted is an IntelliSense triggering char
+            // If yes, then after deleting the char, we also dismiss the completion session
+            // Otherwise, just filter the completion lists
+            ITrackingPoint caretCharPosition = _textView.TextSnapshot.CreateTrackingPoint(_textView.Caret.Position.BufferPosition.Position - 1, PointTrackingMode.Positive);
+            char charAtCaret = caretCharPosition.GetCharacter(_textView.TextSnapshot);
+
+            // pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
             if (!typedChar.Equals(Char.MinValue) && IsIntellisenseTrigger(typedChar))
@@ -150,9 +157,17 @@ namespace PowerShellTools.Intellisense
                 if (_activeSession != null && !_activeSession.IsDismissed)
                 {
                     try
-                    {
-                        Log.Debug("Filter");
-                        _activeSession.Filter();
+                    {                        
+                        if (IsIntellisenseTrigger(charAtCaret))
+                        {
+                            Log.Debug("Dismiss");
+                            _activeSession.Dismiss();
+                        }
+                        else
+                        {
+                            Log.Debug("Filter");
+                            _activeSession.Filter();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -195,7 +210,11 @@ namespace PowerShellTools.Intellisense
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
         {
-            if (_intellisenseRunning) return;
+            if (_intellisenseRunning)
+            {
+                Debug.Print("_intelliSenseRunning = {0}", _intellisenseRunning);
+                return;
+            } 
 
             _intellisenseRunning = true;
             var statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
