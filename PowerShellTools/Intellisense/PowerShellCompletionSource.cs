@@ -98,7 +98,27 @@ namespace PowerShellTools.Intellisense
 
     internal class PowerShellCompletionSet : CompletionSet
     {
-        private readonly FilteredObservableCollection<Completion> completions;
+        private readonly FilteredObservableCollection<Completion> completions;        
+
+        internal PowerShellCompletionSet(string moniker, 
+                                         string displayName, 
+                                         ITrackingSpan applicableTo, 
+                                         IEnumerable<Completion> completions, 
+                                         IEnumerable<Completion> completionBuilders, 
+                                         ITrackingSpan filterSpan, 
+                                         ITrackingSpan lineStartToApplicableTo)
+                : base(moniker, displayName, applicableTo, completions, completionBuilders)
+        {
+            if (filterSpan == null)
+            {
+                throw new ArgumentNullException("filterSpan");
+            }
+            this.completions = new FilteredObservableCollection<Completion>(new ObservableCollection<Completion>(completions));
+            FilterSpan = filterSpan;
+            LineStartToApplicableTo = lineStartToApplicableTo;
+            InitialApplicableTo = applicableTo.GetText(applicableTo.TextBuffer.CurrentSnapshot);
+        }
+
         public override IList<Completion> Completions
         {
             get
@@ -113,18 +133,6 @@ namespace PowerShellTools.Intellisense
 
         internal string InitialApplicableTo { get; private set; }
 
-        internal PowerShellCompletionSet(string moniker, string displayName, ITrackingSpan applicableTo, IEnumerable<Completion> completions, IEnumerable<Completion> completionBuilders, ITrackingSpan filterSpan, ITrackingSpan lineStartToApplicableTo)
-            : base(moniker, displayName, applicableTo, completions, completionBuilders)
-        {
-            if (filterSpan == null)
-            {
-                throw new ArgumentNullException("filterSpan");
-            }
-            this.completions = new FilteredObservableCollection<Completion>(new ObservableCollection<Completion>(completions));
-            FilterSpan = filterSpan;
-            LineStartToApplicableTo = lineStartToApplicableTo;
-            InitialApplicableTo = applicableTo.GetText(applicableTo.TextBuffer.CurrentSnapshot);
-        }
         public override void Filter()
         {
             var filterText = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
@@ -139,6 +147,7 @@ namespace PowerShellTools.Intellisense
                 completions.Filter(predicate);
             }
         }
+
         public override void SelectBestMatch()
         {
             var text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);

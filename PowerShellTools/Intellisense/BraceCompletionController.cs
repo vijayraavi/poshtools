@@ -156,7 +156,7 @@ namespace PowerShellTools.Intellisense
             return IsInCommentArea(caretPosition, _textView.TextBuffer);
         }
 
-        public bool IsInCommentArea(int caretPosition, ITextBuffer textBuffer)
+        internal bool IsInCommentArea(int caretPosition, ITextBuffer textBuffer)
         {
             Token[] pstokens;
             if (textBuffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out pstokens))
