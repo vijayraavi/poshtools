@@ -32,6 +32,7 @@ namespace PowerShellTools.DebugEngine
     {
         private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
+        private static Object _debuggingCmdLock = new Object();
 
         /// <summary>
         /// Event is fired when a breakpoint is hit.
@@ -161,31 +162,47 @@ namespace PowerShellTools.DebugEngine
         public void DebuggerStop(DebuggerStoppedEventArgs e)
         {
             Log.InfoFormat("Debugger stopped");
-
-            RefreshScopedVariables();
-            RefreshCallStack();
-
-            if (!ProcessLineBreakpoints(e.ScriptFullPath, e.Line, e.Column))
+            try
             {
-                if (DebuggerPaused != null)
-                {
-                    var scriptLocation = new ScriptLocation(e.ScriptFullPath, e.Line, 0);
+                RefreshScopedVariables();
+                RefreshCallStack();
 
-                    DebuggerPaused(this, new EventArgs<ScriptLocation>(scriptLocation));
+                if (!ProcessLineBreakpoints(e.ScriptFullPath, e.Line, e.Column))
+                {
+                    if (DebuggerPaused != null)
+                    {
+                        var scriptLocation = new ScriptLocation(e.ScriptFullPath, e.Line, 0);
+
+                        DebuggerPaused(this, new EventArgs<ScriptLocation>(scriptLocation));
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Log.Debug(ex.Message);
+                _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+            }
+            finally
+            {
+                Log.Debug("Waiting for debuggee to resume.");
 
-            Log.Debug("Waiting for debuggee to resume.");
+                lock (_debuggingCmdLock)
+                {
+                    IsDebuggingCommandReady = true;
+                }
 
-            IsDebuggingCommandReady = true;
+                //Wait for the user to step, continue or stop
+                _pausedEvent.WaitOne();
 
-            //Wait for the user to step, continue or stop
-            _pausedEvent.WaitOne();
-            Log.DebugFormat("Debuggee resume action is {0}", _debuggingCommand);
+                Log.DebugFormat("Debuggee resume action is {0}", _debuggingCommand);
 
-            DebuggingService.ExecuteDebuggingCommand(_debuggingCommand);
+                DebuggingService.ExecuteDebuggingCommand(_debuggingCommand);
 
-            IsDebuggingCommandReady = false;
+                lock (_debuggingCmdLock)
+                {
+                    IsDebuggingCommandReady = false;
+                }
+            }
         }
 
         /// <summary>
@@ -219,7 +236,11 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void DebuggerFinished()
         {
-            IsDebuggingCommandReady = false;
+            lock (_debuggingCmdLock)
+            {
+                IsDebuggingCommandReady = false;
+            }
+
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());
@@ -251,6 +272,7 @@ namespace PowerShellTools.DebugEngine
             catch (Exception ex)
             {
                 Log.Error("Failed to refresh scoped variables.", ex);
+                throw;
             }
         }
 
@@ -262,19 +284,27 @@ namespace PowerShellTools.DebugEngine
             IEnumerable<CallStack> result = null;
             try
             {
-                result = DebuggingService.GetCallStack();
+                if (IsDebugging)
+                {
+                    result = DebuggingService.GetCallStack();
+                }
+                else
+                {
+                    throw new Exception("Not in debugging mode any more!");
+                }
+
+                _callstack = new List<ScriptStackFrame>();
+                if (result == null) return;
+
+                foreach (var psobj in result)
+                {
+                    _callstack.Add(new ScriptStackFrame(CurrentExecutingNode, psobj.ScriptFullPath, psobj.Line, psobj.FrameString));
+                }
             }
             catch (Exception ex)
             {
                 Log.Error("Failed to refresh callstack", ex);
-            }
-
-            _callstack = new List<ScriptStackFrame>();
-            if (result == null) return;
-
-            foreach (var psobj in result)
-            {
-                _callstack.Add(new ScriptStackFrame(CurrentExecutingNode, psobj.ScriptFullPath, psobj.Line, psobj.FrameString));
+                throw;
             }
         }
 
@@ -312,7 +342,7 @@ namespace PowerShellTools.DebugEngine
             {
                 if (IsDebuggingCommandReady)
                 {
-                    _debuggingCommand = PowerShellConstants.Debugger_Stop;
+                    _debuggingCommand = DebugEngineConstants.Debugger_Stop;
                     _pausedEvent.Set();
                 }
                 else
@@ -337,7 +367,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOver()
         {
             Log.Info("StepOver");
-            _debuggingCommand = PowerShellConstants.Debugger_StepOver;
+            _debuggingCommand = DebugEngineConstants.Debugger_StepOver;
             _pausedEvent.Set();
         }
 
@@ -347,7 +377,7 @@ namespace PowerShellTools.DebugEngine
         public void StepInto()
         {
             Log.Info("StepInto");
-            _debuggingCommand = PowerShellConstants.Debugger_StepInto;
+            _debuggingCommand = DebugEngineConstants.Debugger_StepInto;
             _pausedEvent.Set();
         }
 
@@ -357,7 +387,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOut()
         {
             Log.Info("StepOut");
-            _debuggingCommand = PowerShellConstants.Debugger_StepOut;
+            _debuggingCommand = DebugEngineConstants.Debugger_StepOut;
             _pausedEvent.Set();
         }
 
@@ -367,7 +397,7 @@ namespace PowerShellTools.DebugEngine
         public void Continue()
         {
             Log.Info("Continue");
-            _debuggingCommand = PowerShellConstants.Debugger_Continue;
+            _debuggingCommand = DebugEngineConstants.Debugger_Continue;
             _pausedEvent.Set();
         }
 
@@ -381,10 +411,10 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if(DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available)
+                if (DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available)
                 {
                     OutputString(this, new EventArgs<string>(Resources.ErrorPipelineBusy));
-                    DebuggerFinished();
+
                     return false;
                 }
 
@@ -396,6 +426,10 @@ namespace PowerShellTools.DebugEngine
                 OutputString(this, new EventArgs<string>(ex.Message));
                 return false;
             }
+            finally
+            {
+                DebuggerFinished();
+            }
         }
 
         /// <summary>
@@ -404,7 +438,10 @@ namespace PowerShellTools.DebugEngine
         /// <param name="commandLine">Command line to execute.</param>
         public bool ExecuteInternal(string commandLine)
         {
-            IsDebuggingCommandReady = false;
+            lock (_debuggingCmdLock)
+            {
+                IsDebuggingCommandReady = false;
+            }
             return DebuggingService.Execute(commandLine);
         }
 
