@@ -112,7 +112,9 @@ namespace PowerShellTools.Test
             bool breakpointHit = false;
             _debugger.BreakpointHit += (sender, args) => { breakpointHit = true; _debugger.Continue(); };
             _debugger.DebuggingFinished += (sender, args) => mre.Set();
+            _debugger.IsDebugging = true;
             _debugger.Execute(node);
+            _debugger.IsDebugging = false;
 
             Assert.IsTrue(mre.WaitOne(5000));
             Assert.IsTrue(breakpointHit);

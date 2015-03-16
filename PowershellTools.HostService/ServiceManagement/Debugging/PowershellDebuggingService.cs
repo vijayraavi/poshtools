@@ -166,7 +166,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns>runspace availability enum</returns>
         public RunspaceAvailability GetRunspaceAvailability()
         {
-            return _runspace.RunspaceAvailability;
+            RunspaceAvailability state = _runspace.RunspaceAvailability;
+            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
+            return state;
         }
 
         /// <summary>
@@ -260,6 +262,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public void Stop()
         {
+            ReleaseWaitHandler();
+
             if (_currentPowerShell != null)
             {
                 _currentPowerShell.Stop();
@@ -497,7 +501,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns>Collection of callstack to client</returns>
         public IEnumerable<CallStack> GetCallStack()
         {
-            ServiceCommon.Log("Obtaining the context for wcf callback");
+            ServiceCommon.Log("Obtaining the callstack");
             List<CallStack> callStackFrames = new List<CallStack>();
 
             foreach (var psobj in _callstack)
