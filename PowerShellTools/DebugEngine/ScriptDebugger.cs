@@ -32,7 +32,6 @@ namespace PowerShellTools.DebugEngine
     {
         private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
-        private static Object _debuggingCmdLock = new Object();
 
         /// <summary>
         /// Event is fired when a breakpoint is hit.
@@ -191,11 +190,8 @@ namespace PowerShellTools.DebugEngine
             finally
             {
                 Log.Debug("Waiting for debuggee to resume.");
-
-                lock (_debuggingCmdLock)
-                {
-                    IsDebuggingCommandReady = true;
-                }
+                
+                IsDebuggingCommandReady = true;
 
                 //Wait for the user to step, continue or stop
                 _pausedEvent.WaitOne();
@@ -204,10 +200,7 @@ namespace PowerShellTools.DebugEngine
 
                 DebuggingService.ExecuteDebuggingCommand(_debuggingCommand);
 
-                lock (_debuggingCmdLock)
-                {
-                    IsDebuggingCommandReady = false;
-                }
+                IsDebuggingCommandReady = false;
             }
         }
 
@@ -242,10 +235,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void DebuggerFinished()
         {
-            lock (_debuggingCmdLock)
-            {
-                IsDebuggingCommandReady = false;
-            }
+            IsDebuggingCommandReady = false;
 
             if (DebuggingFinished != null)
             {
@@ -444,10 +434,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="commandLine">Command line to execute.</param>
         public bool ExecuteInternal(string commandLine)
         {
-            lock (_debuggingCmdLock)
-            {
-                IsDebuggingCommandReady = false;
-            }
+            IsDebuggingCommandReady = false;
             return DebuggingService.Execute(commandLine);
         }
 

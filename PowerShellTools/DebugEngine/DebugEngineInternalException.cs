@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.DebugEngine
 {
-    class DebugEngineInternalException: Exception
+    internal sealed class DebugEngineInternalException: Exception
     {
         public DebugEngineInternalException() { }
 
