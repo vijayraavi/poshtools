@@ -177,10 +177,16 @@ namespace PowerShellTools.DebugEngine
                     }
                 }
             }
+            catch (DebugEngineInternalException dbgEx)
+            {
+                Log.Debug(dbgEx.Message);
+                _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+            }
             catch (Exception ex)
             {
                 Log.Debug(ex.Message);
                 _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+                throw;
             }
             finally
             {
@@ -290,7 +296,7 @@ namespace PowerShellTools.DebugEngine
                 }
                 else
                 {
-                    throw new Exception("Not in debugging mode any more!");
+                    throw new DebugEngineInternalException();
                 }
 
                 _callstack = new List<ScriptStackFrame>();
