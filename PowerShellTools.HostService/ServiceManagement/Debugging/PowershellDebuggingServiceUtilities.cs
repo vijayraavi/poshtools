@@ -1,4 +1,5 @@
 ﻿using Microsoft.PowerShell;
+using PowerShellTools.Common.Debugging;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
 using System.Collections.Generic;
@@ -117,6 +118,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell = null;
             }
 
+            ReleaseWaitHandler();
+
             _debuggingCommand = string.Empty;
             _localVariables.Clear();
             _propVariables.Clear();
@@ -206,6 +209,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             return psVariable;
+        }
+
+        private void ReleaseWaitHandler()
+        {
+            _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+            _pausedEvent.Set();
         }
     }
 }

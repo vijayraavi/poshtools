@@ -104,5 +104,12 @@ param (
         public const string EnterRemoteSessionDefaultCommand = "Enter-PSSession -ComputerName {0} -Credential ''";
 
         public const string ExitRemoteSessionDefaultCommand = "Exit-PSSession";
+
+        // Powershell debugging command
+        public const string Debugger_Stop = "q";
+        public const string Debugger_StepOver = "v";
+        public const string Debugger_StepInto = "s";
+        public const string Debugger_StepOut = "o";
+        public const string Debugger_Continue = "c";
     }
 }
