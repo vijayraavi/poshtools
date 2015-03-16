@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void OutputStringLine(string output);
 
         [OperationContract(IsOneWay = true)]
+        [ServiceKnownType(typeof(RemotingProgressRecord))]
         void OutputProgress(long sourceId, ProgressRecord record);
 
         [OperationContract(IsOneWay = true)]
