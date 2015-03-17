@@ -75,6 +75,10 @@ namespace PowerShellTools.Test
                            };
 
             _debugger.SetBreakpoints(sbps);
+            foreach (var bp in sbps)
+            {
+                bp.Bind();
+            }
 
             using (var pipe = PowershellDebuggingService.Runspace.CreatePipeline())
             {
