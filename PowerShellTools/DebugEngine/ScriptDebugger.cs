@@ -119,7 +119,6 @@ namespace PowerShellTools.DebugEngine
             {
                 SetBreakpoint(bp);
                 _breakpoints.Add(bp);
-                bp.Bind();
             }
         }
 

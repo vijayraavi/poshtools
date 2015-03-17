@@ -178,33 +178,47 @@ namespace PowerShellTools.DebugEngine
         {
             if (_initializingRunspace) return;
 
-            if (e.UpdateType == BreakpointUpdateType.Set)
-            {
-
-                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.ScriptFullPath, e.Breakpoint.Line, e.Breakpoint.Column, _events);
-                    breakpoint.Bind();
-
-                    var bp = bps.FirstOrDefault(
-                                                m =>
-                                                m.Column == e.Breakpoint.Column && m.Line == e.Breakpoint.Line &&
-                                                m.File.Equals(e.Breakpoint.ScriptFullPath, StringComparison.InvariantCultureIgnoreCase));
-                    if (bp == null)
-                        bps.Add(breakpoint);
-            }
-
-            if (e.UpdateType == BreakpointUpdateType.Removed)
-            {
-
-                    var bp =bps.FirstOrDefault(
+            var bp = bps.FirstOrDefault(
                         m =>
                         m.Column == e.Breakpoint.Column && m.Line == e.Breakpoint.Line &&
                         m.File.Equals(e.Breakpoint.ScriptFullPath, StringComparison.InvariantCultureIgnoreCase));
 
+            switch (e.UpdateType)
+            {
+                case BreakpointUpdateType.Set:
+                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.ScriptFullPath, e.Breakpoint.Line, e.Breakpoint.Column, _events);
+                    breakpoint.Bind();
+
+                    if (bp == null)
+                    {
+                        bps.Add(breakpoint);
+                    }
+                    break;
+
+                case BreakpointUpdateType.Removed:
                     if (bp != null)
                     {
                         bp.Delete();
                         bps.Remove(bp);
                     }
+                    break;
+
+                case BreakpointUpdateType.Disabled:
+                    if (bp != null)
+                    {
+                        bp.Enable(0);
+                    }
+                    break;
+
+                case BreakpointUpdateType.Enabled:
+                    if (bp != null)
+                    {
+                        bp.Enable(1);
+                    }
+                    break;
+
+                default: 
+                    break;
             }
         }
 
@@ -318,7 +332,7 @@ namespace PowerShellTools.DebugEngine
                 //VS has a 0 based line\column value. PowerShell starts at 1
                 var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events);
                 ppPendingBP = breakpoint;
-
+                
                 bps.Add(breakpoint);
             }
 
