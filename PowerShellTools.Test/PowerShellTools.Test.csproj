@@ -125,44 +125,58 @@
     <None Include="..\Build\FinalPublicKey.snk">
       <Link>FinalPublicKey.snk</Link>
     </None>
-    <None Include="Modules\Pester\.gitattributes" />
-    <None Include="Modules\Pester\.gitignore" />
-    <None Include="Modules\Pester\bin\pester.bat" />
-    <None Include="Modules\Pester\Build.bat" />
-    <None Include="Modules\Pester\build.psake.ps1" />
-    <None Include="Modules\Pester\CHANGELOG.md" />
-    <None Include="Modules\Pester\Functions\Assertions\Be.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\BeGreaterThan.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\BeLessThan.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\BeNullOrEmpty.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\Contain.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\ContainExactly.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\Exist.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\Match.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\MatchExactly.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\PesterThrow.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\Should.ps1" />
-    <None Include="Modules\Pester\Functions\Assertions\Test-Assertion.ps1" />
-    <None Include="Modules\Pester\Functions\Context.ps1" />
-    <None Include="Modules\Pester\Functions\Coverage.ps1" />
-    <None Include="Modules\Pester\Functions\Describe.ps1" />
-    <None Include="Modules\Pester\Functions\In.ps1" />
-    <None Include="Modules\Pester\Functions\InModuleScope.ps1" />
-    <None Include="Modules\Pester\Functions\It.ps1" />
-    <None Include="Modules\Pester\Functions\Mock.ps1" />
-    <None Include="Modules\Pester\Functions\New-Fixture.ps1" />
-    <None Include="Modules\Pester\Functions\PesterState.ps1" />
-    <None Include="Modules\Pester\Functions\SetupTeardown.ps1" />
-    <None Include="Modules\Pester\Functions\TestDrive.ps1" />
-    <None Include="Modules\Pester\Functions\TestResults.ps1" />
-    <None Include="Modules\Pester\LICENSE" />
-    <None Include="Modules\Pester\nunit_schema_2.5.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Modules\Pester\Pester.nuspec" />
-    <None Include="Modules\Pester\Pester.psd1" />
-    <None Include="Modules\Pester\Pester.psm1" />
-    <None Include="Modules\Pester\README.md" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\Be.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\BeGreaterThan.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\BeLessThan.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\BeNullOrEmpty.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\Contain.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\ContainExactly.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\Exist.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\Match.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\MatchExactly.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\PesterThrow.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\Should.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Assertions\Test-Assertion.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Context.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Coverage.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Describe.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\In.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\InModuleScope.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\It.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\Mock.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\New-Fixture.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\PesterState.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\SetupTeardown.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\TestDrive.ps1" />
+    <None Include="Modules\Pester-3.3.5\Functions\TestResults.ps1" />
+    <None Include="Modules\Pester-3.3.5\Pester.psd1" />
+    <None Include="Modules\Pester-3.3.5\Pester.psm1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\Be.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\BeGreaterThan.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\BeLessThan.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\BeNullOrEmpty.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\Contain.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\ContainExactly.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\Exist.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\Match.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\MatchExactly.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\PesterThrow.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\Should.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Assertions\Test-Assertion.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Context.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Coverage.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Describe.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\In.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\InModuleScope.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\It.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\Mock.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\New-Fixture.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\PesterState.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\SetupTeardown.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\TestDrive.ps1" />
+    <None Include="Modules\Pester-3.1.1\Functions\TestResults.ps1" />
+    <None Include="Modules\Pester-3.1.1\Pester.psd1" />
+    <None Include="Modules\Pester-3.1.1\Pester.psm1" />
     <None Include="Modules\PSate\.gitignore" />
     <None Include="Modules\PSate\Build.ps1" />
     <None Include="Modules\PSate\Build.psake.ps1" />
@@ -192,7 +206,6 @@
     <Content Include="Modules\Pester\en-US\about_should.help.txt" />
     <Content Include="Modules\Pester\en-US\about_TestDrive.help.txt" />
   </ItemGroup>
-  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
