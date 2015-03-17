@@ -121,6 +121,6 @@
     <value>Cannot create REPL window</value>
   </data>
   <data name="PowerShellHostInitialization" xml:space="preserve">
-    <value>PowerShell host is initializing, it won't be able to execute any PowerShell script untill it is initialized.</value>
+    <value>Please wait while the PowerShell host is initialized...</value>
   </data>
 </root>
