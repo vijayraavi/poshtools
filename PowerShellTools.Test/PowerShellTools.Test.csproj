@@ -199,13 +199,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Modules\Pester\en-US\about_BeforeEach_AfterEach.help.txt" />
-    <Content Include="Modules\Pester\en-US\about_Mocking.help.txt" />
-    <Content Include="Modules\Pester\en-US\about_Pester.help.txt" />
-    <Content Include="Modules\Pester\en-US\about_should.help.txt" />
-    <Content Include="Modules\Pester\en-US\about_TestDrive.help.txt" />
-  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
