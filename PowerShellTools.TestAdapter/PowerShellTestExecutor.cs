@@ -48,7 +48,7 @@ namespace PowerShellTools.TestAdapter
         {
             using (var ps = PowerShell.Create())
             {
-                ps.AddCommand("Set-ExecutionPolicy").AddParameter("ExecutionPolicy", policy).AddParameter("Scope", scope);
+                ps.AddCommand("Set-ExecutionPolicy").AddParameter("ExecutionPolicy", policy).AddParameter("Scope", scope).AddParameter("Force");
                 ps.Invoke();
             }
         }
@@ -163,8 +163,22 @@ namespace PowerShellTools.TestAdapter
                 var packagePath = Directory.GetDirectories(packagesRoot, moduleName + "*", SearchOption.TopDirectoryOnly).FirstOrDefault();
                 if (null != packagePath)
                 {
-                    // Needs to be kept up to date with the directory structure.
-                    return Path.Combine(packagePath, String.Format(@"tools\{0}.psm1", moduleName));
+                    var psd1 = Path.Combine(packagePath, String.Format(@"tools\{0}.psd1", moduleName));
+                    if (File.Exists(psd1))
+                    {
+                        return psd1;
+                    }
+
+                    var psm1 = Path.Combine(packagePath, String.Format(@"tools\{0}.psm1", moduleName));
+                    if (File.Exists(psm1))
+                    {
+                        return psm1;
+                    }
+                    var dll = Path.Combine(packagePath, String.Format(@"tools\{0}.dll", moduleName));
+                    if (File.Exists(dll))
+                    {
+                        return dll;
+                    }
                 }
             }
 
