@@ -11,6 +11,7 @@ namespace PowerShellTools.DebugEngine
     public class BreakpointManager
     {
         private List<ScriptBreakpoint> _breakpoints;
+        private ScriptDebugger _debugger;
         private static readonly ILog Log = LogManager.GetLogger(typeof(BreakpointManager));
 
         /// <summary>
@@ -26,7 +27,10 @@ namespace PowerShellTools.DebugEngine
         public ScriptDebugger Debugger{
             get 
             {
-                return PowerShellToolsPackage.Debugger;
+                if(_debugger == null)
+                    return PowerShellToolsPackage.Debugger;
+
+                return _debugger;
             }
         }
 
@@ -36,6 +40,15 @@ namespace PowerShellTools.DebugEngine
         public BreakpointManager()
         {
             _breakpoints = new List<ScriptBreakpoint>();
+        }
+
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        public BreakpointManager(ScriptDebugger debugger) 
+            : this()
+        {
+            _debugger = debugger;
         }
 
         /// <summary>

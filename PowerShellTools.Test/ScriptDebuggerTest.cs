@@ -26,6 +26,7 @@ namespace PowerShellTools.Test
             
             _debuggingService = new PowershellDebuggingService();
             _debugger = new ScriptDebugger(true, _debuggingService);
+            _debugger.BreakpointManager = new BreakpointManager(_debugger);
             _debuggingService.CallbackService = new DebugServiceEventsHandlerProxy(_debugger); 
         }
 
@@ -106,6 +107,10 @@ namespace PowerShellTools.Test
                            };
 
             _debugger.BreakpointManager.SetBreakpoints(sbps);
+            foreach (var bp in sbps)
+            {
+                bp.Bind();
+            }
 
             var node = new ScriptProgramNode(null);
             node.IsFile = true;

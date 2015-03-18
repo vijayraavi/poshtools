@@ -85,7 +85,7 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public bool RemoteSession { get; set; }
 
-        public BreakpointManager BreakpointManager { get; private set; }
+        public BreakpointManager BreakpointManager { get; set; }
       
         #region Debugging service event handlers
 
