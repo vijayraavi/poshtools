@@ -1,7 +1,9 @@
-version: 3.0.{build}
+version: 2.1.{build}
+# The above also controls the VSIX Version. For any dlls which are intended to be referenced from
+# 3rd parties, eg, any contract DLLs, those have their own AssemblyInfo/AssemblyVersioning.
 
 configuration: Release
-platform: x86
+platform: AnyCPU
 
 build:
   parallel: true
