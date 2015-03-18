@@ -73,6 +73,7 @@ namespace PowerShellTools.DebugEngine
         public int Enable(int fEnable)
         {
             Log.Debug("ScriptBreakpoint: Enable");
+            _callback.BreakpointEnabled(this, fEnable);
             return VSConstants.S_OK;
         }
 
@@ -97,7 +98,7 @@ namespace PowerShellTools.DebugEngine
         public int Delete()
         {
             Log.Debug("ScriptBreakpoint: Delete");
-
+            _callback.BreakpointRemoved(this);
             return VSConstants.S_OK;
         }
 

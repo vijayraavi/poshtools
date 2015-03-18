@@ -334,6 +334,8 @@ namespace PowerShellTools.DebugEngine
                 ppPendingBP = breakpoint;
                 
                 bps.Add(breakpoint);
+
+                _events.BreakpointAdded(breakpoint);
             }
 
             return VSConstants.S_OK;

@@ -34,8 +34,7 @@ namespace PowerShellTools.DebugEngine
         void Exception(ScriptProgramNode program, Exception ex);
         void Breakpoint(ScriptProgramNode program, ScriptBreakpoint breakpoint);
         void BreakpointHit(ScriptBreakpoint breakpoint, ScriptProgramNode node);
-        void BreakpointEnabled(ScriptBreakpoint breakpoint);
-        void BreakpointDisabled(ScriptBreakpoint breakpoint);
+        void BreakpointEnabled(ScriptBreakpoint breakpoint, int fEnable);
         void BreakpointRemoved(ScriptBreakpoint breakpoint);
         void BreakpointAdded(ScriptBreakpoint breakpoint);
     }
@@ -172,12 +171,7 @@ namespace PowerShellTools.DebugEngine
             _callback.Event(_engine, null, node, node, new BreakPointHitEvent(breakpoint), ref iid, BreakPointHitEvent.Attributes);
         }
 
-        public void BreakpointEnabled(ScriptBreakpoint breakpoint)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void BreakpointDisabled(ScriptBreakpoint breakpoint)
+        public void BreakpointEnabled(ScriptBreakpoint breakpoint, int fEnable)
         {
             throw new NotImplementedException();
         }
