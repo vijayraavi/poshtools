@@ -1,9 +1,19 @@
-version: 1.0.{build}
+version: 3.0.{build}
+
 configuration: Release
 platform: x86
+
 build:
   parallel: true
   verbosity: minimal
+
 artifacts:
 - path: Binaries\Release12.0\PowerShellTools.vsix
   name: PowerShellTools.vsix
+
+assembly_info:
+  patch: true
+  file: AssemblyVersion.cs
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}-{branch}'
