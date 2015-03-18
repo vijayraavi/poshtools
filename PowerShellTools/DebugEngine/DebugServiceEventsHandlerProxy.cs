@@ -52,7 +52,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="e">DebuggerBreakpointUpdatedEventArgs</param>
         public void BreakpointUpdated(DebuggerBreakpointUpdatedEventArgs e)
         {
-            Debugger.UpdateBreakpoint(e);
+            Debugger.BreakpointManager.UpdateBreakpoint(e);
         }
 
         /// <summary>

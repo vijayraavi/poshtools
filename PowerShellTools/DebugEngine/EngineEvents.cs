@@ -173,17 +173,17 @@ namespace PowerShellTools.DebugEngine
 
         public void BreakpointEnabled(ScriptBreakpoint breakpoint, int fEnable)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void BreakpointRemoved(ScriptBreakpoint breakpoint)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void BreakpointAdded(ScriptBreakpoint breakpoint)
         {
-            throw new NotImplementedException();
+            
         }
 
         #endregion

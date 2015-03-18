@@ -30,23 +30,15 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public partial class ScriptDebugger
     {
-        private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
-
-        /// <summary>
-        /// Event is fired when a breakpoint is hit.
-        /// </summary>
-        public event EventHandler<EventArgs<ScriptBreakpoint>> BreakpointHit;
+        private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
+        private string _debuggingCommand;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
 
         /// <summary>
         /// Event is fired when a debugger is paused.
         /// </summary>
         public event EventHandler<EventArgs<ScriptLocation>> DebuggerPaused;
-
-        /// <summary>
-        /// Event is fired when a breakpoint is updated.
-        /// </summary>
-        public event EventHandler<DebuggerBreakpointUpdatedEventArgs> BreakpointUpdated;
 
         /// <summary>
         /// Event is fired when a string is output from the PowerShell host.
@@ -62,10 +54,6 @@ namespace PowerShellTools.DebugEngine
         /// Event is fired when a terminating exception is thrown.
         /// </summary>
         public event EventHandler<EventArgs<Exception>> TerminatingException;
-
-        private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
-
-        private string _debuggingCommand;
 
         /// <summary>
         /// The current set of variables for the current runspace.
@@ -97,60 +85,8 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public bool RemoteSession { get; set; }
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
-
-        /// <summary>
-        /// Sets breakpoints for the current runspace.
-        /// </summary>
-        /// <remarks>
-        /// This method clears any existing breakpoints.
-        /// </remarks>
-        /// <param name="initialBreakpoints"></param>
-        public void SetBreakpoints(IEnumerable<ScriptBreakpoint> initialBreakpoints)
-        {
-            _breakpoints = new List<ScriptBreakpoint>();
-
-            if (initialBreakpoints == null) return;
-
-            Log.InfoFormat("ScriptDebugger: Initial Breakpoints: {0}", initialBreakpoints.Count());
-            ClearBreakpoints();
-
-            foreach (var bp in initialBreakpoints)
-            {
-                SetBreakpoint(bp);
-                _breakpoints.Add(bp);
-            }
-        }
-
-        /// <summary>
-        /// Clears existing breakpoints for the current runspace.
-        /// </summary>
-        private void ClearBreakpoints()
-        {
-            try
-            {
-                DebuggingService.ClearBreakpoints();
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Failed to clear existing breakpoints", ex);
-            }
-        }
-
-        private void SetBreakpoint(ScriptBreakpoint breakpoint)
-        {
-            Log.InfoFormat("SetBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column);
-
-            try
-            {
-                DebuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Failed to set breakpoint.", ex);
-            }
-        }
-        
+        public BreakpointManager BreakpointManager { get; private set; }
+      
         #region Debugging service event handlers
 
         /// <summary>
@@ -165,7 +101,7 @@ namespace PowerShellTools.DebugEngine
                 RefreshScopedVariables();
                 RefreshCallStack();
 
-                if (!ProcessLineBreakpoints(e.ScriptFullPath, e.Line, e.Column))
+                if (!BreakpointManager.ProcessLineBreakpoints(e.ScriptFullPath, e.Line, e.Column))
                 {
                     if (DebuggerPaused != null)
                     {
@@ -212,20 +148,6 @@ namespace PowerShellTools.DebugEngine
             if (TerminatingException != null)
             {
                 TerminatingException(this, new EventArgs<Exception>(new Exception(ex.Message, new Exception(ex.InnerExceptionMessage))));
-            }
-        }
-
-        /// <summary>
-        /// Breakpoint has been updated
-        /// </summary>
-        /// <param name="e"></param>
-        public void UpdateBreakpoint(DebuggerBreakpointUpdatedEventArgs e)
-        {
-            Log.InfoFormat("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
-
-            if (BreakpointUpdated != null)
-            {
-                BreakpointUpdated(this, e);
             }
         }
 
@@ -301,29 +223,6 @@ namespace PowerShellTools.DebugEngine
                 Log.Error("Failed to refresh callstack", ex);
                 throw;
             }
-        }
-
-        private bool ProcessLineBreakpoints(string script, int line, int column)
-        {
-            Log.InfoFormat("Process Line Breapoints");
-
-            var bp =
-                _breakpoints.FirstOrDefault(
-                    m =>
-                    m.Column == column && line == m.Line &&
-                    script.Equals(m.File, StringComparison.InvariantCultureIgnoreCase));
-
-            if (bp != null)
-            {
-                if (BreakpointHit != null)
-                {
-                    Log.InfoFormat("Breakpoint @ {0} {1} {2} was hit.", bp.File, bp.Line, bp.Column);
-                    BreakpointHit(this, new EventArgs<ScriptBreakpoint>(bp));
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>

@@ -102,16 +102,16 @@ namespace PowerShellTools.DebugEngine
 
             Debugger.HostUi.OutputString = _events.OutputString;
             Debugger.OutputString += Debugger_OutputString;
-            Debugger.BreakpointHit += Debugger_BreakpointHit;
+            Debugger.BreakpointManager.BreakpointHit += Debugger_BreakpointHit;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
-            Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            Debugger.BreakpointManager.BreakpointUpdated += Debugger_BreakpointUpdated;
             Debugger.DebuggerPaused += Debugger_DebuggerPaused;
             Debugger.TerminatingException += Debugger_TerminatingException;
             _node.Debugger = Debugger;
 
             if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
             {
-                Debugger.SetBreakpoints(bps);
+                Debugger.BreakpointManager.SetBreakpoints(bps);
                 Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
 
                 _initializingRunspace = false;
