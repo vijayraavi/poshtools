@@ -3,7 +3,7 @@ version: 2.1.{build}
 # 3rd parties, eg, any contract DLLs, those have their own AssemblyInfo/AssemblyVersioning.
 
 configuration: Release
-platform: AnyCPU
+platform: Any CPU
 
 build:
   parallel: true
