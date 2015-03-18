@@ -2,7 +2,8 @@
   <Choose>
     <When Condition="'$(Language)' == 'C#' and !$(SuppressCommonAssemblyMetadata)">
       <PropertyGroup>
-        <TrackFileAccess>false</TrackFileAccess>            <!-- CHECK RELEVANCE -->
+        <TrackFileAccess>false</TrackFileAccess>
+        <!-- CHECK RELEVANCE -->
       </PropertyGroup>
       <ItemGroup>
         <Compile Include="$(BuildRoot)\Build\AssemblyInfoCommon.cs">
@@ -13,10 +14,36 @@
         </Compile>
       </ItemGroup>
       <PropertyGroup>
-        <TrackFileAccess>true</TrackFileAccess>             <!-- CHECK RELEVANCE -->
+        <TrackFileAccess>true</TrackFileAccess>
+        <!-- CHECK RELEVANCE -->
       </PropertyGroup>
     </When>
   </Choose>
+
+  
+  <!--
+  
+  <PropertyGroup> 
+      <BuildNumber Condition=" '$(BuildNumber)' == '' ">0.1</BuildNumber>
+      <MajorVersion>1.0</MajorVersion>
+      <AssemblyVersion>$(MajorVersion).0.0</AssemblyVersion>
+      <BuildVersion>$(MajorVersion).$(BuildNumber)</BuildVersion>
+
+
+    </PropertyGroup>
+  
+  -->
+
+  <PropertyGroup>
+    <appveyor_build_version Condition=" '$(appveyor_build_version)' == '' ">5.5.6.7</appveyor_build_version>
+    
+  </PropertyGroup>
+
+    <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them -->
+  <!-- <Target Name="GetBuildVersion" Outputs="$(BuildVersion)" /> -->
+  <Target Name="GetVsixVersion" Outputs="$(appveyor_build_version)" />
+  <Target Name="GetFileVersion" Outputs="$(appveyor_build_version)" />
+  <Target Name="GetAssemblyVersion" Outputs="3.4.5.6" />
   
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="'$(Language)' == 'C#'" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(Language)' == 'C#' and '$(CreateVsixContainer)' != '' and $(CreateVsixContainer) and '$(VSToolsPath)' != ''" />

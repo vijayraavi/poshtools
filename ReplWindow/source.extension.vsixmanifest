@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Vsix xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
+<Vsix xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="|%CurrentProject%;GetVsixVersion|" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
   <Identifier Id="702AA1B3-556E-4AEE-AFB6-DCFA7FC420D3">
     <Name>PowerShellTools.Repl</Name>
     <Author>Visual Studio PowerShell Tools</Author>
