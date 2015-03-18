@@ -10,8 +10,9 @@ using System.Runtime.InteropServices;
 // Properties\AssemblyInfo.cs file and remove any lines duplicating the ones below.
 // (See also AssemblyInfoCommon.cs in this same directory.)
 
-[assembly: AssemblyVersion(AssemblyVersionInfo.StableVersion)]
-[assembly: AssemblyFileVersion(AssemblyVersionInfo.Version)]
+[assembly: AssemblyVersion("3.4.0.0")] 
+[assembly: AssemblyFileVersion("3.4.5.6")] 
+[assembly: AssemblyInformationalVersion("3.4.5.6")]
 
 class AssemblyVersionInfo {
     // This version string (and the comments for StableVersion and Version)
