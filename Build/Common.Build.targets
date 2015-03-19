@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Choose>
     <When Condition="'$(Language)' == 'C#' and !$(SuppressCommonAssemblyMetadata)">
       <PropertyGroup>
@@ -20,26 +20,12 @@
     </When>
   </Choose>
 
-  
-  <!--
-  
-  <PropertyGroup> 
-      <BuildNumber Condition=" '$(BuildNumber)' == '' ">0.1</BuildNumber>
-      <MajorVersion>1.0</MajorVersion>
-      <AssemblyVersion>$(MajorVersion).0.0</AssemblyVersion>
-      <BuildVersion>$(MajorVersion).$(BuildNumber)</BuildVersion>
-
-
-    </PropertyGroup>
-  
-  -->
-
   <PropertyGroup>
     <!-- If we are building on a local dev machine, pretend we're given this other version number. Dev builds will have this number.-->
     <appveyor_build_version Condition=" '$(appveyor_build_version)' == '' ">1.2.3.4</appveyor_build_version>
   </PropertyGroup>
 
-    <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them -->
+  <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them -->
   <Target Name="GetVsixVersion" Outputs="$(appveyor_build_version)" />
   
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="'$(Language)' == 'C#'" />
