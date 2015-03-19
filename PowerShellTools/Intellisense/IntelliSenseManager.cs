@@ -145,7 +145,7 @@ namespace PowerShellTools.Intellisense
             if (!typedChar.Equals(Char.MinValue) && IsFilterTrigger(typedChar))
             {
                 if (_activeSession != null)
-                {
+                { 
                     if (_activeSession.IsStarted)
                     {
                         try
@@ -349,6 +349,10 @@ namespace PowerShellTools.Intellisense
             _activeSession.Properties.AddProperty(BufferProperties.SessionOriginIntellisense, "Intellisense");
             _activeSession.Dismissed += CompletionSession_Dismissed;
             _activeSession.Start();
+            if (!_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+            {
+                _activeSession.SelectedCompletionSet.SelectionStatus = new CompletionSelectionStatus(_activeSession.SelectedCompletionSet.Completions[0], true, false);
+            }
         }
 
 
