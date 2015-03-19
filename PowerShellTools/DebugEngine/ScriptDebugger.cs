@@ -32,7 +32,6 @@ namespace PowerShellTools.DebugEngine
     {
         private List<ScriptStackFrame> _callstack;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
-        private string _debuggingCommand;
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
 
         /// <summary>
@@ -86,6 +85,8 @@ namespace PowerShellTools.DebugEngine
         public bool RemoteSession { get; set; }
 
         public BreakpointManager BreakpointManager { get; set; }
+
+        public string DebuggingCommand { get; set; }
       
         #region Debugging service event handlers
 
@@ -114,12 +115,12 @@ namespace PowerShellTools.DebugEngine
             catch (DebugEngineInternalException dbgEx)
             {
                 Log.Debug(dbgEx.Message);
-                _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+                DebuggingCommand = DebugEngineConstants.Debugger_Stop;
             }
             catch (Exception ex)
             {
                 Log.Debug(ex.Message);
-                _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+                DebuggingCommand = DebugEngineConstants.Debugger_Stop;
                 throw;
             }
             finally
@@ -131,9 +132,9 @@ namespace PowerShellTools.DebugEngine
                 //Wait for the user to step, continue or stop
                 _pausedEvent.WaitOne();
 
-                Log.DebugFormat("Debuggee resume action is {0}", _debuggingCommand);
+                Log.DebugFormat("Debuggee resume action is {0}", DebuggingCommand);
 
-                DebuggingService.ExecuteDebuggingCommand(_debuggingCommand);
+                DebuggingService.ExecuteDebuggingCommand(DebuggingCommand);
 
                 IsDebuggingCommandReady = false;
             }
@@ -236,7 +237,7 @@ namespace PowerShellTools.DebugEngine
             {
                 if (IsDebuggingCommandReady)
                 {
-                    _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+                    DebuggingCommand = DebugEngineConstants.Debugger_Stop;
                     _pausedEvent.Set();
                 }
                 else
@@ -261,7 +262,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOver()
         {
             Log.Info("StepOver");
-            _debuggingCommand = DebugEngineConstants.Debugger_StepOver;
+            DebuggingCommand = DebugEngineConstants.Debugger_StepOver;
             _pausedEvent.Set();
         }
 
@@ -271,7 +272,7 @@ namespace PowerShellTools.DebugEngine
         public void StepInto()
         {
             Log.Info("StepInto");
-            _debuggingCommand = DebugEngineConstants.Debugger_StepInto;
+            DebuggingCommand = DebugEngineConstants.Debugger_StepInto;
             _pausedEvent.Set();
         }
 
@@ -281,7 +282,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOut()
         {
             Log.Info("StepOut");
-            _debuggingCommand = DebugEngineConstants.Debugger_StepOut;
+            DebuggingCommand = DebugEngineConstants.Debugger_StepOut;
             _pausedEvent.Set();
         }
 
@@ -291,7 +292,7 @@ namespace PowerShellTools.DebugEngine
         public void Continue()
         {
             Log.Info("Continue");
-            _debuggingCommand = DebugEngineConstants.Debugger_Continue;
+            DebuggingCommand = DebugEngineConstants.Debugger_Continue;
             _pausedEvent.Set();
         }
 

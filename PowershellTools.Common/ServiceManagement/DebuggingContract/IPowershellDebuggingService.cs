@@ -17,6 +17,12 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void SetBreakpoint(PowershellBreakpoint bp);
 
         [OperationContract]
+        void EnableBreakpoint(PowershellBreakpoint bp, bool enable);
+
+        [OperationContract]
+        void RemoveBreakpoint(PowershellBreakpoint bp);
+
+        [OperationContract]
         void ClearBreakpoints();
 
         [OperationContract]

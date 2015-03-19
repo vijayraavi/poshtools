@@ -15,6 +15,7 @@ namespace PowerShellTools.DebugEngine
 
         private readonly IEngineEvents _callback;
         private readonly ScriptProgramNode _node;
+        private bool _enabled;
 
         /// <summary>
         /// Line where this breakpoint is set.
@@ -35,6 +36,7 @@ namespace PowerShellTools.DebugEngine
 
             _node = node;
             _callback = callback;
+            _enabled = true;
             Line = line;
             Column = column;
             File = file;
@@ -52,7 +54,7 @@ namespace PowerShellTools.DebugEngine
         public int GetState(enum_BP_STATE[] pState)
         {
             Log.Debug("ScriptBreakpoint: IDebugBoundBreakpoint2:GetState");
-            pState[0] = enum_BP_STATE.BPS_ENABLED;
+            pState[0] = _enabled ? enum_BP_STATE.BPS_ENABLED : enum_BP_STATE.BPS_DISABLED;
             return VSConstants.S_OK;
         }
 
@@ -73,6 +75,7 @@ namespace PowerShellTools.DebugEngine
         public int Enable(int fEnable)
         {
             Log.Debug("ScriptBreakpoint: Enable");
+            _enabled = fEnable == 0 ? false : true;
             _callback.BreakpointEnabled(this, fEnable);
             return VSConstants.S_OK;
         }
@@ -163,7 +166,7 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("ScriptBreakpoint: IDebugPendingBreakpoint2:GetState");
             var state = new PENDING_BP_STATE_INFO
                             {
-                                state = enum_PENDING_BP_STATE.PBPS_ENABLED,
+                                state = _enabled ? enum_PENDING_BP_STATE.PBPS_ENABLED : enum_PENDING_BP_STATE.PBPS_DISABLED,
                                 Flags = enum_PENDING_BP_STATE_FLAGS.PBPSF_NONE
                             };
 

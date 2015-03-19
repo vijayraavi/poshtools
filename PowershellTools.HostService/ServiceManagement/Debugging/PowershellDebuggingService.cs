@@ -133,6 +133,34 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Sets breakpoint for the current runspace.
+        /// </summary>
+        /// <param name="bp">Breakpoint to set</param>
+        public void RemoveBreakpoint(PowershellBreakpoint bp)
+        {
+            ServiceCommon.Log("Setting breakpoint ...");
+
+            using (var pipeline = (_runspace.CreatePipeline()))
+            {
+                
+            }
+        }
+
+        /// <summary>
+        /// Sets breakpoint for the current runspace.
+        /// </summary>
+        /// <param name="bp">Breakpoint to set</param>
+        public void EnableBreakpoint(PowershellBreakpoint bp, bool enable)
+        {
+            ServiceCommon.Log("Setting breakpoint ...");
+
+            using (var pipeline = (_runspace.CreatePipeline()))
+            {
+
+            }
+        }
+
+        /// <summary>
         /// Clears existing breakpoints for the current runspace.
         /// </summary>
         public void ClearBreakpoints()
