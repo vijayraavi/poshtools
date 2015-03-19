@@ -1,8 +1,9 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Choose>
     <When Condition="'$(Language)' == 'C#' and !$(SuppressCommonAssemblyMetadata)">
       <PropertyGroup>
-        <TrackFileAccess>false</TrackFileAccess>            <!-- CHECK RELEVANCE -->
+        <TrackFileAccess>false</TrackFileAccess>
+        <!-- CHECK RELEVANCE -->
       </PropertyGroup>
       <ItemGroup>
         <Compile Include="$(BuildRoot)\Build\AssemblyInfoCommon.cs">
@@ -13,10 +14,19 @@
         </Compile>
       </ItemGroup>
       <PropertyGroup>
-        <TrackFileAccess>true</TrackFileAccess>             <!-- CHECK RELEVANCE -->
+        <TrackFileAccess>true</TrackFileAccess>
+        <!-- CHECK RELEVANCE -->
       </PropertyGroup>
     </When>
   </Choose>
+
+  <PropertyGroup>
+    <!-- If we are building on a local dev machine, pretend we're given this other version number. Dev builds will have this number.-->
+    <appveyor_build_version Condition=" '$(appveyor_build_version)' == '' ">1.2.3.4</appveyor_build_version>
+  </PropertyGroup>
+
+  <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them -->
+  <Target Name="GetVsixVersion" Outputs="$(appveyor_build_version)" />
   
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="'$(Language)' == 'C#'" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(Language)' == 'C#' and '$(CreateVsixContainer)' != '' and $(CreateVsixContainer) and '$(VSToolsPath)' != ''" />
