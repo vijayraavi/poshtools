@@ -1,7 +1,6 @@
 version: 3.0.{build}
 # The above also controls the VSIX Version. For any dlls which are intended to be referenced from
 # 3rd parties, eg, any contract DLLs, those have their own AssemblyInfo/AssemblyVersioning.
-# If there are any breaking changes it recommended that the below assembly_version is changed as well.
 
 configuration: Release
 platform: Any CPU
@@ -17,6 +16,6 @@ artifacts:
 assembly_info:
   patch: true
   file: Build\AssemblyVersion.cs
-  assembly_version: '3.0.0.0'
+  assembly_version: '{version}'
   assembly_file_version: '{version}'
   assembly_informational_version: '{version}-{branch}'
