@@ -73,7 +73,7 @@ namespace PowerShellTools.DebugEngine
             {
                 SetBreakpoint(bp);
                 _breakpoints.Add(bp);
-                
+
                 enum_BP_STATE[] pState = new enum_BP_STATE[1];
                 if (bp.GetState(pState) == VSConstants.S_OK)
                 {
@@ -171,11 +171,14 @@ namespace PowerShellTools.DebugEngine
                 else
                 {
                     int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
-                    Debugger.ExecuteDebuggingCommand(
-                        string.Format(
-                            "{0} -Id {1}", 
-                            fEnable == 0 ? "Disable-PSBreakpoint" : "Enable-PSBreakpoint", 
-                            id));
+                    if (id >= 0)
+                    {
+                        Debugger.ExecuteDebuggingCommand(
+                            string.Format(
+                                "{0} -Id {1}",
+                                fEnable == 0 ? "Disable-PSBreakpoint" : "Enable-PSBreakpoint",
+                                id));
+                    }
                 }
             }
             catch (Exception ex)
@@ -201,7 +204,10 @@ namespace PowerShellTools.DebugEngine
                 else
                 {
                     int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
-                    Debugger.ExecuteDebuggingCommand(string.Format("Remove-PSBreakpoint -Id {0}", id));
+                    if (id >= 0)
+                    {
+                        Debugger.ExecuteDebuggingCommand(string.Format("Remove-PSBreakpoint -Id {0}", id));
+                    }
                 }
             }
             catch (Exception ex)

@@ -32,6 +32,7 @@ namespace PowerShellTools.DebugEngine
     {
         private List<ScriptStackFrame> _callstack;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
+        private readonly AutoResetEvent _stoppingCompleteEvent = new AutoResetEvent(false);
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
 
         /// <summary>
@@ -162,6 +163,7 @@ namespace PowerShellTools.DebugEngine
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());
+                _stoppingCompleteEvent.Set();
             }
         }
 
@@ -239,6 +241,7 @@ namespace PowerShellTools.DebugEngine
                 {
                     DebuggingCommand = DebugEngineConstants.Debugger_Stop;
                     _pausedEvent.Set();
+                    _stoppingCompleteEvent.WaitOne();
                 }
                 else
                 {
@@ -430,6 +433,11 @@ namespace PowerShellTools.DebugEngine
             }
 
             return null;
+        }
+
+        public void SignalStoppingComplete()
+        {
+            _stoppingCompleteEvent.Set();
         }
 
         internal void OpenRemoteFile(string fullName)

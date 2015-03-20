@@ -51,8 +51,6 @@ namespace PowerShellTools.DebugEngine
 
         private List<ScriptBreakpoint> bps = new List<ScriptBreakpoint>();
 
-        private bool _initializingRunspace;
-
         private static readonly ILog Log = LogManager.GetLogger(typeof (Engine));
 
         #endregion
@@ -85,8 +83,6 @@ namespace PowerShellTools.DebugEngine
         /// </remarks>
         public void Execute()
         {
-            _initializingRunspace = true;
-
             if (!_node.IsAttachedProgram)
             {
                 if (!_runspaceSet.WaitOne())
@@ -111,9 +107,9 @@ namespace PowerShellTools.DebugEngine
 
             if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
             {
-                Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
+                //Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
 
-                _initializingRunspace = false;
+                //_initializingRunspace = false;
 
                 Debugger.Execute(_node);
             }
@@ -433,7 +429,7 @@ namespace PowerShellTools.DebugEngine
         int IDebugEngineLaunch2.TerminateProcess(IDebugProcess2 process)
         {
             Log.Debug("Engine: TerminateProcess");
-            _events.ProgramDestroyed(_node);
+            //_events.ProgramDestroyed(_node);
 
             IDebugPort2 port;
             process.GetPort(out port);

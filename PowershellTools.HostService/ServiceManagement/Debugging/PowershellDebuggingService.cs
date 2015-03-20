@@ -115,33 +115,39 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             IEnumerable<PSObject> lbp;
 
             ServiceCommon.Log("Setting breakpoint ...");
-
-            using (var pipeline = (_runspace.CreatePipeline()))
+            try
             {
-                var command = new Command("Set-PSBreakpoint");
-
-                string file = bp.ScriptFullPath;
-                if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                using (var pipeline = (_runspace.CreatePipeline()))
                 {
-                    file = _mapLocalToRemote[bp.ScriptFullPath];
+                    var command = new Command("Set-PSBreakpoint");
+
+                    string file = bp.ScriptFullPath;
+                    if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                    {
+                        file = _mapLocalToRemote[bp.ScriptFullPath];
+                    }
+
+                    command.Parameters.Add("Script", file);
+
+                    command.Parameters.Add("Line", bp.Line);
+
+                    pipeline.Commands.Add(command);
+
+                    lbp = pipeline.Invoke();
                 }
 
-                command.Parameters.Add("Script", file);
-
-                command.Parameters.Add("Line", bp.Line);
-
-                pipeline.Commands.Add(command);
-
-                lbp = pipeline.Invoke();
+                var pobj = lbp.FirstOrDefault();
+                if (pobj != null)
+                {
+                    _psBreakpointTable.Add(
+                        new PowershellBreakpointRecord(
+                            bp,
+                            ((LineBreakpoint)pobj.BaseObject).Id));
+                }
             }
-
-            var pobj = lbp.FirstOrDefault();
-            if (pobj != null)
+            catch (InvalidOperationException)
             {
-                _psBreakpointTable.Add(
-                    new PowershellBreakpointRecord(
-                        bp, 
-                        ((LineBreakpoint)pobj.BaseObject).Id));
+                ServiceCommon.Log("Invalid breakpoint location!");
             }
         }
 

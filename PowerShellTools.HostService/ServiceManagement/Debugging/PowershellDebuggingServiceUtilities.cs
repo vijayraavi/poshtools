@@ -95,6 +95,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void DebuggerFinished()
         {
             ServiceCommon.Log("DebuggerFinished");
+
+            _psBreakpointTable.Clear();
+
             if (_callback != null)
             {
                 _callback.RefreshPrompt();
@@ -105,11 +108,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
                 _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
                 _runspace.StateChanged -= _runspace_StateChanged;
-            }
-
-            if (_callback != null)
-            {
-                _callback.DebuggerFinished();
             }
 
             if (_currentPowerShell != null)
@@ -123,6 +121,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _debuggingCommand = string.Empty;
             _localVariables.Clear();
             _propVariables.Clear();
+
+            if (_callback != null)
+            {
+                _callback.DebuggerFinished();
+            }
         }
 
         private void objects_DataAdded(object sender, DataAddedEventArgs e)
