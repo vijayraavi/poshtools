@@ -124,7 +124,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 psCommand.AddScript(_debuggingCommand);
                 psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
                 var output = new PSDataCollection<PSObject>();
-                //output.DataAdded += objects_DataAdded;
                 DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
 
                 var pobj = output.FirstOrDefault();
@@ -146,6 +145,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     e.ResumeAction = results.ResumeAction.Value;
                     resumed = true; // debugger resumed executing
                 }
+
+                _debugCommandEvent.Set();
             }
         }
 

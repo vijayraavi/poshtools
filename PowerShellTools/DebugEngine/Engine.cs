@@ -107,7 +107,7 @@ namespace PowerShellTools.DebugEngine
 
             if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
             {
-                //Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
+                Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
 
                 //_initializingRunspace = false;
 
@@ -284,9 +284,9 @@ namespace PowerShellTools.DebugEngine
                 var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events);
                 ppPendingBP = breakpoint;
                 
-                bps.Add(breakpoint);
-
                 _events.BreakpointAdded(breakpoint);
+                
+                bps.Add(breakpoint);
             }
 
             return VSConstants.S_OK;

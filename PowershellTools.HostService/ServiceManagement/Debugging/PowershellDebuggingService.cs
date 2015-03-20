@@ -39,6 +39,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Dictionary<string, string> _mapRemoteToLocal;
         private Collection<PowershellBreakpointRecord> _psBreakpointTable;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
+        private readonly AutoResetEvent _debugCommandEvent = new AutoResetEvent(false);
+        private object _executeDebugCommandLock = new object();
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
 
         public PowershellDebuggingService()
@@ -101,9 +103,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="action">Resumeaction from client</param>
         public void ExecuteDebuggingCommand(string debuggingCommand)
         {
-            ServiceCommon.Log("Client respond with debugging command");
-            _debuggingCommand = debuggingCommand;
-            _pausedEvent.Set();
+            lock (_executeDebugCommandLock)
+            {
+                ServiceCommon.Log("Client respond with debugging command");
+                _debuggingCommand = debuggingCommand;
+                _pausedEvent.Set();
+                _debugCommandEvent.WaitOne();
+            }
         }
 
         /// <summary>

@@ -237,16 +237,17 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
+                _stoppingCompleteEvent.Reset();
                 if (IsDebuggingCommandReady)
                 {
                     DebuggingCommand = DebugEngineConstants.Debugger_Stop;
                     _pausedEvent.Set();
-                    _stoppingCompleteEvent.WaitOne();
                 }
                 else
                 {
                     DebuggingService.Stop();
                 }
+                _stoppingCompleteEvent.WaitOne();
             }
             catch (Exception ex)
             {
