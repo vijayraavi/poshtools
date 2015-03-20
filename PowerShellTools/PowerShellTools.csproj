@@ -624,13 +624,14 @@
     </Content>
     <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
     <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
+
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
-    <Resource Include="Templates\Projects\module_project_icon.ico" />
-    <Content Include="Templates\Projects\PowerModuleProject.vstemplate" />
+    <Resource Include="Templates\Projects\PowerShellModuleProject.ico" />
+    <Content Include="Templates\Projects\PowerShellModuleProject.vstemplate" />
     <Content Include="Templates\Projects\PowerShellProject.vstemplate" />
-    <Resource Include="Templates\Projects\project_icon.ico" />
+    <Resource Include="Templates\Projects\PowerShellProject.ico" />
     <Content Include="ItemTemplates\PowerShell Script Module.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -648,9 +649,9 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <None Include="Templates\Files\Script.Test.ps1" />
-    <None Include="Templates\Files\ScriptDataFile.psd1" />
+    <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
-    <None Include="Templates\Projects\module.psd1" />
+    <None Include="Templates\Projects\Module.psd1" />
     <None Include="Templates\Projects\Module.psm1" />
     <None Include="Templates\Projects\Module.test.ps1" />
     <None Include="Templates\Projects\PowerShellModuleProject.pssproj">
@@ -660,7 +661,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Templates\Projects\Script.ps1" />
-    <Resource Include="Templates\Files\PowerShell.ico" />
+    <Resource Include="Templates\Files\PowerShellScript.ico" />
+    <Resource Include="Templates\Files\PowerShellModule.ico" />
+    <Resource Include="Templates\Files\PowerShellDataFile.ico" />
     <None Include="PowerShellTools.targets" />
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
