@@ -138,8 +138,8 @@ namespace PowerShellTools.Intellisense
             var filterText = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
             Predicate<Completion> predicate = delegate(Completion completion)
             {
-                var startIndex = completion.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? InitialApplicableTo.Length : 0;
-                return completion.DisplayText.IndexOf(filterText, startIndex, StringComparison.OrdinalIgnoreCase) != -1;
+                var startIndex = completion.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? InitialApplicableTo.Length : 0;
+                return completion.InsertionText.IndexOf(filterText, startIndex, StringComparison.OrdinalIgnoreCase) != -1;
             };
 
             if (Completions.Any(current => predicate(current)))
@@ -160,8 +160,8 @@ namespace PowerShellTools.Intellisense
             Completion completion = null;
             foreach (var current in Completions)
             {
-                var startIndex = current.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? this.InitialApplicableTo.Length : 0;
-                var num2 = current.DisplayText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
+                var startIndex = current.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? this.InitialApplicableTo.Length : 0;
+                var num2 = current.InsertionText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
                 if (num2 != -1 && num2 < num)
                 {
                     completion = current;
@@ -174,7 +174,8 @@ namespace PowerShellTools.Intellisense
                 return;
             }
 
-            bool _isFullyMatched = completion.DisplayText.Equals(InitialApplicableTo + text, StringComparison.OrdinalIgnoreCase);
+            bool _isFullyMatched = completion.InsertionText.Equals(InitialApplicableTo + text, StringComparison.OrdinalIgnoreCase);
+
             var propertiesCollection = FilterSpan.TextBuffer.Properties;
             if (propertiesCollection.ContainsProperty(BufferProperties.SessionCompletionFullyMatchedStatus))
             {
