@@ -42,7 +42,18 @@ namespace PowerShellTools.Project
                 }
                 else if (this.ProjectMgr.IsCodeFile(FileName))
                 {
-                    return CommonProjectNode.ImageOffset + (int)ImageListIndex.Script;
+                    ImageListIndex index = ImageListIndex.Script;
+
+                    if (FileName.EndsWith( PowerShellConstants.PSM1File))
+                    {
+                        index = ImageListIndex.Module;
+                    }
+                    else if( FileName.EndsWith(PowerShellConstants.PSD1File))
+                    {
+                        index = ImageListIndex.DataFile;
+                    }
+
+                    return CommonProjectNode.ImageOffset + (int)index;
                 }
 
                 return base.ImageIndex;

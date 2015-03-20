@@ -8,7 +8,7 @@ namespace PowerShellTools.Project
     internal enum ImageListIndex
     {
         Project     = 0,
-        Data        = 1,
+        DataFile        = 1,
         Script      = 2,
         Module      = 3
     }
