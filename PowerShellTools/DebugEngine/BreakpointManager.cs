@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.DebugEngine
 {
+    /// <summary>
+    /// Breakpoint manager to handle variaties of operations on breakpoint in powershell runspace
+    /// </summary>
     public class BreakpointManager
     {
         private List<ScriptBreakpoint> _breakpoints;
@@ -86,6 +89,7 @@ namespace PowerShellTools.DebugEngine
         }
         
         /// <summary>
+        /// Placeholder for future support on debugging command in REPL window
         /// Breakpoint has been updated
         /// </summary>
         /// <param name="e"></param>
@@ -160,7 +164,9 @@ namespace PowerShellTools.DebugEngine
         /// <param name="breakpoint">Breakpoint to be added</param>
         public void EnableBreakpoint(ScriptBreakpoint breakpoint, int fEnable)
         {
-            Log.InfoFormat("EnableBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column);
+            string operation = fEnable == 0 ? "Disable" : "Enable";
+
+            Log.InfoFormat("{3} breakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column, operation);
 
             try
             {
@@ -183,14 +189,14 @@ namespace PowerShellTools.DebugEngine
             }
             catch (Exception ex)
             {
-                Log.Error("Failed to enable breakpoint.", ex);
+                Log.Error(string.Format("Failed to {0} breakpoint.", operation), ex);
             }
         }
 
         /// <summary>
         /// Enable breakpoint
         /// </summary>
-        /// <param name="breakpoint">Breakpoint to be added</param>
+        /// <param name="breakpoint">Breakpoint to be removed</param>
         public void RemoveBreakpoint(ScriptBreakpoint breakpoint)
         {
             Log.InfoFormat("RemoveBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column);

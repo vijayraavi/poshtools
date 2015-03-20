@@ -37,7 +37,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Dictionary<string, Object> _propVariables;
         private Dictionary<string, string> _mapLocalToRemote;
         private Dictionary<string, string> _mapRemoteToLocal;
-        private Collection<PowershellBreakpointRecord> _psBreakpointTable;
+        private List<PowershellBreakpointRecord> _psBreakpointTable;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private readonly AutoResetEvent _debugCommandEvent = new AutoResetEvent(false);
         private object _executeDebugCommandLock = new object();
@@ -51,7 +51,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _propVariables = new Dictionary<string, object>();
             _mapLocalToRemote = new Dictionary<string, string>();
             _mapRemoteToLocal = new Dictionary<string, string>();
-            _psBreakpointTable = new Collection<PowershellBreakpointRecord>();
+            _psBreakpointTable = new List<PowershellBreakpointRecord>();
             InitializeRunspace(this);
         }
 
@@ -103,6 +103,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="action">Resumeaction from client</param>
         public void ExecuteDebuggingCommand(string debuggingCommand)
         {
+            // Need to be thread-safe here, to ensure every debugging command get processed.
+            // e.g: Set/Enable/Disable/Remove breakpoint during debugging 
             lock (_executeDebugCommandLock)
             {
                 ServiceCommon.Log("Client respond with debugging command");
@@ -158,7 +160,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Sets breakpoint for the current runspace.
+        /// Remove breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
         public void RemoveBreakpoint(PowershellBreakpoint bp)
@@ -194,7 +196,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Sets breakpoint for the current runspace.
+        /// Enable/Disable breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
         public void EnableBreakpoint(PowershellBreakpoint bp, bool enable)
@@ -259,10 +261,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// 
+        /// Get powershell breakpoint Id
         /// </summary>
-        /// <param name="bp"></param>
-        /// <returns></returns>
+        /// <param name="bp">Powershell breakpoint</param>
+        /// <returns>Id of breakpoint if found, otherwise -1</returns>
         public int GetPSBreakpointId(PowershellBreakpoint bp)
         {
             ServiceCommon.Log("Getting PSBreakpoint ...");

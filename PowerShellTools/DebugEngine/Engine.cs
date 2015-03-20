@@ -109,8 +109,6 @@ namespace PowerShellTools.DebugEngine
             {
                 Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
 
-                //_initializingRunspace = false;
-
                 Debugger.Execute(_node);
             }
             else
@@ -165,12 +163,14 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
+        /// Placeholder for future support on debugging command in REPL window
         /// This event handler adds or removes breakpoints monitored by Visual Studio.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void Debugger_BreakpointUpdated(object sender, DebuggerBreakpointUpdatedEventArgs e)
         {
+            // TODO: implementaion for future support on debugging command in REPL window
         }
 
         /// <summary>
@@ -429,7 +429,6 @@ namespace PowerShellTools.DebugEngine
         int IDebugEngineLaunch2.TerminateProcess(IDebugProcess2 process)
         {
             Log.Debug("Engine: TerminateProcess");
-            //_events.ProgramDestroyed(_node);
 
             IDebugPort2 port;
             process.GetPort(out port);

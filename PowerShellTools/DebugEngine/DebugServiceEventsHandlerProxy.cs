@@ -47,6 +47,7 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
+        /// Placeholder for future support on debugging command in REPL window
         /// Breakpoint has updated
         /// </summary>
         /// <param name="e">DebuggerBreakpointUpdatedEventArgs</param>

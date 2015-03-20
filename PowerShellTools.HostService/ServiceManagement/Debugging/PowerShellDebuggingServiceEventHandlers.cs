@@ -44,7 +44,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="e"></param>
         private void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
-            //ServiceCommon.Log("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
+            // Not in-use for now, leave it as place holder for future support on powershell debugging command in REPL
+            ServiceCommon.Log("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
 
             //if (_callback != null)
             //{
@@ -146,6 +147,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     resumed = true; // debugger resumed executing
                 }
 
+                // Notify the debugging command execution call that debugging command was complete.
                 _debugCommandEvent.Set();
             }
         }
