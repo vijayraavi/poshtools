@@ -1,9 +1,21 @@
-version: 1.0.{build}
+version: 3.0.{build}
+# The above also controls the VSIX Version. For any dlls which are intended to be referenced from
+# 3rd parties, eg, any contract DLLs, those have their own AssemblyInfo/AssemblyVersioning.
+
 configuration: Release
-platform: x86
+platform: Any CPU
+
 build:
   parallel: true
   verbosity: minimal
+
 artifacts:
 - path: Binaries\Release12.0\PowerShellTools.vsix
   name: PowerShellTools.vsix
+
+assembly_info:
+  patch: true
+  file: Build\AssemblyVersion.cs
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}-{branch}'
