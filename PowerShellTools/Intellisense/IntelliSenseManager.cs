@@ -156,6 +156,11 @@ namespace PowerShellTools.Intellisense
             bool handled = false;
             if (!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar))
             {
+                // Make sure the completion session is dismissed when starting a new session
+                if (_activeSession != null && !_activeSession.IsDismissed)
+                {
+                    _activeSession.Dismiss();
+                }
                 TriggerCompletion();
             }
             if (!typedChar.Equals(char.MinValue) && IsFilterTrigger(typedChar))
