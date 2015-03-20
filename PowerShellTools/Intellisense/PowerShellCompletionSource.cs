@@ -151,7 +151,6 @@ namespace PowerShellTools.Intellisense
         public override void SelectBestMatch()
         {
             var text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
-            System.Diagnostics.Debug.Print("text = {0}", text);
             if (text.Length == 0)
             {
                 SelectionStatus = new CompletionSelectionStatus(null, false, false);
