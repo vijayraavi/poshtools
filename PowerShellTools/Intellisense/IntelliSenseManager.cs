@@ -123,8 +123,17 @@ namespace PowerShellTools.Intellisense
             // If command is backspace and completion session is active, then we need to see if the char to be deleted is an IntelliSense triggering char
             // If yes, then after deleting the char, we also dismiss the completion session
             // Otherwise, just filter the completion lists
-            ITrackingPoint caretCharPosition = _textView.TextSnapshot.CreateTrackingPoint(_textView.Caret.Position.BufferPosition.Position - 1, PointTrackingMode.Positive);
-            char charAtCaret = caretCharPosition.GetCharacter(_textView.TextSnapshot);
+            char charAtCaret = '\0';
+            if (commandId == (uint)VSConstants.VSStd2KCmdID.BACKSPACE && _activeSession != null && !_activeSession.IsDismissed)
+            {
+                int caretPosition = _textView.Caret.Position.BufferPosition.Position - 1;
+                if (caretPosition >= 0)
+                {
+                    // caretPosition == -1 means caret is at the beginning of a file, which means no characters before it.
+                    ITrackingPoint caretCharPosition = _textView.TextSnapshot.CreateTrackingPoint(caretPosition, PointTrackingMode.Positive);
+                    charAtCaret = caretCharPosition.GetCharacter(_textView.TextSnapshot);
+                }                
+            }            
 
             // pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
