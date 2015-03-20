@@ -151,6 +151,7 @@ namespace PowerShellTools.Intellisense
         public override void SelectBestMatch()
         {
             var text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
+            System.Diagnostics.Debug.Print("text = {0}", text);
             if (text.Length == 0)
             {
                 SelectionStatus = new CompletionSelectionStatus(null, false, false);
@@ -173,6 +174,15 @@ namespace PowerShellTools.Intellisense
                 SelectionStatus = new CompletionSelectionStatus(null, false, false);
                 return;
             }
+
+            bool _isFullyMatched = completion.DisplayText.Equals(InitialApplicableTo + text, StringComparison.OrdinalIgnoreCase);
+            var propertiesCollection = FilterSpan.TextBuffer.Properties;
+            if (propertiesCollection.ContainsProperty(BufferProperties.SessionCompletionFullyMatchedStatus))
+            {
+                propertiesCollection.RemoveProperty(BufferProperties.SessionCompletionFullyMatchedStatus);
+            }
+            propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, _isFullyMatched);
+
             SelectionStatus = new CompletionSelectionStatus(completion, true, true);
         }
     }

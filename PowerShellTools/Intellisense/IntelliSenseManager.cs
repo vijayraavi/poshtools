@@ -88,13 +88,24 @@ namespace PowerShellTools.Intellisense
                         Log.Debug("Commit");
                         _activeSession.Commit();
 
+                        bool isCompletionFullyMatched = false;
+                        _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.SessionCompletionFullyMatchedStatus, out isCompletionFullyMatched);
+
+                        if (isCompletionFullyMatched && char.IsWhiteSpace(typedChar))
+                        {
+                            // If user types all characters in a completion and click Space, then we should commit the selection and add the Space into text buffer
+                            return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                        }
+
                         //also, don't add the character to the buffer 
                         return VSConstants.S_OK;
                     }
-
-                    Log.Debug("Dismiss");
-                    //if there is no selection, dismiss the session
-                    _activeSession.Dismiss();
+                    else
+                    {
+                        Log.Debug("Dismiss");
+                        //if there is no selection, dismiss the session
+                        _activeSession.Dismiss();
+                    }
                 }
                 else if (nCmdId == (uint)VSConstants.VSStd2KCmdID.TAB && _isRepl)
                 {
