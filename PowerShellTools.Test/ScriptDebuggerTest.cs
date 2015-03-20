@@ -119,7 +119,7 @@ namespace PowerShellTools.Test
             var mre = new ManualResetEvent(false);
 
             bool breakpointHit = false;
-            _debugger.BreakpointManager.BreakpointHit += (sender, args) => { breakpointHit = true; _debugger.Continue(); };
+            _debugger.BreakpointManager.BreakpointHit += (sender, args) => { breakpointHit = true; System.Threading.Tasks.Task.Factory.StartNew(()=>_debugger.Continue()); };
             _debugger.DebuggingFinished += (sender, args) => mre.Set();
             _debugger.IsDebugging = true;
             _debugger.Execute(node);
