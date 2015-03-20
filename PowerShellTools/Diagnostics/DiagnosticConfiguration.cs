@@ -6,7 +6,8 @@ namespace PowerShellTools.Diagnostics
 {
     class DiagnosticConfiguration
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (DiagnosticConfiguration));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(DiagnosticConfiguration));
+        private static bool _initialized = false;
 
         public static void DisableDiagnostics()
         {
@@ -14,13 +15,25 @@ namespace PowerShellTools.Diagnostics
             SetLoggingLevel("OFF");
         }
 
+        private static void EnsureDiagnosticsInitialized()
+        {
+            if (!_initialized)
+            {
+                var appender = new OutputPaneAppender();
+                appender.Layout = new PatternLayout("%date{ABSOLUTE} - %thread - %logger - %level - %message%newline");
+                appender.ActivateOptions();
+
+                BasicConfigurator.Configure(appender);
+
+                SetLoggingLevel("ALL");
+
+                Log.Info("Initializing Diagnostics.");
+            }
+        }
+
         public static void EnableDiagnostics()
         {
-            var appender = new OutputPaneAppender();
-            appender.Layout = new PatternLayout("%date - %thread - %logger - %level - %message%newline");
-            appender.ActivateOptions();
-
-            BasicConfigurator.Configure(appender);
+            EnsureDiagnosticsInitialized();
 
             SetLoggingLevel("ALL");
 

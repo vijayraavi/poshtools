@@ -9,12 +9,12 @@
     <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
     <AppliesTo>PowerShell | (!PowerShell)</AppliesTo>
     <SortOrder>10</SortOrder>
-    <Icon>PowerShell.ico</Icon>
+    <Icon>PowerShellScript.ico</Icon>
     <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
     <ShowByDefault>true</ShowByDefault>
   </TemplateData>
   <TemplateContent>
     <References />
-    <ProjectItem TargetFileName="$fileinputname$.ps1" ReplaceParameters="true">Script.ps1</ProjectItem>
+    <ProjectItem ReplaceParameters="true">Script.ps1</ProjectItem>
   </TemplateContent>
 </VSTemplate>

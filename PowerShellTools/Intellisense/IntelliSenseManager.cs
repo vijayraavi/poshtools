@@ -65,14 +65,19 @@ namespace PowerShellTools.Intellisense
             }
             //make a copy of this so we can look at it after forwarding some commands 
             var commandId = nCmdId;
-            var typedChar = Char.MinValue;
+            var typedChar = char.MinValue;
             //make sure the input is a char before getting it 
+
             if (pguidCmdGroup == VSConstants.VSStd2K && nCmdId == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
-            }
 
-            Log.DebugFormat("Typed Character: {0}", typedChar);
+                Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
+            }
+            else
+            {
+                Log.DebugFormat("Non-TypeChar command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
+            }
 
             //check for a commit character 
             if (nCmdId == (uint)VSConstants.VSStd2KCmdID.RETURN
@@ -102,10 +107,10 @@ namespace PowerShellTools.Intellisense
                     }
                     else
                     {
-                        Log.Debug("Dismiss");
-                        //if there is no selection, dismiss the session
-                        _activeSession.Dismiss();
-                    }
+                    Log.Debug("Dismiss");
+                    //if there is no selection, dismiss the session
+                    _activeSession.Dismiss();
+                }
                 }
                 else if (nCmdId == (uint)VSConstants.VSStd2KCmdID.TAB && _isRepl)
                 {
@@ -134,7 +139,7 @@ namespace PowerShellTools.Intellisense
             // If command is backspace and completion session is active, then we need to see if the char to be deleted is an IntelliSense triggering char
             // If yes, then after deleting the char, we also dismiss the completion session
             // Otherwise, just filter the completion lists
-            char charAtCaret = '\0';
+            char charAtCaret = char.MinValue;
             if (commandId == (uint)VSConstants.VSStd2KCmdID.BACKSPACE && _activeSession != null && !_activeSession.IsDismissed)
             {
                 int caretPosition = _textView.Caret.Position.BufferPosition.Position - 1;
@@ -149,14 +154,14 @@ namespace PowerShellTools.Intellisense
             // pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
-            if (!typedChar.Equals(Char.MinValue) && IsIntellisenseTrigger(typedChar))
+            if (!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar))
             {
                 TriggerCompletion();
             }
-            if (!typedChar.Equals(Char.MinValue) && IsFilterTrigger(typedChar))
+            if (!typedChar.Equals(char.MinValue) && IsFilterTrigger(typedChar))
             {
                 if (_activeSession != null)
-                { 
+                {
                     if (_activeSession.IsStarted)
                     {
                         try
@@ -200,6 +205,44 @@ namespace PowerShellTools.Intellisense
             if (handled) return VSConstants.S_OK;
             return retVal;
         }        
+
+        /// <summary>
+        /// A helper method to try and translate [for logging purposes] a visual studio cmdID to a usable string.
+        /// </summary>
+        /// <param name="cmdId">the cmdID</param>
+        /// <returns>the cmdId if not in debug mode, or the command wasn't found.</returns>
+        private static string ToCommandName(Guid commandGroup, uint commandId)
+        {
+#if DEBUG
+            if (commandGroup == VSConstants.GUID_AppCommand)
+            {
+                return ((VSConstants.AppCommandCmdID)commandId).ToString();
+            }
+            else if (commandGroup == VSConstants.GUID_VSStandardCommandSet97)
+            {
+                return ((VSConstants.VSStd97CmdID)commandId).ToString();
+            }
+            else if (commandGroup == VSConstants.VSStd2K)
+            {
+                return ((VSConstants.VSStd2KCmdID)commandId).ToString();
+            }
+            else if (commandGroup == VSConstants.VsStd2010)
+            {
+                return ((VSConstants.VSStd2010CmdID)commandId).ToString();
+            }
+            else if (commandGroup == VSConstants.VsStd11)
+            {
+                return ((VSConstants.VSStd11CmdID)commandId).ToString();
+            }
+            else if (commandGroup == VSConstants.VsStd12)
+            {
+                return ((VSConstants.VSStd12CmdID)commandId).ToString();
+            }
+
+            // No Dev14 here, cause we want to continue to work before Dev14!
+#endif
+            return string.Format("CommandGroup: {0}, Id: {1}", commandGroup, commandId);
+        }
 
         /// <summary>
         /// Triggers an IntelliSense session. This is done in a seperate thread than the UI to allow
@@ -316,7 +359,7 @@ namespace PowerShellTools.Intellisense
                 }
             }
 
-            if (statusBar!= null) statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
+            if (statusBar != null) statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
             _intellisenseRunning = false;
         }
 

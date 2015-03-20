@@ -9,10 +9,10 @@
     <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
     <AppliesTo>PowerShell | (!PowerShell)</AppliesTo>
     <SortOrder>30</SortOrder>
-    <Icon>PowerShell.ico</Icon>
+    <Icon>PowerShellModule.ico</Icon>
   </TemplateData>
   <TemplateContent>
     <References />
-    <ProjectItem TargetFileName="$fileinputname$.psm1" ReplaceParameters="true">Script.psm1</ProjectItem>
+    <ProjectItem ReplaceParameters="true">Script.psm1</ProjectItem>
   </TemplateContent>
 </VSTemplate>
