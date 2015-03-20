@@ -44,11 +44,11 @@ namespace PowerShellTools.Project
                 {
                     ImageListIndex index = ImageListIndex.Script;
 
-                    if (FileName.EndsWith( PowerShellConstants.PSM1File))
+                    if (FileName.EndsWith(PowerShellConstants.PSM1File))
                     {
                         index = ImageListIndex.Module;
                     }
-                    else if( FileName.EndsWith(PowerShellConstants.PSD1File))
+                    else if (FileName.EndsWith(PowerShellConstants.PSD1File))
                     {
                         index = ImageListIndex.DataFile;
                     }
