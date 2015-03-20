@@ -378,6 +378,7 @@
     <Compile Include="Project\PSBuildTask.cs" />
     <Compile Include="Project\ResourcesCategoryAttribute.cs" />
     <Compile Include="Project\ResourcesDescriptionAttribute.cs" />
+    <Compile Include="Project\ImageListIndex.cs" />
     <Compile Include="Project\SharedProject\AllFilesProjectElement.cs" />
     <Compile Include="Project\SharedProject\AssemblyReferenceNode.cs" />
     <Compile Include="Project\SharedProject\Attributes.cs" />

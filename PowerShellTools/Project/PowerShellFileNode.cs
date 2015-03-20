@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudioTools.Project;
 
@@ -6,21 +7,46 @@ namespace PowerShellTools.Project
 {
     internal class PowerShellFileNode : CommonFileNode
     {
-		#region Constructors
-		/// <summary>
+        #region Constructors
+        /// <summary>
         /// Initializes a new instance of the <see cref="PowerShellFileNode"/> class.
-		/// </summary>
-		/// <param name="root">The project node.</param>
-		/// <param name="e">The project element node.</param>
+        /// </summary>
+        /// <param name="root">The project node.</param>
+        /// <param name="e">The project element node.</param>
         internal PowerShellFileNode(CommonProjectNode root, ProjectElement e)
-			: base(root, e)
-		{
-		}
-		#endregion
+            : base(root, e)
+        {
+        }
+        #endregion
 
         protected override NodeProperties CreatePropertiesObject()
         {
             return new PowerShellFileNodeProperties(this);
+        }
+
+        public override int ImageIndex
+        {
+            get
+            {
+                if (ItemNode.IsExcluded)
+                {
+                    return (int)ProjectNode.ImageName.ExcludedFile;
+                }
+                else if (!File.Exists(Url))
+                {
+                    return (int)ProjectNode.ImageName.MissingFile;
+                }
+                else if (IsFormSubType)
+                {
+                    return (int)ProjectNode.ImageName.WindowsForm;
+                }
+                else if (this.ProjectMgr.IsCodeFile(FileName))
+                {
+                    return CommonProjectNode.ImageOffset + (int)ImageListIndex.Script;
+                }
+
+                return base.ImageIndex;
+            }
         }
 
         internal override int QueryStatusOnNode(Guid guidCmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result)
