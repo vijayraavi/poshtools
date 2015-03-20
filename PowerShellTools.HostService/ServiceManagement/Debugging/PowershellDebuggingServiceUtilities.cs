@@ -131,7 +131,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void objects_DataAdded(object sender, DataAddedEventArgs e)
         {
             var list = sender as PSDataCollection<PSObject>;
-            log += list[e.Index] + Environment.NewLine;
+            StringBuilder outputString = new StringBuilder();
+            foreach (PSObject obj in list)
+            {
+                outputString.AppendLine(obj.ToString());
+            }
+
+            NotifyOutputString(outputString.ToString());
         }
 
         private void InitializeRunspace(PSHost psHost)

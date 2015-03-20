@@ -296,6 +296,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             
             try
             {
+                _pausedEvent.Reset();
+
                 // Retrieve callback context
                 if (_callback == null)
                 {
