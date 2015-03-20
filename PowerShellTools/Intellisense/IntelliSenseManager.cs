@@ -93,13 +93,24 @@ namespace PowerShellTools.Intellisense
                         Log.Debug("Commit");
                         _activeSession.Commit();
 
-                        //also, don't add the character to the buffer
+                        bool isCompletionFullyMatched = false;
+                        _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.SessionCompletionFullyMatchedStatus, out isCompletionFullyMatched);
+
+                        if (isCompletionFullyMatched && char.IsWhiteSpace(typedChar))
+                        {
+                            // If user types all characters in a completion and click Space, then we should commit the selection and add the Space into text buffer
+                            return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                        }
+
+                        //also, don't add the character to the buffer 
                         return VSConstants.S_OK;
                     }
-
+                    else
+                    {
                     Log.Debug("Dismiss");
                     //if there is no selection, dismiss the session
                     _activeSession.Dismiss();
+                }
                 }
                 else if (nCmdId == (uint)VSConstants.VSStd2KCmdID.TAB && _isRepl)
                 {
@@ -137,14 +148,19 @@ namespace PowerShellTools.Intellisense
                     // caretPosition == -1 means caret is at the beginning of a file, which means no characters before it.
                     ITrackingPoint caretCharPosition = _textView.TextSnapshot.CreateTrackingPoint(caretPosition, PointTrackingMode.Positive);
                     charAtCaret = caretCharPosition.GetCharacter(_textView.TextSnapshot);
-                }
-            }
+                }                
+            }            
 
             // pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
             if (!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar))
             {
+                // Make sure the completion session is dismissed when starting a new session
+                if (_activeSession != null && !_activeSession.IsDismissed)
+                {
+                    _activeSession.Dismiss();
+                }
                 TriggerCompletion();
             }
             if (!typedChar.Equals(char.MinValue) && IsFilterTrigger(typedChar))
@@ -171,7 +187,7 @@ namespace PowerShellTools.Intellisense
                 if (_activeSession != null && !_activeSession.IsDismissed)
                 {
                     try
-                    {
+                    {                        
                         if (IsIntellisenseTrigger(charAtCaret))
                         {
                             Log.Debug("Dismiss");
@@ -193,7 +209,7 @@ namespace PowerShellTools.Intellisense
             }
             if (handled) return VSConstants.S_OK;
             return retVal;
-        }
+        }        
 
         /// <summary>
         /// A helper method to try and translate [for logging purposes] a visual studio cmdID to a usable string.
@@ -265,7 +281,7 @@ namespace PowerShellTools.Intellisense
             if (_intellisenseRunning)
             {
                 return;
-            }
+            } 
 
             _intellisenseRunning = true;
             var statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
@@ -363,7 +379,7 @@ namespace PowerShellTools.Intellisense
             var lastWordReplacementSpan = textBuffer.CurrentSnapshot.CreateTrackingSpan(replacementIndex, replacementLength, SpanTrackingMode.EdgeInclusive);
             var lineUpToReplacementSpan = textBuffer.CurrentSnapshot.CreateTrackingSpan(lineStartPosition, length, SpanTrackingMode.EdgeExclusive);
 
-            var triggerPoint = textBuffer.CurrentSnapshot.CreateTrackingPoint(startCaretPosition, PointTrackingMode.Positive);
+            var triggerPoint = textBuffer.CurrentSnapshot.CreateTrackingPoint(startCaretPosition, PointTrackingMode.Positive);            
             textBuffer.Properties.AddProperty(typeof(IList<CompletionResult>), completionResults);
             textBuffer.Properties.AddProperty(BufferProperties.LastWordReplacementSpan, lastWordReplacementSpan);
             textBuffer.Properties.AddProperty(BufferProperties.LineUpToReplacementSpan, lineUpToReplacementSpan);
@@ -392,6 +408,10 @@ namespace PowerShellTools.Intellisense
             _activeSession.Properties.AddProperty(BufferProperties.SessionOriginIntellisense, "Intellisense");
             _activeSession.Dismissed += CompletionSession_Dismissed;
             _activeSession.Start();
+            if (_activeSession.SelectedCompletionSet.Completions.Count > 0 && !_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+            {
+                _activeSession.SelectedCompletionSet.SelectionStatus = new CompletionSelectionStatus(_activeSession.SelectedCompletionSet.Completions[0], true, false);
+            }
         }
 
 
@@ -427,6 +447,6 @@ namespace PowerShellTools.Intellisense
         {
             Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':' || ch == '\\';
-        }
+        }        
     }
 }
