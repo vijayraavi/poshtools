@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 {
     [DataContract]
-    public class PowershellBreakpoint
+    public class PowershellBreakpoint : IEquatable<PowershellBreakpoint>
     {
         [DataMember]
         public string ScriptFullPath { get; set; }
@@ -24,6 +24,13 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             ScriptFullPath = file;
             Line = line;
             Column = column;
+        }
+
+        public bool Equals(PowershellBreakpoint other)
+        {
+            return this.Line == other.Line
+                && this.ScriptFullPath == other.ScriptFullPath
+                && this.Column == other.Column;
         }
     }
 }

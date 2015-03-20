@@ -111,7 +111,6 @@ namespace PowerShellTools.DebugEngine
 
             if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
             {
-                Debugger.BreakpointManager.SetBreakpoints(bps);
                 Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
 
                 _initializingRunspace = false;
@@ -176,50 +175,6 @@ namespace PowerShellTools.DebugEngine
         /// <param name="e"></param>
         void Debugger_BreakpointUpdated(object sender, DebuggerBreakpointUpdatedEventArgs e)
         {
-            if (_initializingRunspace) return;
-
-            var bp = bps.FirstOrDefault(
-                        m =>
-                        m.Column == e.Breakpoint.Column && m.Line == e.Breakpoint.Line &&
-                        m.File.Equals(e.Breakpoint.ScriptFullPath, StringComparison.InvariantCultureIgnoreCase));
-
-            switch (e.UpdateType)
-            {
-                case BreakpointUpdateType.Set:
-                    var breakpoint = new ScriptBreakpoint(_node, e.Breakpoint.ScriptFullPath, e.Breakpoint.Line, e.Breakpoint.Column, _events);
-                    breakpoint.Bind();
-
-                    if (bp == null)
-                    {
-                        bps.Add(breakpoint);
-                    }
-                    break;
-
-                case BreakpointUpdateType.Removed:
-                    if (bp != null)
-                    {
-                        bp.Delete();
-                        bps.Remove(bp);
-                    }
-                    break;
-
-                case BreakpointUpdateType.Disabled:
-                    if (bp != null)
-                    {
-                        bp.Enable(0);
-                    }
-                    break;
-
-                case BreakpointUpdateType.Enabled:
-                    if (bp != null)
-                    {
-                        bp.Enable(1);
-                    }
-                    break;
-
-                default: 
-                    break;
-            }
         }
 
         /// <summary>

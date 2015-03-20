@@ -194,8 +194,8 @@ namespace PowerShellTools.DebugEngine
         public void BreakpointRemoved(ScriptBreakpoint breakpoint)
         {
             Log.Debug("BreakpointRemoved");
-            
-            if (Debugger != null)
+
+            if (Debugger != null && Debugger.IsDebugging)
             {
                 Debugger.BreakpointManager.RemoveBreakpoint(breakpoint);
             }

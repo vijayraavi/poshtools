@@ -170,7 +170,12 @@ namespace PowerShellTools.DebugEngine
                 }
                 else
                 {
-                    Debugger.ExecuteDebuggingCommand(string.Format("Set-PSBreakpoint -Script \"{0}\" -Line {1}", breakpoint.File, breakpoint.Line));
+                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                    Debugger.ExecuteDebuggingCommand(
+                        string.Format(
+                            "{0} -Id {1}", 
+                            fEnable == 0 ? "Disable-PSBreakpoint" : "Enable-PSBreakpoint", 
+                            id));
                 }
             }
             catch (Exception ex)
@@ -189,7 +194,15 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                Debugger.DebuggingService.RemoveBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
+                {
+                    Debugger.DebuggingService.RemoveBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                }
+                else
+                {
+                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                    Debugger.ExecuteDebuggingCommand(string.Format("Remove-PSBreakpoint -Id {0}", id));
+                }
             }
             catch (Exception ex)
             {

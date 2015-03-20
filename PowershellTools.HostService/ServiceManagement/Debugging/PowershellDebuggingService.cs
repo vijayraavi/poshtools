@@ -37,6 +37,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Dictionary<string, Object> _propVariables;
         private Dictionary<string, string> _mapLocalToRemote;
         private Dictionary<string, string> _mapRemoteToLocal;
+        private Collection<PowershellBreakpointRecord> _psBreakpointTable;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
 
@@ -48,6 +49,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _propVariables = new Dictionary<string, object>();
             _mapLocalToRemote = new Dictionary<string, string>();
             _mapRemoteToLocal = new Dictionary<string, string>();
+            _psBreakpointTable = new Collection<PowershellBreakpointRecord>();
             InitializeRunspace(this);
         }
 
@@ -110,6 +112,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="bp">Breakpoint to set</param>
         public void SetBreakpoint(PowershellBreakpoint bp)
         {
+            IEnumerable<PSObject> lbp;
+
             ServiceCommon.Log("Setting breakpoint ...");
 
             using (var pipeline = (_runspace.CreatePipeline()))
@@ -128,7 +132,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 pipeline.Commands.Add(command);
 
-                pipeline.Invoke();
+                lbp = pipeline.Invoke();
+            }
+
+            var pobj = lbp.FirstOrDefault();
+            if (pobj != null)
+            {
+                _psBreakpointTable.Add(
+                    new PowershellBreakpointRecord(
+                        bp, 
+                        ((LineBreakpoint)pobj.BaseObject).Id));
             }
         }
 
@@ -138,11 +151,33 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="bp">Breakpoint to set</param>
         public void RemoveBreakpoint(PowershellBreakpoint bp)
         {
-            ServiceCommon.Log("Setting breakpoint ...");
+            int id = GetPSBreakpointId(bp);
 
-            using (var pipeline = (_runspace.CreatePipeline()))
+            if (id >= 0)
             {
-                
+                ServiceCommon.Log("Removing breakpoint ...");
+
+                using (var pipeline = (_runspace.CreatePipeline()))
+                {
+                    var command = new Command("Remove-PSBreakpoint");
+
+                    string file = bp.ScriptFullPath;
+                    if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                    {
+                        file = _mapLocalToRemote[bp.ScriptFullPath];
+                    }
+
+                    command.Parameters.Add("Id", id);
+
+                    pipeline.Commands.Add(command);
+
+                    pipeline.Invoke();
+                }
+
+                foreach (var p in _psBreakpointTable.Where(b => b.PSBreakpoint.Equals(bp)))
+                {
+                    _psBreakpointTable.Remove(p);
+                }
             }
         }
 
@@ -152,11 +187,34 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="bp">Breakpoint to set</param>
         public void EnableBreakpoint(PowershellBreakpoint bp, bool enable)
         {
-            ServiceCommon.Log("Setting breakpoint ...");
+            int id = GetPSBreakpointId(bp);
 
-            using (var pipeline = (_runspace.CreatePipeline()))
+            if (id >= 0)
             {
+                ServiceCommon.Log(string.Format("{0} breakpoint ...", enable ? "Enable" : "Disable"));
 
+                using (var pipeline = (_runspace.CreatePipeline()))
+                {
+                    string cmd = enable ? "Enable-PSBreakpoint" : "Disable-PSBreakpoint";
+
+                    var command = new Command(cmd);
+
+                    string file = bp.ScriptFullPath;
+                    if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                    {
+                        file = _mapLocalToRemote[bp.ScriptFullPath];
+                    }
+
+                    command.Parameters.Add("Id", id);
+
+                    pipeline.Commands.Add(command);
+
+                    pipeline.Invoke();
+                }
+            }
+            else
+            {
+                ServiceCommon.Log("Can not locate the breakpoint!");
             }
         }
 
@@ -186,6 +244,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 pipeline.Invoke();
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bp"></param>
+        /// <returns></returns>
+        public int GetPSBreakpointId(PowershellBreakpoint bp)
+        {
+            ServiceCommon.Log("Getting PSBreakpoint ...");
+            var bpr = _psBreakpointTable.FirstOrDefault(b => b.PSBreakpoint.Equals(bp));
+
+            return bpr != null ? bpr.Id : -1;
         }
 
         /// <summary>
