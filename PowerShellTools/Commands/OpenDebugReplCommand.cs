@@ -42,7 +42,7 @@ namespace PowerShellTools.Commands
             var window = provider.FindReplWindow("PowerShell");
             if (window == null)
             {
-                window = provider.CreateReplWindow(PowerShellToolsPackage.Instance.ContentType, "PowerShell Debug Interactive", typeof(PowerShellLanguageInfo).GUID, "PowerShell");
+                window = provider.CreateReplWindow(PowerShellToolsPackage.Instance.ContentType, "PowerShell Interactive Window", typeof(PowerShellLanguageInfo).GUID, "PowerShell");
             }
             return window;
         }
@@ -51,7 +51,7 @@ namespace PowerShellTools.Commands
         {
             get
             {
-                return "PowerShell Debug Interactive";
+                return "PowerShell Interactive Window";
             }
         }
 

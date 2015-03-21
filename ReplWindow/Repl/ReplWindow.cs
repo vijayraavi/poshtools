@@ -203,6 +203,10 @@ namespace PowerShellTools.Repl {
             // Set the window title reading it from the resources.z
             Caption = title;
 
+            // Set the bitmap, reading it from the resource file
+            BitmapResourceID = 400;
+            BitmapIndex = 0;
+
             _componentModel = model;
             _evaluator = evaluator;
             _languageContentType = contentType;
