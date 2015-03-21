@@ -120,7 +120,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="bp">Breakpoint to set</param>
         public void SetBreakpoint(PowershellBreakpoint bp)
         {
-            IEnumerable<PSObject> lbp;
+            IEnumerable<PSObject> breakpoints;
 
             ServiceCommon.Log("Setting breakpoint ...");
             try
@@ -141,10 +141,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                     pipeline.Commands.Add(command);
 
-                    lbp = pipeline.Invoke();
+                    breakpoints = pipeline.Invoke();
                 }
 
-                var pobj = lbp.FirstOrDefault();
+                var pobj = breakpoints.FirstOrDefault();
                 if (pobj != null)
                 {
                     _psBreakpointTable.Add(

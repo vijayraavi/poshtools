@@ -1,6 +1,7 @@
 ﻿using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.Debugging;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
 using System.Collections.Generic;
@@ -149,7 +150,7 @@ namespace PowerShellTools.DebugEngine
                 }
                 else
                 {
-                    Debugger.ExecuteDebuggingCommand(string.Format("Set-PSBreakpoint -Script \"{0}\" -Line {1}", breakpoint.File, breakpoint.Line));
+                    Debugger.ExecuteDebuggingCommand(string.Format(DebugEngineConstants.SetPSBreakpoint, breakpoint.File, breakpoint.Line));
                 }
             }
             catch (Exception ex)
@@ -162,6 +163,7 @@ namespace PowerShellTools.DebugEngine
         /// Enable breakpoint
         /// </summary>
         /// <param name="breakpoint">Breakpoint to be added</param>
+        /// <param name="fEnable">0 - disable, 1 - enable</param>
         public void EnableBreakpoint(ScriptBreakpoint breakpoint, int fEnable)
         {
             string operation = fEnable == 0 ? "Disable" : "Enable";
@@ -180,10 +182,9 @@ namespace PowerShellTools.DebugEngine
                     if (id >= 0)
                     {
                         Debugger.ExecuteDebuggingCommand(
-                            string.Format(
-                                "{0} -Id {1}",
-                                fEnable == 0 ? "Disable-PSBreakpoint" : "Enable-PSBreakpoint",
-                                id));
+                                fEnable == 0 ? 
+                                string.Format(DebugEngineConstants.DisablePSBreakpoint, id) :
+                                string.Format(DebugEngineConstants.EnablePSBreakpoint, id));
                     }
                 }
             }
@@ -212,7 +213,7 @@ namespace PowerShellTools.DebugEngine
                     int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                     if (id >= 0)
                     {
-                        Debugger.ExecuteDebuggingCommand(string.Format("Remove-PSBreakpoint -Id {0}", id));
+                        Debugger.ExecuteDebuggingCommand(string.Format(DebugEngineConstants.RemovePSBreakpoint, id));
                     }
                 }
             }

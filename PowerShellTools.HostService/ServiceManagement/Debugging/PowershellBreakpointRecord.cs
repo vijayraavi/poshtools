@@ -17,7 +17,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private PowershellBreakpoint _psBreakpoint;
         private int _id;
 
-        public PowershellBreakpointRecord(PowershellBreakpoint bp, int id)
+        internal PowershellBreakpointRecord(PowershellBreakpoint bp, int id)
         {
             _psBreakpoint = bp;
             _id = id;
@@ -26,7 +26,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         /// Breakpoint
         /// </summary>
-        public PowershellBreakpoint PSBreakpoint
+        internal PowershellBreakpoint PSBreakpoint
         {
             get
             {
@@ -37,7 +37,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         /// Breakpoint Id in powershell runspace.
         /// </summary>
-        public int Id
+        internal int Id
         {
             get
             {
