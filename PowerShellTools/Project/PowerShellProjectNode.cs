@@ -108,6 +108,14 @@ namespace PowerShellTools.Project
             return node;
         }
 
+        public override int ImageIndex
+        {
+            get
+            {
+                return CommonProjectNode.ImageOffset + (int)ImageListIndex.Project;
+            }
+        }
+
         protected override ConfigProvider CreateConfigProvider()
         {
             return new PowerShellConfigProvider(_package, this);
