@@ -115,6 +115,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ServiceManagement\Debugging\DTEManager.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowershellBreakpointRecord.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellDebuggingService.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs" />

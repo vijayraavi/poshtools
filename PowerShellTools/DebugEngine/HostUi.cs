@@ -80,6 +80,7 @@ namespace PowerShellTools.DebugEngine
             _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
             HostUi = new HostUi();
+            BreakpointManager = new BreakpointManager();
         }
 
         public ScriptDebugger(bool overrideExecutionPolicy)
@@ -97,6 +98,7 @@ namespace PowerShellTools.DebugEngine
         }
 
         public HostUi HostUi { get; private set; }
+
         public bool OverrideExecutionPolicy { get; private set; }
 
         public IReplWindow ReplWindow

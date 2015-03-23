@@ -30,23 +30,14 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public partial class ScriptDebugger
     {
-        private List<ScriptBreakpoint> _breakpoints;
         private List<ScriptStackFrame> _callstack;
-
-        /// <summary>
-        /// Event is fired when a breakpoint is hit.
-        /// </summary>
-        public event EventHandler<EventArgs<ScriptBreakpoint>> BreakpointHit;
+        private readonly AutoResetEvent _stoppingCompleteEvent = new AutoResetEvent(false);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
 
         /// <summary>
         /// Event is fired when a debugger is paused.
         /// </summary>
         public event EventHandler<EventArgs<ScriptLocation>> DebuggerPaused;
-
-        /// <summary>
-        /// Event is fired when a breakpoint is updated.
-        /// </summary>
-        public event EventHandler<DebuggerBreakpointUpdatedEventArgs> BreakpointUpdated;
 
         /// <summary>
         /// Event is fired when a string is output from the PowerShell host.
@@ -62,10 +53,6 @@ namespace PowerShellTools.DebugEngine
         /// Event is fired when a terminating exception is thrown.
         /// </summary>
         public event EventHandler<EventArgs<Exception>> TerminatingException;
-
-        private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
-
-        private string _debuggingCommand;
 
         /// <summary>
         /// The current set of variables for the current runspace.
@@ -97,61 +84,10 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public bool RemoteSession { get; set; }
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
+        public BreakpointManager BreakpointManager { get; set; }
 
-        /// <summary>
-        /// Sets breakpoints for the current runspace.
-        /// </summary>
-        /// <remarks>
-        /// This method clears any existing breakpoints.
-        /// </remarks>
-        /// <param name="initialBreakpoints"></param>
-        public void SetBreakpoints(IEnumerable<ScriptBreakpoint> initialBreakpoints)
-        {
-            _breakpoints = new List<ScriptBreakpoint>();
-
-            if (initialBreakpoints == null) return;
-
-            Log.InfoFormat("ScriptDebugger: Initial Breakpoints: {0}", initialBreakpoints.Count());
-            ClearBreakpoints();
-
-            foreach (var bp in initialBreakpoints)
-            {
-                SetBreakpoint(bp);
-                _breakpoints.Add(bp);
-                bp.Bind();
-            }
-        }
-
-        /// <summary>
-        /// Clears existing breakpoints for the current runspace.
-        /// </summary>
-        private void ClearBreakpoints()
-        {
-            try
-            {
-                DebuggingService.ClearBreakpoints();
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Failed to clear existing breakpoints", ex);
-            }
-        }
-
-        private void SetBreakpoint(ScriptBreakpoint breakpoint)
-        {
-            Log.InfoFormat("SetBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column);
-
-            try
-            {
-                DebuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Failed to set breakpoint.", ex);
-            }
-        }
-        
+        public string DebuggingCommand { get; set; }
+      
         #region Debugging service event handlers
 
         /// <summary>
@@ -166,7 +102,7 @@ namespace PowerShellTools.DebugEngine
                 RefreshScopedVariables();
                 RefreshCallStack();
 
-                if (!ProcessLineBreakpoints(e.ScriptFullPath, e.Line, e.Column))
+                if (!BreakpointManager.ProcessLineBreakpoints(e.ScriptFullPath, e.Line, e.Column))
                 {
                     if (DebuggerPaused != null)
                     {
@@ -179,12 +115,16 @@ namespace PowerShellTools.DebugEngine
             catch (DebugEngineInternalException dbgEx)
             {
                 Log.Debug(dbgEx.Message);
-                _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+                DebuggingService.ExecuteDebuggingCommand(DebugEngineConstants.Debugger_Stop);
+
+                IsDebuggingCommandReady = false;
             }
             catch (Exception ex)
             {
                 Log.Debug(ex.Message);
-                _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+                DebuggingService.ExecuteDebuggingCommand(DebugEngineConstants.Debugger_Stop);
+
+                IsDebuggingCommandReady = false;
                 throw;
             }
             finally
@@ -192,15 +132,6 @@ namespace PowerShellTools.DebugEngine
                 Log.Debug("Waiting for debuggee to resume.");
                 
                 IsDebuggingCommandReady = true;
-
-                //Wait for the user to step, continue or stop
-                _pausedEvent.WaitOne();
-
-                Log.DebugFormat("Debuggee resume action is {0}", _debuggingCommand);
-
-                DebuggingService.ExecuteDebuggingCommand(_debuggingCommand);
-
-                IsDebuggingCommandReady = false;
             }
         }
 
@@ -217,20 +148,6 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
-        /// Breakpoint has been updated
-        /// </summary>
-        /// <param name="e"></param>
-        public void UpdateBreakpoint(DebuggerBreakpointUpdatedEventArgs e)
-        {
-            Log.InfoFormat("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
-
-            if (BreakpointUpdated != null)
-            {
-                BreakpointUpdated(this, e);
-            }
-        }
-
-        /// <summary>
         /// PSDebugger event finished handler
         /// </summary>
         public void DebuggerFinished()
@@ -240,6 +157,7 @@ namespace PowerShellTools.DebugEngine
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());
+                _stoppingCompleteEvent.Set();
             }
         }
 
@@ -304,29 +222,6 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-        private bool ProcessLineBreakpoints(string script, int line, int column)
-        {
-            Log.InfoFormat("Process Line Breapoints");
-
-            var bp =
-                _breakpoints.FirstOrDefault(
-                    m =>
-                    m.Column == column && line == m.Line &&
-                    script.Equals(m.File, StringComparison.InvariantCultureIgnoreCase));
-
-            if (bp != null)
-            {
-                if (BreakpointHit != null)
-                {
-                    Log.InfoFormat("Breakpoint @ {0} {1} {2} was hit.", bp.File, bp.Line, bp.Column);
-                    BreakpointHit(this, new EventArgs<ScriptBreakpoint>(bp));
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// Stops execution of the current script.
         /// </summary>
@@ -336,15 +231,17 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
+                _stoppingCompleteEvent.Reset();
                 if (IsDebuggingCommandReady)
                 {
-                    _debuggingCommand = DebugEngineConstants.Debugger_Stop;
-                    _pausedEvent.Set();
+                    DebuggingService.ExecuteDebuggingCommand(DebugEngineConstants.Debugger_Stop);
+                    IsDebuggingCommandReady = false;
                 }
                 else
                 {
                     DebuggingService.Stop();
                 }
+                _stoppingCompleteEvent.WaitOne();
             }
             catch (Exception ex)
             {
@@ -363,8 +260,8 @@ namespace PowerShellTools.DebugEngine
         public void StepOver()
         {
             Log.Info("StepOver");
-            _debuggingCommand = DebugEngineConstants.Debugger_StepOver;
-            _pausedEvent.Set();
+            DebuggingService.ExecuteDebuggingCommand(DebugEngineConstants.Debugger_StepOver);
+            IsDebuggingCommandReady = false;
         }
 
         /// <summary>
@@ -373,8 +270,8 @@ namespace PowerShellTools.DebugEngine
         public void StepInto()
         {
             Log.Info("StepInto");
-            _debuggingCommand = DebugEngineConstants.Debugger_StepInto;
-            _pausedEvent.Set();
+            DebuggingService.ExecuteDebuggingCommand(DebugEngineConstants.Debugger_StepInto);
+            IsDebuggingCommandReady = false;
         }
 
         /// <summary>
@@ -383,8 +280,8 @@ namespace PowerShellTools.DebugEngine
         public void StepOut()
         {
             Log.Info("StepOut");
-            _debuggingCommand = DebugEngineConstants.Debugger_StepOut;
-            _pausedEvent.Set();
+            DebuggingService.ExecuteDebuggingCommand(DebugEngineConstants.Debugger_StepOut);
+            IsDebuggingCommandReady = false;
         }
 
         /// <summary>
@@ -393,8 +290,8 @@ namespace PowerShellTools.DebugEngine
         public void Continue()
         {
             Log.Info("Continue");
-            _debuggingCommand = DebugEngineConstants.Debugger_Continue;
-            _pausedEvent.Set();
+            DebuggingService.ExecuteDebuggingCommand(DebugEngineConstants.Debugger_Continue);
+            IsDebuggingCommandReady = false;
         }
 
         /// <summary>
@@ -531,6 +428,11 @@ namespace PowerShellTools.DebugEngine
             }
 
             return null;
+        }
+
+        public void SignalStoppingComplete()
+        {
+            _stoppingCompleteEvent.Set();
         }
 
         internal void OpenRemoteFile(string fullName)
