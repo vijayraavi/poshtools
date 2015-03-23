@@ -250,6 +250,7 @@
       <DependentUpon>SecureStringDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="CredentialUI\SecureStringDialogViewModel.cs" />
+    <Compile Include="DebugEngine\BreakpointManager.cs" />
     <Compile Include="DebugEngine\DebugEngineInternalException.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
