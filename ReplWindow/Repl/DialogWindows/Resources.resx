@@ -121,7 +121,7 @@
     <value>Cancel</value>
   </data>
   <data name="ComputerNameLabel" xml:space="preserve">
-    <value>ComputerName:</value>
+    <value>Computer Name:</value>
   </data>
   <data name="EnterButtonText" xml:space="preserve">
     <value>Enter</value>
