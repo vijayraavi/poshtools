@@ -95,6 +95,22 @@ namespace PowerShellTools.Intellisense
                     typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
 
                     // If we processed the typed left brace, no need to pass along the command as the char is already added to the buffer.
+                    if (IsQuotes(typedChar) && !IsInCommentArea())
+                    {
+                        if (_isLastCmdAutoComplete && IsPreviousCharMachedQuotes(typedChar))
+                        {
+                            ProcessTypedRightBraceOrQuotes(typedChar);
+                            SetAutoCompleteState(false);
+                            return VSConstants.S_OK;
+                        }
+                        else
+                        {
+                            CompleteBraceOrQuotes(typedChar);
+                            SetAutoCompleteState(true);
+                            return VSConstants.S_OK;
+                        }
+                    }
+
                     if (IsLeftBraceOrQuotes(typedChar) && !IsInCommentArea())
                     {
                         CompleteBraceOrQuotes(typedChar);
@@ -274,6 +290,14 @@ namespace PowerShellTools.Intellisense
             return IsLeftBraceOrQuotes(previousChar);
         }
 
+        private bool IsPreviousCharMachedQuotes(char currentChar)
+        {
+            int currentCaret = _textView.Caret.Position.BufferPosition.Position;
+            ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret - 1, PointTrackingMode.Positive);
+            char previousChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
+            return currentChar == previousChar;
+        }
+
         private bool IsNextCharRightBraceOrQuotes(int currentCaret)
         {
             if (currentCaret >= _textView.TextSnapshot.Length) return false;
@@ -322,12 +346,17 @@ namespace PowerShellTools.Intellisense
 
         private static bool IsLeftBraceOrQuotes(char ch)
         {
-            return IsLeftCurlyBrace(ch) || ch == '[' || ch == '(' || ch == '\'' || ch == '\"';
+            return IsLeftCurlyBrace(ch) || ch == '[' || ch == '(' || IsQuotes(ch);
         }
 
         private static bool IsRightBraceOrQuotes(char ch)
         {
-            return IsRightCurlyBrace(ch) || ch == ']' || ch == ')' || ch == '\'' || ch == '\"';
+            return IsRightCurlyBrace(ch) || ch == ']' || ch == ')' || IsQuotes(ch);
+        }
+
+        private static bool IsQuotes(char ch)
+        {
+            return ch == '\'' || ch == '\"';
         }
 
         private static bool IsLeftCurlyBrace(char ch)
