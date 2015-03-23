@@ -97,7 +97,7 @@ namespace PowerShellTools.Intellisense
                     // If we processed the typed left brace/quotes, no need to pass along the command as the char is already added to the buffer.
                     if (IsQuotes(typedChar))
                     {
-                        if (_isLastCmdAutoComplete && IsPreviousCharMachedQuotes(typedChar))
+                        if (_isLastCmdAutoComplete && IsPreviousCharMatchedQuotes(typedChar))
                         {
                             ProcessTypedRightBraceOrQuotes(typedChar);
                             SetAutoCompleteState(false);
@@ -290,7 +290,7 @@ namespace PowerShellTools.Intellisense
             return IsLeftBraceOrQuotes(previousChar);
         }
 
-        private bool IsPreviousCharMachedQuotes(char currentChar)
+        private bool IsPreviousCharMatchedQuotes(char currentChar)
         {
             int currentCaret = _textView.Caret.Position.BufferPosition.Position;
             ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret - 1, PointTrackingMode.Positive);
