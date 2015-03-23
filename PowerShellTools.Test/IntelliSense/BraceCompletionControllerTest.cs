@@ -14,7 +14,7 @@ namespace PowerShellTools.Test.IntelliSense
     [TestClass]
     public class CommentAreaTest
     {
-        private BraceCompletionController _braceCompletionController;
+        private AutoCompletionController _braceCompletionController;
         private Mock<ITextView> _textView;
         private Mock<Microsoft.VisualStudio.Text.Operations.IEditorOperations> _editorOptions;
         private Mock<ITextUndoHistory> _undoHistory;
@@ -27,7 +27,7 @@ namespace PowerShellTools.Test.IntelliSense
             _editorOptions = new Mock<IEditorOperations>();
             _undoHistory = new Mock<ITextUndoHistory>();
             _serviceProvider = new Mock<SVsServiceProvider>();
-            _braceCompletionController = new BraceCompletionController(_textView.Object,
+            _braceCompletionController = new AutoCompletionController(_textView.Object,
                                                                        _editorOptions.Object,
                                                                        _undoHistory.Object,
                                                                        _serviceProvider.Object);

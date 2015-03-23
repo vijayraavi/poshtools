@@ -294,7 +294,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="IDependencyValidator.cs" />
-    <Compile Include="Intellisense\BraceCompletionController.cs" />
+    <Compile Include="Intellisense\AutoCompletionController.cs" />
     <Compile Include="Intellisense\IntellisenseController.cs" />
     <Compile Include="Intellisense\IntellisenseControllerProvider.cs" />
     <Compile Include="Intellisense\IntelliSenseManager.cs" />
@@ -625,7 +625,6 @@
     </Content>
     <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
     <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
-
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
