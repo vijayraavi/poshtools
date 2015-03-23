@@ -65,6 +65,11 @@ namespace PowerShellTools.Intellisense
                 return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             }
 
+            if (pguidCmdGroup != VSConstants.VSStd2K)
+            {
+                return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+            }
+
             return ProcessKeystroke(nCmdID, pvaIn) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
         }
 
@@ -76,7 +81,13 @@ namespace PowerShellTools.Intellisense
         #endregion
 
         private int ProcessKeystroke(uint nCmdID, IntPtr pvaIn)
-        {
+        {            
+            if (!_textView.Selection.IsEmpty)
+            {
+                // Auto completion won't take effect when there is text selection.
+                return VSConstants.S_FALSE;
+            }
+
             switch (nCmdID)
             {
                 case (uint)VSConstants.VSStd2KCmdID.TYPECHAR:
