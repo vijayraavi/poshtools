@@ -82,7 +82,7 @@ namespace PowerShellTools.Intellisense
 
         private int ProcessKeystroke(uint nCmdID, IntPtr pvaIn)
         {            
-            if (!_textView.Selection.IsEmpty)
+            if (!_textView.Selection.IsEmpty || IsInCommentArea())
             {
                 // Auto completion won't take effect when there is text selection.
                 return VSConstants.S_FALSE;
@@ -94,8 +94,8 @@ namespace PowerShellTools.Intellisense
                     var typedChar = Char.MinValue;
                     typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
 
-                    // If we processed the typed left brace, no need to pass along the command as the char is already added to the buffer.
-                    if (IsQuotes(typedChar) && !IsInCommentArea())
+                    // If we processed the typed left brace/quotes, no need to pass along the command as the char is already added to the buffer.
+                    if (IsQuotes(typedChar))
                     {
                         if (_isLastCmdAutoComplete && IsPreviousCharMachedQuotes(typedChar))
                         {
@@ -111,7 +111,7 @@ namespace PowerShellTools.Intellisense
                         }
                     }
 
-                    if (IsLeftBraceOrQuotes(typedChar) && !IsInCommentArea())
+                    if (IsLeftBraceOrQuotes(typedChar))
                     {
                         CompleteBraceOrQuotes(typedChar);
                         SetAutoCompleteState(true);
