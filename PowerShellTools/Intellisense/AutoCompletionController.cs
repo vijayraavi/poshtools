@@ -204,7 +204,7 @@ namespace PowerShellTools.Intellisense
         /// Complete the left brace/quotes with matched brace/quotes
         /// </summary>
         /// <param name="leftBraceOrQuotes">The left brace/quotes to be completed.</param>
-        private void CompleteBraceOrQuotes(char leftBraceOrQuotes)
+        internal void CompleteBraceOrQuotes(char leftBraceOrQuotes)
         {
             var typedCharToString = leftBraceOrQuotes.ToString();
 
