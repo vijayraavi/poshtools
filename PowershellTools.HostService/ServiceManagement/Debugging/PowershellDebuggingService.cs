@@ -41,6 +41,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private readonly AutoResetEvent _debugCommandEvent = new AutoResetEvent(false);
         private object _executeDebugCommandLock = new object();
+        private string _debugCommandOutput;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
 
         public PowershellDebuggingService()
@@ -101,16 +102,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Client respond with resume action to service
         /// </summary>
         /// <param name="action">Resumeaction from client</param>
-        public void ExecuteDebuggingCommand(string debuggingCommand)
+        public string ExecuteDebuggingCommand(string debuggingCommand)
         {
             // Need to be thread-safe here, to ensure every debugging command get processed.
             // e.g: Set/Enable/Disable/Remove breakpoint during debugging 
             lock (_executeDebugCommandLock)
             {
-                ServiceCommon.Log("Client respond with debugging command");
+                ServiceCommon.Log("Client asks for executing debugging command");
+                _debugCommandOutput = string.Empty;
                 _debuggingCommand = debuggingCommand;
                 _pausedEvent.Set();
                 _debugCommandEvent.WaitOne();
+                return _debugCommandOutput;
             }
         }
 
