@@ -43,7 +43,6 @@ namespace PowerShellTools.DebugEngine
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
         private Runspace _runspace;
-        private string _prompt;
         private IPowershellDebuggingService _debuggingServiceTest;
 
         public IPowershellDebuggingService DebuggingService
@@ -133,11 +132,11 @@ namespace PowerShellTools.DebugEngine
                     string prompt;
                     if (IsDebuggingCommandReady)
                     {
-                        prompt = DebuggingService.ExecuteDebuggingCommand("prompt");
+                        prompt = DebuggingService.ExecuteDebuggingCommand(DebugEngineConstants.GetPrompt);
                     }
                     else
                     {
-                        prompt = DebuggingService.GetPrompt();;
+                        prompt = DebuggingService.GetPrompt();
                     }
 
                     return prompt;
