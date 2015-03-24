@@ -18,6 +18,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
     public class HostUi : PSHostUserInterface
     {
         private readonly PowershellDebuggingService _debuggingService;
+        private object _outputLock = new object();
 
         public HostUi(PowershellDebuggingService debugger)
         {
@@ -199,10 +200,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void TryOutputString(string val)
         {
-            _debuggingService.NotifyOutputString(val);
+            lock (_outputLock)
+            {
+                _debuggingService.NotifyOutputString(val);
 
-            if (OutputString != null)
-                OutputString(val);
+                if (OutputString != null)
+                    OutputString(val);
+            }
         }
 
         private string ReadLineFromUI(string message)

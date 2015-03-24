@@ -61,10 +61,7 @@ namespace PowerShellTools.Commands
                     dte2.ActiveDocument != null &&
                     dte2.ActiveDocument.Language == "PowerShell";
 
-            if (PowerShellToolsPackage.Debugger != null)
-            {
-                bVisible = bVisible && !PowerShellToolsPackage.Debugger.IsDebugging;
-            }
+            bVisible = bVisible && dte2.Debugger.CurrentMode == dbgDebugMode.dbgDesignMode;
             
             var menuItem = sender as OleMenuCommand;
             if (menuItem != null)
