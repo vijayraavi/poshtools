@@ -97,7 +97,7 @@ namespace PowerShellTools.Intellisense
                     // If we processed the typed left brace/quotes, no need to pass along the command as the char is already added to the buffer.
                     if (IsQuotes(typedChar))
                     {
-                        if (_isLastCmdAutoComplete && IsPreviousCharMatchedQuotes(typedChar))
+                        if (_isLastCmdAutoComplete && IsTypeCharEqualsNextChar(typedChar))
                         {
                             ProcessTypedRightBraceOrQuotes(typedChar);
                             SetAutoCompleteState(false);
@@ -273,6 +273,7 @@ namespace PowerShellTools.Intellisense
         private void SetAutoCompleteState(bool isAutoComplete)
         {
             _isLastCmdAutoComplete = isAutoComplete;
+            
         }
 
         private bool IsCaretInMiddleOfPairedBraceOrQuotes()
@@ -290,20 +291,22 @@ namespace PowerShellTools.Intellisense
             return IsLeftBraceOrQuotes(previousChar);
         }
 
-        private bool IsPreviousCharMatchedQuotes(char currentChar)
+        private bool IsTypeCharEqualsNextChar(char currentChar)
         {
             int currentCaret = _textView.Caret.Position.BufferPosition.Position;
-            ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret - 1, PointTrackingMode.Positive);
-            char previousChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
-            return currentChar == previousChar;
+            if (currentCaret >= _textView.TextSnapshot.Length) return false;
+
+            ITrackingPoint nextCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret, PointTrackingMode.Positive);
+            char nextChar = nextCharPosition.GetCharacter(_textView.TextSnapshot);
+            return currentChar == nextChar;
         }
 
         private bool IsNextCharRightBraceOrQuotes(int currentCaret)
         {
             if (currentCaret >= _textView.TextSnapshot.Length) return false;
 
-            ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret, PointTrackingMode.Positive);
-            char nextChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
+            ITrackingPoint nextCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret, PointTrackingMode.Positive);
+            char nextChar = nextCharPosition.GetCharacter(_textView.TextSnapshot);
             return IsRightBraceOrQuotes(nextChar);
         }
 
