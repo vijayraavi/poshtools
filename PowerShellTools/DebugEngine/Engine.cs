@@ -84,7 +84,7 @@ namespace PowerShellTools.DebugEngine
                 Guid contextGuid = PowerShellTools.Common.Constants.PowerShellDebuggingUiContextGuid;
 
                 _monitorSelectionService.GetCmdUIContextCookie(contextGuid, out _uiContextCookie);
-        }
+            }
         }
         /// <summary>
         /// Initiates the execute of the debug engine.
@@ -110,7 +110,7 @@ namespace PowerShellTools.DebugEngine
 
             Debugger.HostUi.OutputString = _events.OutputString;
             Debugger.OutputString += Debugger_OutputString;
-            Debugger.BreakpointHit += Debugger_BreakpointHit;
+            Debugger.BreakpointManager.BreakpointHit += Debugger_BreakpointHit;
             Debugger.DebuggingBegin += Debugger_DebuggingBegin;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
             Debugger.BreakpointManager.BreakpointUpdated += Debugger_BreakpointUpdated;
@@ -304,7 +304,7 @@ namespace PowerShellTools.DebugEngine
             if (pBPRequest.GetRequestInfo(enum_BPREQI_FIELDS.BPREQI_BPLOCATION, info) == VSConstants.S_OK)
             {
                 var position = (IDebugDocumentPosition2)Marshal.GetObjectForIUnknown(info[0].bpLocation.unionmember2);
-                var start = new TEXT_POSITION[1]; 
+                var start = new TEXT_POSITION[1];
                 var end = new TEXT_POSITION[1];
                 string fileName;
 
@@ -316,7 +316,7 @@ namespace PowerShellTools.DebugEngine
                 ppPendingBP = breakpoint;
 
                 _events.BreakpointAdded(breakpoint);
-                
+
                 bps.Add(breakpoint);
             }
 
@@ -420,7 +420,7 @@ namespace PowerShellTools.DebugEngine
                 _node.FileName = pszExe;
                 _node.Arguments = pszArgs;
             }
-            
+
             _events = new EngineEvents(this, pCallback);
 
             return VSConstants.S_OK;
