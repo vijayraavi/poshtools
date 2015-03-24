@@ -250,6 +250,7 @@
       <DependentUpon>SecureStringDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="CredentialUI\SecureStringDialogViewModel.cs" />
+    <Compile Include="DebugEngine\BreakpointManager.cs" />
     <Compile Include="DebugEngine\DebugEngineInternalException.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
@@ -293,7 +294,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="IDependencyValidator.cs" />
-    <Compile Include="Intellisense\BraceCompletionController.cs" />
+    <Compile Include="Intellisense\AutoCompletionController.cs" />
     <Compile Include="Intellisense\IntellisenseController.cs" />
     <Compile Include="Intellisense\IntellisenseControllerProvider.cs" />
     <Compile Include="Intellisense\IntelliSenseManager.cs" />
@@ -600,6 +601,7 @@
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -624,7 +626,7 @@
     </Content>
     <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
     <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
-
+    <EmbeddedResource Include="Resources\PowerShellInteractiveWindow_16x.png" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />

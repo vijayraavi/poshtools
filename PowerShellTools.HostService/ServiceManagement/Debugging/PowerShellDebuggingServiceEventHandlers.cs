@@ -44,13 +44,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="e"></param>
         private void Debugger_BreakpointUpdated(object sender, BreakpointUpdatedEventArgs e)
         {
+            // Not in-use for now, leave it as place holder for future support on powershell debugging command in REPL
             ServiceCommon.Log("Breakpoint updated: {0} {1}", e.UpdateType, e.Breakpoint);
 
-            if (_callback != null)
-            {
-                var lbp = e.Breakpoint as LineBreakpoint;
-                _callback.BreakpointUpdated(new DebuggerBreakpointUpdatedEventArgs(new PowershellBreakpoint(e.Breakpoint.Script, lbp.Line, lbp.Column), e.UpdateType));
-            }
+            //if (_callback != null)
+            //{
+            //    var lbp = e.Breakpoint as LineBreakpoint;
+            //    _callback.BreakpointUpdated(new DebuggerBreakpointUpdatedEventArgs(new PowershellBreakpoint(e.Breakpoint.Script, lbp.Line, lbp.Column), e.UpdateType));
+            //}
         }
 
         /// <summary>
@@ -121,11 +122,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _pausedEvent.WaitOne();
 
                 PSCommand psCommand = new PSCommand();
-                psCommand.AddScript(_debuggingCommand).AddCommand("out-default");
+                psCommand.AddScript(_debuggingCommand);
                 psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
                 var output = new PSDataCollection<PSObject>();
                 output.DataAdded += objects_DataAdded;
                 DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
+
+                var pobj = output.FirstOrDefault();
+                
+                if (pobj != null && pobj.BaseObject is LineBreakpoint)
+                {
+                    LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
+                    if (bp != null)
+                    {
+                        _psBreakpointTable.Add(
+                            new PowershellBreakpointRecord(
+                                new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
+                                bp.Id));
+                    }
+                }
 
                 if (results.ResumeAction != null)
                 {
@@ -133,6 +148,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     e.ResumeAction = results.ResumeAction.Value;
                     resumed = true; // debugger resumed executing
                 }
+
+                // Notify the debugging command execution call that debugging command was complete.
+                _debugCommandEvent.Set();
             }
         }
 

@@ -95,6 +95,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void DebuggerFinished()
         {
             ServiceCommon.Log("DebuggerFinished");
+
+            _psBreakpointTable.Clear();
+
             if (_callback != null)
             {
                 _callback.RefreshPrompt();
@@ -105,11 +108,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
                 _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
                 _runspace.StateChanged -= _runspace_StateChanged;
-            }
-
-            if (_callback != null)
-            {
-                _callback.DebuggerFinished();
             }
 
             if (_currentPowerShell != null)
@@ -123,12 +121,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _debuggingCommand = string.Empty;
             _localVariables.Clear();
             _propVariables.Clear();
+
+            if (_callback != null)
+            {
+                _callback.DebuggerFinished();
+            }
         }
 
         private void objects_DataAdded(object sender, DataAddedEventArgs e)
         {
             var list = sender as PSDataCollection<PSObject>;
-            log += list[e.Index] + Environment.NewLine;
+            StringBuilder outputString = new StringBuilder();
+            foreach (PSObject obj in list)
+            {
+                outputString.AppendLine(obj.ToString());
+            }
+
+            NotifyOutputString(outputString.ToString());
         }
 
         private void InitializeRunspace(PSHost psHost)

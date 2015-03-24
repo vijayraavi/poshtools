@@ -73,7 +73,7 @@ namespace PowerShellTools.DebugEngine
                 _runspace = value;
             }
         }
-        
+
         public ScriptDebugger(bool overrideExecutionPolicy)
             : this(overrideExecutionPolicy, null)
         {
@@ -90,9 +90,12 @@ namespace PowerShellTools.DebugEngine
             _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
             HostUi = new HostUi();
+
+            BreakpointManager = new BreakpointManager();
         }
 
         public HostUi HostUi { get; private set; }
+
         public bool OverrideExecutionPolicy { get; private set; }
 
         public IReplWindow ReplWindow

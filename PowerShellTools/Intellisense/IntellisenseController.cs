@@ -31,7 +31,7 @@ namespace PowerShellTools.Intellisense
         private readonly ITextView _textView;
         private readonly IntellisenseControllerProvider _provider;
         private readonly IntelliSenseManager _intelliSenseManager;
-        private readonly BraceCompletionController _braceCompletionController;
+        private readonly AutoCompletionController _braceCompletionController;
 
         /// <summary>
         /// Attaches events for invoking Statement completion 
@@ -46,7 +46,7 @@ namespace PowerShellTools.Intellisense
 			ITextUndoHistory undoHistory = provider.UndoHistoryRegistry.GetHistory(textView.TextBuffer);
 
             _intelliSenseManager = new IntelliSenseManager(provider.CompletionBroker, provider.ServiceProvider, null, textView);
-            _braceCompletionController = new BraceCompletionController(textView, editorOperations, undoHistory, provider.ServiceProvider);
+            _braceCompletionController = new AutoCompletionController(textView, editorOperations, undoHistory, provider.ServiceProvider);
 
         }
 

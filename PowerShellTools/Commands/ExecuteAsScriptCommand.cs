@@ -150,9 +150,7 @@ namespace PowerShellTools.Commands
         {
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
-            bool bVisible = PowerShellToolsPackage.Debugger != null ?
-                (ShouldShowCommand(dte2) && !PowerShellToolsPackage.Debugger.IsDebugging) :
-                ShouldShowCommand(dte2);
+            bool bVisible = ShouldShowCommand(dte2) && dte2.Debugger.CurrentMode == dbgDebugMode.dbgDesignMode;
 
             var menuItem = sender as OleMenuCommand;
             if (menuItem != null)

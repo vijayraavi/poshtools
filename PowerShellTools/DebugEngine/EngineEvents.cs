@@ -34,6 +34,9 @@ namespace PowerShellTools.DebugEngine
         void Exception(ScriptProgramNode program, Exception ex);
         void Breakpoint(ScriptProgramNode program, ScriptBreakpoint breakpoint);
         void BreakpointHit(ScriptBreakpoint breakpoint, ScriptProgramNode node);
+        void BreakpointEnabled(ScriptBreakpoint breakpoint, int fEnable);
+        void BreakpointRemoved(ScriptBreakpoint breakpoint);
+        void BreakpointAdded(ScriptBreakpoint breakpoint);
     }
 
     /// <summary>
@@ -54,6 +57,16 @@ namespace PowerShellTools.DebugEngine
             _engine = engine;
             _callback = callback;
         } 
+        #endregion
+
+        #region Properties
+        public ScriptDebugger Debugger
+        {
+            get
+            {
+                return PowerShellToolsPackage.Debugger;
+            }
+        }
         #endregion
 
         #region Events
@@ -81,9 +94,9 @@ namespace PowerShellTools.DebugEngine
             _callback.Event(_engine, null, null, null, new LoadCompleteEvent(), ref iid, LoadCompleteEvent.Attributes);
             lock (_debuggingStateLock)
             {
-                if (PowerShellToolsPackage.Debugger != null)
+                if (Debugger != null)
                 {
-                    PowerShellToolsPackage.Debugger.IsDebugging = true;
+                    Debugger.IsDebugging = true;
                 }
             }
         }
@@ -126,9 +139,9 @@ namespace PowerShellTools.DebugEngine
             _callback.Event(_engine, null, program, null, new ProgramDestoryedEvent(), ref iid, ProgramDestoryedEvent.Attributes);
             lock (_debuggingStateLock)
             {
-                if (PowerShellToolsPackage.Debugger != null)
+                if (Debugger != null)
                 {
-                    PowerShellToolsPackage.Debugger.IsDebugging = false;
+                    Debugger.IsDebugging = false;
                 }
             }
         }
@@ -168,6 +181,35 @@ namespace PowerShellTools.DebugEngine
             _callback.Event(_engine, null, node, node, new BreakPointHitEvent(breakpoint), ref iid, BreakPointHitEvent.Attributes);
         }
 
+        public void BreakpointEnabled(ScriptBreakpoint breakpoint, int fEnable)
+        {
+            Log.Debug("BreakpointEnabled");
+
+            if (Debugger != null)
+            {
+                Debugger.BreakpointManager.EnableBreakpoint(breakpoint, fEnable);
+            }
+        }
+
+        public void BreakpointRemoved(ScriptBreakpoint breakpoint)
+        {
+            Log.Debug("BreakpointRemoved");
+
+            if (Debugger != null && Debugger.IsDebugging)
+            {
+                Debugger.BreakpointManager.RemoveBreakpoint(breakpoint);
+            }
+        }
+
+        public void BreakpointAdded(ScriptBreakpoint breakpoint)
+        {
+            Log.Debug("BreakpointAdded");
+
+            if (Debugger != null)
+            {
+                Debugger.BreakpointManager.SetBreakpoint(breakpoint);
+            }
+        }
 
         #endregion
     }
