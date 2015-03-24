@@ -73,27 +73,23 @@ namespace PowerShellTools.DebugEngine
                 _runspace = value;
             }
         }
-
-        private ScriptDebugger()
-        {
-            //TODO: remove once user prompt work is finished for debugging
-            _runspace = RunspaceFactory.CreateRunspace();
-            _runspace.Open();
-            HostUi = new HostUi();
-        }
-
+        
         public ScriptDebugger(bool overrideExecutionPolicy)
             : this(overrideExecutionPolicy, null)
         {
             ConnectionManager.Instance.ConnectionException += ConnectionExceptionHandler;
         }
 
-        public ScriptDebugger(bool overrideExecutionPolicy, IPowershellDebuggingService service)
-            : this()
+        internal ScriptDebugger(bool overrideExecutionPolicy, IPowershellDebuggingService debuggingServiceTestHook)
         {
             OverrideExecutionPolicy = overrideExecutionPolicy;
-            _debuggingServiceTest = service;
+            _debuggingServiceTest = debuggingServiceTestHook;
             DebuggingService.SetRunspace(overrideExecutionPolicy);
+
+            //TODO: remove once user prompt work is finished for debugging
+            _runspace = RunspaceFactory.CreateRunspace();
+            _runspace.Open();
+            HostUi = new HostUi();
         }
 
         public HostUi HostUi { get; private set; }

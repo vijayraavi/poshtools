@@ -33,8 +33,13 @@ namespace PowerShellTools.Common
         public const string PSCredentialFullTypeName = "system.management.automation.pscredential";
 
         /// <summary>
+        /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell debug mode.
+        /// </summary>
+        public const string PowerShellDebuggingUiContextString = "A185A958-AD74-44E5-B343-1B6682DAB132";
+
+        /// <summary>
         /// This is the GUID of the Visual Studio UI Context when in PowerShell debug mode.
         /// </summary>
-        public const string PowerShellDebuggingUiContext = "A185A958-AD74-44E5-B343-1B6682DAB132";
+        public static readonly Guid PowerShellDebuggingUiContextGuid = new Guid(PowerShellDebuggingUiContextString);
     }
 }

@@ -9,6 +9,8 @@ using System.Threading;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.DebugEngine.Definitions;
 using Task = System.Threading.Tasks.Task;
@@ -54,6 +56,10 @@ namespace PowerShellTools.DebugEngine
         public ScriptDebugger Debugger { get { return PowerShellToolsPackage.Debugger; } }
 
         private IEnumerable<PendingBreakpoint> _pendingBreakpoints;
+
+        private IVsMonitorSelection _monitorSelectionService;
+        private uint _uiContextCookie;
+
         public IEnumerable<PendingBreakpoint> PendingBreakpoints
         {
             get { return _pendingBreakpoints; }
@@ -70,6 +76,15 @@ namespace PowerShellTools.DebugEngine
         public Engine()
         {
             _runspaceSet = new ManualResetEvent(false);
+
+            _monitorSelectionService = PowerShellToolsPackage.GetGlobalService(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
+
+            if (_monitorSelectionService != null)
+            {
+                Guid contextGuid = PowerShellTools.Common.Constants.PowerShellDebuggingUiContextGuid;
+
+                _monitorSelectionService.GetCmdUIContextCookie(contextGuid, out _uiContextCookie);
+            }
         }
         /// <summary>
         /// Initiates the execute of the debug engine.
@@ -213,6 +228,10 @@ namespace PowerShellTools.DebugEngine
         /// <param name="e"></param>
         private void Debugger_DebuggingBegin(object sender, EventArgs e)
         {
+            if (_monitorSelectionService != null)
+            {
+                _monitorSelectionService.SetCmdUIContext(_uiContextCookie, 1);  // 1 for 'active'
+            }
         }
 
         /// <summary>
@@ -224,6 +243,11 @@ namespace PowerShellTools.DebugEngine
         {
             bps.Clear();
             _events.ProgramDestroyed(_node);
+
+            if (_monitorSelectionService != null)
+            {
+                _monitorSelectionService.SetCmdUIContext(_uiContextCookie, 0);  // 0 for 'inactive'
+            }
         }
 
         /// <summary>
@@ -299,7 +323,6 @@ namespace PowerShellTools.DebugEngine
         {
             return VSConstants.S_OK;
         }
-
 
         // Creates a pending breakpoint in the engine. A pending breakpoint is contains all the information needed to bind a breakpoint to 
         // a location in the debuggee.
@@ -488,7 +511,6 @@ namespace PowerShellTools.DebugEngine
         #endregion
 
         #region Deprecated interface methods
-
 
         int IDebugEngine2.EnumPrograms(out IEnumDebugPrograms2 programs)
         {
