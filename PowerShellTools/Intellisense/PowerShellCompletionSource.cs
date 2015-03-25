@@ -174,14 +174,21 @@ namespace PowerShellTools.Intellisense
                 return;
             }
 
-            bool _isFullyMatched = completion.InsertionText.Equals(InitialApplicableTo + text, StringComparison.OrdinalIgnoreCase);
+            bool isFullyMatched = completion.InsertionText.Equals(InitialApplicableTo + text, StringComparison.OrdinalIgnoreCase);
 
             var propertiesCollection = FilterSpan.TextBuffer.Properties;
             if (propertiesCollection.ContainsProperty(BufferProperties.SessionCompletionFullyMatchedStatus))
             {
                 propertiesCollection.RemoveProperty(BufferProperties.SessionCompletionFullyMatchedStatus);
             }
-            propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, _isFullyMatched);
+            propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, isFullyMatched);
+
+            bool isVariableTrigger = InitialApplicableTo == null ? false : InitialApplicableTo[0] == '$';
+            if (propertiesCollection.ContainsProperty(BufferProperties.VariableCompletion))
+            {
+                propertiesCollection.RemoveProperty(BufferProperties.VariableCompletion);
+            }
+            propertiesCollection.AddProperty(BufferProperties.VariableCompletion, isVariableTrigger);
 
             SelectionStatus = new CompletionSelectionStatus(completion, true, true);
         }
