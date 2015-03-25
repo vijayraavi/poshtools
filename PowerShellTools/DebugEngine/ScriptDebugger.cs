@@ -137,6 +137,7 @@ namespace PowerShellTools.DebugEngine
                 Log.Debug("Waiting for debuggee to resume.");
                 
                 IsDebuggingCommandReady = true;
+                RefreshPrompt();
             }
         }
 

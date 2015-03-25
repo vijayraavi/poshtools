@@ -128,19 +128,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 output.DataAdded += objects_DataAdded;
                 DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
 
-                var pobj = output.FirstOrDefault();
-                
-                if (pobj != null && pobj.BaseObject is LineBreakpoint)
-                {
-                    LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
-                    if (bp != null)
-                    {
-                        _psBreakpointTable.Add(
-                            new PowershellBreakpointRecord(
-                                new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
-                                bp.Id));
-                    }
-                }
+                ProcessDebuggingCommandResults(output);
 
                 if (results.ResumeAction != null)
                 {
@@ -151,6 +139,27 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 // Notify the debugging command execution call that debugging command was complete.
                 _debugCommandEvent.Set();
+            }
+        }
+
+        private void ProcessDebuggingCommandResults(PSDataCollection<PSObject> output)
+        {
+            var pobj = output.FirstOrDefault();
+
+            if (pobj != null && pobj.BaseObject is string)
+            {
+                _debugCommandOutput = (string)pobj.BaseObject;
+            }
+            else if (pobj != null && pobj.BaseObject is LineBreakpoint)
+            {
+                LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
+                if (bp != null)
+                {
+                    _psBreakpointTable.Add(
+                        new PowershellBreakpointRecord(
+                            new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
+                            bp.Id));
+                }
             }
         }
 

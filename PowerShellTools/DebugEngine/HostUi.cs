@@ -126,7 +126,17 @@ namespace PowerShellTools.DebugEngine
             {
                 if (DebuggingService != null)
                 {
-                    return DebuggingService.GetPrompt();
+                    string prompt;
+                    if (IsDebuggingCommandReady)
+                    {
+                        prompt = DebuggingService.ExecuteDebuggingCommand(DebugEngineConstants.GetPrompt);
+                    }
+                    else
+                    {
+                        prompt = DebuggingService.GetPrompt();
+                    }
+
+                    return prompt;
                 }
 
                 return string.Empty;

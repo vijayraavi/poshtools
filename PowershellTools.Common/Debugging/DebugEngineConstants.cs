@@ -117,5 +117,6 @@ param (
         public const string DisablePSBreakpoint = "Disable-PSBreakpoint -Id {0}";
         public const string EnablePSBreakpoint = "Enable-PSBreakpoint -Id {0}";
         public const string RemovePSBreakpoint = "Remove-PSBreakpoint -Id {0}";
+        public const string GetPrompt = "prompt";
     }
 }
