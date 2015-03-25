@@ -50,6 +50,11 @@ namespace PowerShellTools.DebugEngine
         public event EventHandler DebuggingFinished;
 
         /// <summary>
+        /// Event is fired when the debugger has began.
+        /// </summary>
+        public event EventHandler DebuggingBegin;
+
+        /// <summary>
         /// Event is fired when a terminating exception is thrown.
         /// </summary>
         public event EventHandler<EventArgs<Exception>> TerminatingException;
@@ -87,7 +92,7 @@ namespace PowerShellTools.DebugEngine
         public BreakpointManager BreakpointManager { get; set; }
 
         public string DebuggingCommand { get; set; }
-      
+
         #region Debugging service event handlers
 
         /// <summary>
@@ -158,6 +163,14 @@ namespace PowerShellTools.DebugEngine
             {
                 DebuggingFinished(this, new EventArgs());
                 _stoppingCompleteEvent.Set();
+            }
+        }
+
+        public void DebuggerBegin()
+        {
+            if (DebuggingBegin != null)
+            {
+                DebuggingBegin(this, EventArgs.Empty);
             }
         }
 
