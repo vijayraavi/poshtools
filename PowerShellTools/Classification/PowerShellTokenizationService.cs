@@ -275,6 +275,7 @@ namespace PowerShellTools.Classification
         public const string LineUpToReplacementSpan = "LineUpToReplacementSpan";
         public const string SessionOriginIntellisense = "SessionOrigin_Intellisense";
         public const string SessionCompletionFullyMatchedStatus = "SessionCompletionFullyMatchedStatus";
+        public const string VariableCompletion = "VariableCompletion";
     }
 
     public interface INotifyTagsChanged

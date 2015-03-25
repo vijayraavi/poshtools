@@ -1,5 +1,3 @@
-#region Usings
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,18 +6,15 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.Threading;
-using EnvDTE80;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.DebugEngine.Definitions;
 using Task = System.Threading.Tasks.Task;
 using Thread = System.Threading.Thread;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-
-#endregion
 
 namespace PowerShellTools.DebugEngine
 {
@@ -51,7 +46,9 @@ namespace PowerShellTools.DebugEngine
 
         private List<ScriptBreakpoint> bps = new List<ScriptBreakpoint>();
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof (Engine));
+        private bool _initializingRunspace;
+
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Engine));
 
         #endregion
 
@@ -59,10 +56,16 @@ namespace PowerShellTools.DebugEngine
         public ScriptDebugger Debugger { get { return PowerShellToolsPackage.Debugger; } }
 
         private IEnumerable<PendingBreakpoint> _pendingBreakpoints;
+
+        private IVsMonitorSelection _monitorSelectionService;
+        private uint _uiContextCookie;
+
         public IEnumerable<PendingBreakpoint> PendingBreakpoints
         {
             get { return _pendingBreakpoints; }
-            set { _pendingBreakpoints = value;
+            set
+            {
+                _pendingBreakpoints = value;
                 _runspaceSet.Set();
             }
         }
@@ -73,6 +76,15 @@ namespace PowerShellTools.DebugEngine
         public Engine()
         {
             _runspaceSet = new ManualResetEvent(false);
+
+            _monitorSelectionService = PowerShellToolsPackage.GetGlobalService(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
+
+            if (_monitorSelectionService != null)
+            {
+                Guid contextGuid = PowerShellTools.Common.Constants.PowerShellDebuggingUiContextGuid;
+
+                _monitorSelectionService.GetCmdUIContextCookie(contextGuid, out _uiContextCookie);
+            }
         }
         /// <summary>
         /// Initiates the execute of the debug engine.
@@ -99,6 +111,7 @@ namespace PowerShellTools.DebugEngine
             Debugger.HostUi.OutputString = _events.OutputString;
             Debugger.OutputString += Debugger_OutputString;
             Debugger.BreakpointManager.BreakpointHit += Debugger_BreakpointHit;
+            Debugger.DebuggingBegin += Debugger_DebuggingBegin;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
             Debugger.BreakpointManager.BreakpointUpdated += Debugger_BreakpointUpdated;
             Debugger.DebuggerPaused += Debugger_DebuggerPaused;
@@ -107,6 +120,7 @@ namespace PowerShellTools.DebugEngine
 
             if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
             {
+                Debugger.DebuggerBegin();
                 Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);
 
                 Debugger.Execute(_node);
@@ -174,6 +188,19 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
+        /// This event handler reports to Visual Studio that the debugger has begun
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Debugger_DebuggingBegin(object sender, EventArgs e)
+        {
+            if (_monitorSelectionService != null)
+            {
+                _monitorSelectionService.SetCmdUIContext(_uiContextCookie, 1);  // 1 for 'active'
+            }
+        }
+
+        /// <summary>
         /// This event handler reports to Visual Studio that the debugger has finished and destroys the program.
         /// </summary>
         /// <param name="sender"></param>
@@ -182,6 +209,11 @@ namespace PowerShellTools.DebugEngine
         {
             bps.Clear();
             _events.ProgramDestroyed(_node);
+
+            if (_monitorSelectionService != null)
+            {
+                _monitorSelectionService.SetCmdUIContext(_uiContextCookie, 0);  // 0 for 'inactive'
+            }
         }
 
         /// <summary>
@@ -225,7 +257,7 @@ namespace PowerShellTools.DebugEngine
 
             _node.Id = id;
 
-            var publisher = (IDebugProgramPublisher2) new DebugProgramPublisher();
+            var publisher = (IDebugProgramPublisher2)new DebugProgramPublisher();
             publisher.PublishProgramNode(_node);
 
             _events = new EngineEvents(this, pCallback);
@@ -258,7 +290,6 @@ namespace PowerShellTools.DebugEngine
             return VSConstants.S_OK;
         }
 
-
         // Creates a pending breakpoint in the engine. A pending breakpoint is contains all the information needed to bind a breakpoint to 
         // a location in the debuggee.
         int IDebugEngine2.CreatePendingBreakpoint(IDebugBreakpointRequest2 pBPRequest,
@@ -273,7 +304,7 @@ namespace PowerShellTools.DebugEngine
             if (pBPRequest.GetRequestInfo(enum_BPREQI_FIELDS.BPREQI_BPLOCATION, info) == VSConstants.S_OK)
             {
                 var position = (IDebugDocumentPosition2)Marshal.GetObjectForIUnknown(info[0].bpLocation.unionmember2);
-                var start = new TEXT_POSITION[1]; 
+                var start = new TEXT_POSITION[1];
                 var end = new TEXT_POSITION[1];
                 string fileName;
 
@@ -283,9 +314,9 @@ namespace PowerShellTools.DebugEngine
                 //VS has a 0 based line\column value. PowerShell starts at 1
                 var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events);
                 ppPendingBP = breakpoint;
-                
+
                 _events.BreakpointAdded(breakpoint);
-                
+
                 bps.Add(breakpoint);
             }
 
@@ -389,7 +420,6 @@ namespace PowerShellTools.DebugEngine
                 _node.FileName = pszExe;
                 _node.Arguments = pszArgs;
             }
-            
 
             _events = new EngineEvents(this, pCallback);
 
@@ -448,7 +478,6 @@ namespace PowerShellTools.DebugEngine
         #endregion
 
         #region Deprecated interface methods
-
 
         int IDebugEngine2.EnumPrograms(out IEnumDebugPrograms2 programs)
         {

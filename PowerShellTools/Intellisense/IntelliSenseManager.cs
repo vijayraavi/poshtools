@@ -79,60 +79,84 @@ namespace PowerShellTools.Intellisense
                 Log.DebugFormat("Non-TypeChar command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
             }
 
-            //check for a commit character 
-            if (nCmdId == (uint)VSConstants.VSStd2KCmdID.RETURN
-                || nCmdId == (uint)VSConstants.VSStd2KCmdID.TAB
-                || (char.IsWhiteSpace(typedChar)))
+            switch(nCmdId)
             {
-                //check for a a selection 
-                if (_activeSession != null && !_activeSession.IsDismissed)
-                {
-                    //if the selection is fully selected, commit the current session 
-                    if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+                case (uint)VSConstants.VSStd2KCmdID.RETURN:
+                case (uint)VSConstants.VSStd2KCmdID.TAB:
+                    //check for a a selection 
+                    if (_activeSession != null && !_activeSession.IsDismissed)
                     {
-                        Log.Debug("Commit");
-                        _activeSession.Commit();
-
-                        bool isCompletionFullyMatched = false;
-                        _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.SessionCompletionFullyMatchedStatus, out isCompletionFullyMatched);
-
-                        if (isCompletionFullyMatched && char.IsWhiteSpace(typedChar))
+                        //if the selection is fully selected, commit the current session 
+                        if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
                         {
-                            // If user types all characters in a completion and click Space, then we should commit the selection and add the Space into text buffer
-                            return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
-                        }
+                            Log.Debug("Commit");
+                            _activeSession.Commit();
 
-                        //also, don't add the character to the buffer 
+                            //also, don't add the character to the buffer 
+                            return VSConstants.S_OK;
+                        }
+                        else
+                        {
+                            Log.Debug("Dismiss");
+                            //if there is no selection, dismiss the session
+                            _activeSession.Dismiss();
+                        }
+                    }
+                    else if (nCmdId == (uint)VSConstants.VSStd2KCmdID.TAB && _isRepl)
+                    {
+                        TriggerCompletion();
                         return VSConstants.S_OK;
+                    }
+                    break;
+
+                case (uint)VSConstants.VSStd2KCmdID.COMPLETEWORD:
+                    if (_activeSession != null && !_activeSession.IsDismissed)
+                    {
+                        if (_activeSession.CompletionSets[0].SelectionStatus.IsSelected)
+                        {
+                            _activeSession.Commit();
+                        }
                     }
                     else
                     {
+                        TriggerCompletion();
+                    }
+                    return VSConstants.S_OK;
+                default:
+                    break;
+                    
+            }
+
+            //check for a commit character 
+            if (char.IsWhiteSpace(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
+            {
+                bool isVariableCompletion = false;
+                _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.VariableCompletion, out isVariableCompletion);
+
+                // If user is typing a variable, SPACE shouldn't commit the selection. 
+                // Otherwise, if the selection is fully selected, commit the current session. 
+                if (!isVariableCompletion && _activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+                {
+                    Log.Debug("Commit");
+                    _activeSession.Commit();
+
+                    bool isCompletionFullyMatched = false;
+                    _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.SessionCompletionFullyMatchedStatus, out isCompletionFullyMatched);
+                    if (isCompletionFullyMatched)
+                    {
+                        // If user types all characters in a completion and click Space, then we should commit the selection and add the Space into text buffer.
+                        return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                    }
+
+                    //Don't add the character to the buffer if this commits the selection.
+                    return VSConstants.S_OK;
+                }
+                else
+                {
                     Log.Debug("Dismiss");
                     //if there is no selection, dismiss the session
                     _activeSession.Dismiss();
                 }
-                }
-                else if (nCmdId == (uint)VSConstants.VSStd2KCmdID.TAB && _isRepl)
-                {
-                    TriggerCompletion();
-                    return VSConstants.S_OK;
-                }
-            }
-            // check for Ctrl-Space usage
-            if (commandId == (uint)VSConstants.VSStd2KCmdID.COMPLETEWORD)
-            {
-                if (_activeSession != null && !_activeSession.IsDismissed)
-                {
-                    if (_activeSession.CompletionSets[0].SelectionStatus.IsSelected)
-                    {
-                        _activeSession.Commit();
-                    }
-                }
-                else
-                {
-                    TriggerCompletion();
-                }
-                return VSConstants.S_OK;
             }
 
             // Check the char at caret before pass along the command
