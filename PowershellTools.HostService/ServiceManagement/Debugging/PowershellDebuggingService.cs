@@ -19,6 +19,7 @@ using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System.Text.RegularExpressions;
 using PowerShellTools.Common.Debugging;
 using System.Diagnostics;
+using PowerShellTools.Common.IntelliSense;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -279,11 +280,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         /// Get runspace availability
         /// </summary>
+        /// <param name="executionPriority">Within execution priority, runspace will try to kill existing low priority task to free up runspace</param>
         /// <returns>runspace availability enum</returns>
-        public RunspaceAvailability GetRunspaceAvailability()
+        public RunspaceAvailability GetRunspaceAvailability(bool executionPriority)
         {
+            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available &&
+                executionPriority &&
+                CommandCompletionHelper.CurrentPowershell != null)
+            {
+                CommandCompletionHelper.CurrentPowershell.Stop();
+            }
+
             RunspaceAvailability state = _runspace.RunspaceAvailability;
             ServiceCommon.Log("Checking runspace availability: " + state.ToString());
+
             return state;
         }
 

@@ -1,3 +1,14 @@
+using log4net;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Language.Intellisense;
+using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
+using PowerShellTools.Classification;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
+using PowerShellTools.Repl;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,17 +17,7 @@ using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
-using log4net;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Language.Intellisense;
-using Microsoft.VisualStudio.OLE.Interop;
-using PowerShellTools.Repl;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Editor;
-using PowerShellTools.Classification;
-using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
+using Tasks = System.Threading.Tasks;
 
 namespace PowerShellTools.Intellisense
 {
@@ -34,6 +35,13 @@ namespace PowerShellTools.Intellisense
         private static readonly ILog Log = LogManager.GetLogger(typeof(IntelliSenseManager));
         private readonly bool _isRepl;
         private bool _intellisenseRunning;
+        private int _replacementIndexOffset;
+        private IVsStatusbar _statusBar;
+        private ITextSnapshotLine _completionLine;
+        private int _completionCaretInLine;
+        private string _completionText;
+        private int _completionCaretPosition;
+        private Stopwatch _sw;
 
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView)
         {
@@ -42,6 +50,7 @@ namespace PowerShellTools.Intellisense
             _textView = textView;
             _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
+            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
         }
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
@@ -255,15 +264,15 @@ namespace PowerShellTools.Intellisense
         /// </summary>
         private void TriggerCompletion()
         {
-            var caretPosition = (int)_textView.Caret.Position.BufferPosition;
-            var thread = new Thread(() =>
+            _completionCaretPosition = (int)_textView.Caret.Position.BufferPosition;
+            Tasks.Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
-                    var caretInLine = (caretPosition - line.Start);
-                    var text = line.GetText().Substring(0, caretInLine);
-                    StartIntelliSense(line.Start, caretPosition, text);
+                    _completionLine = _textView.Caret.Position.BufferPosition.GetContainingLine();
+                    _completionCaretInLine = (_completionCaretPosition - _completionLine.Start);
+                    _completionText = _completionLine.GetText().Substring(0, _completionCaretInLine);
+                    StartIntelliSense(_completionLine.Start, _completionCaretPosition, _completionText);
                 }
                 catch (Exception ex)
                 {
@@ -272,26 +281,26 @@ namespace PowerShellTools.Intellisense
                 }
 
             });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
         }
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
         {
+            string triggerTime = DateTime.UtcNow.ToString();
+
             if (_intellisenseRunning)
             {
                 return;
             } 
 
             _intellisenseRunning = true;
-            var statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
-            if (statusBar != null) statusBar.SetText("Running IntelliSense...");
-            var sw = new Stopwatch();
-            sw.Start();
 
-            IList<CompletionResult> completionMatchesList;
-            int completionReplacementIndex;
-            int completionReplacementLength;
+            if (_statusBar != null)
+            {
+                _statusBar.SetText("Running IntelliSense...");
+            }
+
+            _sw = new Stopwatch();
+            _sw.Start();
 
             // Procedures for correctly supporting IntelliSense in REPL window.
             // Step 1, determine if this is REPL windows IntelliSense. If no, continue with normal IntelliSense triggering process. Otherwise, continue with the following steps.            
@@ -301,7 +310,7 @@ namespace PowerShellTools.Intellisense
             // Step 5, from this point on, make sure we go back to the original text buffer and caret position so that we can show the completion window in the right place.
             string script = String.Empty;
             int scriptParsePosition = 0;
-            int replacementIndexOffset = 0; // This index offset is to caculate the existing text length minus the powershell code users are editing of Repl window.
+            _replacementIndexOffset = 0; // This index offset is to caculate the existing text length minus the powershell code users are editing of Repl window.
             if (_textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
             {
                 script = _textView.TextBuffer.CurrentSnapshot.GetText();
@@ -318,7 +327,7 @@ namespace PowerShellTools.Intellisense
                 scriptParsePosition = currentBufferPoint.Value.Position;
                 script = currentActiveReplBuffer.CurrentSnapshot.GetText();
 
-                replacementIndexOffset = _textView.TextBuffer.CurrentSnapshot.GetText().Length - script.Length;
+                _replacementIndexOffset = _textView.TextBuffer.CurrentSnapshot.GetText().Length - script.Length;
             }
             else
             {
@@ -327,7 +336,16 @@ namespace PowerShellTools.Intellisense
             }
 
             // Go out-of-proc here to get the completion list
-            var commandCompletion = PowerShellToolsPackage.IntelliSenseService.GetCompletionResults(script, scriptParsePosition);
+            PowerShellToolsPackage.IntelliSenseService.RequestCompletionResults(script, scriptParsePosition, triggerTime);
+            
+        }
+
+        public void ProcessCommandCompletion(CompletionResultList commandCompletion)
+        {
+            IList<CompletionResult> completionMatchesList;
+            int completionReplacementIndex;
+            int completionReplacementLength;
+
             if (commandCompletion == null)
             {
                 return;
@@ -339,23 +357,23 @@ namespace PowerShellTools.Intellisense
                                                                  item.ToolTip)).ToList();
 
             completionReplacementLength = commandCompletion.ReplacementLength;
-            completionReplacementIndex = commandCompletion.ReplacementIndex + replacementIndexOffset;
+            completionReplacementIndex = commandCompletion.ReplacementIndex + _replacementIndexOffset;
 
             var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
-            var caretInLine = (caretPosition - line.Start);
+            var caretInLine = (_completionCaretPosition - line.Start);
             var text = line.GetText().Substring(0, caretInLine);
 
-            if (string.Equals(lineTextUpToCaret, text, StringComparison.Ordinal) && completionMatchesList.Count != 0)
+            if (string.Equals(_completionText, text, StringComparison.Ordinal) && completionMatchesList.Count != 0)
             {
                 if (completionMatchesList.Count != 0)
                 {
                     try
                     {
                         IntellisenseDone(completionMatchesList,
-                                        lineStartPosition,
+                                        _completionLine.Start,
                                         completionReplacementIndex,
                                         completionReplacementLength,
-                                        caretPosition);
+                                        _completionCaretPosition);
                     }
                     catch (Exception ex)
                     {
@@ -364,7 +382,10 @@ namespace PowerShellTools.Intellisense
                 }
             }
 
-            if (statusBar != null) statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", sw.Elapsed.TotalSeconds));
+            if (_statusBar != null)
+            {
+                _statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", _sw.Elapsed.TotalSeconds));
+            }
             _intellisenseRunning = false;
         }
 
@@ -420,6 +441,7 @@ namespace PowerShellTools.Intellisense
             Log.Debug("Session Dismissed.");
             _activeSession.Dismissed -= CompletionSession_Dismissed;
             _activeSession = null;
+            _intellisenseRunning = false;
         }
 
         private static bool SpanArgumentsAreValid(ITextSnapshot snapshot, int start, int length)

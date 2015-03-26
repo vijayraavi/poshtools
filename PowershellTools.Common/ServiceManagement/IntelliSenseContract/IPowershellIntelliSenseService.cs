@@ -9,7 +9,7 @@ namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
     public interface IPowershellIntelliSenseService
     {
         [OperationContract]
-        CompletionResultList GetCompletionResults(string scriptUpToCaret, int carePosition);
+        void RequestCompletionResults(string scriptUpToCaret, int carePosition, string triggerTimeStamp);
 
         [OperationContract]
         ParseErrorItem[] GetParseErrors(string spanText);
