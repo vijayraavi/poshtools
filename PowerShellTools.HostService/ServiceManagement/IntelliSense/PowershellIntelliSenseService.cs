@@ -22,7 +22,7 @@ namespace PowerShellTools.HostService.ServiceManagement
 
         private event EventHandler _requestChanged;
 
-        protected virtual void OnRequestChanged()
+        protected void OnRequestChanged()
         {
             if (_requestChanged != null)
             {
@@ -48,11 +48,11 @@ namespace PowerShellTools.HostService.ServiceManagement
 
         public PowershellIntelliSenseService()
         {
-            this._requestChanged += PowershellIntelliSenseService__requestChanged;
+            this._requestChanged += PowershellIntelliSenseService_requestChanged;
         }
 
 
-        void PowershellIntelliSenseService__requestChanged(object sender, EventArgs e)
+        void PowershellIntelliSenseService_requestChanged(object sender, EventArgs e)
         {
             System.Threading.Thread.Sleep(10000);
             var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);

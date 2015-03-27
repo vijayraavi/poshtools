@@ -51,7 +51,9 @@ namespace PowerShellTools.Intellisense
             _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
             _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
+            _completionListUpdated += IntelliSenseManager_CompletionListUpdated;
         }
+
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
             return NextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
@@ -337,11 +339,12 @@ namespace PowerShellTools.Intellisense
 
             // Go out-of-proc here to get the completion list
             PowerShellToolsPackage.IntelliSenseService.RequestCompletionResults(script, scriptParsePosition, triggerTime);
-            
         }
 
-        public void ProcessCommandCompletion(CompletionResultList commandCompletion)
+        void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList> e)
         {
+            var commandCompletion = e.Value;
+
             IList<CompletionResult> completionMatchesList;
             int completionReplacementIndex;
             int completionReplacementLength;
@@ -470,5 +473,15 @@ namespace PowerShellTools.Intellisense
             Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':' || ch == '\\';
         }        
+    }
+
+    public class EventArgs<T> : EventArgs
+    {
+        public EventArgs(T value)
+        {
+            Value = value;
+        }
+
+        public T Value { get; private set; }
     }
 }

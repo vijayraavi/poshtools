@@ -297,6 +297,7 @@
     <Compile Include="Intellisense\AutoCompletionController.cs" />
     <Compile Include="Intellisense\IntellisenseController.cs" />
     <Compile Include="Intellisense\IntellisenseControllerProvider.cs" />
+    <Compile Include="Intellisense\IntelliSenseEventsHandlerProxy.cs" />
     <Compile Include="Intellisense\IntelliSenseManager.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSource.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSourceProvider.cs" />
