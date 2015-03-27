@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Moq;
 using PowerShellTools.Intellisense;
+using PowerShellTools.Repl;
 
 namespace PowerShellTools.Test.IntelliSense
 {
@@ -25,7 +26,8 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedScript = @"MyFunc";
             _mockedCaret = 6;
 
-            autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '(');
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '(');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
             Assert.AreEqual<string>(@"MyFunc()", _mockedScript);
             Assert.AreEqual<int>(7, _mockedCaret);
         }
@@ -39,7 +41,8 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedScript = @"MyFunc";
             _mockedCaret = 6;
 
-            autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
             Assert.AreEqual<string>(@"MyFunc""""", _mockedScript);
             Assert.AreEqual<int>(7, _mockedCaret);
         }
@@ -53,7 +56,8 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedScript = @"MyFunc[]";
             _mockedCaret = 7;
 
-            autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
             Assert.AreEqual<string>(@"MyFunc[]", _mockedScript);
             Assert.AreEqual<int>(_mockedCaret, 8);
         }
@@ -67,9 +71,32 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedScript = @"MyFunc""""";
             _mockedCaret = 7;
 
-            autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
             Assert.AreEqual<string>(@"MyFunc""""", _mockedScript);
             Assert.AreEqual<int>(_mockedCaret, 8);
+        }
+
+        [TestMethod]
+        public void ShouldMoveToRightByTypingCharsAndCompletedQuotes()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc""""";
+            _mockedCaret = 7;
+
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, 'a');
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+
+            actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, 'b');
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+
+            actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, 'c');
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+
+            actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
         }
 
         [TestMethod]
@@ -81,7 +108,8 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedScript = @"MyFunc()";
             _mockedCaret = 7;
 
-            autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
             Assert.AreEqual<string>(@"MyFunc("""")", _mockedScript);
             Assert.AreEqual<int>(_mockedCaret, 8);
         }
@@ -96,16 +124,133 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedCaret = 7;
 
             int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, ')');
+            Assert.AreEqual<string>(@"MyFunc()", _mockedScript);
+            Assert.AreEqual<int>(7, _mockedCaret);
             Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
         }
 
-        private void TestCompleteBraceOrQuotesHelper(string initialMockedScript, int initialMockedCaret, bool isLastCmdAutoComplete, uint nCmdID, IntPtr pvaIn)
+        [TestMethod]
+        public void ShouldNotProcessReturnKeyWhenInRepl()
+        {
+            var autoCompletionController = FakeAutoCompletionController(ReplConstants.ReplContentTypeName);
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc()";
+            _mockedCaret = 7;
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.RETURN);
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+        }
+
+        [TestMethod]
+        public void ShouldProcessReturnKeyWhenInPowershellCode()
         {
             var autoCompletionController = FakeAutoCompletionController();
-            _mockedScript = initialMockedScript;
-            _mockedCaret = initialMockedCaret;
-            autoCompletionController.SetAutoCompleteState(isLastCmdAutoComplete);
-            //autoCompletionController.ProcessKeystroke(nCmdID, pvaIn);
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc{}";
+            _mockedCaret = 7;
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.RETURN);
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>("MyFunc{\r\n  \r\n}", _mockedScript);
+            Assert.AreEqual<int>(11, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldNotProcessReturnKeyWhenLastCmdIsNotAutoComplete()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(false);
+
+            _mockedScript = @"MyFunc{}";
+            _mockedCaret = 7;
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.RETURN);
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+            Assert.AreEqual<string>(@"MyFunc{}", _mockedScript);
+            Assert.AreEqual<int>(7, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldNotProcessReturnKeyWhenCursorNotInCurlyBraces()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc()";
+            _mockedCaret = 7;
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.RETURN);
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+            Assert.AreEqual<string>(@"MyFunc()", _mockedScript);
+            Assert.AreEqual<int>(7, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldNotProcessBackspaceKeyWhenInRepl()
+        {
+            var autoCompletionController = FakeAutoCompletionController(ReplConstants.ReplContentTypeName);
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc()";
+            _mockedCaret = 7;
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.BACKSPACE);
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+            Assert.AreEqual<string>(@"MyFunc()", _mockedScript);
+            Assert.AreEqual<int>(7, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldNotDoBackspaceWhenLastCmdIsNotAutoComplete()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(false);
+
+            _mockedScript = @"MyFunc()";
+            _mockedCaret = 7;
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.BACKSPACE);
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+            Assert.AreEqual<string>(@"MyFunc()", _mockedScript);
+            Assert.AreEqual<int>(7, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldNotDoBackspaceWhenNotInMiddleOfPairedBracesOrQuotes()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc(";
+            _mockedCaret = 7;
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.BACKSPACE);
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+            Assert.AreEqual<string>(@"MyFunc(", _mockedScript);
+            Assert.AreEqual<int>(7, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldProcessBackspaceWhenBackspaceRightAfterAutoCompleteBraces()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc()";
+            _mockedCaret = 7;
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.BACKSPACE);
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc", _mockedScript);
+            Assert.AreEqual<int>(6, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldProcessBackspaceWhenBackspaceRightAfterAutoCompleteQuotes()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc""""";
+            _mockedCaret = 7;
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.BACKSPACE);
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc", _mockedScript);
+            Assert.AreEqual<int>(6, _mockedCaret);
         }
 
         private AutoCompletionController FakeAutoCompletionController(string contentType = PowerShellConstants.LanguageName)
@@ -118,9 +263,7 @@ namespace PowerShellTools.Test.IntelliSense
                                                                                              editorOperations.Object,
                                                                                              textUndoHistory.Object,
                                                                                              serviceProvider.Object);
-
             return autoCompletionController;
-
         }
 
         private Mock<ITextView> TextViewMock(string contentType)
@@ -129,7 +272,7 @@ namespace PowerShellTools.Test.IntelliSense
             textView.Setup(m => m.TextSnapshot.Length)
                     .Returns(() => _mockedScript.Length);
             textView.Setup(m => m.Caret)
-                    .Returns(() => 
+                    .Returns(() =>
                                 {
                                     var textSnapshot = new Mock<ITextSnapshot>();
                                     textSnapshot.Setup(m => m.Length)
@@ -138,9 +281,9 @@ namespace PowerShellTools.Test.IntelliSense
                                     var virtualSnapshotPoint = new VirtualSnapshotPoint(snapshotPoint);
                                     var caretPosition = new CaretPosition(virtualSnapshotPoint, (new Mock<IMappingPoint>()).Object, PositionAffinity.Successor);
 
-                                     Mock<ITextCaret> textCaret = new Mock<ITextCaret>();
-                                     textCaret.SetupGet(m => m.Position)
-                                              .Returns(caretPosition);
+                                    Mock<ITextCaret> textCaret = new Mock<ITextCaret>();
+                                    textCaret.SetupGet(m => m.Position)
+                                             .Returns(caretPosition);
                                     return textCaret.Object;
                                 });
             textView.Setup(m => m.TextBuffer.ContentType.TypeName)
@@ -172,7 +315,14 @@ namespace PowerShellTools.Test.IntelliSense
                                                     _mockedScript = _mockedScript.Insert(_mockedCaret, p);
                                                     _mockedCaret++;
                                                 });
-            
+
+            // {|} --> {|
+            editorOperations.Setup(m => m.Delete())
+                            .Callback(() =>
+                                        {
+                                            _mockedScript = _mockedScript.Remove(_mockedCaret, 1);
+                                        });
+
             // {}| --> {|}  
             editorOperations.Setup(m => m.MoveToPreviousCharacter(false))
                             .Callback(() =>
@@ -186,7 +336,7 @@ namespace PowerShellTools.Test.IntelliSense
                                         {
                                             _mockedCaret++;
                                         });
-            
+
             // {|} --> {\r\n|}
             editorOperations.Setup(m => m.InsertNewLine())
                             .Callback(() =>
@@ -197,9 +347,9 @@ namespace PowerShellTools.Test.IntelliSense
 
             // {\r\n|} --> {|\r\n}
             editorOperations.Setup(m => m.MoveLineUp(false))
-                            .Callback(() => 
+                            .Callback(() =>
                                         {
-                                            _mockedCaret -= Environment.NewLine.Length;
+                                            _mockedCaret = _mockedScript.Substring(0, _mockedCaret).LastIndexOf(Environment.NewLine);
                                         });
 
             editorOperations.Setup(m => m.MoveToEndOfLine(false))
@@ -223,14 +373,17 @@ namespace PowerShellTools.Test.IntelliSense
         {
             Mock<ITextUndoHistory> textUndoHistory = new Mock<ITextUndoHistory>();
             textUndoHistory.Setup(m => m.CreateTransaction(It.IsAny<string>()))
-                           .Returns(() => 
+                           .Returns(() =>
                                         {
                                             Mock<ITextUndoTransaction> textUndoTransactioin = new Mock<ITextUndoTransaction>();
                                             textUndoTransactioin.Setup(m => m.Complete()).Callback(() => { });
                                             return textUndoTransactioin.Object;
                                         });
             textUndoHistory.Setup(m => m.Undo(It.IsAny<int>()))
-                           .Callback<int>(p => { });
+                           .Callback<int>(p =>
+                                            {
+                                                _mockedScript = _mockedScript.Remove(--_mockedCaret, 2);
+                                            });
             return textUndoHistory;
         }
     }
