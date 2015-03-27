@@ -54,7 +54,7 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedCaret = 7;
 
             autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
-            Assert.AreEqual<string>(_mockedScript, @"MyFunc[]");
+            Assert.AreEqual<string>(@"MyFunc[]", _mockedScript);
             Assert.AreEqual<int>(_mockedCaret, 8);
         }
 
@@ -68,7 +68,7 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedCaret = 7;
 
             autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
-            Assert.AreEqual<string>(_mockedScript, @"MyFunc""""");
+            Assert.AreEqual<string>(@"MyFunc""""", _mockedScript);
             Assert.AreEqual<int>(_mockedCaret, 8);
         }
 
@@ -82,8 +82,21 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedCaret = 7;
 
             autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
-            Assert.AreEqual<string>(_mockedScript, @"MyFunc("""")");
+            Assert.AreEqual<string>(@"MyFunc("""")", _mockedScript);
             Assert.AreEqual<int>(_mockedCaret, 8);
+        }
+
+        [TestMethod]
+        public void ShouldNotAddCloseBraceToBufferWhenLastCmdIsNotAutoComplete()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(false);
+
+            _mockedScript = @"MyFunc()";
+            _mockedCaret = 7;
+
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, ')');
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
         }
 
         private void TestCompleteBraceOrQuotesHelper(string initialMockedScript, int initialMockedCaret, bool isLastCmdAutoComplete, uint nCmdID, IntPtr pvaIn)
