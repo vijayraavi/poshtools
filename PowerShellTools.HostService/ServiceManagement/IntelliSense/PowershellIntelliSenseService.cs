@@ -6,6 +6,7 @@ using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.HostService.ServiceManagement.Debugging;
 using System.Collections.ObjectModel;
 using System;
+using System.ServiceModel;
 
 namespace PowerShellTools.HostService.ServiceManagement
 {
@@ -19,6 +20,7 @@ namespace PowerShellTools.HostService.ServiceManagement
         private string _requestBulletin;
         private string _script;
         private int _caretPosition;
+        private IIntelliSenseServiceCallback _callback;
 
         private event EventHandler _requestChanged;
 
@@ -55,8 +57,15 @@ namespace PowerShellTools.HostService.ServiceManagement
         void PowershellIntelliSenseService_requestChanged(object sender, EventArgs e)
         {
             System.Threading.Thread.Sleep(10000);
+            
+            // Retrieve callback context
+            if (_callback == null)
+            {
+                _callback = OperationContext.Current.GetCallbackChannel<IIntelliSenseServiceCallback>();
+            }
+
             var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
-            CompletionResultList.FromCommandCompletion(commandCompletion);
+            _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
         }
 
         #region IAutoCompletionService Members

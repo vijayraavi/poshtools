@@ -30,6 +30,7 @@ using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 using Threading = System.Threading.Tasks;
+using PowerShellTools.Intellisense;
 
 namespace PowerShellTools
 {
@@ -99,6 +100,7 @@ EnableCommenting = true)]
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
         private Lazy<PowerShellService> _powershellService;
         private static ScriptDebugger _debugger;
+        private IntelliSenseEventsHandlerProxy _intelliSenseServiceContext;
 
         /// <summary>
         /// Default constructor of the package.
@@ -159,6 +161,14 @@ EnableCommenting = true)]
             }
         }
 
+        public IntelliSenseEventsHandlerProxy IntelliSenseServiceContext
+        {
+            get
+            {
+                return _intelliSenseServiceContext;
+            }
+        }
+
         internal DependencyValidator DependencyValidator { get; set; }
 
         public new object GetService(Type type)
@@ -199,6 +209,8 @@ EnableCommenting = true)]
 
         private void InitializeInternal()
         {
+            _intelliSenseServiceContext = new IntelliSenseEventsHandlerProxy();
+
             var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
 
             if (page.EnableDiagnosticLogging)

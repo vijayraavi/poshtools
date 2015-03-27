@@ -5,7 +5,7 @@ namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
     /// <summary>
     /// Powershell service.
     /// </summary>
-    [ServiceContract]
+    [ServiceContract(CallbackContract = typeof(IIntelliSenseServiceCallback))]
     public interface IPowershellIntelliSenseService
     {
         [OperationContract]

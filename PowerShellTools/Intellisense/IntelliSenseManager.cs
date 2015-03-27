@@ -43,7 +43,7 @@ namespace PowerShellTools.Intellisense
         private int _completionCaretPosition;
         private Stopwatch _sw;
 
-        public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView)
+        public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContet)
         {
             _broker = broker;
             NextCommandHandler = commandHandler;
@@ -51,7 +51,7 @@ namespace PowerShellTools.Intellisense
             _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
             _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
-            _completionListUpdated += IntelliSenseManager_CompletionListUpdated;
+            callbackContet.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
         }
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
