@@ -69,8 +69,8 @@ public sealed class ClsidAttribute : Attribute
     {
         get
         {
-            var ass = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            return Path.Combine(ass, Assembly + ".dll");
+            var assemblyLoc = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            return Path.Combine(assemblyLoc, Assembly + ".dll");
 
         }
 
