@@ -60,17 +60,26 @@ namespace PowerShellTools.Intellisense
 
         public int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
-            if (VsShellUtilities.IsInAutomationFunction(_serviceProvider))
+            if (VsShellUtilities.IsInAutomationFunction(_serviceProvider)
+                || pguidCmdGroup != VSConstants.VSStd2K
+                || !_textView.Selection.IsEmpty 
+                || IsInCommentArea()) 
             {
+                // Auto completion shouldn't take effect when
+                // 1. In automation function
+                // 2. The cmd group is not fit
+                // 3. There is text selection.
+                // 4. In comment blocks or line.
                 return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             }
 
-            if (pguidCmdGroup != VSConstants.VSStd2K)
-            {
-                return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+            char typedChar = Char.MinValue;
+            if (nCmdID == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
+            {                
+                typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
             }
 
-            return ProcessKeystroke(nCmdID, pvaIn) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+            return ProcessKeystroke(nCmdID, typedChar) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
         }
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
@@ -80,19 +89,11 @@ namespace PowerShellTools.Intellisense
 
         #endregion
 
-        private int ProcessKeystroke(uint nCmdID, IntPtr pvaIn)
-        {            
-            if (!_textView.Selection.IsEmpty || IsInCommentArea())
-            {
-                // Auto completion won't take effect when there is text selection.
-                return VSConstants.S_FALSE;
-            }
-
+        internal int ProcessKeystroke(uint nCmdID, char typedChar = Char.MinValue)
+        { 
             switch (nCmdID)
             {
                 case (uint)VSConstants.VSStd2KCmdID.TYPECHAR:
-                    var typedChar = Char.MinValue;
-                    typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
 
                     // If we processed the typed left brace/quotes, no need to pass along the command as the char is already added to the buffer.
                     if (IsQuotes(typedChar))
@@ -117,16 +118,13 @@ namespace PowerShellTools.Intellisense
                         SetAutoCompleteState(true);
                         return VSConstants.S_OK;
                     }
-                    else if (IsRightBraceOrQuotes(typedChar))
+                    else if (IsRightBraceOrQuotes(typedChar) && ProcessTypedRightBraceOrQuotes(typedChar))
                     {
-                        if (ProcessTypedRightBraceOrQuotes(typedChar))
-                        {
-                            // If this right brace/quotes is typed right after typing left brace/quotes,
-                            // we just move the caret to the right side of the right brace/quotes and return.
-                            // This means we will not add the typed right brace/quotes to the text buffer.
-                            SetAutoCompleteState(false);
-                            return VSConstants.S_OK;
-                        }
+                        // If this right brace/quotes is typed right after typing left brace/quotes,
+                        // we just move the caret to the right side of the right brace/quotes and return.
+                        // This means we will not add the typed right brace/quotes to the text buffer.
+                        SetAutoCompleteState(false);
+                        return VSConstants.S_OK;
                     }
                     break;
                 case (uint)VSConstants.VSStd2KCmdID.RETURN:
@@ -177,6 +175,12 @@ namespace PowerShellTools.Intellisense
             return VSConstants.S_FALSE;
         }
 
+        internal void SetAutoCompleteState(bool isAutoComplete)
+        {
+            _isLastCmdAutoComplete = isAutoComplete;
+
+        }
+
         private bool IsInCommentArea()
         {
             int caretPosition = _textView.Caret.Position.BufferPosition.Position;
@@ -204,7 +208,7 @@ namespace PowerShellTools.Intellisense
         /// Complete the left brace/quotes with matched brace/quotes
         /// </summary>
         /// <param name="leftBraceOrQuotes">The left brace/quotes to be completed.</param>
-        internal void CompleteBraceOrQuotes(char leftBraceOrQuotes)
+        private void CompleteBraceOrQuotes(char leftBraceOrQuotes)
         {
             var typedCharToString = leftBraceOrQuotes.ToString();
 
@@ -268,12 +272,6 @@ namespace PowerShellTools.Intellisense
                 _undoHistory.Undo(1);
             }
             return isBackspaceKeyProcessed;
-        }
-
-        private void SetAutoCompleteState(bool isAutoComplete)
-        {
-            _isLastCmdAutoComplete = isAutoComplete;
-            
         }
 
         private bool IsCaretInMiddleOfPairedBraceOrQuotes()
