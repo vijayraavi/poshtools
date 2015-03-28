@@ -56,7 +56,7 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedScript = @"MyFunc[]";
             _mockedCaret = 7;
 
-            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.TYPECHAR, ']');
             Assert.AreEqual<int>(VSConstants.S_OK, actual);
             Assert.AreEqual<string>(@"MyFunc[]", _mockedScript);
             Assert.AreEqual<int>(_mockedCaret, 8);
