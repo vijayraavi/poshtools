@@ -183,7 +183,8 @@ namespace PowerShellTools.Intellisense
             }
             propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, isFullyMatched);
 
-            bool isVariableTrigger = InitialApplicableTo == null ? false : InitialApplicableTo[0] == '$';
+            System.Diagnostics.Debug.Print("InitialApplicableTo : {0}", InitialApplicableTo);
+            bool isVariableTrigger = InitialApplicableTo.Length == 0 ? false : InitialApplicableTo[0] == '$';
             if (propertiesCollection.ContainsProperty(BufferProperties.VariableCompletion))
             {
                 propertiesCollection.RemoveProperty(BufferProperties.VariableCompletion);
