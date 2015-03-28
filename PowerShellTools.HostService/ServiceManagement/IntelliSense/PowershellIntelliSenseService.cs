@@ -7,6 +7,7 @@ using PowerShellTools.HostService.ServiceManagement.Debugging;
 using System.Collections.ObjectModel;
 using System;
 using System.ServiceModel;
+using System.Threading.Tasks;
 
 namespace PowerShellTools.HostService.ServiceManagement
 {
@@ -17,57 +18,50 @@ namespace PowerShellTools.HostService.ServiceManagement
     public sealed class PowershellIntelliSenseService : IPowershellIntelliSenseService
     {
         private readonly Runspace _runspace = PowershellDebuggingService.Runspace;
-        private string _requestBulletin;
+        private string _requestTrigger = string.Empty;
         private string _script;
         private int _caretPosition;
         private IIntelliSenseServiceCallback _callback;
 
-        private event EventHandler _requestChanged;
-
-        protected void OnRequestChanged()
-        {
-            if (_requestChanged != null)
-            {
-                _requestChanged(this, EventArgs.Empty);
-            }
-        }
-
-        public string RequestBulletin
+        public string RequestTrigger
         {
             get
             {
-                return _requestBulletin;
+                return _requestTrigger;
             }
-
             set
             {
                 //#3
-                _requestBulletin = value;
-                OnRequestChanged();
+                _requestTrigger = value;
+                
+                if (_callback == null)
+                {
+                    _callback = OperationContext.Current.GetCallbackChannel<IIntelliSenseServiceCallback>();
+                }
+
+                Task.Run(() =>
+                    {
+                        try
+                        {
+                            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
+                            ServiceCommon.Log("start intellisense: " + _script + _caretPosition.ToString());
+                            ServiceCommon.Log("CommandCompletion: " + commandCompletion == null ? "null commandcompletion" : commandCompletion.CompletionMatches.Count.ToString());
+                            if (commandCompletion != null && commandCompletion.CompletionMatches.Count() > 0)
+                            {
+                                ServiceCommon.LogCallbackEvent("Callback intellisense: " + _script + _caretPosition.ToString());
+                                _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
+                            }
+                            _requestTrigger = string.Empty;
+                        }
+                        catch (Exception ex)
+                        {
+ 
+                        }
+                    });
             }
         }
 
-
-        public PowershellIntelliSenseService()
-        {
-            this._requestChanged += PowershellIntelliSenseService_requestChanged;
-        }
-
-
-        void PowershellIntelliSenseService_requestChanged(object sender, EventArgs e)
-        {
-            System.Threading.Thread.Sleep(10000);
-            
-            // Retrieve callback context
-            if (_callback == null)
-            {
-                _callback = OperationContext.Current.GetCallbackChannel<IIntelliSenseServiceCallback>();
-            }
-
-            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
-            _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
-        }
-
+        
         #region IAutoCompletionService Members
 
         /// <summary>
@@ -79,12 +73,15 @@ namespace PowerShellTools.HostService.ServiceManagement
         public void RequestCompletionResults(string script, int caretPosition, string timeStamp)
         {
             DateTime w = Convert.ToDateTime(timeStamp);
-            DateTime r = Convert.ToDateTime(RequestBulletin);
-            if (DateTime.Compare(w, r) >= 0)
+            ServiceCommon.Log("Request coming: " + _script + _caretPosition.ToString());
+            if (_requestTrigger == string.Empty ||
+                DateTime.Compare(w, Convert.ToDateTime(RequestTrigger)) >= 0)
             {
+                ServiceCommon.Log("Procesing request: " + _script + _caretPosition.ToString());
                 _script = script;
                 _caretPosition = caretPosition;
-                RequestBulletin = timeStamp;
+                DismissGetCompletionResults();
+                RequestTrigger = timeStamp;
             }
         }
 
@@ -100,11 +97,18 @@ namespace PowerShellTools.HostService.ServiceManagement
         }
 
         /// <summary>
-        /// Dismiss the current completion request
+        /// Dismiss the current running completion request
         /// </summary>
-        public void DismissGetCompletionResults()
+        private void DismissGetCompletionResults()
         {
-            CommandCompletionHelper.CurrentPowershell.Stop();
+            try
+            {
+                CommandCompletionHelper.DismissCommandCompletionListRequest();
+            }
+            catch (Exception ex)
+            {
+ 
+            }
         }
 
         #endregion

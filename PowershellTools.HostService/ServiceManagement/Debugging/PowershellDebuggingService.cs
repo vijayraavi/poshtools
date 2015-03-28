@@ -288,7 +288,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 executionPriority &&
                 CommandCompletionHelper.CurrentPowershell != null)
             {
-                CommandCompletionHelper.CurrentPowershell.Stop();
+                CommandCompletionHelper.DismissCommandCompletionListRequest();
             }
 
             RunspaceAvailability state = _runspace.RunspaceAvailability;

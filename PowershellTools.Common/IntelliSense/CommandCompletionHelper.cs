@@ -15,6 +15,7 @@ namespace PowerShellTools.Common.IntelliSense
     {
         public static PowerShell CurrentPowershell;
         public static bool _stoppable;
+        public static object _lock = new object();
 
         /// <summary>
         /// Completion lists calculator.
@@ -41,15 +42,27 @@ namespace PowerShellTools.Common.IntelliSense
                 using (CurrentPowershell = PowerShell.Create())
                 {
                     CurrentPowershell.Runspace = runspace;
+                    //CurrentPowershell.AddCommand("sleep").AddParameter("Seconds", 100);
+                    //CurrentPowershell.Invoke();
                     commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, CurrentPowershell);
-
-                    CurrentPowershell.AddCommand("sleep").AddParameter("Seconds", 100);
-
-                    CurrentPowershell.Invoke();
                 }
             }
 
             return commandCompletion;
+        }
+
+        /// <summary>
+        /// Dismiss the current running completion request
+        /// </summary>
+        public static void DismissCommandCompletionListRequest()
+        {
+            lock (_lock)
+            {
+                if (CurrentPowershell != null)
+                {
+                    CurrentPowershell.Stop();
+                }
+            }
         }
 
         /// <summary>
