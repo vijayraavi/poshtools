@@ -41,6 +41,8 @@ namespace PowerShellTools.Diagnostics
                 SetLoggingLevel("ALL");
 
                 Log.Info("Initializing Diagnostics.");
+
+                _initialized = true;
             }
         }
 

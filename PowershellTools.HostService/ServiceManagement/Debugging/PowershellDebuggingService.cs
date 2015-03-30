@@ -32,7 +32,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private string _debuggingCommand;
         private IEnumerable<PSObject> _varaiables;
         private IEnumerable<PSObject> _callstack;
-        private string log;
         private Collection<PSVariable> _localVariables;
         private Dictionary<string, Object> _propVariables;
         private Dictionary<string, string> _mapLocalToRemote;
@@ -86,7 +85,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         #region Debugging service calls
 
         /// <summary>
-        /// Initialize of powershell runspace
+        /// Initialization of the PowerShell runspace
         /// </summary>
         public void SetRunspace(bool overrideExecutionPolicy)
         {
@@ -295,8 +294,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             Debug.Assert(_runspace.RunspaceAvailability == RunspaceAvailability.Available, Resources.Error_PipelineBusy);
 
-            ServiceCommon.Log("Start executing ps script ...");         
-            
+            ServiceCommon.Log("Start executing ps script ...");
+
             try
             {
                 _pausedEvent.Reset();
@@ -329,20 +328,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         ServiceCommon.Log(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile);
 
                         return false;
-                    }
-                }
-
-                // only do this when we are working with a local runspace
-                if (_runspace.ConnectionInfo == null)
-                {
-                    // Preset dte as PS variable if not yet
-                    if (_runspace.SessionStateProxy.PSVariable.Get("dte") == null)
-                    {
-                        DTE2 dte = DTEManager.GetDTE(Program.VsProcessId);
-                        if (dte != null)
-                        {
-                            _runspace.SessionStateProxy.PSVariable.Set("dte", dte);
-                        }
                     }
                 }
 
