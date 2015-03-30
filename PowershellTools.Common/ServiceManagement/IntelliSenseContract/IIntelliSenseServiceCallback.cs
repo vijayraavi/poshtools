@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
 {
-    interface IIntelliSenseServiceCallback
+    public interface IIntelliSenseServiceCallback
     {
         [OperationContract(IsOneWay = true)]
         void PushCompletionResult(CompletionResultList completionResultList);

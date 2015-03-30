@@ -309,7 +309,6 @@ namespace PowerShellTools.Intellisense
             // Step 2, map the caret position in current REPL window text buffer to the one in current POWERSHELL text buffer.
             // Step 3, get the current POWERSHELL text.
             // Step 4, get the command completion results using the script text from Step 3 and the mapped caret position from Step 2.
-            // Step 5, from this point on, make sure we go back to the original text buffer and caret position so that we can show the completion window in the right place.
             string script = String.Empty;
             int scriptParsePosition = 0;
             _replacementIndexOffset = 0; // This index offset is to caculate the existing text length minus the powershell code users are editing of Repl window.
@@ -341,7 +340,12 @@ namespace PowerShellTools.Intellisense
             PowerShellToolsPackage.IntelliSenseService.RequestCompletionResults(script, scriptParsePosition, triggerTime);
         }
 
-        void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList> e)
+        /// <summary>
+        /// Go back to the original text buffer and caret position so that we can show the completion window in the right place.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList> e)
         {
             Log.Debug("Got new intellisense completion list");
 

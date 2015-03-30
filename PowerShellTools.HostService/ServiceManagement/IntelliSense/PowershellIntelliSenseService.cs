@@ -44,13 +44,16 @@ namespace PowerShellTools.HostService.ServiceManagement
                         try
                         {
                             var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
-                            ServiceCommon.Log("start intellisense: " + _script + _caretPosition.ToString());
+                            
+                            ServiceCommon.Log("Getting completion list: " + _script + _caretPosition.ToString());
                             ServiceCommon.Log("CommandCompletion: " + commandCompletion == null ? "null commandcompletion" : commandCompletion.CompletionMatches.Count.ToString());
+                            
                             if (commandCompletion != null && commandCompletion.CompletionMatches.Count() > 0)
                             {
                                 ServiceCommon.LogCallbackEvent("Callback intellisense: " + _script + _caretPosition.ToString());
                                 _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
                             }
+
                             _requestTrigger = string.Empty;
                         }
                         catch (Exception ex)
@@ -61,7 +64,14 @@ namespace PowerShellTools.HostService.ServiceManagement
             }
         }
 
-        
+        public PowershellIntelliSenseService() { }
+
+        public PowershellIntelliSenseService(IIntelliSenseServiceCallback callback)
+            :this()
+        {
+            _callback = callback;
+        }
+
         #region IAutoCompletionService Members
 
         /// <summary>
