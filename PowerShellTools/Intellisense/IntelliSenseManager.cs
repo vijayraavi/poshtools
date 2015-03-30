@@ -34,7 +34,6 @@ namespace PowerShellTools.Intellisense
         private readonly SVsServiceProvider _serviceProvider;
         private static readonly ILog Log = LogManager.GetLogger(typeof(IntelliSenseManager));
         private readonly bool _isRepl;
-        private bool _intellisenseRunning;
         private int _replacementIndexOffset;
         private IVsStatusbar _statusBar;
         private ITextSnapshotLine _completionLine;
@@ -267,29 +266,30 @@ namespace PowerShellTools.Intellisense
         private void TriggerCompletion()
         {
             _completionCaretPosition = (int)_textView.Caret.Position.BufferPosition;
-            Tasks.Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    _completionLine = _textView.Caret.Position.BufferPosition.GetContainingLine();
-                    _completionCaretInLine = (_completionCaretPosition - _completionLine.Start);
-                    _completionText = _completionLine.GetText().Substring(0, _completionCaretInLine);
-                    StartIntelliSense(_completionLine.Start, _completionCaretPosition, _completionText);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warn("Failed to start IntelliSense", ex);
-                    _intellisenseRunning = false;
-                }
 
-            });
+            var thread = new Thread(() =>
+                {
+                    try
+                    {
+                        _completionLine = _textView.Caret.Position.BufferPosition.GetContainingLine();
+                        _completionCaretInLine = (_completionCaretPosition - _completionLine.Start);
+                        _completionText = _completionLine.GetText().Substring(0, _completionCaretInLine);
+                        StartIntelliSense(_completionLine.Start, _completionCaretPosition, _completionText);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warn("Failed to start IntelliSense", ex);
+                    }
+                });
+
+            // Need to be run in STA to avoid multi-threading synchronization issue
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
         }
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
         {
             string triggerTime = DateTime.UtcNow.ToString();
-
-            _intellisenseRunning = true;
 
             if (_statusBar != null)
             {
@@ -343,59 +343,66 @@ namespace PowerShellTools.Intellisense
         /// <param name="e">Completion list</param>
         private void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList> e)
         {
-            Log.Debug("Got new intellisense completion list");
-
-            var commandCompletion = e.Value;
-
-            IList<CompletionResult> completionMatchesList;
-            int completionReplacementIndex;
-            int completionReplacementLength;
-
-            if (commandCompletion == null)
+            try
             {
-                return;
-            }
-            completionMatchesList = (from item in commandCompletion.CompletionMatches
-                                     select new CompletionResult(item.CompletionText,
-                                                                 item.ListItemText,
-                                                                 (CompletionResultType)item.ResultType,
-                                                                 item.ToolTip)).ToList();
+                Log.Debug("Got new intellisense completion list");
 
-            completionReplacementLength = commandCompletion.ReplacementLength;
-            completionReplacementIndex = commandCompletion.ReplacementIndex + _replacementIndexOffset;
+                var commandCompletion = e.Value;
 
-            var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
-            var caretInLine = (_completionCaretPosition - line.Start);
+                IList<CompletionResult> completionMatchesList;
+                int completionReplacementIndex;
+                int completionReplacementLength;
 
-            int curCaretInLine = Math.Min(caretInLine, line.GetText().Length);
-            var text = line.GetText().Substring(0, curCaretInLine);
-
-            if (string.Equals(_completionText, text, StringComparison.Ordinal) && completionMatchesList.Count != 0)
-            {
-                Log.Debug("Matched with existing caret position, updating intellisense UI");
-                if (completionMatchesList.Count != 0)
+                if (commandCompletion == null)
                 {
-                    try
+                    return;
+                }
+                completionMatchesList = (from item in commandCompletion.CompletionMatches
+                                         select new CompletionResult(item.CompletionText,
+                                                                     item.ListItemText,
+                                                                     (CompletionResultType)item.ResultType,
+                                                                     item.ToolTip)).ToList();
+
+                completionReplacementLength = commandCompletion.ReplacementLength;
+                completionReplacementIndex = commandCompletion.ReplacementIndex + _replacementIndexOffset;
+
+                var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
+                var caretInLine = (_completionCaretPosition - line.Start);
+
+                int curCaretInLine = Math.Min(caretInLine, line.GetText().Length);
+                var text = line.GetText().Substring(0, curCaretInLine);
+                Log.Debug("Matching with existing caret position," + _completionCaretPosition.ToString());
+                if (string.Equals(_completionText, text, StringComparison.Ordinal) && completionMatchesList.Count != 0)
+                {
+                    Log.Debug("Matched with existing caret position, updating intellisense UI");
+                    if (completionMatchesList.Count != 0)
                     {
-                        IntellisenseDone(completionMatchesList,
-                                        _completionLine.Start,
-                                        completionReplacementIndex,
-                                        completionReplacementLength,
-                                        _completionCaretPosition);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Debug("Failed to start IntelliSense.", ex);
+                        try
+                        {
+                            IntellisenseDone(completionMatchesList,
+                                            _completionLine.Start,
+                                            completionReplacementIndex,
+                                            completionReplacementLength,
+                                            _completionCaretPosition);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Debug("Failed to start IntelliSense.", ex);
+                        }
                     }
                 }
-            }
 
-            if (_statusBar != null)
-            {
-                _statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", _sw.Elapsed.TotalSeconds));
+                if (_statusBar != null)
+                {
+                    _statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", _sw.Elapsed.TotalSeconds));
+                }
+
+                Log.Debug("Finishing process intellisense completion list!");
             }
-            _intellisenseRunning = false;
-            Log.Debug("Finishing process intellisense completion list!");
+            catch (Exception ex)
+            {
+                Log.Debug("Failed to process completion results.", ex);
+            }
         }
 
         private void IntellisenseDone(IList<CompletionResult> completionResults, int lineStartPosition, int replacementIndex, int replacementLength, int startCaretPosition)
@@ -409,7 +416,23 @@ namespace PowerShellTools.Intellisense
             var lastWordReplacementSpan = textBuffer.CurrentSnapshot.CreateTrackingSpan(replacementIndex, replacementLength, SpanTrackingMode.EdgeInclusive);
             var lineUpToReplacementSpan = textBuffer.CurrentSnapshot.CreateTrackingSpan(lineStartPosition, length, SpanTrackingMode.EdgeExclusive);
 
-            var triggerPoint = textBuffer.CurrentSnapshot.CreateTrackingPoint(startCaretPosition, PointTrackingMode.Positive);            
+            var triggerPoint = textBuffer.CurrentSnapshot.CreateTrackingPoint(startCaretPosition, PointTrackingMode.Positive);
+
+            if (textBuffer.Properties.ContainsProperty(typeof(IList<CompletionResult>)))
+            {
+                textBuffer.Properties.RemoveProperty(typeof(IList<CompletionResult>));
+            }
+
+            if (textBuffer.Properties.ContainsProperty(BufferProperties.LastWordReplacementSpan))
+            {
+                textBuffer.Properties.RemoveProperty(BufferProperties.LastWordReplacementSpan);
+            }
+
+            if (textBuffer.Properties.ContainsProperty(BufferProperties.LineUpToReplacementSpan))
+            {
+                textBuffer.Properties.RemoveProperty(BufferProperties.LineUpToReplacementSpan);
+            }
+            
             textBuffer.Properties.AddProperty(typeof(IList<CompletionResult>), completionResults);
             textBuffer.Properties.AddProperty(BufferProperties.LastWordReplacementSpan, lastWordReplacementSpan);
             textBuffer.Properties.AddProperty(BufferProperties.LineUpToReplacementSpan, lineUpToReplacementSpan);
@@ -424,10 +447,6 @@ namespace PowerShellTools.Intellisense
             {
                 Application.Current.Dispatcher.Invoke(() => StartSession(triggerPoint));
             }
-
-            textBuffer.Properties.RemoveProperty(typeof(IList<CompletionResult>));
-            textBuffer.Properties.RemoveProperty(BufferProperties.LastWordReplacementSpan);
-            textBuffer.Properties.RemoveProperty(BufferProperties.LineUpToReplacementSpan);
         }
 
         private void StartSession(ITrackingPoint triggerPoint)
@@ -450,7 +469,6 @@ namespace PowerShellTools.Intellisense
             Log.Debug("Session Dismissed.");
             _activeSession.Dismissed -= CompletionSession_Dismissed;
             _activeSession = null;
-            _intellisenseRunning = false;
         }
 
         private static bool SpanArgumentsAreValid(ITextSnapshot snapshot, int start, int length)

@@ -49,11 +49,11 @@ namespace PowerShellTools.HostService.ServiceManagement
                         {
                             var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
                             
-                            ServiceCommon.Log("Getting completion list: " + _script + _caretPosition.ToString());
+                            ServiceCommon.Log("Getting completion list at position {0}", _caretPosition);
                               
                             if (commandCompletion != null && commandCompletion.CompletionMatches.Count() > 0)
                             {
-                                ServiceCommon.LogCallbackEvent("Callback intellisense at: " + _script + _caretPosition.ToString());
+                                ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", _caretPosition);
                                 _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
                             }
 
@@ -98,12 +98,12 @@ namespace PowerShellTools.HostService.ServiceManagement
         {
             DateTime w = Convert.ToDateTime(timeStamp); // waiting request time tag
 
-            ServiceCommon.Log("Intellisense request received, script: {0}, caret position: {1}", _script, _caretPosition.ToString());
+            ServiceCommon.Log("Intellisense request received, caret position: {1}", _caretPosition.ToString());
 
             if (_requestTrigger == string.Empty ||
                 DateTime.Compare(w, Convert.ToDateTime(RequestTrigger)) >= 0)
             {
-                ServiceCommon.Log("Procesing request, script: {0}, caret position: {1}", _script, _caretPosition.ToString());
+                ServiceCommon.Log("Procesing request, caret position: {0}", _caretPosition.ToString());
                 _script = script;
                 _caretPosition = caretPosition;
                 DismissGetCompletionResults();
