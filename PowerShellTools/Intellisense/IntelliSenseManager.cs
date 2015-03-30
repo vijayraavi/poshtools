@@ -157,6 +157,22 @@ namespace PowerShellTools.Intellisense
                 }
             }
 
+            if (IsBothIntelliSenseTriggerAndCommitChar(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
+            {
+                //if the selection is fully selected, commit the current session but don't return. Instead, let it continues to trigger IntelliSense  
+                if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+                {
+                    Log.Debug("Commit");
+                    _activeSession.Commit();
+                }
+                else
+                {
+                    Log.Debug("Dismiss");
+                    //if there is no selection, dismiss the session
+                    _activeSession.Dismiss();
+                }
+            }
+
             // Check the char at caret before pass along the command
             // If command is backspace and completion session is active, then we need to see if the char to be deleted is an IntelliSense triggering char
             // If yes, then after deleting the char, we also dismiss the completion session
@@ -469,6 +485,12 @@ namespace PowerShellTools.Intellisense
         {
             Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':' || ch == '\\';
-        }        
+        }
+        
+        private static bool IsBothIntelliSenseTriggerAndCommitChar(char ch)
+        {
+            Log.DebugFormat("IsBothIntelliSenseTriggerAndCommitChar: [{0}]", ch);
+            return ch == '.';
+        }
     }
 }
