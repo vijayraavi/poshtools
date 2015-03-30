@@ -94,44 +94,37 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void DebuggerFinished()
         {
-            try
+            ServiceCommon.Log("DebuggerFinished");
+
+            _psBreakpointTable.Clear();
+
+            if (_callback != null)
             {
-                ServiceCommon.Log("DebuggerFinished");
-
-                _psBreakpointTable.Clear();
-
-                if (_callback != null)
-                {
-                    _callback.RefreshPrompt();
-                }
-
-                if (_runspace != null)
-                {
-                    _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                    _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                    _runspace.StateChanged -= _runspace_StateChanged;
-                }
-
-                if (_currentPowerShell != null)
-                {
-                    _currentPowerShell.Stop();
-                    _currentPowerShell = null;
-                }
-
-                ReleaseWaitHandler();
-
-                _debuggingCommand = string.Empty;
-                _localVariables.Clear();
-                _propVariables.Clear();
-
-                if (_callback != null)
-                {
-                    _callback.DebuggerFinished();
-                }
+                _callback.RefreshPrompt();
             }
-            catch (Exception ex)
+
+            if (_runspace != null)
             {
- 
+                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+                _runspace.StateChanged -= _runspace_StateChanged;
+            }
+
+            if (_currentPowerShell != null)
+            {
+                _currentPowerShell.Stop();
+                _currentPowerShell = null;
+            }
+
+            ReleaseWaitHandler();
+
+            _debuggingCommand = string.Empty;
+            _localVariables.Clear();
+            _propVariables.Clear();
+
+            if (_callback != null)
+            {
+                _callback.DebuggerFinished();
             }
         }
 
