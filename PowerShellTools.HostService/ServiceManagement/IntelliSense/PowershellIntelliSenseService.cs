@@ -55,7 +55,7 @@ namespace PowerShellTools.HostService.ServiceManagement
                         }
                         catch (Exception ex)
                         {
- 
+                            ServiceCommon.Log(ex.Message);
                         }
                     });
             }

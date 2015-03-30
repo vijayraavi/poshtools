@@ -343,67 +343,59 @@ namespace PowerShellTools.Intellisense
 
         void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList> e)
         {
-            try
+            Log.Debug("Got new intellisense completion list");
+
+            var commandCompletion = e.Value;
+
+            IList<CompletionResult> completionMatchesList;
+            int completionReplacementIndex;
+            int completionReplacementLength;
+
+            if (commandCompletion == null)
             {
-                Log.Debug("updating intellisense UI");
+                return;
+            }
+            completionMatchesList = (from item in commandCompletion.CompletionMatches
+                                     select new CompletionResult(item.CompletionText,
+                                                                 item.ListItemText,
+                                                                 (CompletionResultType)item.ResultType,
+                                                                 item.ToolTip)).ToList();
 
-                var commandCompletion = e.Value;
+            completionReplacementLength = commandCompletion.ReplacementLength;
+            completionReplacementIndex = commandCompletion.ReplacementIndex + _replacementIndexOffset;
 
-                IList<CompletionResult> completionMatchesList;
-                int completionReplacementIndex;
-                int completionReplacementLength;
+            var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
+            var caretInLine = (_completionCaretPosition - line.Start);
 
-                if (commandCompletion == null)
+            int curCaretInLine = Math.Min(caretInLine, line.GetText().Length);
+            var text = line.GetText().Substring(0, curCaretInLine);
+
+            if (string.Equals(_completionText, text, StringComparison.Ordinal) && completionMatchesList.Count != 0)
+            {
+                Log.Debug("Matched with existing caret position, updating intellisense UI");
+                if (completionMatchesList.Count != 0)
                 {
-                    return;
-                }
-                completionMatchesList = (from item in commandCompletion.CompletionMatches
-                                         select new CompletionResult(item.CompletionText,
-                                                                     item.ListItemText,
-                                                                     (CompletionResultType)item.ResultType,
-                                                                     item.ToolTip)).ToList();
-
-                completionReplacementLength = commandCompletion.ReplacementLength;
-                completionReplacementIndex = commandCompletion.ReplacementIndex + _replacementIndexOffset;
-
-                var line = _textView.Caret.Position.BufferPosition.GetContainingLine();
-                var caretInLine = (_completionCaretPosition - line.Start);
-                
-                int curCaretInLine = Math.Min(caretInLine, line.GetText().Length);
-                var text = line.GetText().Substring(0, curCaretInLine);
-
-                Log.Debug("updating intellisense UI: Matching!");
-                if (string.Equals(_completionText, text, StringComparison.Ordinal) && completionMatchesList.Count != 0)
-                {
-                    Log.Debug("updating intellisense UI: Matched!");
-                    if (completionMatchesList.Count != 0)
+                    try
                     {
-                        try
-                        {
-                            IntellisenseDone(completionMatchesList,
-                                            _completionLine.Start,
-                                            completionReplacementIndex,
-                                            completionReplacementLength,
-                                            _completionCaretPosition);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Debug("Failed to start IntelliSense.", ex);
-                        }
+                        IntellisenseDone(completionMatchesList,
+                                        _completionLine.Start,
+                                        completionReplacementIndex,
+                                        completionReplacementLength,
+                                        _completionCaretPosition);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Debug("Failed to start IntelliSense.", ex);
                     }
                 }
+            }
 
-                if (_statusBar != null)
-                {
-                    _statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", _sw.Elapsed.TotalSeconds));
-                }
-                _intellisenseRunning = false;
-                Log.Debug("updating intellisense UI: Exiting!");
-            }
-            catch (Exception ex)
+            if (_statusBar != null)
             {
-                Log.Debug(ex.Message + ex.StackTrace);
+                _statusBar.SetText(String.Format("IntelliSense complete in {0:0.00} seconds...", _sw.Elapsed.TotalSeconds));
             }
+            _intellisenseRunning = false;
+            Log.Debug("Finishing process intellisense completion list!");
         }
 
         private void IntellisenseDone(IList<CompletionResult> completionResults, int lineStartPosition, int replacementIndex, int replacementLength, int startCaretPosition)
