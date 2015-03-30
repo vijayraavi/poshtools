@@ -122,20 +122,18 @@ namespace PowerShellTools.Intellisense
                         TriggerCompletion();
                     }
                     return VSConstants.S_OK;
+
                 default:
-                    break;
-                    
+                    break;                    
             }
 
             //check for a commit character 
             if (char.IsWhiteSpace(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
             {
-                bool isVariableCompletion = false;
-                _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.VariableCompletion, out isVariableCompletion);
-
                 // If user is typing a variable, SPACE shouldn't commit the selection. 
-                // Otherwise, if the selection is fully selected, commit the current session. 
-                if (!isVariableCompletion && _activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+                // If the selection is fully matched with user's input, commit the current session and add the commit character to text buffer. 
+                if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected
+                    && !_activeSession.SelectedCompletionSet.SelectionStatus.Completion.InsertionText.StartsWith("$", StringComparison.InvariantCulture))
                 {
                     Log.Debug("Commit");
                     _activeSession.Commit();
