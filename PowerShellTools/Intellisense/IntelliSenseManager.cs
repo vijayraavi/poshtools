@@ -289,11 +289,6 @@ namespace PowerShellTools.Intellisense
         {
             string triggerTime = DateTime.UtcNow.ToString();
 
-            //if (_intellisenseRunning)
-            //{
-            //    return;
-            //} 
-
             _intellisenseRunning = true;
 
             if (_statusBar != null)
@@ -341,10 +336,11 @@ namespace PowerShellTools.Intellisense
         }
 
         /// <summary>
+        /// Post process the completion list got from powershell intellisense service
         /// Go back to the original text buffer and caret position so that we can show the completion window in the right place.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Intellisense service context</param>
+        /// <param name="e">Completion list</param>
         private void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList> e)
         {
             Log.Debug("Got new intellisense completion list");

@@ -42,8 +42,6 @@ namespace PowerShellTools.Common.IntelliSense
                 using (CurrentPowershell = PowerShell.Create())
                 {
                     CurrentPowershell.Runspace = runspace;
-                    //CurrentPowershell.AddCommand("sleep").AddParameter("Seconds", 100);
-                    //CurrentPowershell.Invoke();
                     commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, CurrentPowershell);
                 }
             }
