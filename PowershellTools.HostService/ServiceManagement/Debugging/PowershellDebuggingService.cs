@@ -24,7 +24,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
     [PowerShellServiceHostBehavior]
-    public partial class PowershellDebuggingService : IPowershellDebuggingService
+    public partial class PowerShellDebuggingService : IPowershellDebuggingService
     {
         private static Runspace _runspace;
         private PowerShell _currentPowerShell;
@@ -37,14 +37,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Dictionary<string, Object> _propVariables;
         private Dictionary<string, string> _mapLocalToRemote;
         private Dictionary<string, string> _mapRemoteToLocal;
-        private List<PowershellBreakpointRecord> _psBreakpointTable;
+        private List<PowerShellBreakpointRecord> _psBreakpointTable;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private readonly AutoResetEvent _debugCommandEvent = new AutoResetEvent(false);
         private object _executeDebugCommandLock = new object();
         private string _debugCommandOutput;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
 
-        public PowershellDebuggingService()
+        public PowerShellDebuggingService()
         {
             ServiceCommon.Log("Initializing debugging engine service ...");
             HostUi = new HostUi(this);
@@ -52,7 +52,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _propVariables = new Dictionary<string, object>();
             _mapLocalToRemote = new Dictionary<string, string>();
             _mapRemoteToLocal = new Dictionary<string, string>();
-            _psBreakpointTable = new List<PowershellBreakpointRecord>();
+            _psBreakpointTable = new List<PowerShellBreakpointRecord>();
             InitializeRunspace(this);
         }
 
@@ -151,7 +151,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 if (pobj != null)
                 {
                     _psBreakpointTable.Add(
-                        new PowershellBreakpointRecord(
+                        new PowerShellBreakpointRecord(
                             bp,
                             ((LineBreakpoint)pobj.BaseObject).Id));
                 }

@@ -138,7 +138,7 @@ namespace PowerShellTools.HostService
 
         private static void CreatePowershellDebuggingServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
-            _powershellDebuggingServiceHost = new ServiceHost(typeof(PowershellDebuggingService), baseAddress);
+            _powershellDebuggingServiceHost = new ServiceHost(typeof(PowerShellDebuggingService), baseAddress);
 
             _powershellDebuggingServiceHost.AddServiceEndpoint(typeof(IPowershellDebuggingService),
                 binding,

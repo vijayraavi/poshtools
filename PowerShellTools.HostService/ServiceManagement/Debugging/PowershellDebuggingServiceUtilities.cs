@@ -18,7 +18,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
     /// <summary>
     /// Utility functions for powershell debugging service
     /// </summary>
-    public partial class PowershellDebuggingService
+    public partial class PowerShellDebuggingService
     {
         private void SetRunspace(Runspace runspace)
         {

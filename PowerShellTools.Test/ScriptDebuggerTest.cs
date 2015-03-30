@@ -16,7 +16,7 @@ namespace PowerShellTools.Test
     {
         private ScriptDebugger _debugger;
         private Runspace _runspace;
-        private PowershellDebuggingService _debuggingService;
+        private PowerShellDebuggingService _debuggingService;
 
         [TestInitialize]
         public void Init()
@@ -24,7 +24,7 @@ namespace PowerShellTools.Test
             _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
             
-            _debuggingService = new PowershellDebuggingService();
+            _debuggingService = new PowerShellDebuggingService();
             _debugger = new ScriptDebugger(true, _debuggingService);
             _debugger.BreakpointManager = new BreakpointManager(_debugger);
             _debuggingService.CallbackService = new DebugServiceEventsHandlerProxy(_debugger); 
@@ -43,7 +43,7 @@ namespace PowerShellTools.Test
             _debuggingService.SetBreakpoint(new PowershellBreakpoint(".\\TestFile.ps1", 1, 0));
             _debugger.BreakpointManager.SetBreakpoints(new List<ScriptBreakpoint>());
 
-            using (var pipe = PowershellDebuggingService.Runspace.CreatePipeline())
+            using (var pipe = PowerShellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add("Get-PSBreakpoint");
                 var breakpoints = pipe.Invoke();
@@ -55,7 +55,7 @@ namespace PowerShellTools.Test
         [TestMethod]
         public void ShouldNotDieIfNoBreakpoints()
         {
-            using (var pipe = PowershellDebuggingService.Runspace.CreatePipeline())
+            using (var pipe = PowerShellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add("Get-PSBreakpoint");
                 var breakpoints = pipe.Invoke();
@@ -81,7 +81,7 @@ namespace PowerShellTools.Test
                 bp.Bind();
             }
 
-            using (var pipe = PowershellDebuggingService.Runspace.CreatePipeline())
+            using (var pipe = PowerShellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add("Get-PSBreakpoint");
                 var breakpoints = pipe.Invoke();
@@ -149,8 +149,8 @@ namespace PowerShellTools.Test
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            var arg1 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("Argument1");
-            var arg2 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("Argument2");
+            var arg1 = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("Argument1");
+            var arg2 = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("Argument2");
 
             Assert.AreEqual("Arg1", arg1);
             Assert.AreEqual("Arg2", arg2);
@@ -172,7 +172,7 @@ namespace PowerShellTools.Test
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            var myVariable = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("MyVariable");
+            var myVariable = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("MyVariable");
 
             Assert.AreEqual("Test", myVariable);
         }
