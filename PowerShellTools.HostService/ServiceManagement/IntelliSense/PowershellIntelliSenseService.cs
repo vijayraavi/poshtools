@@ -98,7 +98,7 @@ namespace PowerShellTools.HostService.ServiceManagement
         {
             DateTime w = Convert.ToDateTime(timeStamp); // waiting request time tag
 
-            ServiceCommon.Log("Intellisense request received, caret position: {1}", _caretPosition.ToString());
+            ServiceCommon.Log("Intellisense request received, caret position: {0}", _caretPosition.ToString());
 
             if (_requestTrigger == string.Empty ||
                 DateTime.Compare(w, Convert.ToDateTime(RequestTrigger)) >= 0)
