@@ -183,13 +183,6 @@ namespace PowerShellTools.Intellisense
             }
             propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, isFullyMatched);
 
-            bool isVariableTrigger = InitialApplicableTo == null ? false : InitialApplicableTo[0] == '$';
-            if (propertiesCollection.ContainsProperty(BufferProperties.VariableCompletion))
-            {
-                propertiesCollection.RemoveProperty(BufferProperties.VariableCompletion);
-            }
-            propertiesCollection.AddProperty(BufferProperties.VariableCompletion, isVariableTrigger);
-
             SelectionStatus = new CompletionSelectionStatus(completion, true, true);
         }
     }

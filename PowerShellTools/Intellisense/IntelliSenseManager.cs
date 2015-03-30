@@ -122,20 +122,18 @@ namespace PowerShellTools.Intellisense
                         TriggerCompletion();
                     }
                     return VSConstants.S_OK;
+
                 default:
-                    break;
-                    
+                    break;                    
             }
 
             //check for a commit character 
             if (char.IsWhiteSpace(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
             {
-                bool isVariableCompletion = false;
-                _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.VariableCompletion, out isVariableCompletion);
-
                 // If user is typing a variable, SPACE shouldn't commit the selection. 
-                // Otherwise, if the selection is fully selected, commit the current session. 
-                if (!isVariableCompletion && _activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+                // If the selection is fully matched with user's input, commit the current session and add the commit character to text buffer. 
+                if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected
+                    && !_activeSession.SelectedCompletionSet.SelectionStatus.Completion.InsertionText.StartsWith("$", StringComparison.InvariantCulture))
                 {
                     Log.Debug("Commit");
                     _activeSession.Commit();
@@ -150,6 +148,22 @@ namespace PowerShellTools.Intellisense
 
                     //Don't add the character to the buffer if this commits the selection.
                     return VSConstants.S_OK;
+                }
+                else
+                {
+                    Log.Debug("Dismiss");
+                    //if there is no selection, dismiss the session
+                    _activeSession.Dismiss();
+                }
+            }
+
+            if (IsBothIntelliSenseTriggerAndCommitChar(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
+            {
+                //if the selection is fully selected, commit the current session but don't return. Instead, let it continues to trigger IntelliSense  
+                if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+                {
+                    Log.Debug("Commit");
+                    _activeSession.Commit();
                 }
                 else
                 {
@@ -471,6 +485,12 @@ namespace PowerShellTools.Intellisense
         {
             Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':' || ch == '\\';
-        }        
+        }
+        
+        private static bool IsBothIntelliSenseTriggerAndCommitChar(char ch)
+        {
+            Log.DebugFormat("IsBothIntelliSenseTriggerAndCommitChar: [{0}]", ch);
+            return ch == '.';
+        }
     }
 }
