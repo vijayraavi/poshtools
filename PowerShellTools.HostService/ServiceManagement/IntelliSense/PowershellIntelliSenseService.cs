@@ -70,6 +70,8 @@ namespace PowerShellTools.HostService.ServiceManagement
             :this()
         {
             _callback = callback;
+            _runspace = RunspaceFactory.CreateRunspace();
+            _runspace.Open();
         }
 
         #region IAutoCompletionService Members
