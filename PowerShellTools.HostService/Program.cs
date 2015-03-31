@@ -127,7 +127,7 @@ namespace PowerShellTools.HostService
 
         private static void CreatePowershellIntelliSenseServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
-            _powershellServiceHost = new ServiceHost(typeof(PowershellIntelliSenseService), baseAddress);
+            _powershellServiceHost = new ServiceHost(typeof(PowerShellIntelliSenseService), baseAddress);
 
             _powershellServiceHost.AddServiceEndpoint(typeof(IPowershellIntelliSenseService),
                                                       binding,

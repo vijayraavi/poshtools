@@ -1,9 +1,13 @@
-﻿using System.Linq;
-using System.Management.Automation.Language;
-using System.Management.Automation.Runspaces;
-using PowerShellTools.Common.IntelliSense;
+﻿using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.HostService.ServiceManagement.Debugging;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Management.Automation.Language;
+using System.Management.Automation.Runspaces;
+using System.ServiceModel;
+using System.Threading.Tasks;
 
 namespace PowerShellTools.HostService.ServiceManagement
 {
@@ -11,9 +15,75 @@ namespace PowerShellTools.HostService.ServiceManagement
     /// Represents a implementation of the service contract.
     /// </summary>
     [PowerShellServiceHostBehavior]
-    public sealed class PowershellIntelliSenseService : IPowershellIntelliSenseService
+    public sealed class PowerShellIntelliSenseService : IPowershellIntelliSenseService
     {
         private readonly Runspace _runspace = PowershellDebuggingService.Runspace;
+        private long _requestTrigger;
+        private string _script = string.Empty;
+        private int _caretPosition;
+        private IIntelliSenseServiceCallback _callback;
+
+        /// <summary>
+        /// Request trigger property
+        /// Once it was set, initellisense service starts processing the existing request in background thread
+        /// </summary>
+        public long RequestTrigger
+        {
+            get
+            {
+                return _requestTrigger;
+            }
+            set
+            {
+                _requestTrigger = value;
+                
+                if (_callback == null)
+                {
+                    _callback = OperationContext.Current.GetCallbackChannel<IIntelliSenseServiceCallback>();
+                }
+                
+                // Start process the existing waiting request, should only be one
+                Task.Run(() =>
+                    {
+                        try
+                        {
+                            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
+                            
+                            ServiceCommon.Log("Getting completion list at position {0}", _caretPosition);
+                              
+                            if (commandCompletion != null && commandCompletion.CompletionMatches.Count() > 0)
+                            {
+                                ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", _caretPosition);
+                                _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
+                            }
+
+                            // Reset trigger
+                            _requestTrigger = 0;
+                        }
+                        catch (Exception ex)
+                        {
+                            ServiceCommon.Log("Failed to retrieve the completion list per request due to exception: {0}", ex.Message);
+                        }
+                    });
+            }
+        }
+
+        /// <summary>
+        /// Default ctor
+        /// </summary>
+        public PowerShellIntelliSenseService() { }
+
+        /// <summary>
+        /// Ctor (unit test hook)
+        /// </summary>
+        /// <param name="callback">Callback context object (unit test hook)</param>
+        public PowerShellIntelliSenseService(IIntelliSenseServiceCallback callback)
+            :this()
+        {
+            _callback = callback;
+            _runspace = RunspaceFactory.CreateRunspace();
+            _runspace.Open();
+        }
 
         #region IAutoCompletionService Members
 
@@ -22,13 +92,28 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// </summary>
         /// <param name="script">The active script.</param>
         /// <param name="caretPosition">The caret position.</param>
+        /// <param name="timeStamp">Time tag indicating the trigger sequence in client side</param>
         /// <returns>A completion results list.</returns>
-        public CompletionResultList GetCompletionResults(string script, int caretPosition)
+        public void RequestCompletionResults(string script, int caretPosition, long triggerTimeTicks)
         {
-            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(script, caretPosition, _runspace);
-            return CompletionResultList.FromCommandCompletion(commandCompletion);
+            ServiceCommon.Log("Intellisense request received, caret position: {0}", _caretPosition.ToString());
+
+            if (_requestTrigger == 0 ||
+                triggerTimeTicks > RequestTrigger)
+            {
+                ServiceCommon.Log("Procesing request, caret position: {0}", _caretPosition.ToString());
+                _script = script;
+                _caretPosition = caretPosition;
+                DismissGetCompletionResults();
+                RequestTrigger = triggerTimeTicks; // triggering new request processing
+            }
         }
 
+        /// <summary>
+        /// Get error from parsing
+        /// </summary>
+        /// <param name="spanText">Script text</param>
+        /// <returns></returns>
         public ParseErrorItem[] GetParseErrors(string spanText)
         {
             ParseError[] errors;
@@ -38,6 +123,21 @@ namespace PowerShellTools.HostService.ServiceManagement
                     select new ParseErrorItem(item.Message,
                                               item.Extent.StartOffset,
                                               item.Extent.EndOffset)).ToArray();
+        }
+
+        /// <summary>
+        /// Dismiss the current running completion request
+        /// </summary>
+        private void DismissGetCompletionResults()
+        {
+            try
+            {
+                CommandCompletionHelper.DismissCommandCompletionListRequest();
+            }
+            catch
+            {
+                ServiceCommon.Log("Failed to stop the existing one.");
+            }
         }
 
         #endregion

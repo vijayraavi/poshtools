@@ -58,7 +58,7 @@ namespace PowerShellTools.Intellisense
             IntellisenseController controller;
             if (!textView.Properties.TryGetProperty<IntellisenseController>(typeof(IntellisenseController), out controller))
             {
-                controller = new IntellisenseController(this, textView);
+                controller = new IntellisenseController(this, textView, PowerShellToolsPackage.Instance.IntelliSenseServiceContext);
                 controller.AttachKeyboardFilter();
             }
             return controller;

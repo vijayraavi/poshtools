@@ -1,18 +1,41 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerShellTools.HostService.ServiceManagement;
+using PowerShellTools.Intellisense;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
+using System.Threading;
 
 namespace PowerShellTools.HostService.UnitTest
 {
     [TestClass]
     public class PowershellIntelliSenseServiceTest
     {
+        private PowerShellIntelliSenseService _service;
+        private IIntelliSenseServiceCallback _context;
+
+        [TestInitialize]
+        public void Init()
+        {
+            _context = new IntelliSenseEventsHandlerProxy();
+            _service = new PowerShellIntelliSenseService(_context);
+        }
+
+        [TestCleanup]
+        public void Clean()
+        {
+        }
 
         [TestMethod]
         public void GetCompletionResultsDashTriggerTest()
         {
-            var service = new PowershellIntelliSenseService();
-            var result = service.GetCompletionResults("Write-", 6);
+            var mre = new ManualResetEvent(false);
+
+            CompletionResultList result = null;
+            ((IntelliSenseEventsHandlerProxy)_context).CompletionListUpdated += (sender, args) => { result = args.Value; mre.Set(); };
+            
+            _service.RequestCompletionResults("Write-", 6, DateTime.UtcNow.Ticks);
+
+            mre.WaitOne();
 
             Assert.AreEqual<int>(0, result.ReplacementIndex);
             Assert.AreEqual<int>(6, result.ReplacementLength);
@@ -21,9 +44,15 @@ namespace PowerShellTools.HostService.UnitTest
         [TestMethod]
         public void GetCompletionResultsDollarTriggerTest()
         {
+            var mre = new ManualResetEvent(false);
+
+            CompletionResultList result = null;
+            ((IntelliSenseEventsHandlerProxy)_context).CompletionListUpdated += (sender, args) => { result = args.Value; mre.Set(); };
+
             string script = @"$myVar = 2; $myStrVar = 'String variable'; Write-Host $";
-            var service = new PowershellIntelliSenseService();
-            var result = service.GetCompletionResults(script, 55);
+            _service.RequestCompletionResults(script, 55, DateTime.UtcNow.Ticks);
+
+            mre.WaitOne();
 
             Assert.AreEqual<string>("$myVar", result.CompletionMatches[0].CompletionText);
             Assert.AreEqual<string>("$myStrVar", result.CompletionMatches[1].CompletionText);

@@ -100,7 +100,7 @@ namespace PowerShellTools.ServiceManagement
 
                     try
                     {
-                        _intelliSenseServiceChannelFactory = ChannelFactoryHelper.CreateChannelFactory<IPowershellIntelliSenseService>(intelliSenseServiceEndPointAddress);
+                        _intelliSenseServiceChannelFactory = ChannelFactoryHelper.CreateDuplexChannelFactory<IPowershellIntelliSenseService>(intelliSenseServiceEndPointAddress,  new InstanceContext(PowerShellToolsPackage.Instance.IntelliSenseServiceContext));
                         _intelliSenseServiceChannelFactory.Faulted += ConnectionExceptionHandler;
                         _intelliSenseServiceChannelFactory.Closed += ConnectionExceptionHandler;
                         _intelliSenseServiceChannelFactory.Open();
