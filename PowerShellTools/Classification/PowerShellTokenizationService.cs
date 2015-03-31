@@ -114,9 +114,8 @@ namespace PowerShellTools.Classification
 
         private void NotifyOnTagsChanged(string name)
         {
-            if (!Buffer.Properties.ContainsProperty(name)) return;
-            var classifier = Buffer.Properties.GetProperty<INotifyTagsChanged>(name);
-            if (classifier != null)
+            INotifyTagsChanged classifier;
+            if (Buffer.Properties.TryGetProperty<INotifyTagsChanged>(name, out classifier))
             {
                 classifier.OnTagsChanged(SpanToTokenize.GetSpan(Buffer.CurrentSnapshot));
             }
@@ -275,6 +274,7 @@ namespace PowerShellTools.Classification
         public const string LineUpToReplacementSpan = "LineUpToReplacementSpan";
         public const string SessionOriginIntellisense = "SessionOrigin_Intellisense";
         public const string SessionCompletionFullyMatchedStatus = "SessionCompletionFullyMatchedStatus";
+        public const string PowerShellTokenizer = "PowerShellTokenizer";
     }
 
     public interface INotifyTagsChanged
