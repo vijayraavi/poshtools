@@ -19,12 +19,13 @@ using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System.Text.RegularExpressions;
 using PowerShellTools.Common.Debugging;
 using System.Diagnostics;
+using PowerShellTools.Common.IntelliSense;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
     [PowerShellServiceHostBehavior]
-    public partial class PowershellDebuggingService : IPowershellDebuggingService
+    public partial class PowerShellDebuggingService : IPowershellDebuggingService
     {
         private static Runspace _runspace;
         private PowerShell _currentPowerShell;
@@ -32,19 +33,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private string _debuggingCommand;
         private IEnumerable<PSObject> _varaiables;
         private IEnumerable<PSObject> _callstack;
-        private string log;
         private Collection<PSVariable> _localVariables;
         private Dictionary<string, Object> _propVariables;
         private Dictionary<string, string> _mapLocalToRemote;
         private Dictionary<string, string> _mapRemoteToLocal;
-        private List<PowershellBreakpointRecord> _psBreakpointTable;
+        private List<PowerShellBreakpointRecord> _psBreakpointTable;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private readonly AutoResetEvent _debugCommandEvent = new AutoResetEvent(false);
         private object _executeDebugCommandLock = new object();
         private string _debugCommandOutput;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
 
-        public PowershellDebuggingService()
+        public PowerShellDebuggingService()
         {
             ServiceCommon.Log("Initializing debugging engine service ...");
             HostUi = new HostUi(this);
@@ -52,7 +52,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _propVariables = new Dictionary<string, object>();
             _mapLocalToRemote = new Dictionary<string, string>();
             _mapRemoteToLocal = new Dictionary<string, string>();
-            _psBreakpointTable = new List<PowershellBreakpointRecord>();
+            _psBreakpointTable = new List<PowerShellBreakpointRecord>();
             InitializeRunspace(this);
         }
 
@@ -86,7 +86,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         #region Debugging service calls
 
         /// <summary>
-        /// Initialize of powershell runspace
+        /// Initialization of the PowerShell runspace
         /// </summary>
         public void SetRunspace(bool overrideExecutionPolicy)
         {
@@ -151,7 +151,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 if (pobj != null)
                 {
                     _psBreakpointTable.Add(
-                        new PowershellBreakpointRecord(
+                        new PowerShellBreakpointRecord(
                             bp,
                             ((LineBreakpoint)pobj.BaseObject).Id));
                 }
@@ -278,13 +278,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// Get runspace availability
+        /// Within execution priority, runspace will try to kill existing low priority task to free up runspace
+        /// </summary>
+        /// <returns>runspace availability enum</returns>
+        public RunspaceAvailability GetRunspaceAvailabilityWithExecutionPriority()
+        {
+            return GetRunspaceAvailability(true);
+        }
+
+        /// <summary>
+        /// Get runspace availability
         /// </summary>
         /// <returns>runspace availability enum</returns>
         public RunspaceAvailability GetRunspaceAvailability()
         {
-            RunspaceAvailability state = _runspace.RunspaceAvailability;
-            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
-            return state;
+            return GetRunspaceAvailability(false);
         }
 
         /// <summary>
@@ -295,8 +303,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             Debug.Assert(_runspace.RunspaceAvailability == RunspaceAvailability.Available, Resources.Error_PipelineBusy);
 
-            ServiceCommon.Log("Start executing ps script ...");         
-            
+            ServiceCommon.Log("Start executing ps script ...");
+
             try
             {
                 _pausedEvent.Reset();
@@ -329,20 +337,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         ServiceCommon.Log(Resources.Error_LocalScriptInRemoteSession + Environment.NewLine, localFile);
 
                         return false;
-                    }
-                }
-
-                // only do this when we are working with a local runspace
-                if (_runspace.ConnectionInfo == null)
-                {
-                    // Preset dte as PS variable if not yet
-                    if (_runspace.SessionStateProxy.PSVariable.Get("dte") == null)
-                    {
-                        DTE2 dte = DTEManager.GetDTE(Program.VsProcessId);
-                        if (dte != null)
-                        {
-                            _runspace.SessionStateProxy.PSVariable.Set("dte", dte);
-                        }
                     }
                 }
 

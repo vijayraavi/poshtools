@@ -17,10 +17,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     public class HostUi : PSHostUserInterface
     {
-        private readonly PowershellDebuggingService _debuggingService;
+        private readonly PowerShellDebuggingService _debuggingService;
         private object _outputLock = new object();
 
-        public HostUi(PowershellDebuggingService debugger)
+        public HostUi(PowerShellDebuggingService debugger)
         {
             _debuggingService = debugger;
         }
@@ -222,9 +222,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
     public class RawHostUi : PSHostRawUserInterface
     {
-        private readonly PowershellDebuggingService _debuggingService;
+        private readonly PowerShellDebuggingService _debuggingService;
 
-        public RawHostUi(PowershellDebuggingService debugger)
+        public RawHostUi(PowerShellDebuggingService debugger)
         {
             _debuggingService = debugger;
         }

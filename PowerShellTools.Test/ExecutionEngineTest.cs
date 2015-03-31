@@ -17,7 +17,7 @@ namespace PowerShellTools.Test
     {
         private ScriptDebugger _debugger;
         private Runspace _runspace;
-        private PowershellDebuggingService _debuggingService;
+        private PowerShellDebuggingService _debuggingService;
 
         [TestInitialize]
         public void Init()
@@ -25,7 +25,7 @@ namespace PowerShellTools.Test
             _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
 
-            _debuggingService = new PowershellDebuggingService();
+            _debuggingService = new PowerShellDebuggingService();
             _debugger = new ScriptDebugger(true, _debuggingService);
             _debuggingService.CallbackService = new DebugServiceEventsHandlerProxy(_debugger);
         }
@@ -52,8 +52,8 @@ namespace PowerShellTools.Test
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            var var1 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("var1");
-            var var2 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("var2");
+            var var1 = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("var1");
+            var var2 = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("var2");
 
             Assert.AreEqual("execution", var1);
             Assert.AreEqual("engine", var2);
@@ -74,8 +74,8 @@ namespace PowerShellTools.Test
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            var var1 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("var1");
-            var var2 = PowershellDebuggingService.Runspace.SessionStateProxy.GetVariable("var2");
+            var var1 = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("var1");
+            var var2 = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("var2");
 
             Assert.AreEqual("execution", var1);
             Assert.AreEqual("engine", var2);

@@ -46,8 +46,6 @@ namespace PowerShellTools.DebugEngine
 
         private List<ScriptBreakpoint> bps = new List<ScriptBreakpoint>();
 
-        private bool _initializingRunspace;
-
         private static readonly ILog Log = LogManager.GetLogger(typeof(Engine));
 
         #endregion
@@ -118,7 +116,7 @@ namespace PowerShellTools.DebugEngine
             Debugger.TerminatingException += Debugger_TerminatingException;
             _node.Debugger = Debugger;
 
-            if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
+            if (Debugger.DebuggingService.GetRunspaceAvailabilityWithExecutionPriority() == RunspaceAvailability.Available)
             {
                 Debugger.DebuggerBegin();
                 Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);

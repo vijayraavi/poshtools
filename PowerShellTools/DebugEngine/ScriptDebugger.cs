@@ -318,7 +318,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if (DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available)
+                if (DebuggingService.GetRunspaceAvailabilityWithExecutionPriority() != RunspaceAvailability.Available)
                 {
                     OutputString(this, new EventArgs<string>(Resources.ErrorPipelineBusy));
 

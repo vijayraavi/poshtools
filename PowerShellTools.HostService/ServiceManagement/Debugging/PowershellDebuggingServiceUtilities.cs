@@ -1,8 +1,9 @@
-﻿using Microsoft.PowerShell;
+﻿using EnvDTE80;
+using Microsoft.PowerShell;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -11,15 +12,18 @@ using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     /// <summary>
     /// Utility functions for powershell debugging service
     /// </summary>
-    public partial class PowershellDebuggingService
+    public partial class PowerShellDebuggingService
     {
+        // Potential TODO: Refactor this class into either a static Utilities class
+
+        private const string DteVariableName= "dte";
+
         private void SetRunspace(Runspace runspace)
         {
             if (_runspace != null)
@@ -33,6 +37,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
             _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
             _runspace.StateChanged += _runspace_StateChanged;
+
+            ProvideDteVariable(_runspace);
         }
 
         private void RefreshScopedVariable()
@@ -78,7 +84,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
             }
         }
-
 
         private void OnTerminatingException(Exception ex)
         {
@@ -224,6 +229,51 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             _debuggingCommand = DebugEngineConstants.Debugger_Stop;
             _pausedEvent.Set();
+        }
+
+        /// <summary>
+        /// Provides the $dte Variable if we are in a local runspace and if the $dte variable has not yet been set.
+        /// </summary>
+        private static void ProvideDteVariable(Runspace runspace)
+        {
+            // only do this when we are working with a local runspace
+            if (runspace.ConnectionInfo == null)
+            {
+                // Preset dte as PS variable if not yet
+                if (runspace.SessionStateProxy.PSVariable.Get(DteVariableName) == null)
+                {
+                    ServiceCommon.Log("Providing $dte variable to the local runspace.");
+
+                    DTE2 dte = DTEManager.GetDTE(Program.VsProcessId);
+
+                    if (dte != null)
+                    {
+                        // We want to make $dte constant so that it can't be overridden; similar to the $psISE analog
+
+                        PSVariable dteVar = new PSVariable(DteVariableName, dte, ScopedItemOptions.Constant);
+
+                        runspace.SessionStateProxy.PSVariable.Set(dteVar);
+                    }
+                    else
+                    {
+                        ServiceCommon.Log("Dte object not found.");
+                    }
+                }
+            }
+        }
+
+        private RunspaceAvailability GetRunspaceAvailability(bool executionPriority)
+        {
+            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available &&
+                executionPriority)
+            {
+                CommandCompletionHelper.DismissCommandCompletionListRequest();
+            }
+
+            RunspaceAvailability state = _runspace.RunspaceAvailability;
+            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
+
+            return state;
         }
     }
 }

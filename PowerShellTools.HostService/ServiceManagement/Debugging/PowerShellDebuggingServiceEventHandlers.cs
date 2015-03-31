@@ -13,7 +13,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
     /// <summary>
     /// Event handlers for debugger events inside service
     /// </summary>
-    public partial class PowershellDebuggingService
+    public partial class PowerShellDebuggingService
     {
         /// <summary>
         /// Runspace state change event handler
@@ -156,7 +156,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 if (bp != null)
                 {
                     _psBreakpointTable.Add(
-                        new PowershellBreakpointRecord(
+                        new PowerShellBreakpointRecord(
                             new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
                             bp.Id));
                 }

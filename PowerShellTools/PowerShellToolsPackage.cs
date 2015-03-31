@@ -30,25 +30,26 @@ using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 using Threading = System.Threading.Tasks;
+using PowerShellTools.Intellisense;
 
 namespace PowerShellTools
 {
-    /// <summary>
-    /// This is the class that implements the package exposed by this assembly.
-    ///
-    /// The minimum requirement for a class to be considered a valid package for Visual Studio
-    /// is to implement the IVsPackage interface and register itself with the shell.
-    /// This package uses the helper classes defined inside the Managed Package Framework (MPF)
-    /// to do it: it derives from the Package class that provides the implementation of the 
-    /// IVsPackage interface and uses the registration attributes defined in the framework to 
-    /// register itself and its components with the shell.
-    /// </summary>
-    // This attribute tells the PkgDef creation utility (CreatePkgDef.exe) that this class is
-    // a package.
-    [PackageRegistration(UseManagedResourcesOnly = true)]
+	/// <summary>
+	/// This is the class that implements the package exposed by this assembly.
+	///
+	/// The minimum requirement for a class to be considered a valid package for Visual Studio
+	/// is to implement the IVsPackage interface and register itself with the shell.
+	/// This package uses the helper classes defined inside the Managed Package Framework (MPF)
+	/// to do it: it derives from the Package class that provides the implementation of the 
+	/// IVsPackage interface and uses the registration attributes defined in the framework to 
+	/// register itself and its components with the shell.
+	/// </summary>
+	// This attribute tells the PkgDef creation utility (CreatePkgDef.exe) that this class is
+	// a package.
+	[PackageRegistration(UseManagedResourcesOnly = true)]
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
+    //[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(UIContextGuids.NoSolution)]
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
@@ -104,6 +105,7 @@ EnableCommenting = true)]
         private static GotoDefinitionCommand _gotoDefinitionCommand;
         private VisualStudioEvents VisualStudioEvents;
         private IContentType _contentType;
+        private IntelliSenseEventsHandlerProxy _intelliSenseServiceContext;
 
         public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
 
@@ -121,7 +123,7 @@ EnableCommenting = true)]
             _commands = new Dictionary<ICommand, MenuCommand>();
             DependencyValidator = new DependencyValidator();
         }
-        
+
         /// <summary>
         /// Returns the current package instance.
         /// </summary>
@@ -132,6 +134,14 @@ EnableCommenting = true)]
             get
             {
                 return ConnectionManager.Instance.PowershellDebuggingService;
+            }
+        }
+
+        public IntelliSenseEventsHandlerProxy IntelliSenseServiceContext
+        {
+            get
+            {
+                return _intelliSenseServiceContext;
             }
         }
 
@@ -153,7 +163,7 @@ EnableCommenting = true)]
         /// <summary>
         /// Returns the PowerShell host for the package.
         /// </summary>
-        internal static ScriptDebugger Debugger
+        internal static ScriptDebugger Debugger 
         {
             get
             {
@@ -173,7 +183,7 @@ EnableCommenting = true)]
                 return ConnectionManager.Instance.PowershellIntelliSenseSerivce;
             }
         }
-
+        
         internal DependencyValidator DependencyValidator { get; set; }
 
         internal override LibraryManager CreateLibraryManager(CommonPackage package)
@@ -184,20 +194,20 @@ EnableCommenting = true)]
         internal IContentType ContentType
         {
             get
-            {
+        {
                 if (_contentType == null)
                 {
                     _contentType = ComponentModel.GetService<IContentTypeRegistryService>().GetContentType(PowerShellConstants.LanguageName);
-                }
+        }
                 return _contentType;
             }
         }
-        
+
         internal T GetDialogPage<T>() where T : DialogPage
         {
             return (T)GetDialogPage(typeof(T));
         }
-        
+
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -218,7 +228,7 @@ EnableCommenting = true)]
                 _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
 
                 RegisterServices();
-            }
+                }
             catch (Exception ex)
             {
                 MessageBox.Show(
@@ -231,6 +241,8 @@ EnableCommenting = true)]
 
         private void InitializeInternal()
         {
+            _intelliSenseServiceContext = new IntelliSenseEventsHandlerProxy();
+
             var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
 
             if (page.EnableDiagnosticLogging)
@@ -301,10 +313,10 @@ EnableCommenting = true)]
                     menuCommand.BeforeQueryStatus += command.QueryStatus;
                     mcs.AddCommand(menuCommand);
                     _commands[command] = menuCommand;
-                }
+            }
             }
         }
-        
+
         /// <summary>
         /// Register Services
         /// </summary>
@@ -315,7 +327,7 @@ EnableCommenting = true)]
             var serviceContainer = (IServiceContainer)this;
             serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powershellService.Value, true);
         }
-        
+
         private void VisualStudioEvents_SettingsChanged(object sender, DialogPage e)
         {
             if (e is DiagnosticsDialogPage)

@@ -62,6 +62,10 @@
       <Project>{c9d4aac3-51d3-4ed9-ab9b-564d4d2d30e8}</Project>
       <Name>PowerShellTools.HostService</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools\PowerShellTools.csproj">
+      <Project>{456d66a8-e05e-496d-bdce-af24bbc12e0d}</Project>
+      <Name>PowerShellTools</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
