@@ -92,21 +92,21 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// </summary>
         /// <param name="script">The active script.</param>
         /// <param name="caretPosition">The caret position.</param>
-        /// <param name="timeStamp">Time tag indicating the trigger sequence in client side</param>
+        /// <param name="triggerTag">Tag(incremental long) indicating the trigger sequence in client side</param>
         /// <returns>A completion results list.</returns>
-        public void RequestCompletionResults(string script, int caretPosition, long triggerTimeTicks)
+        public void RequestCompletionResults(string script, int caretPosition, long triggerTag)
         {
             ServiceCommon.Log("Intellisense request received, caret position: {0}", _caretPosition.ToString());
 
             if (_requestTrigger == 0 ||
-                triggerTimeTicks > RequestTrigger)
-        {
+                triggerTag > RequestTrigger)
+            {
                 ServiceCommon.Log("Procesing request, caret position: {0}", _caretPosition.ToString());
                 _script = script;
                 _caretPosition = caretPosition;
                 DismissGetCompletionResults();
-                RequestTrigger = triggerTimeTicks; // triggering new request processing
-        }
+                RequestTrigger = triggerTag; // triggering new request processing
+            }
         }
 
         /// <summary>
