@@ -99,6 +99,13 @@ EnableCommenting = true)]
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
         private Lazy<PowerShellService> _powershellService;
         private static ScriptDebugger _debugger;
+        private ITextBufferFactoryService _textBufferFactoryService;
+        private static Dictionary<ICommand, MenuCommand> _commands;
+        private static GotoDefinitionCommand _gotoDefinitionCommand;
+        private VisualStudioEvents VisualStudioEvents;
+        private IContentType _contentType;
+
+        public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
 
         /// <summary>
         /// Default constructor of the package.
@@ -114,11 +121,34 @@ EnableCommenting = true)]
             _commands = new Dictionary<ICommand, MenuCommand>();
             DependencyValidator = new DependencyValidator();
         }
+        
+        /// <summary>
+        /// Returns the current package instance.
+        /// </summary>
+        public static PowerShellToolsPackage Instance { get; private set; }
 
-        private ITextBufferFactoryService _textBufferFactoryService;
-        private static Dictionary<ICommand, MenuCommand> _commands;
-        private static GotoDefinitionCommand _gotoDefinitionCommand;
-        private VisualStudioEvents _visualStudioEvents;
+        public static IPowershellDebuggingService DebuggingService
+        {
+            get
+            {
+                return ConnectionManager.Instance.PowershellDebuggingService;
+            }
+        }
+
+        public new object GetService(Type type)
+        {
+            return base.GetService(type);
+        }
+
+        public override Type GetLibraryManagerType()
+        {
+            return null;
+        }
+
+        public override bool IsRecognizedFile(string filename)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Returns the PowerShell host for the package.
@@ -131,17 +161,10 @@ EnableCommenting = true)]
             }
         }
 
-        public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
-
         /// <summary>
         /// Indicate if override the execution policy
         /// </summary>
         internal static bool OverrideExecutionPolicyConfiguration { get; private set; }
-
-        /// <summary>
-        /// Returns the current package instance.
-        /// </summary>
-        public static PowerShellToolsPackage Instance { get; private set; }
 
         internal static IPowershellIntelliSenseService IntelliSenseService
         {
@@ -151,49 +174,58 @@ EnableCommenting = true)]
             }
         }
 
-        public static IPowershellDebuggingService DebuggingService
-        {
-            get
-            {
-                return ConnectionManager.Instance.PowershellDebuggingService;
-            }
-        }
-
         internal DependencyValidator DependencyValidator { get; set; }
-
-        public new object GetService(Type type)
-        {
-            return base.GetService(type);
-        }
-
-        public override Type GetLibraryManagerType()
-        {
-            return null;
-        }
 
         internal override LibraryManager CreateLibraryManager(CommonPackage package)
         {
             throw new NotImplementedException();
         }
 
-        public override bool IsRecognizedFile(string filename)
+        internal IContentType ContentType
         {
-            throw new NotImplementedException();
-        }
-
-        private void RefreshCommands(params ICommand[] commands)
-        {
-            // Add our command handlers for menu (commands must exist in the .vsct file)
-            var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if (null != mcs)
+            get
             {
-                foreach (var command in commands)
+                if (_contentType == null)
                 {
-                    var menuCommand = new OleMenuCommand(command.Execute, command.CommandId);
-                    menuCommand.BeforeQueryStatus += command.QueryStatus;
-                    mcs.AddCommand(menuCommand);
-                    _commands[command] = menuCommand;
+                    _contentType = ComponentModel.GetService<IContentTypeRegistryService>().GetContentType(PowerShellConstants.LanguageName);
                 }
+                return _contentType;
+            }
+        }
+        
+        internal T GetDialogPage<T>() where T : DialogPage
+        {
+            return (T)GetDialogPage(typeof(T));
+        }
+        
+        /// <summary>
+        /// Initialization of the package; this method is called right after the package is sited, so this is the place
+        /// where you can put all the initialization code that rely on services provided by VisualStudio.
+        /// </summary>
+        protected override void Initialize()
+        {
+            try
+            {
+                if (!DependencyValidator.Validate())
+                {
+                    return;
+                }
+
+                base.Initialize();
+
+                InitializeInternal();
+
+                _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
+
+                RegisterServices();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    Resources.PowerShellToolsInitializeFailed + ex,
+                    Resources.MessageBoxErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
@@ -215,11 +247,11 @@ EnableCommenting = true)]
             _textBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
             EditorImports.ClassificationTypeRegistryService = componentModel.GetService<IClassificationTypeRegistryService>();
             EditorImports.ClassificationFormatMap = componentModel.GetService<IClassificationFormatMapService>();
-            _visualStudioEvents = componentModel.GetService<VisualStudioEvents>();
+            VisualStudioEvents = componentModel.GetService<VisualStudioEvents>();
 
-            if (_visualStudioEvents != null)
+            if (VisualStudioEvents != null)
             {
-                _visualStudioEvents.SettingsChanged += _visualStudioEvents_SettingsChanged;
+                VisualStudioEvents.SettingsChanged += VisualStudioEvents_SettingsChanged;
             }
 
             if (_textBufferFactoryService != null)
@@ -257,37 +289,22 @@ EnableCommenting = true)]
             }
         }
 
-        /// <summary>
-        /// Initialization of the package; this method is called right after the package is sited, so this is the place
-        /// where you can put all the initialization code that rely on services provided by VisualStudio.
-        /// </summary>
-        protected override void Initialize()
+        private void RefreshCommands(params ICommand[] commands)
         {
-            try
+            // Add our command handlers for menu (commands must exist in the .vsct file)
+            var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            if (null != mcs)
             {
-                if (!DependencyValidator.Validate())
+                foreach (var command in commands)
                 {
-                    return;
+                    var menuCommand = new OleMenuCommand(command.Execute, command.CommandId);
+                    menuCommand.BeforeQueryStatus += command.QueryStatus;
+                    mcs.AddCommand(menuCommand);
+                    _commands[command] = menuCommand;
                 }
-
-                base.Initialize();
-
-                InitializeInternal();
-
-                _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
-
-                RegisterServices();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    Resources.PowerShellToolsInitializeFailed + ex,
-                    Resources.MessageBoxErrorTitle,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
             }
         }
-
+        
         /// <summary>
         /// Register Services
         /// </summary>
@@ -298,22 +315,8 @@ EnableCommenting = true)]
             var serviceContainer = (IServiceContainer)this;
             serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powershellService.Value, true);
         }
-
-
-        private IContentType _contentType;
-        public IContentType ContentType
-        {
-            get
-            {
-                if (_contentType == null)
-                {
-                    _contentType = ComponentModel.GetService<IContentTypeRegistryService>().GetContentType(PowerShellConstants.LanguageName);
-                }
-                return _contentType;
-            }
-        }
-
-        void _visualStudioEvents_SettingsChanged(object sender, DialogPage e)
+        
+        private void VisualStudioEvents_SettingsChanged(object sender, DialogPage e)
         {
             if (e is DiagnosticsDialogPage)
             {
@@ -373,11 +376,6 @@ EnableCommenting = true)]
             _debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
 
             DebuggerReadyEvent.Set();
-        }
-
-        public T GetDialogPage<T>() where T : DialogPage
-        {
-            return (T)GetDialogPage(typeof(T));
         }
     }
 }
