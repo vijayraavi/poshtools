@@ -1,5 +1,6 @@
 ﻿using Microsoft.PowerShell;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
 using System.Collections.Generic;
@@ -224,6 +225,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             _debuggingCommand = DebugEngineConstants.Debugger_Stop;
             _pausedEvent.Set();
+        }
+
+        private RunspaceAvailability GetRunspaceAvailability(bool executionPriority)
+        {
+            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available &&
+                executionPriority)
+            {
+                CommandCompletionHelper.DismissCommandCompletionListRequest();
+            }
+
+            RunspaceAvailability state = _runspace.RunspaceAvailability;
+            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
+
+            return state;
         }
     }
 }

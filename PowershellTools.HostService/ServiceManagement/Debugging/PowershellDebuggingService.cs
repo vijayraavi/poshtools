@@ -279,21 +279,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// Get runspace availability
+        /// Within execution priority, runspace will try to kill existing low priority task to free up runspace
         /// </summary>
-        /// <param name="executionPriority">Within execution priority, runspace will try to kill existing low priority task to free up runspace</param>
         /// <returns>runspace availability enum</returns>
-        public RunspaceAvailability GetRunspaceAvailability(bool executionPriority)
+        public RunspaceAvailability GetRunspaceAvailabilityWithExecutionPriority()
         {
-            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available &&
-                executionPriority)
-            {
-                CommandCompletionHelper.DismissCommandCompletionListRequest();
-            }
+            return GetRunspaceAvailability(true);
+        }
 
-            RunspaceAvailability state = _runspace.RunspaceAvailability;
-            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
-
-            return state;
+        /// <summary>
+        /// Get runspace availability
+        /// </summary>
+        /// <returns>runspace availability enum</returns>
+        public RunspaceAvailability GetRunspaceAvailability()
+        {
+            return GetRunspaceAvailability(false);
         }
 
         /// <summary>

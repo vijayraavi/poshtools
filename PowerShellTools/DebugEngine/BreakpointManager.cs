@@ -144,7 +144,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if (Debugger.DebuggingService.GetRunspaceAvailability(true) == RunspaceAvailability.Available)
+                if (Debugger.DebuggingService.GetRunspaceAvailabilityWithExecutionPriority() == RunspaceAvailability.Available)
                 {
                     Debugger.DebuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                 }
@@ -172,7 +172,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if (Debugger.DebuggingService.GetRunspaceAvailability(true) == RunspaceAvailability.Available)
+                if (Debugger.DebuggingService.GetRunspaceAvailabilityWithExecutionPriority() == RunspaceAvailability.Available)
                 {
                     Debugger.DebuggingService.EnableBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column), fEnable == 0 ? false : true);
                 }
@@ -204,7 +204,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if (Debugger.DebuggingService.GetRunspaceAvailability(true) == RunspaceAvailability.Available)
+                if (Debugger.DebuggingService.GetRunspaceAvailabilityWithExecutionPriority() == RunspaceAvailability.Available)
                 {
                     Debugger.DebuggingService.RemoveBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                 }

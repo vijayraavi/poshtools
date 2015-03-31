@@ -56,7 +56,10 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         string GetPrompt();
 
         [OperationContract]
-        RunspaceAvailability GetRunspaceAvailability(bool executionPriority);
+        RunspaceAvailability GetRunspaceAvailabilityWithExecutionPriority();
+
+        [OperationContract]
+        RunspaceAvailability GetRunspaceAvailability();
 
         [OperationContract]
         int GetPSBreakpointId(PowershellBreakpoint bp);
