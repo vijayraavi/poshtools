@@ -9,7 +9,7 @@ namespace PowerShellTools.Classification
 {
     internal abstract class Classifier : IClassifier, INotifyTagsChanged
     {
-        private readonly ITextBuffer buffer;
+        private readonly ITextBuffer _textBuffer;
 
         public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
 
@@ -17,12 +17,12 @@ namespace PowerShellTools.Classification
         {
             get
             {
-                return buffer;
+                return _textBuffer;
             }
         }
-        internal Classifier(ITextBuffer buffer)
+        internal Classifier(ITextBuffer textBuffer)
         {
-            this.buffer = buffer;
+            _textBuffer = textBuffer;
         }
         public IList<ClassificationSpan> GetClassificationSpans(SnapshotSpan span)
         {
@@ -84,15 +84,15 @@ namespace PowerShellTools.Classification
         private void UpdateClassifierBufferProperty()
         {
             Classifier classifier;
-            if (buffer.Properties.TryGetProperty(typeof(Classifier).Name, out classifier))
+            if (_textBuffer.Properties.TryGetProperty(typeof(Classifier).Name, out classifier))
             {
                 if (classifier == this) return;
-                buffer.Properties.RemoveProperty(typeof(Classifier).Name);
-                buffer.Properties.AddProperty(typeof(Classifier).Name, this);
+                _textBuffer.Properties.RemoveProperty(typeof(Classifier).Name);
+                _textBuffer.Properties.AddProperty(typeof(Classifier).Name, this);
             }
             else
             {
-                buffer.Properties.AddProperty(typeof(Classifier).Name, this);
+                _textBuffer.Properties.AddProperty(typeof(Classifier).Name, this);
             }
         }
     }

@@ -152,9 +152,12 @@ namespace PowerShellTools.Classification
             OpenChars[93] = '[';
         }
 
-        internal void GetRegionsAndBraceMatchingInformation(string spanText, int spanStart,
-    IList<Token> generatedTokens, out Dictionary<int, int> startBraces, out Dictionary<int, int> endBraces,
-    out List<TagInformation<IOutliningRegionTag>> regions)
+        internal void GetRegionsAndBraceMatchingInformation(string spanText, 
+                                                            int spanStart,
+                                                            IList<Token> generatedTokens, 
+                                                            out Dictionary<int, int> startBraces, 
+                                                            out Dictionary<int, int> endBraces,
+                                                            out List<TagInformation<IOutliningRegionTag>> regions)
         {
             endBraces = new Dictionary<int, int>();
             startBraces = new Dictionary<int, int>();
@@ -217,8 +220,14 @@ namespace PowerShellTools.Classification
             }
         }
 
-        private static void CloseBrace(string spanText, int spanStart, IDictionary<int, int> startBraces, IDictionary<int, int> endBraces,
-            ICollection<TagInformation<IOutliningRegionTag>> regions, char c, IList<BraceInformation> braceInformations, int tokenOffset)
+        private static void CloseBrace(string spanText, 
+                                       int spanStart, 
+                                       IDictionary<int, int> startBraces, 
+                                       IDictionary<int, int> endBraces,
+                                       ICollection<TagInformation<IOutliningRegionTag>> regions, 
+                                       char c, 
+                                       IList<BraceInformation> braceInformations, 
+                                       int tokenOffset)
         {
             var braceInformation = FindAndRemove(OpenChars[c], braceInformations);
             if (!braceInformation.HasValue) return;
@@ -241,9 +250,12 @@ namespace PowerShellTools.Classification
             }
         }
 
-        private static void AddBraceMatchingAndOutlinesForString(int spanStart, IDictionary<int, int> startBraces,
-    IDictionary<int, int> endBraces, ICollection<TagInformation<IOutliningRegionTag>> regions, string text,
-    Token stringToken)
+        private static void AddBraceMatchingAndOutlinesForString(int spanStart, 
+                                                                 IDictionary<int, int> startBraces,
+                                                                 IDictionary<int, int> endBraces, 
+                                                                 ICollection<TagInformation<IOutliningRegionTag>> regions, 
+                                                                 string text,
+                                                                 Token stringToken)
         {
             if (stringToken.Extent.StartLineNumber == stringToken.Extent.EndLineNumber)
             {
@@ -331,20 +343,32 @@ namespace PowerShellTools.Classification
             return null;
         }
 
-        private static void AddRegion(int spanStart, string text, ICollection<TagInformation<IOutliningRegionTag>> regions,
-            int start, int end)
+        private static void AddRegion(int spanStart, 
+                                      string text, 
+                                      ICollection<TagInformation<IOutliningRegionTag>> regions,
+                                      int start, 
+                                      int end)
         {
             AddRegion(spanStart, text, regions, start, end, null, null);
         }
 
-        private static void AddRegion(int spanStart, string text, ICollection<TagInformation<IOutliningRegionTag>> regions,
-            int start, int end, string collapsedText)
+        private static void AddRegion(int spanStart, 
+                                      string text, 
+                                      ICollection<TagInformation<IOutliningRegionTag>> regions,
+                                      int start, 
+                                      int end, 
+                                      string collapsedText)
         {
             AddRegion(spanStart, text, regions, start, end, collapsedText, null);
         }
 
-        private static void AddRegion(int spanStart, string text, ICollection<TagInformation<IOutliningRegionTag>> regions,
-            int start, int end, string collapsedText, string collapsedTooltip)
+        private static void AddRegion(int spanStart, 
+                                      string text, 
+                                      ICollection<TagInformation<IOutliningRegionTag>> regions,
+                                      int start, 
+                                      int end, 
+                                      string collapsedText, 
+                                      string collapsedTooltip)
         {
             if (collapsedText == null)
             {
@@ -364,8 +388,11 @@ namespace PowerShellTools.Classification
             regions.Add(new TagInformation<IOutliningRegionTag>(start + spanStart, length, tag));
         }
 
-        private static void AddMatch(int spanStart, IDictionary<int, int> startBraces, IDictionary<int, int> endBraces,
-            int start, int end)
+        private static void AddMatch(int spanStart, 
+                                     IDictionary<int, int> startBraces, 
+                                     IDictionary<int, int> endBraces,
+                                     int start, 
+                                     int end)
         {
             start += spanStart;
             end += spanStart;
@@ -373,8 +400,11 @@ namespace PowerShellTools.Classification
             startBraces[start] = end;
         }
 
-        private static void AddOutlinesForComment(int spanStart, ICollection<TagInformation<IOutliningRegionTag>> regions,
-    string text, Stack<Token> poundRegionStart, Token commentToken)
+        private static void AddOutlinesForComment(int spanStart, 
+                                                  ICollection<TagInformation<IOutliningRegionTag>> regions,
+                                                  string text, 
+                                                  Stack<Token> poundRegionStart, 
+                                                  Token commentToken)
         {
             var commentText = commentToken.Text;
             if (commentText.IndexOf('\n') != -1)

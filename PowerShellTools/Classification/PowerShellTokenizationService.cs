@@ -32,9 +32,9 @@ namespace PowerShellTools.Classification
         private readonly ClassifierService _classifierService;
         private readonly ErrorTagSpanService _errorTagService;
         private readonly RegionAndBraceMatchingService _regionAndBraceMatchingService;
-
-        private ITrackingSpan _spanToTokenize;
+                
         private ITextBuffer _textBuffer;
+        private ITrackingSpan _spanToTokenize;
 
         public PowerShellTokenizationService(ITextBuffer textBuffer)
         {
@@ -65,10 +65,8 @@ namespace PowerShellTools.Classification
             }
             var tokenizationText = spanToTokenizeCache.GetText(_textBuffer.CurrentSnapshot);
 
-            //
             ThreadPool.QueueUserWorkItem(_ =>
-            {
-                System.Diagnostics.Debug.Print("Thread {0}: First entry!!!", Thread.CurrentThread.ManagedThreadId);
+            {                
                 Tokenize(spanToTokenizeCache, tokenizationText);                
                 SetTokenizationProperties();
                 RemoveCachedTokenizationProperties();
@@ -79,20 +77,19 @@ namespace PowerShellTools.Classification
                 {
                     return;
                 }
-                Thread.Sleep(1000);
                 OnTokenizationComplete();
-                NotifyOnTagsChanged(BufferProperties.Classifier);
-                NotifyOnTagsChanged(BufferProperties.ErrorTagger);
-                NotifyOnTagsChanged(typeof(PowerShellOutliningTagger).Name);                
+                NotifyOnTagsChanged(BufferProperties.Classifier, trackingSpan);
+                NotifyOnTagsChanged(BufferProperties.ErrorTagger, trackingSpan);
+                NotifyOnTagsChanged(typeof(PowerShellOutliningTagger).Name, trackingSpan);                
             }, this);
         }
 
-        private void NotifyOnTagsChanged(string name)
+        private void NotifyOnTagsChanged(string name, ITrackingSpan trackingSpan)
         {
             INotifyTagsChanged classifier;
             if (_textBuffer.Properties.TryGetProperty<INotifyTagsChanged>(name, out classifier))
             {
-                classifier.OnTagsChanged(_spanToTokenize.GetSpan(_textBuffer.CurrentSnapshot));
+                classifier.OnTagsChanged(trackingSpan.GetSpan(_textBuffer.CurrentSnapshot));
             }
         }
 
@@ -230,7 +227,8 @@ namespace PowerShellTools.Classification
 
         internal TagSpan<T> GetTagSpan(ITextSnapshot snapshot)
         {
-            return new TagSpan<T>(new SnapshotSpan(snapshot, Start, Length), Tag);
+            return snapshot.Length >= Start + Length ? 
+                new TagSpan<T>(new SnapshotSpan(snapshot, Start, Length), Tag) : null;
         }
     }
 
@@ -245,7 +243,7 @@ namespace PowerShellTools.Classification
         public const string SpanTokenized = "PSSpanTokenized";
         public const string Regions = "PSRegions";
         public const string RegionTags = "PSRegionTags";
-        public const string Classifier = "PowerShellClassifier";
+        public const string Classifier = "Classifier";
         public const string ErrorTagger = "PowerShellErrorTagger";
         public const string FromRepl = "PowerShellREPL";
         public const string LastWordReplacementSpan = "LastWordReplacementSpan";
