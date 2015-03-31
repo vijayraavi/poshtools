@@ -1,4 +1,9 @@
-﻿using System;
+﻿using EnvDTE80;
+using Microsoft.PowerShell;
+using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.IntelliSense;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using System;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -7,10 +12,6 @@ using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using EnvDTE80;
-using Microsoft.PowerShell;
-using PowerShellTools.Common.Debugging;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -259,6 +260,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                 }
             }
+        }
+
+        private RunspaceAvailability GetRunspaceAvailability(bool executionPriority)
+        {
+            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available &&
+                executionPriority)
+            {
+                CommandCompletionHelper.DismissCommandCompletionListRequest();
+            }
+
+            RunspaceAvailability state = _runspace.RunspaceAvailability;
+            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
+
+            return state;
         }
     }
 }

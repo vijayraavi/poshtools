@@ -110,6 +110,7 @@
     <Compile Include="ServiceManagement\DebuggingContract\Variable.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\CompletionItem.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\CompletionResultList.cs" />
+    <Compile Include="ServiceManagement\IntelliSenseContract\IIntelliSenseServiceCallback.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\IPowershellIntelliSenseService.cs" />
     <Compile Include="ServiceManagement\IntelliSenseContract\ParseErrorItem.cs" />
     <Compile Include="ServiceManagement\PowershellHostServiceExceptionDetails.cs" />

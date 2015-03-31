@@ -5,11 +5,11 @@ namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
     /// <summary>
     /// Powershell service.
     /// </summary>
-    [ServiceContract]
+    [ServiceContract(CallbackContract = typeof(IIntelliSenseServiceCallback))]
     public interface IPowershellIntelliSenseService
     {
         [OperationContract]
-        CompletionResultList GetCompletionResults(string scriptUpToCaret, int carePosition);
+        void RequestCompletionResults(string scriptUpToCaret, int carePosition, long triggerTimeTicks);
 
         [OperationContract]
         ParseErrorItem[] GetParseErrors(string spanText);

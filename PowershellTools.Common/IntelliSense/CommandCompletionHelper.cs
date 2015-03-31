@@ -13,6 +13,9 @@ namespace PowerShellTools.Common.IntelliSense
 {
     internal static class CommandCompletionHelper
     {
+        public static object _lock = new object();
+        private static PowerShell _currentPowerShell;
+
         /// <summary>
         /// Completion lists calculator.
         /// </summary>
@@ -31,14 +34,32 @@ namespace PowerShellTools.Common.IntelliSense
                 return null;
             }
 
-            CommandCompletion commandCompletion;
-            using (var ps = PowerShell.Create())
+            CommandCompletion commandCompletion = null;
+
+            if (runspace.RunspaceAvailability == RunspaceAvailability.Available)
             {
-                ps.Runspace = runspace;
-                commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, ps);
+                using (_currentPowerShell = PowerShell.Create())
+                {
+                    _currentPowerShell.Runspace = runspace;
+                    commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, _currentPowerShell);
+                }
             }
 
             return commandCompletion;
+        }
+
+        /// <summary>
+        /// Dismiss the current running completion request
+        /// </summary>
+        public static void DismissCommandCompletionListRequest()
+        {
+            lock (_lock)
+            {
+                if (_currentPowerShell != null)
+                {
+                    _currentPowerShell.Stop();
+                }
+            }
         }
 
         /// <summary>
