@@ -13,9 +13,8 @@ namespace PowerShellTools.Common.IntelliSense
 {
     internal static class CommandCompletionHelper
     {
-        public static PowerShell CurrentPowershell;
-        public static bool _stoppable;
         public static object _lock = new object();
+        private static PowerShell _currentPowerShell;
 
         /// <summary>
         /// Completion lists calculator.
@@ -39,10 +38,10 @@ namespace PowerShellTools.Common.IntelliSense
 
             if (runspace.RunspaceAvailability == RunspaceAvailability.Available)
             {
-                using (CurrentPowershell = PowerShell.Create())
+                using (_currentPowerShell = PowerShell.Create())
                 {
-                    CurrentPowershell.Runspace = runspace;
-                    commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, CurrentPowershell);
+                    _currentPowerShell.Runspace = runspace;
+                    commandCompletion = CommandCompletion.CompleteInput(ast, tokens, cursorPosition, null, _currentPowerShell);
                 }
             }
 
@@ -56,9 +55,9 @@ namespace PowerShellTools.Common.IntelliSense
         {
             lock (_lock)
             {
-                if (CurrentPowershell != null)
+                if (_currentPowerShell != null)
                 {
-                    CurrentPowershell.Stop();
+                    _currentPowerShell.Stop();
                 }
             }
         }

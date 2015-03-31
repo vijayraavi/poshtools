@@ -15,10 +15,10 @@ namespace PowerShellTools.HostService.ServiceManagement
     /// Represents a implementation of the service contract.
     /// </summary>
     [PowerShellServiceHostBehavior]
-    public sealed class PowershellIntelliSenseService : IPowershellIntelliSenseService
+    public sealed class PowerShellIntelliSenseService : IPowershellIntelliSenseService
     {
         private readonly Runspace _runspace = PowershellDebuggingService.Runspace;
-        private string _requestTrigger = string.Empty;
+        private long _requestTrigger;
         private string _script = string.Empty;
         private int _caretPosition;
         private IIntelliSenseServiceCallback _callback;
@@ -27,7 +27,7 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// Request trigger property
         /// Once it was set, initellisense service starts processing the existing request in background thread
         /// </summary>
-        public string RequestTrigger
+        public long RequestTrigger
         {
             get
             {
@@ -58,7 +58,7 @@ namespace PowerShellTools.HostService.ServiceManagement
                             }
 
                             // Reset trigger
-                            _requestTrigger = string.Empty;
+                            _requestTrigger = 0;
                         }
                         catch (Exception ex)
                         {
@@ -71,13 +71,13 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// <summary>
         /// Default ctor
         /// </summary>
-        public PowershellIntelliSenseService() { }
+        public PowerShellIntelliSenseService() { }
 
         /// <summary>
         /// Ctor (unit test hook)
         /// </summary>
         /// <param name="callback">Callback context object (unit test hook)</param>
-        public PowershellIntelliSenseService(IIntelliSenseServiceCallback callback)
+        public PowerShellIntelliSenseService(IIntelliSenseServiceCallback callback)
             :this()
         {
             _callback = callback;
@@ -94,20 +94,18 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// <param name="caretPosition">The caret position.</param>
         /// <param name="timeStamp">Time tag indicating the trigger sequence in client side</param>
         /// <returns>A completion results list.</returns>
-        public void RequestCompletionResults(string script, int caretPosition, string timeStamp)
+        public void RequestCompletionResults(string script, int caretPosition, long triggerTimeTicks)
         {
-            DateTime w = Convert.ToDateTime(timeStamp); // waiting request time tag
-
             ServiceCommon.Log("Intellisense request received, caret position: {0}", _caretPosition.ToString());
 
-            if (_requestTrigger == string.Empty ||
-                DateTime.Compare(w, Convert.ToDateTime(RequestTrigger)) >= 0)
+            if (_requestTrigger == 0 ||
+                triggerTimeTicks > RequestTrigger)
             {
                 ServiceCommon.Log("Procesing request, caret position: {0}", _caretPosition.ToString());
                 _script = script;
                 _caretPosition = caretPosition;
                 DismissGetCompletionResults();
-                RequestTrigger = timeStamp; // triggering new request processing
+                RequestTrigger = triggerTimeTicks; // triggering new request processing
             }
         }
 

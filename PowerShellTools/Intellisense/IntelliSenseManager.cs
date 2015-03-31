@@ -289,7 +289,7 @@ namespace PowerShellTools.Intellisense
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
         {
-            string triggerTime = DateTime.UtcNow.ToString();
+            long triggerTime = DateTime.UtcNow.Ticks;
 
             if (_statusBar != null)
             {

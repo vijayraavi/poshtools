@@ -10,15 +10,14 @@ namespace PowerShellTools.HostService.UnitTest
     [TestClass]
     public class PowershellIntelliSenseServiceTest
     {
-        private PowershellIntelliSenseService _service;
+        private PowerShellIntelliSenseService _service;
         private IIntelliSenseServiceCallback _context;
 
         [TestInitialize]
         public void Init()
         {
             _context = new IntelliSenseEventsHandlerProxy();
-            _service = new PowershellIntelliSenseService(_context);
-
+            _service = new PowerShellIntelliSenseService(_context);
         }
 
         [TestCleanup]
@@ -34,7 +33,7 @@ namespace PowerShellTools.HostService.UnitTest
             CompletionResultList result = null;
             ((IntelliSenseEventsHandlerProxy)_context).CompletionListUpdated += (sender, args) => { result = args.Value; mre.Set(); };
             
-            _service.RequestCompletionResults("Write-", 6, DateTime.UtcNow.ToString());
+            _service.RequestCompletionResults("Write-", 6, DateTime.UtcNow.Ticks);
 
             mre.WaitOne();
 
@@ -51,7 +50,7 @@ namespace PowerShellTools.HostService.UnitTest
             ((IntelliSenseEventsHandlerProxy)_context).CompletionListUpdated += (sender, args) => { result = args.Value; mre.Set(); };
 
             string script = @"$myVar = 2; $myStrVar = 'String variable'; Write-Host $";
-            _service.RequestCompletionResults(script, 55, DateTime.UtcNow.ToString());
+            _service.RequestCompletionResults(script, 55, DateTime.UtcNow.Ticks);
 
             mre.WaitOne();
 

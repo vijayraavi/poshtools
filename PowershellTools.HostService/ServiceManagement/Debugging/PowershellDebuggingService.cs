@@ -285,8 +285,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public RunspaceAvailability GetRunspaceAvailability(bool executionPriority)
         {
             if (_runspace.RunspaceAvailability != RunspaceAvailability.Available &&
-                executionPriority &&
-                CommandCompletionHelper.CurrentPowershell != null)
+                executionPriority)
             {
                 CommandCompletionHelper.DismissCommandCompletionListRequest();
             }
