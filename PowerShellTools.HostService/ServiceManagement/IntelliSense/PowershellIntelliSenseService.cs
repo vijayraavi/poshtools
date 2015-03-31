@@ -92,7 +92,7 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// </summary>
         /// <param name="script">The active script.</param>
         /// <param name="caretPosition">The caret position.</param>
-        /// <param name="triggerTag">Time tag indicating the trigger sequence in client side</param>
+        /// <param name="triggerTag">Tag(incremental long) indicating the trigger sequence in client side</param>
         /// <returns>A completion results list.</returns>
         public void RequestCompletionResults(string script, int caretPosition, long triggerTag)
         {
