@@ -9,10 +9,12 @@ using System.Management.Automation.Runspaces;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
-    public partial class PowershellDebuggingService : PSHost, IHostSupportsInteractiveSession
+    public partial class PowerShellDebuggingService : PSHost, IHostSupportsInteractiveSession
     {
         /// <summary>
         /// The identifier of this PSHost implementation.
@@ -31,7 +33,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override string Name
         {
-            get { return "PowershellToolOutProcHost"; }
+            get { return "PowerShell Tools for Visual Studio Host"; }
         }
 
         /// <summary>
@@ -56,7 +58,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override Version Version
         {
-            get { return new Version(1, 0, 0, 0); }
+            get
+            {
+                return Assembly.GetExecutingAssembly().GetName().Version;
+            }
         }
 
         /// <summary>
@@ -178,7 +183,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         Runspace IHostSupportsInteractiveSession.Runspace
         {
-            get { return PowershellDebuggingService.Runspace; }
+            get { return PowerShellDebuggingService.Runspace; }
         }
 
         #endregion IHostSupportsInteractiveSession

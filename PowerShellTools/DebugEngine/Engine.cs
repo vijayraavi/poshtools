@@ -46,8 +46,6 @@ namespace PowerShellTools.DebugEngine
 
         private List<ScriptBreakpoint> bps = new List<ScriptBreakpoint>();
 
-        private bool _initializingRunspace;
-
         private static readonly ILog Log = LogManager.GetLogger(typeof(Engine));
 
         #endregion

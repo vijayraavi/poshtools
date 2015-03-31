@@ -17,7 +17,7 @@ namespace PowerShellTools.HostService.ServiceManagement
     [PowerShellServiceHostBehavior]
     public sealed class PowerShellIntelliSenseService : IPowershellIntelliSenseService
     {
-        private readonly Runspace _runspace = PowershellDebuggingService.Runspace;
+        private readonly Runspace _runspace = PowerShellDebuggingService.Runspace;
         private long _requestTrigger;
         private string _script = string.Empty;
         private int _caretPosition;
@@ -100,13 +100,13 @@ namespace PowerShellTools.HostService.ServiceManagement
 
             if (_requestTrigger == 0 ||
                 triggerTimeTicks > RequestTrigger)
-            {
+        {
                 ServiceCommon.Log("Procesing request, caret position: {0}", _caretPosition.ToString());
                 _script = script;
                 _caretPosition = caretPosition;
                 DismissGetCompletionResults();
                 RequestTrigger = triggerTimeTicks; // triggering new request processing
-            }
+        }
         }
 
         /// <summary>

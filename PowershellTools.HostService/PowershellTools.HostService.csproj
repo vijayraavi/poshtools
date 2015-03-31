@@ -115,19 +115,19 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ServiceManagement\Debugging\DTEManager.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowershellBreakpointRecord.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowershellDebuggingService.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellBreakpointRecord.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingService.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowershellHost.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowershellServiceHost.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellHost.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellServiceHost.cs" />
     <Compile Include="ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceCommon.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowershellTools.Common\PowerShellTools.Common.csproj">
+    <ProjectReference Include="..\PowerShellTools.Common\PowerShellTools.Common.csproj">
       <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
       <Name>PowerShellTools.Common</Name>
     </ProjectReference>

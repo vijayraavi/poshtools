@@ -8,7 +8,7 @@
     <TemplateID>PowerShellTools.PowerShell.PowerShellScript</TemplateID>
     <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
     <AppliesTo>PowerShell | (!PowerShell)</AppliesTo>
-    <SortOrder>10</SortOrder>
+    <SortOrder>149</SortOrder>
     <Icon>PowerShellScript.ico</Icon>
     <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
     <ShowByDefault>true</ShowByDefault>
