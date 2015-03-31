@@ -8,7 +8,7 @@
     <TemplateID>PowerShellTools.PowerShell.PowerShellScriptModule</TemplateID>
     <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
     <AppliesTo>PowerShell | (!PowerShell)</AppliesTo>
-    <SortOrder>30</SortOrder>
+    <SortOrder>151</SortOrder>
     <Icon>PowerShellModule.ico</Icon>
   </TemplateData>
   <TemplateContent>
