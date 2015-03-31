@@ -139,7 +139,7 @@ namespace PowerShellTools.ServiceManagement
 
             if (ConnectionException != null)
             {
-                ConnectionException(this, new EventArgs());
+                ConnectionException(this, EventArgs.Empty);
             }
         }
 

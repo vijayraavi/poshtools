@@ -1,4 +1,5 @@
 ﻿using log4net;
+using log4net.Appender;
 using log4net.Config;
 using log4net.Layout;
 
@@ -19,11 +20,23 @@ namespace PowerShellTools.Diagnostics
         {
             if (!_initialized)
             {
+                PatternLayout outputPanePattern = new PatternLayout("%date{ABSOLUTE} - %thread - %logger - %level - %message%newline");
+
                 var appender = new OutputPaneAppender();
-                appender.Layout = new PatternLayout("%date{ABSOLUTE} - %thread - %logger - %level - %message%newline");
+                appender.Layout = outputPanePattern;
                 appender.ActivateOptions();
 
                 BasicConfigurator.Configure(appender);
+
+#if DEBUG
+                PatternLayout debugOutputPattern = new PatternLayout("%date{ABSOLUTE} - %thread - %level - %message%newline");   //The DebugAppender already includes the logger.
+
+                DebugAppender debugAppender = new DebugAppender();
+                debugAppender.Layout = debugOutputPattern;
+                debugAppender.ActivateOptions();
+
+                BasicConfigurator.Configure(debugAppender);
+#endif
 
                 SetLoggingLevel("ALL");
 

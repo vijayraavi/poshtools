@@ -12,7 +12,7 @@ using PowerShellTools.Intellisense;
 namespace PowerShellTools.Test.IntelliSense
 {
     [TestClass]
-    public class CommentAreaTest
+    public class CommentAreaUnitTests
     {
         private AutoCompletionController _braceCompletionController;
         private Mock<ITextView> _textView;
