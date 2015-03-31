@@ -8,7 +8,7 @@
     <TemplateID>PowerShellTools.PowerShell.PowerShellScriptData</TemplateID>
     <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
     <AppliesTo>PowerShell | (!PowerShell)</AppliesTo>
-    <SortOrder>20</SortOrder>
+    <SortOrder>150</SortOrder>
     <Icon>PowerShellDataFile.ico</Icon>
   </TemplateData>
   <TemplateContent>
