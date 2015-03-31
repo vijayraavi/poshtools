@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
-    static class DTEManager
+    internal static class DTEManager
     {
         [DllImport("ole32.dll")]
         private static extern int CreateBindCtx(uint reserved, out IBindCtx ppbc);
@@ -17,7 +17,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         /// <param name="processId">parent VS process id</param>
         /// <returns>DTE2 object</returns>
-        public static DTE2 GetDTE(int processId)
+        internal static DTE2 GetDTE(int processId)
         {
             string progId = @"^!VisualStudio\.DTE\.\d{2}\.\d\:" + processId.ToString() + "$";
             object runningObject = null;

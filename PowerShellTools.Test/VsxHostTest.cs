@@ -8,13 +8,13 @@ namespace PowerShellTools.Test
     [TestClass]
     public class VsxHostTest
     {
-        private PowershellDebuggingService _debuggingService;
+        private PowerShellDebuggingService _debuggingService;
         private ScriptDebugger _host;
 
         [TestInitialize]
         public void Init()
         {
-            _debuggingService = new PowershellDebuggingService();
+            _debuggingService = new PowerShellDebuggingService();
             _host = new ScriptDebugger(true, _debuggingService);
         }
 
@@ -30,7 +30,7 @@ namespace PowerShellTools.Test
                 output += x;
             };
 
-            using (var pipe = PowershellDebuggingService.Runspace.CreatePipeline())
+            using (var pipe = PowerShellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add(command);
                 pipe.Invoke();

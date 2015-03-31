@@ -13,7 +13,7 @@ namespace PowerShellTools.HostService.ServiceManagement
     [PowerShellServiceHostBehavior]
     public sealed class PowershellIntelliSenseService : IPowershellIntelliSenseService
     {
-        private readonly Runspace _runspace = PowershellDebuggingService.Runspace;
+        private readonly Runspace _runspace = PowerShellDebuggingService.Runspace;
 
         #region IAutoCompletionService Members
 

@@ -14,7 +14,7 @@ using System.Diagnostics;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
-    public partial class PowershellDebuggingService : PSHost, IHostSupportsInteractiveSession
+    public partial class PowerShellDebuggingService : PSHost, IHostSupportsInteractiveSession
     {
         /// <summary>
         /// The identifier of this PSHost implementation.
@@ -183,7 +183,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         Runspace IHostSupportsInteractiveSession.Runspace
         {
-            get { return PowershellDebuggingService.Runspace; }
+            get { return PowerShellDebuggingService.Runspace; }
         }
 
         #endregion IHostSupportsInteractiveSession
