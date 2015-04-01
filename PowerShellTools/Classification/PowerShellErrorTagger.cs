@@ -16,22 +16,26 @@ namespace PowerShellTools.Classification
     internal class PowerShellErrorTagger : ITagger<ErrorTag>, INotifyTagsChanged
 	{
 		public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
-		private ITextBuffer Buffer { get;set; }
+		private ITextBuffer _textBuffer { get;set; }
 
 		internal PowerShellErrorTagger(ITextBuffer sourceBuffer)
 		{
-			Buffer = sourceBuffer;
-			Buffer.Properties.AddProperty(typeof(PowerShellErrorTagger).Name, this);
-			Buffer.ContentTypeChanged += Buffer_ContentTypeChanged;
+			_textBuffer = sourceBuffer;
+			_textBuffer.Properties.AddProperty(typeof(PowerShellErrorTagger).Name, this);
+			_textBuffer.ContentTypeChanged += Buffer_ContentTypeChanged;
 		}
 
 		public IEnumerable<ITagSpan<ErrorTag>> GetTags(NormalizedSnapshotSpanCollection spans)
 		{
-			var currentSnapshot = Buffer.CurrentSnapshot;
+			var currentSnapshot = _textBuffer.CurrentSnapshot;
 		    if (currentSnapshot.Length == 0) yield break;
 
 		    List<TagInformation<ErrorTag>> list;
-		    Buffer.Properties.TryGetProperty(BufferProperties.TokenErrorTags, out list);
+            _textBuffer.Properties.TryGetProperty(BufferProperties.TokenErrorTags, out list);
+            if (list == null)
+            {
+                list = new List<TagInformation<ErrorTag>>();
+            }
 
 		    foreach (var tagSpan in list.Select(current => current.GetTagSpan(currentSnapshot)).Where(tagSpan => tagSpan != null))
 		    {
@@ -50,8 +54,8 @@ namespace PowerShellTools.Classification
 
 		private void Buffer_ContentTypeChanged(object sender, ContentTypeChangedEventArgs e)
 		{
-			Buffer.ContentTypeChanged -= Buffer_ContentTypeChanged;
-			Buffer.Properties.RemoveProperty(typeof(PowerShellErrorTagger).Name);
+			_textBuffer.ContentTypeChanged -= Buffer_ContentTypeChanged;
+			_textBuffer.Properties.RemoveProperty(typeof(PowerShellErrorTagger).Name);
 		}
 	}
 }
