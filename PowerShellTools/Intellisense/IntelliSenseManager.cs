@@ -17,7 +17,6 @@ using Microsoft.VisualStudio.Text.Editor;
 using PowerShellTools.Classification;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.Repl;
-using Tasks = System.Threading.Tasks;
 
 namespace PowerShellTools.Intellisense
 {
@@ -41,11 +40,9 @@ namespace PowerShellTools.Intellisense
         private string _completionText;
         private int _completionCaretPosition;
         private Stopwatch _sw;
-        private long _triggerTag;
 
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContet)
         {
-            _triggerTag = 0;
             _broker = broker;
             NextCommandHandler = commandHandler;
             _textView = textView;
@@ -305,29 +302,24 @@ namespace PowerShellTools.Intellisense
         /// </summary>
         private void TriggerCompletion()
         {
-            
-            
             _completionCaretPosition = (int)_textView.Caret.Position.BufferPosition;
-            Tasks.Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    _completionLine = _textView.Caret.Position.BufferPosition.GetContainingLine();
-                    _completionCaretInLine = (_completionCaretPosition - _completionLine.Start);
-                    _completionText = _completionLine.GetText().Substring(0, _completionCaretInLine);
+            _completionLine = _textView.Caret.Position.BufferPosition.GetContainingLine();
+            _completionCaretInLine = (_completionCaretPosition - _completionLine.Start);
+            _completionText = _completionLine.GetText().Substring(0, _completionCaretInLine);
 
-                    StartIntelliSense(_completionLine.Start, _completionCaretPosition, _completionText);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warn("Failed to start IntelliSense", ex);
-                }
-            }); 
+            try
+            {
+                StartIntelliSense(_completionLine.Start, _completionCaretPosition, _completionText);
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Failed to start IntelliSense", ex);
+            }
         }
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
         {
-            Interlocked.Increment(ref _triggerTag);
+            long triggerTime = DateTime.UtcNow.Ticks;
 
             if (_statusBar != null)
             {
@@ -370,7 +362,7 @@ namespace PowerShellTools.Intellisense
             }
 
             // Go out-of-proc here to get the completion list
-            PowerShellToolsPackage.IntelliSenseService.RequestCompletionResults(script, scriptParsePosition, _triggerTag);
+            PowerShellToolsPackage.IntelliSenseService.RequestCompletionResults(script, scriptParsePosition, triggerTime);
         }
 
         /// <summary>

@@ -47,15 +47,9 @@ namespace PowerShellTools.HostService.ServiceManagement
                     {
                         try
                         {
-                            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
-                            
-                            ServiceCommon.Log("Getting completion list at position {0}", _caretPosition);
-                              
-                            if (commandCompletion != null && commandCompletion.CompletionMatches.Count() > 0)
-                            {
-                                ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", _caretPosition);
-                                _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
-                            }
+                            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);                              
+                            ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", _caretPosition);
+                            _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
 
                             // Reset trigger
                             _requestTrigger = 0;

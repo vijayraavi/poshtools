@@ -34,6 +34,15 @@ namespace PowerShellTools.Common.IntelliSense
                 return null;
             }
 
+            var stringExpandableTokens = tokens.Where(p => p.Kind == TokenKind.StringExpandable || p.Kind == TokenKind.Comment).ToList();
+            foreach(var token in stringExpandableTokens)
+            {
+                if (token.Extent.StartOffset <= caretPosition && caretPosition <= token.Extent.EndOffset)
+                {
+                    return null;
+                }
+            }
+
             CommandCompletion commandCompletion = null;
 
             if (runspace.RunspaceAvailability == RunspaceAvailability.Available)
