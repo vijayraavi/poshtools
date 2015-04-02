@@ -39,6 +39,7 @@ namespace PowerShellTools.Classification
         private ITrackingSpan _spanToTokenize;
 
         private Timers.Timer _timer;
+        private const double DelayPerType = 300.0;
 
         public PowerShellTokenizationService(ITextBuffer textBuffer)
         {
@@ -48,7 +49,7 @@ namespace PowerShellTools.Classification
             _regionAndBraceMatchingService = new RegionAndBraceMatchingService();
 
             // TODO: we may need to make this period configurable in setting dialog.
-            _timer = new Timers.Timer(300);
+            _timer = new Timers.Timer(DelayPerType);
             _timer.Elapsed += TimerElapsed_StartTokenization;
 
             SetEmptyTokenizationProperties();
@@ -73,8 +74,6 @@ namespace PowerShellTools.Classification
                 _timer.Stop();
             }
             
-            System.Diagnostics.Debug.Print("Typing interval: {0}", _sw.ElapsedMilliseconds);
-
             var spanToTokenizeCache = _spanToTokenize;
             if (spanToTokenizeCache == null)
             {
