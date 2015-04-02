@@ -7,6 +7,8 @@ using log4net;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
+using Tasks = System.Threading.Tasks;
+using Timers = System.Timers;
 
 namespace PowerShellTools.Classification
 {
@@ -36,12 +38,18 @@ namespace PowerShellTools.Classification
         private ITextBuffer _textBuffer;
         private ITrackingSpan _spanToTokenize;
 
+        private Timers.Timer _timer;
+
         public PowerShellTokenizationService(ITextBuffer textBuffer)
         {
             _textBuffer = textBuffer;
             _classifierService = new ClassifierService();
             _errorTagService = new ErrorTagSpanService();
             _regionAndBraceMatchingService = new RegionAndBraceMatchingService();
+
+            // TODO: we may need to make this period configurable in setting dialog.
+            _timer = new Timers.Timer(300);
+            _timer.Elapsed += TimerElapsed_StartTokenization;
 
             SetEmptyTokenizationProperties();
             _spanToTokenize = _textBuffer.CurrentSnapshot.CreateTrackingSpan(0, _textBuffer.CurrentSnapshot.Length, SpanTrackingMode.EdgeInclusive);
@@ -50,6 +58,23 @@ namespace PowerShellTools.Classification
 
         public void StartTokenization()
         {
+            // A type will trigger the tokenization only when there is not another following type in a certain period.
+            if (_timer.Enabled)
+            {
+                _timer.Stop();
+            }
+            _timer.Start();
+        }
+
+        private void TimerElapsed_StartTokenization(object sender, EventArgs e)
+        {
+            if (_timer.Enabled)
+            {
+                _timer.Stop();
+            }
+            
+            System.Diagnostics.Debug.Print("Typing interval: {0}", _sw.ElapsedMilliseconds);
+
             var spanToTokenizeCache = _spanToTokenize;
             if (spanToTokenizeCache == null)
             {
@@ -65,9 +90,9 @@ namespace PowerShellTools.Classification
             }
             var tokenizationText = spanToTokenizeCache.GetText(_textBuffer.CurrentSnapshot);
 
-            ThreadPool.QueueUserWorkItem(_ =>
-            {                
-                Tokenize(spanToTokenizeCache, tokenizationText);                
+            Tasks.Task.Factory.StartNew(() =>
+            {
+                Tokenize(spanToTokenizeCache, tokenizationText);
                 SetTokenizationProperties();
                 RemoveCachedTokenizationProperties();
                 SetBufferProperty(BufferProperties.SpanTokenized, spanToTokenizeCache);
@@ -80,8 +105,8 @@ namespace PowerShellTools.Classification
                 OnTokenizationComplete();
                 NotifyOnTagsChanged(BufferProperties.Classifier, trackingSpan);
                 NotifyOnTagsChanged(BufferProperties.ErrorTagger, trackingSpan);
-                NotifyOnTagsChanged(typeof(PowerShellOutliningTagger).Name, trackingSpan);                
-            }, this);
+                NotifyOnTagsChanged(typeof(PowerShellOutliningTagger).Name, trackingSpan);
+            });
         }
 
         private void NotifyOnTagsChanged(string name, ITrackingSpan trackingSpan)
