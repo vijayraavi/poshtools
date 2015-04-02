@@ -42,6 +42,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private readonly AutoResetEvent _debugCommandEvent = new AutoResetEvent(false);
         private object _executeDebugCommandLock = new object();
         private string _debugCommandOutput;
+        private bool _debugOutput;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
 
         public PowerShellDebuggingService()
@@ -53,6 +54,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _mapLocalToRemote = new Dictionary<string, string>();
             _mapRemoteToLocal = new Dictionary<string, string>();
             _psBreakpointTable = new List<PowerShellBreakpointRecord>();
+            _debugOutput = true;
             InitializeRunspace(this);
         }
 
@@ -102,19 +104,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Client respond with resume action to service
         /// </summary>
         /// <param name="action">Resumeaction from client</param>
+        /// <returns>Output from debugging command</returns>
         public string ExecuteDebuggingCommand(string debuggingCommand)
         {
-            // Need to be thread-safe here, to ensure every debugging command get processed.
-            // e.g: Set/Enable/Disable/Remove breakpoint during debugging 
-            lock (_executeDebugCommandLock)
-            {
-                ServiceCommon.Log("Client asks for executing debugging command");
-                _debugCommandOutput = string.Empty;
-                _debuggingCommand = debuggingCommand;
-                _pausedEvent.Set();
-                _debugCommandEvent.WaitOne();
-                return _debugCommandOutput;
-            }
+            return ExecuteDebuggingCommand(debuggingCommand, true);
+        }
+
+        /// <summary>
+        /// Client respond with resume action to service
+        /// </summary>
+        /// <param name="action">Resumeaction from client</param>
+        /// <param name="output">Boolean indicate if output the debug command</param>
+        /// <returns>Output from debugging command</returns>
+        public string TryExecuteDebuggingCommand(string debuggingCommand)
+        {
+            return ExecuteDebuggingCommand(debuggingCommand, false);
         }
 
         /// <summary>
