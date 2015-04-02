@@ -101,6 +101,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ServiceCommon.Log("DebuggerFinished");
 
+            ClearBreakpoints();
             _psBreakpointTable.Clear();
 
             if (_callback != null)

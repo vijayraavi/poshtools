@@ -51,7 +51,7 @@ namespace PowerShellTools.HostService.ServiceManagement
                             
                             ServiceCommon.Log("Getting completion list at position {0}", _caretPosition);
                               
-                            if (commandCompletion != null && commandCompletion.CompletionMatches.Count() > 0)
+                            if (commandCompletion != null)
                             {
                                 ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", _caretPosition);
                                 _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
