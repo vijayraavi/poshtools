@@ -31,7 +31,7 @@ namespace PowerShellTools.Classification
 		    if (currentSnapshot.Length == 0) yield break;
 
 		    List<TagInformation<ErrorTag>> list;
-            _textBuffer.Properties.TryGetProperty(BufferProperties.TokenErrorTags, out list);
+            _textBuffer.Properties.TryGetProperty<List<TagInformation<ErrorTag>>>(BufferProperties.TokenErrorTags, out list);
             if (list == null)
             {
                 list = new List<TagInformation<ErrorTag>>();

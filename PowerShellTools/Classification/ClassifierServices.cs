@@ -85,9 +85,8 @@ namespace PowerShellTools.Classification
         /// <param name="spanStart">The start position of the current text span.</param>
         /// <param name="errors">The parsed errors.</param>
         /// <returns>Error tags consumed by VS.</returns>
-        internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextBuffer buffer, int spanStart, IEnumerable<ParseError> errors)
+        internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextSnapshot currentSnapshot, int spanStart, IEnumerable<ParseError> errors)
         {
-            var currentSnapshot = buffer.CurrentSnapshot;
             foreach (var parseError in errors)
             {
                 var errorSpanStart = parseError.Extent.StartOffset + spanStart;
@@ -114,9 +113,8 @@ namespace PowerShellTools.Classification
         /// <param name="spanStart">The start position of the current text span.</param>
         /// <param name="errors">The parsed errors from out-proc.</param>
         /// <returns>Error tags consumed by VS.</returns>
-        internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextBuffer buffer, int spanStart, IEnumerable<ParseErrorItem> errors)
+        internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextSnapshot currentSnapshot, int spanStart, IEnumerable<ParseErrorItem> errors)
         {
-            var currentSnapshot = buffer.CurrentSnapshot;
             foreach (var parseError in errors)
             {
                 var errorSpanStart = parseError.ExtentStartOffset + spanStart;

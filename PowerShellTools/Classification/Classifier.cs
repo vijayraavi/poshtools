@@ -13,61 +13,24 @@ namespace PowerShellTools.Classification
 
         public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
 
-        protected ITextBuffer Buffer
+        protected ITextBuffer TextBuffer
         {
             get
             {
                 return _textBuffer;
             }
         }
+
         internal Classifier(ITextBuffer textBuffer)
         {
             _textBuffer = textBuffer;
         }
+
         public IList<ClassificationSpan> GetClassificationSpans(SnapshotSpan span)
         {
             UpdateClassifierBufferProperty();
             var result = VirtualGetClassificationSpans(span);
             return result;
-        }
-
-        internal static void SetClassificationTypeColors<T>(IDictionary<T, Color> tokenColors, IDictionary<T, Color> defaultTokenColors, string prefix, string sufix)
-        {
-            var classificationFormatMap = EditorImports.ClassificationFormatMap.GetClassificationFormatMap("PowerShell");
-            foreach (var current in defaultTokenColors)
-            {
-                var classificationTypeRegistryService = EditorImports.ClassificationTypeRegistryService;
-                var key = current.Key;
-                var classificationType = classificationTypeRegistryService.GetClassificationType(prefix + key + sufix);
-                if (classificationType == null) continue;
-
-                var textFormattingRunProperties = classificationFormatMap.GetTextProperties(classificationType);
-                Color foreground;
-                if (tokenColors.TryGetValue(current.Key, out foreground))
-                {
-                    textFormattingRunProperties = textFormattingRunProperties.SetForeground(foreground);
-                }
-                else
-                {
-                    textFormattingRunProperties = textFormattingRunProperties.ClearForegroundBrush();
-                }
-                textFormattingRunProperties = textFormattingRunProperties.ClearFontRenderingEmSize();
-                textFormattingRunProperties = textFormattingRunProperties.ClearTypeface();
-                classificationFormatMap.SetTextProperties(classificationType, textFormattingRunProperties);
-            }
-        }
-
-        internal static void SetFontColor(Color color, IClassificationType classificationType, string category)
-        {
-            var classificationFormatMap = EditorImports.ClassificationFormatMap.GetClassificationFormatMap(category);
-            var textFormattingRunProperties = classificationFormatMap.GetTextProperties(classificationType);
-            textFormattingRunProperties = textFormattingRunProperties.SetForeground(color);
-            classificationFormatMap.SetTextProperties(classificationType, textFormattingRunProperties);
-        }
-        internal static TextFormattingRunProperties GetTextProperties(IClassificationType type, string category)
-        {
-            var classificationFormatMap = EditorImports.ClassificationFormatMap.GetClassificationFormatMap(category);
-            return classificationFormatMap.GetTextProperties(type);
         }
 
         public void OnTagsChanged(SnapshotSpan notificationSpan)
