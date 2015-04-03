@@ -105,20 +105,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         /// <param name="action">Resumeaction from client</param>
         /// <returns>Output from debugging command</returns>
-        public string ExecuteDebuggingCommand(string debuggingCommand)
+        public string ExecuteDebuggingCommandOutDefault(string debuggingCommand)
         {
-            return ExecuteDebuggingCommand(debuggingCommand, true);
+            return ExecuteDebuggingCommand(debuggingCommand, true); // also print output to user
         }
 
         /// <summary>
         /// Client respond with resume action to service
         /// </summary>
         /// <param name="action">Resumeaction from client</param>
-        /// <param name="output">Boolean indicate if output the debug command</param>
         /// <returns>Output from debugging command</returns>
-        public string TryExecuteDebuggingCommand(string debuggingCommand)
+        public string ExecuteDebuggingCommandOutNull(string debuggingCommand)
         {
-            return ExecuteDebuggingCommand(debuggingCommand, false);
+            return ExecuteDebuggingCommand(debuggingCommand, false); // dont need print output to user
         }
 
         /// <summary>

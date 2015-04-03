@@ -29,10 +29,10 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         bool Execute(string cmdline);
 
         [OperationContract]
-        string ExecuteDebuggingCommand(string cmdline);
+        string ExecuteDebuggingCommandOutDefault(string cmdline);
 
         [OperationContract]
-        string TryExecuteDebuggingCommand(string cmdline);
+        string ExecuteDebuggingCommandOutNull(string cmdline);
 
         [OperationContract]
         void Stop();

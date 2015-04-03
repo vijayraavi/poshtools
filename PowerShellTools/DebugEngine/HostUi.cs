@@ -129,7 +129,7 @@ namespace PowerShellTools.DebugEngine
                     string prompt;
                     if (IsDebuggingCommandReady)
                     {
-                        prompt = DebuggingService.TryExecuteDebuggingCommand(DebugEngineConstants.GetPrompt);
+                        prompt = DebuggingService.ExecuteDebuggingCommandOutNull(DebugEngineConstants.GetPrompt);
                     }
                     else
                     {
