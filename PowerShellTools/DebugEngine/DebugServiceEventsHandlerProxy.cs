@@ -22,10 +22,10 @@ namespace PowerShellTools.DebugEngine
 
         public DebugServiceEventsHandlerProxy(){}
 
-        public DebugServiceEventsHandlerProxy(ScriptDebugger debugger, bool UiOutput)
+        public DebugServiceEventsHandlerProxy(ScriptDebugger debugger, bool uiOutput)
         {
             _debugger = debugger;
-            _uiOutput = UiOutput;
+            _uiOutput = uiOutput;
         }
 
         public ScriptDebugger Debugger
