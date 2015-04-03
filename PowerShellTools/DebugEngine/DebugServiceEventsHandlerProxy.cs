@@ -13,7 +13,7 @@ namespace PowerShellTools.DebugEngine
     /// Proxy of debugger service event handlers
     /// This works as InstanceContext for debugger service channel
     /// </summary>
-    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
+    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Single, UseSynchronizationContext = false)]
     public class DebugServiceEventsHandlerProxy : IDebugEngineCallback
     {
         private ScriptDebugger _debugger;

@@ -315,22 +315,25 @@ namespace PowerShellTools.DebugEngine
         /// <param name="output"></param>
         public void VsOutputString(string output)
         {
-            if (ReplWindow != null)
-            {
-                if (output.StartsWith(PowerShellConstants.PowershellOutputErrorTag))
+            ThreadHelper.Generic.Invoke(() =>
                 {
-                    ReplWindow.WriteError(output);
-                }
-                else
-                {
-                    ReplWindow.WriteOutput(output);
-                }
-            }
+                    if (ReplWindow != null)
+                    {
+                        if (output.StartsWith(PowerShellConstants.PowershellOutputErrorTag))
+                        {
+                            ReplWindow.WriteError(output);
+                        }
+                        else
+                        {
+                            ReplWindow.WriteOutput(output);
+                        }
+                    }
 
-            if (OutputString != null)
-            {
-                OutputString(output);
-            }
+                    if (OutputString != null)
+                    {
+                        OutputString(output);
+                    }
+                });
         }
     }
 }
