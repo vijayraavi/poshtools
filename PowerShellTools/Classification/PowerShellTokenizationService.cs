@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
-using System.Threading;
 using log4net;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
 using Tasks = System.Threading.Tasks;
-using Timers = System.Timers;
 
 namespace PowerShellTools.Classification
 {
@@ -16,13 +14,13 @@ namespace PowerShellTools.Classification
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellTokenizationService));
         private readonly object _tokenizationLock = new object();
-        
+
         public event EventHandler<Ast> TokenizationComplete;
 
         private readonly ClassifierService _classifierService;
         private readonly ErrorTagSpanService _errorTagService;
         private readonly RegionAndBraceMatchingService _regionAndBraceMatchingService;
-                
+
         private ITextBuffer _textBuffer;
         private ITextSnapshot _lastSnapshot;
         private bool _isBufferTokenizing;
@@ -53,7 +51,7 @@ namespace PowerShellTools.Classification
 
                         Tasks.Task.Factory.StartNew(() =>
                         {
-                            UpdateTokenization();                            
+                            UpdateTokenization();
                         });
                     }
                 }
@@ -101,7 +99,7 @@ namespace PowerShellTools.Classification
                 }
             }
         }
-        
+
         private void NotifyOnTagsChanged(string name, ITextSnapshot currentSnapshot)
         {
             INotifyTagsChanged classifier;
@@ -128,9 +126,9 @@ namespace PowerShellTools.Classification
             }
         }
 
-        private void Tokenize(ITextSnapshot currentSnapshot, 
-                              string spanText, 
-                              int startPosition, 
+        private void Tokenize(ITextSnapshot currentSnapshot,
+                              string spanText,
+                              int startPosition,
                               out Ast generatedAst,
                               out Token[] generatedTokens,
                               out List<ClassificationInfo> tokenSpans,
@@ -244,7 +242,7 @@ namespace PowerShellTools.Classification
 
         internal TagSpan<T> GetTagSpan(ITextSnapshot snapshot)
         {
-            return snapshot.Length >= Start + Length ? 
+            return snapshot.Length >= Start + Length ?
                 new TagSpan<T>(new SnapshotSpan(snapshot, Start, Length), Tag) : null;
         }
     }
