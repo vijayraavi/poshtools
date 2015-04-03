@@ -14,7 +14,7 @@ namespace PowerShellTools.DebugEngine
     /// Proxy of debugger service event handlers
     /// This works as InstanceContext for debugger service channel
     /// </summary>
-    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Single, UseSynchronizationContext = false)]
+    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     public class DebugServiceEventsHandlerProxy : IDebugEngineCallback
     {
         private ScriptDebugger _debugger;
@@ -84,10 +84,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="output">string to output</param>
         public void OutputStringLine(string output)
         {
-            if (_uiOutput)
-            {
-                Debugger.HostUi.VsOutputString(output + Environment.NewLine);
-            }
+            OutputString(output + Environment.NewLine);
         }
 
         /// <summary>
