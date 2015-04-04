@@ -28,7 +28,7 @@ namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
 
         public static CompletionResultList FromCommandCompletion(CommandCompletion commandCompletion)
         {
-            if (commandCompletion == null)
+            if (commandCompletion == null || commandCompletion.CompletionMatches.Count == 0)
             {
                 return new CompletionResultList()
                 {

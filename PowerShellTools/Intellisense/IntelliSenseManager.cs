@@ -68,10 +68,12 @@ namespace PowerShellTools.Intellisense
         /// <returns></returns>
         public int Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
-            if (VsShellUtilities.IsInAutomationFunction(_serviceProvider))
+            if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) || 
+                Utilities.IsInCommentArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
             {
                 return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             }
+
             //make a copy of this so we can look at it after forwarding some commands 
             var commandId = nCmdId;
             var typedChar = char.MinValue;
@@ -80,8 +82,14 @@ namespace PowerShellTools.Intellisense
             if (pguidCmdGroup == VSConstants.VSStd2K && nCmdId == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
-
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
+
+                if (_activeSession == null && 
+                    IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar) &&
+                    Utilities.IsInStringArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
+                {
+                    return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                }                
             }
             else
             {
@@ -535,6 +543,12 @@ namespace PowerShellTools.Intellisense
         {
             Log.DebugFormat("IsBothIntelliSenseTriggerAndCommitChar: [{0}]", ch);
             return ch == '.';
+        }
+
+        private static bool IsNotIntelliSenseTriggerWhenInStringLiteral(char ch)
+        {
+            Log.DebugFormat("IsIntelliSenseTriggerInStringLiteral: [{0}]", ch);
+            return ch == '-' || ch == '$' || ch == '.' || ch == ':';
         }
     }
 
