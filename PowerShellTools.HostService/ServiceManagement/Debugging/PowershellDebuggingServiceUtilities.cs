@@ -101,6 +101,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ServiceCommon.Log("DebuggerFinished");
 
+            ClearBreakpoints();
             _psBreakpointTable.Clear();
 
             if (_callback != null)
@@ -142,7 +143,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 outputString.AppendLine(obj.ToString());
             }
 
-            NotifyOutputString(outputString.ToString());
+            if (_debugOutput)
+            {
+                NotifyOutputString(outputString.ToString());
+            }
         }
 
         private void InitializeRunspace(PSHost psHost)
@@ -274,6 +278,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             ServiceCommon.Log("Checking runspace availability: " + state.ToString());
 
             return state;
+        }
+
+        private string ExecuteDebuggingCommand(string debuggingCommand, bool output)
+        {
+            // Need to be thread-safe here, to ensure every debugging command get processed.
+            // e.g: Set/Enable/Disable/Remove breakpoint during debugging 
+            lock (_executeDebugCommandLock)
+            {
+                ServiceCommon.Log("Client asks for executing debugging command");
+                _debugOutput = output;
+                _debugCommandOutput = string.Empty;
+                _debuggingCommand = debuggingCommand;
+                _pausedEvent.Set();
+                _debugCommandEvent.WaitOne();
+                _debugOutput = true;
+                return _debugCommandOutput;
+            }
         }
     }
 }

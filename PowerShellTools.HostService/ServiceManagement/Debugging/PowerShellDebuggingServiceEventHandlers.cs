@@ -121,20 +121,27 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 _pausedEvent.WaitOne();
 
-                PSCommand psCommand = new PSCommand();
-                psCommand.AddScript(_debuggingCommand);
-                psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                var output = new PSDataCollection<PSObject>();
-                output.DataAdded += objects_DataAdded;
-                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-
-                ProcessDebuggingCommandResults(output);
-
-                if (results.ResumeAction != null)
+                try
                 {
-                    ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
-                    e.ResumeAction = results.ResumeAction.Value;
-                    resumed = true; // debugger resumed executing
+                    PSCommand psCommand = new PSCommand();
+                    psCommand.AddScript(_debuggingCommand);
+                    psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                    var output = new PSDataCollection<PSObject>();
+                    output.DataAdded += objects_DataAdded;
+                    DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
+
+                    ProcessDebuggingCommandResults(output);
+
+                    if (results.ResumeAction != null)
+                    {
+                        ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
+                        e.ResumeAction = results.ResumeAction.Value;
+                        resumed = true; // debugger resumed executing
+                    }
+                }
+                catch (Exception ex)
+                {
+                    NotifyOutputString(ex.Message);
                 }
 
                 // Notify the debugging command execution call that debugging command was complete.

@@ -57,6 +57,7 @@ namespace PowerShellTools.Classification
         private static Dictionary<PSTokenType, IClassificationType> tokenClassificationTypeMap;
         private static IClassificationType scriptGaps;
 #pragma warning restore 169, 649
+
         static PowerShellClassifier()
 	    {
             tokenClassificationTypeMap = new Dictionary<PSTokenType, IClassificationType>();
@@ -86,15 +87,37 @@ namespace PowerShellTools.Classification
         internal PowerShellClassifier(ITextBuffer bufferToClassify)
             : base(bufferToClassify)
 		{
+
 		}
-		internal static void FillClassificationGap(List<ClassificationSpan> classifications, Span? lastClassificationSpan, Span newClassificationSpan, ITextSnapshot currentSnapshot, IClassificationType classificationType)
+
+        protected override IList<ClassificationSpan> VirtualGetClassificationSpans(SnapshotSpan span)
+        {
+            var list = new List<ClassificationSpan>();
+            if (span.Snapshot == null || span.Snapshot.Length == 0)
+            {
+                return list;
+            }
+
+            AddTokenClassifications(TextBuffer, span, list, null, scriptGaps);
+            FillBeginningAndEnd(span, list, TextBuffer.CurrentSnapshot, scriptGaps);
+            return list;
+        }
+        
+        internal static IClassificationType GetClassificationType(PSTokenType tokenType)
+        {
+            IClassificationType result;
+            return tokenClassificationTypeMap.TryGetValue(tokenType, out result) ? result : null;
+        }
+
+		private void FillClassificationGap(List<ClassificationSpan> classifications, Span? lastClassificationSpan, Span newClassificationSpan, ITextSnapshot currentSnapshot, IClassificationType classificationType)
 		{
 			if (lastClassificationSpan.HasValue && newClassificationSpan.Start > lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length)
 			{
 				classifications.Add(new ClassificationSpan(new SnapshotSpan(currentSnapshot, lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length, newClassificationSpan.Start - (lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length)), classificationType));
 			}
 		}
-		internal static void FillBeginningAndEnd(SnapshotSpan span, List<ClassificationSpan> classifications, ITextSnapshot currentSnapshot, IClassificationType classificationType)
+
+		private void FillBeginningAndEnd(SnapshotSpan span, List<ClassificationSpan> classifications, ITextSnapshot currentSnapshot, IClassificationType classificationType)
 		{
 			if (classifications.Count == 0)
 			{
@@ -115,28 +138,11 @@ namespace PowerShellTools.Classification
 				classifications.Add(new ClassificationSpan(new SnapshotSpan(currentSnapshot, classificationSpan2.Span.End, span.End - classificationSpan2.Span.End), classificationType));
 			}
 		}
-		internal static void SetTokenColors(IDictionary<PSTokenType, Color> tokenColors, IDictionary<PSTokenType, Color> defaultTokenColors, string suffix)
-		{
-			SetClassificationTypeColors(tokenColors, defaultTokenColors, "PS1", suffix);
-			var classificationFormatMap = EditorImports.ClassificationFormatMap.GetClassificationFormatMap("PowerShell");
-            var classificationType = EditorImports.ClassificationTypeRegistryService.GetClassificationType("PowerShell TokenInBreakpoint");
-			var textFormattingRunProperties = classificationFormatMap.GetTextProperties(classificationType);
-			textFormattingRunProperties = textFormattingRunProperties.SetForeground(Colors.White);
-			textFormattingRunProperties = textFormattingRunProperties.ClearFontRenderingEmSize();
-			classificationFormatMap.SetTextProperties(classificationType, textFormattingRunProperties);
-		}
-
-		internal static IClassificationType GetClassificationType(PSTokenType tokenType)
-		{
-			IClassificationType result;
-			return tokenClassificationTypeMap.TryGetValue(tokenType, out result) ? result : null;
-		}
-
-		internal static void AddTokenClassifications(ITextBuffer buffer, SnapshotSpan span, List<ClassificationSpan> classifications, Span? lastClassificationSpan, IClassificationType gapType)
+        
+		private void AddTokenClassifications(ITextBuffer buffer, SnapshotSpan span, List<ClassificationSpan> classifications, Span? lastClassificationSpan, IClassificationType gapType)
 		{
             List<ClassificationInfo> spans = null;
-            if (!buffer.Properties.TryGetProperty(BufferProperties.TokenSpans, out spans)
-                || spans == null)
+            if (!buffer.Properties.TryGetProperty<List<ClassificationInfo>>(BufferProperties.TokenSpans, out spans) || spans == null)
             {
                 return;
             }
@@ -158,18 +164,6 @@ namespace PowerShellTools.Classification
 			    lastClassificationSpan = snapshotSpan;
                 classifications.Add(classificationSpan);
 			}
-		}
-		protected override IList<ClassificationSpan> VirtualGetClassificationSpans(SnapshotSpan span)
-		{
-			var list = new List<ClassificationSpan>();
-			if (span.Snapshot == null)
-			{
-				return list;
-			}
-
-            AddTokenClassifications(Buffer, span, list, null, scriptGaps);
-            FillBeginningAndEnd(span, list, Buffer.CurrentSnapshot, scriptGaps);
-			return list;
-		}
+		}		
 	}
 }

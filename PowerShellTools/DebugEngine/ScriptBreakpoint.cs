@@ -101,7 +101,6 @@ namespace PowerShellTools.DebugEngine
         public int Delete()
         {
             Log.Debug("ScriptBreakpoint: Delete");
-            _callback.BreakpointRemoved(this);
             return VSConstants.S_OK;
         }
 

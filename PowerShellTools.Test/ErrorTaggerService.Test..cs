@@ -42,13 +42,14 @@ namespace PowerShellTools.Test
             ";
 
             _bufferCurrentSnapshot.Setup(m => m.Length).Returns(script.Length);
+            _bufferCurrentSnapshot.Setup(m => m.GetText()).Returns(script);
             _spanToTokenize.Setup(m => m.GetText(_bufferCurrentSnapshot.Object)).Returns(script);
 
             Token[] tokens;
             ParseError[] errors;
             Parser.ParseInput(script, out tokens, out errors);
 
-            var errorSpans = _service.TagErrorSpans(_buffer.Object, 0, errors);
+            var errorSpans = _service.TagErrorSpans(_bufferCurrentSnapshot.Object, 0, errors);
            
             var errorTag = errorSpans.First().GetTagSpan(_bufferCurrentSnapshot.Object);
 
