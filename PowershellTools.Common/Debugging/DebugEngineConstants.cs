@@ -120,6 +120,10 @@ param (
         public const string GetPrompt = "prompt";
 
         // Terminating error output format
-        public const string TerminatingErrorFormat = "{0}{1} + CategoryInfo          : {2}{1} + FullyQualifiedErrorId : {3}";
+        // {0} - Exception message
+        // {1} - Newline
+        // {2} - CategoryInfo
+        // {3} - FullyQualifiedErrorId
+        public const string TerminatingErrorFormat = "{0}{1} + CategoryInfo          : {2}{1} + FullyQualifiedErrorId : {3}{1}";
     }
 }
