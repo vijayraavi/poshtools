@@ -17,10 +17,10 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         [OperationContract(IsOneWay = true)]
         void BreakpointUpdated(DebuggerBreakpointUpdatedEventArgs args);
 
-        [OperationContract(IsOneWay = true)]
+        [OperationContract(IsOneWay = false)]
         void OutputString(string output);
 
-        [OperationContract(IsOneWay = true)]
+        [OperationContract(IsOneWay = false)]
         void OutputStringLine(string output);
 
         [OperationContract(IsOneWay = true)]

@@ -6,6 +6,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using Microsoft.VisualStudio.Shell;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -17,12 +18,14 @@ namespace PowerShellTools.DebugEngine
     public class DebugServiceEventsHandlerProxy : IDebugEngineCallback
     {
         private ScriptDebugger _debugger;
+        private bool _uiOutput;
 
         public DebugServiceEventsHandlerProxy(){}
 
-        public DebugServiceEventsHandlerProxy(ScriptDebugger debugger)
+        public DebugServiceEventsHandlerProxy(ScriptDebugger debugger, bool uiOutput)
         {
             _debugger = debugger;
+            _uiOutput = uiOutput;
         }
 
         public ScriptDebugger Debugger
@@ -62,7 +65,17 @@ namespace PowerShellTools.DebugEngine
         /// <param name="output">string to output</param>
         public void OutputString(string output)
         {
-            Debugger.HostUi.VsOutputString(output);
+            if (_uiOutput)
+            {
+                ThreadHelper.Generic.Invoke(() =>
+                {
+                    Debugger.HostUi.VsOutputString(output);
+                });
+            }
+            else
+            {
+                Debugger.HostUi.VsOutputString(output);
+            }
         }
 
         /// <summary>
@@ -71,7 +84,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="output">string to output</param>
         public void OutputStringLine(string output)
         {
-            Debugger.HostUi.VsOutputString(output + Environment.NewLine);
+            OutputString(output + Environment.NewLine);
         }
 
         /// <summary>

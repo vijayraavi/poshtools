@@ -27,7 +27,7 @@ namespace PowerShellTools.Test
 
             _debuggingService = new PowerShellDebuggingService();
             _debugger = new ScriptDebugger(true, _debuggingService);
-            _debuggingService.CallbackService = new DebugServiceEventsHandlerProxy(_debugger);
+            _debuggingService.CallbackService = new DebugServiceEventsHandlerProxy(_debugger, false);
         }
 
         [TestCleanup]
@@ -92,6 +92,7 @@ namespace PowerShellTools.Test
             string outputString = null;
             PowerShellService srv = new PowerShellService();
             srv.Engine = new TestExecutionEngine(_debugger);
+
             _debuggingService.HostUi.OutputString = x =>
             {
                 outputString += x;
