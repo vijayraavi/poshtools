@@ -27,7 +27,7 @@ namespace PowerShellTools.Test
             _debuggingService = new PowerShellDebuggingService();
             _debugger = new ScriptDebugger(true, _debuggingService);
             _debugger.BreakpointManager = new BreakpointManager(_debugger);
-            _debuggingService.CallbackService = new DebugServiceEventsHandlerProxy(_debugger); 
+            _debuggingService.CallbackService = new DebugServiceEventsHandlerProxy(_debugger, false); 
         }
 
         [TestCleanup]
