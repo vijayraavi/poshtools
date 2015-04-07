@@ -121,6 +121,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
 
         }
+
         /// <summary>
         /// The culture information of the thread that created
         /// this object.

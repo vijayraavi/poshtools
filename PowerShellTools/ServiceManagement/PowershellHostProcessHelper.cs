@@ -31,7 +31,7 @@ namespace PowerShellTools.ServiceManagement
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
-            Process powershellHostProcess = new Process();
+            Process powerShellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
             Guid endPointGuid = Guid.NewGuid();
 
@@ -44,16 +44,26 @@ namespace PowerShellTools.ServiceManagement
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
                                             Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName);
 
-            powershellHostProcess.StartInfo.Arguments = hostArgs;
-            powershellHostProcess.StartInfo.FileName = path;
+            powerShellHostProcess.StartInfo.Arguments = hostArgs;
+            powerShellHostProcess.StartInfo.FileName = path;
 
-            powershellHostProcess.StartInfo.CreateNoWindow = false;
-            powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+            powerShellHostProcess.StartInfo.CreateNoWindow = false;
+            powerShellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+
+            powerShellHostProcess.StartInfo.UseShellExecute = false;
+            powerShellHostProcess.StartInfo.RedirectStandardInput = true;
+            powerShellHostProcess.StartInfo.RedirectStandardOutput = true;
+            powerShellHostProcess.StartInfo.RedirectStandardError = true;
+
+            powerShellHostProcess.OutputDataReceived += powerShellHostProcess_OutputDataReceived;
+            powerShellHostProcess.ErrorDataReceived += powerShellHostProcess_ErrorDataReceived;
 
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, hostProcessReadyEventName);
 
-            powershellHostProcess.Start();
-            powershellHostProcess.EnableRaisingEvents = true;
+            powerShellHostProcess.Start();
+            powerShellHostProcess.EnableRaisingEvents = true;
+            powerShellHostProcess.BeginOutputReadLine();
+            powerShellHostProcess.BeginErrorReadLine();
 
             // For now we dont set timeout and wait infinitely
             // Further UI work might enable some better UX like retry logic for case where remote process being unresponsive
@@ -61,7 +71,7 @@ namespace PowerShellTools.ServiceManagement
             bool success = readyEvent.WaitOne();
             readyEvent.Close();
 
-            MakeTopMost(powershellHostProcess.MainWindowHandle);
+            MakeTopMost(powerShellHostProcess.MainWindowHandle);
 
             #if !DEBUG
                 ShowWindow(powershellHostProcess.MainWindowHandle, SW_HIDE);
@@ -69,26 +79,38 @@ namespace PowerShellTools.ServiceManagement
 
             if (!success)
             {
-                int processId = powershellHostProcess.Id;
+                int processId = powerShellHostProcess.Id;
                 try
                 {
-                    powershellHostProcess.Kill();
+                    powerShellHostProcess.Kill();
                 }
                 catch (Exception)
                 {
                 }
 
-                if (powershellHostProcess != null)
+                if (powerShellHostProcess != null)
                 {
-                    powershellHostProcess.Dispose();
-                    powershellHostProcess = null;
+                    powerShellHostProcess.Dispose();
+                    powerShellHostProcess = null;
                 }
                 throw new PowershellHostProcessException(String.Format(CultureInfo.CurrentCulture,
                                                                         Resources.ErrorFailToCreateProcess,
                                                                         processId.ToString()));
             }
 
-            return new PowershellHostProcess(powershellHostProcess, endPointGuid);
+            //StreamWriter inputStreamWriter = powerShellHostProcess.StandardInput;
+
+            return new PowershellHostProcess(powerShellHostProcess, endPointGuid);
+        }
+
+        private static void powerShellHostProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        static void powerShellHostProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private static void MakeTopMost(IntPtr hWnd)
