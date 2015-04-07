@@ -46,7 +46,7 @@ namespace PowerShellTools.HostService
         /// <param name="msg"></param>
         private static void Log(string msg)
         {
-            Console.WriteLine(msg);
+            Console.WriteLine(string.Format("[{0}]:{1}", Program.EndpointGuid, msg));
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using PowerShellTools.Common;
 using System.Runtime.InteropServices;
+using log4net;
 
 namespace PowerShellTools.ServiceManagement
 {
@@ -27,20 +28,24 @@ namespace PowerShellTools.ServiceManagement
         private const uint TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
         private const int SW_HIDE = 0;
 
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowershellHostProcessHelper));
+
+        public static Guid EndPointGuid { get; private set; }
+
         public static PowershellHostProcess CreatePowershellHostProcess()
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
             Process powerShellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
-            Guid endPointGuid = Guid.NewGuid();
+            EndPointGuid = Guid.NewGuid();
 
             string exeName = Constants.PowershellHostExeName;
             string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string path = Path.Combine(currentPath, exeName);
             string hostArgs = String.Format(CultureInfo.InvariantCulture,
                                             "{0}{1} {2}{3} {4}{5}",
-                                            Constants.UniqueEndpointArg, endPointGuid, // For generating a unique endpoint address 
+                                            Constants.UniqueEndpointArg, EndPointGuid, // For generating a unique endpoint address 
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
                                             Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName);
 
@@ -62,6 +67,7 @@ namespace PowerShellTools.ServiceManagement
 
             powerShellHostProcess.Start();
             powerShellHostProcess.EnableRaisingEvents = true;
+
             powerShellHostProcess.BeginOutputReadLine();
             powerShellHostProcess.BeginErrorReadLine();
 
@@ -100,17 +106,35 @@ namespace PowerShellTools.ServiceManagement
 
             //StreamWriter inputStreamWriter = powerShellHostProcess.StandardInput;
 
-            return new PowershellHostProcess(powerShellHostProcess, endPointGuid);
+            return new PowershellHostProcess(powerShellHostProcess, EndPointGuid);
         }
 
         private static void powerShellHostProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            throw new NotImplementedException();
+            powerShellHostProcessOutput(e.Data);
         }
 
         static void powerShellHostProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            throw new NotImplementedException();
+            powerShellHostProcessOutput(e.Data);
+        }
+
+        private static void powerShellHostProcessOutput(string outputData)
+        {
+            if (outputData.StartsWith(string.Format("[{0}]:", PowershellHostProcessHelper.EndPointGuid), StringComparison.OrdinalIgnoreCase))
+            {
+                // debug data
+                Log.Debug(outputData);
+            }
+            else
+            {
+                // app data
+                if (PowerShellToolsPackage.Debugger != null &&
+                    PowerShellToolsPackage.Debugger.HostUi != null)
+                {
+                    PowerShellToolsPackage.Debugger.HostUi.VsOutputString(outputData);
+                }
+            }
         }
 
         private static void MakeTopMost(IntPtr hWnd)
