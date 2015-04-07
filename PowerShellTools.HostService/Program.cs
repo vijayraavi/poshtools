@@ -20,7 +20,7 @@ namespace PowerShellTools.HostService
 
         public static int VsProcessId { get; private set; }
 
-        public static int EndpointGuid { get; private set; }
+        public static string EndpointGuid { get; private set; }
 
         [LoaderOptimization(LoaderOptimization.SingleDomain)]
         internal static int Main(string[] args)
@@ -35,7 +35,7 @@ namespace PowerShellTools.HostService
 
             _processExitEvent = new AutoResetEvent(false);
 
-            string EndpointGuid = args[0].Remove(0, Constants.UniqueEndpointArg.Length);
+            EndpointGuid = args[0].Remove(0, Constants.UniqueEndpointArg.Length);
             if (EndpointGuid.Length != Guid.Empty.ToString().Length)
             {
                 return 1;

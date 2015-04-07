@@ -79,9 +79,7 @@ namespace PowerShellTools.ServiceManagement
 
             MakeTopMost(powerShellHostProcess.MainWindowHandle);
 
-            #if !DEBUG
-                ShowWindow(powershellHostProcess.MainWindowHandle, SW_HIDE);
-            #endif
+            ShowWindow(powerShellHostProcess.MainWindowHandle, SW_HIDE);
 
             if (!success)
             {
