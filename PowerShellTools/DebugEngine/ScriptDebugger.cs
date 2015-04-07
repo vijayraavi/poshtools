@@ -57,7 +57,7 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Event is fired when a terminating exception is thrown.
         /// </summary>
-        public event EventHandler<EventArgs<Exception>> TerminatingException;
+        public event EventHandler<EventArgs<PowerShellRunTerminatingException>> TerminatingException;
 
         /// <summary>
         /// The current set of variables for the current runspace.
@@ -145,11 +145,17 @@ namespace PowerShellTools.DebugEngine
         /// PS execution terminating excpetion handler
         /// </summary>
         /// <param name="ex"></param>
-        public void TerminateException(DebuggingServiceException ex)
+        public void TerminateException(PowerShellRunTerminatingException ex)
         {
             if (TerminatingException != null)
             {
-                TerminatingException(this, new EventArgs<Exception>(new Exception(ex.Message, new Exception(ex.InnerExceptionMessage))));
+                // from editor debug run
+                TerminatingException(this, new EventArgs<PowerShellRunTerminatingException>(ex));
+            }
+            else
+            {
+                // from REPL execution
+                HostUi.VsOutputString(ex.Message);
             }
         }
 

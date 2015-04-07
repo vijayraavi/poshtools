@@ -362,7 +362,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             catch (Exception ex)
             {
-                ServiceCommon.Log("Terminating error,  Exception: {0}", ex);
+                ServiceCommon.Log("Terminating error,  Exception: {0}", ex);              
                 OnTerminatingException(ex);
                 return false;
             }

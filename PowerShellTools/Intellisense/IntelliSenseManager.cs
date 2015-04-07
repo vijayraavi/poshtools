@@ -46,6 +46,7 @@ namespace PowerShellTools.Intellisense
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContet)
         {
             _triggerTag = 0;
+            _sw = new Stopwatch();
             _broker = broker;
             NextCommandHandler = commandHandler;
             _textView = textView;
@@ -334,8 +335,7 @@ namespace PowerShellTools.Intellisense
                 _statusBar.SetText("Running IntelliSense...");
             }
 
-            _sw = new Stopwatch();
-            _sw.Start();
+            _sw.Restart();
 
             // Procedures for correctly supporting IntelliSense in REPL window.
             // Step 1, determine if this is REPL windows IntelliSense. If no, continue with normal IntelliSense triggering process. Otherwise, continue with the following steps.            
