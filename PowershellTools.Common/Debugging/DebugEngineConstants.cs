@@ -124,6 +124,6 @@ param (
         // {1} - Newline
         // {2} - CategoryInfo
         // {3} - FullyQualifiedErrorId
-        public const string TerminatingErrorFormat = "{0}{1} + CategoryInfo          : {2}{1} + FullyQualifiedErrorId : {3}{1}";
+        public const string TerminatingErrorFormat = "[ERROR] {0}{1}[ERROR] + CategoryInfo          : {2}{1}[ERROR] + FullyQualifiedErrorId : {3}{1}";
     }
 }
