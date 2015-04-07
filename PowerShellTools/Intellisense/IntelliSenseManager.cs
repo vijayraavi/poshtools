@@ -334,8 +334,7 @@ namespace PowerShellTools.Intellisense
                 _statusBar.SetText("Running IntelliSense...");
             }
 
-            _sw = new Stopwatch();
-            _sw.Start();
+            _sw.Restart();
 
             // Procedures for correctly supporting IntelliSense in REPL window.
             // Step 1, determine if this is REPL windows IntelliSense. If no, continue with normal IntelliSense triggering process. Otherwise, continue with the following steps.            
