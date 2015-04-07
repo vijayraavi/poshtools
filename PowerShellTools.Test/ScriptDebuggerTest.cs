@@ -5,6 +5,8 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using PowerShellTools.DebugEngine;
+using PowerShellTools.HostService.ServiceManagement.Debugging;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.Test
 {
@@ -13,13 +15,19 @@ namespace PowerShellTools.Test
     public class ScriptDebuggerTest
     {
         private ScriptDebugger _debugger;
-        private Runspace _runspace; 
+        private Runspace _runspace;
+        private PowerShellDebuggingService _debuggingService;
 
         [TestInitialize]
         public void Init()
         {
             _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
+            
+            _debuggingService = new PowerShellDebuggingService();
+            _debugger = new ScriptDebugger(true, _debuggingService);
+            _debugger.BreakpointManager = new BreakpointManager(_debugger);
+            _debuggingService.CallbackService = new DebugServiceEventsHandlerProxy(_debugger, false); 
         }
 
         [TestCleanup]
@@ -32,21 +40,10 @@ namespace PowerShellTools.Test
         [TestMethod]
         public void ShouldClearBreakpoints()
         {
-            using (var pipe = _runspace.CreatePipeline())
-            {
-                var command = new Command("Set-PSBreakpoint");
-                command.Parameters.Add("Script", ".\\TestFile.ps1");
-                command.Parameters.Add("Line", 1);
+            _debuggingService.SetBreakpoint(new PowershellBreakpoint(".\\TestFile.ps1", 1, 0));
+            _debugger.BreakpointManager.SetBreakpoints(new List<ScriptBreakpoint>());
 
-                pipe.Commands.Add(command);
-                pipe.Invoke();
-            }
-
-            _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
-            _debugger.SetBreakpoints(new List<ScriptBreakpoint>());
-
-            using (var pipe = _runspace.CreatePipeline())
+            using (var pipe = PowerShellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add("Get-PSBreakpoint");
                 var breakpoints = pipe.Invoke();
@@ -58,10 +55,7 @@ namespace PowerShellTools.Test
         [TestMethod]
         public void ShouldNotDieIfNoBreakpoints()
         {
-            _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
-
-            using (var pipe = _runspace.CreatePipeline())
+            using (var pipe = PowerShellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add("Get-PSBreakpoint");
                 var breakpoints = pipe.Invoke();
@@ -81,11 +75,13 @@ namespace PowerShellTools.Test
                                new ScriptBreakpoint(null, ".\\TestFile.ps1", 1, 0, engineEvents.Object)
                            };
 
-            _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
-            _debugger.SetBreakpoints(sbps);
+            _debugger.BreakpointManager.SetBreakpoints(sbps);
+            foreach (var bp in sbps)
+            {
+                bp.Bind();
+            }
 
-            using (var pipe = _runspace.CreatePipeline())
+            using (var pipe = PowerShellDebuggingService.Runspace.CreatePipeline())
             {
                 pipe.Commands.Add("Get-PSBreakpoint");
                 var breakpoints = pipe.Invoke();
@@ -110,9 +106,11 @@ namespace PowerShellTools.Test
                                new ScriptBreakpoint(null, fi.FullName, 3, 0, engineEvents.Object)
                            };
 
-            _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
-            _debugger.SetBreakpoints(sbps);
+            _debugger.BreakpointManager.SetBreakpoints(sbps);
+            foreach (var bp in sbps)
+            {
+                bp.Bind();
+            }
 
             var node = new ScriptProgramNode(null);
             node.IsFile = true;
@@ -121,9 +119,11 @@ namespace PowerShellTools.Test
             var mre = new ManualResetEvent(false);
 
             bool breakpointHit = false;
-            _debugger.BreakpointHit += (sender, args) => { breakpointHit = true; _debugger.Continue(); };
+            _debugger.BreakpointManager.BreakpointHit += (sender, args) => { breakpointHit = true; System.Threading.Tasks.Task.Factory.StartNew(()=>_debugger.Continue()); };
             _debugger.DebuggingFinished += (sender, args) => mre.Set();
+            _debugger.IsDebugging = true;
             _debugger.Execute(node);
+            _debugger.IsDebugging = false;
 
             Assert.IsTrue(mre.WaitOne(5000));
             Assert.IsTrue(breakpointHit);
@@ -135,9 +135,7 @@ namespace PowerShellTools.Test
             var fi = new FileInfo(".\\TestFile.ps1");
 
             var sbps = new List<ScriptBreakpoint>();
-            _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
-            _debugger.SetBreakpoints(sbps);
+            _debugger.BreakpointManager.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
             node.FileName = fi.FullName;
@@ -151,8 +149,8 @@ namespace PowerShellTools.Test
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            var arg1 = _runspace.SessionStateProxy.GetVariable("Argument1");
-            var arg2 = _runspace.SessionStateProxy.GetVariable("Argument2");
+            var arg1 = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("Argument1");
+            var arg2 = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("Argument2");
 
             Assert.AreEqual("Arg1", arg1);
             Assert.AreEqual("Arg2", arg2);
@@ -162,9 +160,7 @@ namespace PowerShellTools.Test
         public void ShouldExecuteSnippet()
         {
             var sbps = new List<ScriptBreakpoint>();
-            _debugger = new ScriptDebugger(true, null);
-            _debugger.SetRunspace(_runspace);
-            _debugger.SetBreakpoints(sbps);
+            _debugger.BreakpointManager.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
             node.FileName = "$Global:MyVariable = 'Test'";
@@ -176,7 +172,7 @@ namespace PowerShellTools.Test
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            var myVariable = _runspace.SessionStateProxy.GetVariable("MyVariable");
+            var myVariable = PowerShellDebuggingService.Runspace.SessionStateProxy.GetVariable("MyVariable");
 
             Assert.AreEqual("Test", myVariable);
         }
@@ -186,13 +182,11 @@ namespace PowerShellTools.Test
         public void ShouldSupportRemoteSession()
         {
             var sbps = new List<ScriptBreakpoint>();
-            _debugger = new ScriptDebugger(true, null);
 
             _runspace.Dispose();
-            _runspace = RunspaceFactory.CreateRunspace(_debugger);
+            _runspace = RunspaceFactory.CreateRunspace();
             _runspace.Open();
-            _debugger.SetRunspace(_runspace);
-            _debugger.SetBreakpoints(sbps);
+            _debugger.BreakpointManager.SetBreakpoints(sbps);
 
             var node = new ScriptProgramNode(null);
             node.FileName = "Enter-PSSession localhost";

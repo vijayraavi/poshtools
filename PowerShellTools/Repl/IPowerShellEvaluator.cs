@@ -13,7 +13,7 @@
  * ***************************************************************************/
 
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Repl;
+using PowerShellTools.Repl;
 
 namespace PowerShellTools.Repl {
 #if POWERSHELL
@@ -21,11 +21,10 @@ namespace PowerShellTools.Repl {
 #endif
 
     /// <summary>
-    /// The Python repl evaluator.  An instance of this can be acquired by creating a REPL window
-    /// via PythonToolsPackage.CreatePythonRepl and getting the Evaluator from the resulting
-    /// window.
+    /// The PowerShell repl evaluator.  An instance of this can be acquired by creating a REPL window
+    /// via CreatePythonRepl and getting the Evaluator from the resulting window.
     /// 
-    /// This interface provides additional functionality for interacting with the Python REPL
+    /// This interface provides additional functionality for interacting with the PowerShell REPL
     /// above and beyond the standard IReplEvaluator interface.
     /// </summary>
     public interface IPowerShellEvaluator : IReplEvaluator {

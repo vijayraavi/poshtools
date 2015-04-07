@@ -15,7 +15,7 @@ namespace PowerShellTools.Commands
     /// </summary>
     internal class ExecuteFromEditorContextMenuCommand : ExecuteAsScriptCommand
     {
-        internal ExecuteFromEditorContextMenuCommand(DependencyValidator validator)
+        internal ExecuteFromEditorContextMenuCommand(IDependencyValidator validator)
             : base(validator)
         {
         }
@@ -42,7 +42,7 @@ namespace PowerShellTools.Commands
     /// </summary>
     internal class ExecuteFromSolutionExplorerContextMenuCommand : ExecuteAsScriptCommand
     {
-        internal ExecuteFromSolutionExplorerContextMenuCommand(DependencyValidator validator)
+        internal ExecuteFromSolutionExplorerContextMenuCommand(IDependencyValidator validator)
             : base(validator)
         {
         }
@@ -113,9 +113,9 @@ namespace PowerShellTools.Commands
     /// </remarks>
     internal abstract class ExecuteAsScriptCommand : ICommand
     {
-        private DependencyValidator _validator;
+        private IDependencyValidator _validator;
 
-        public ExecuteAsScriptCommand(DependencyValidator validator)
+        public ExecuteAsScriptCommand(IDependencyValidator validator)
         {
             _validator = validator;
         }
@@ -149,7 +149,8 @@ namespace PowerShellTools.Commands
         public void QueryStatus(object sender, EventArgs args)
         {
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            var bVisible = ShouldShowCommand(dte2);
+
+            bool bVisible = ShouldShowCommand(dte2) && dte2.Debugger.CurrentMode == dbgDebugMode.dbgDesignMode;
 
             var menuItem = sender as OleMenuCommand;
             if (menuItem != null)

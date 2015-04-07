@@ -1,7 +1,7 @@
 ﻿
 using System.Management.Automation.Runspaces;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Repl;
+using PowerShellTools.Repl;
 using Microsoft.VisualStudio.Text;
 using PowerShellTools.Classification;
 using PowerShellTools.DebugEngine;
@@ -13,28 +13,37 @@ namespace PowerShellTools.Repl
     using ReplRoleAttribute = PowerShellReplRoleAttribute;
     using IReplEvaluator = IPowerShellReplEvaluator;
     using IReplWindow = IPowerShellReplWindow;
+    using PowerShellTools.Common.Debugging;
 #endif
 
     [ReplRole("Debug")]
     internal class PowerShellReplEvaluator : IReplEvaluator
     {
         public IReplWindow Window { get; set; }
-        private ScriptDebugger Debugger { get; set; }
-        TaskFactory<ExecutionResult> tf = new TaskFactory<ExecutionResult>();
-
-        public PowerShellReplEvaluator(ScriptDebugger debugger)
+        
+        public ScriptDebugger Debugger 
         {
-            Debugger = debugger;
+            get
+            {
+                return PowerShellToolsPackage.Debugger;
+            }
         }
+
+        private TaskFactory<ExecutionResult> tf = new TaskFactory<ExecutionResult>();
 
         public void Dispose()
         {
-            
         }
 
         public Task<ExecutionResult> Initialize(IReplWindow window)
         {
-            PowerShellToolsPackage.Debugger.ReplWindow = window;
+            Task.Run(
+                    () =>
+                    {
+                        PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
+                        Debugger.ReplWindow = window;
+                    }
+                );
 
             var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
 
@@ -64,7 +73,10 @@ namespace PowerShellTools.Repl
 
         public Task<ExecutionResult> ExecuteText(string text)
         {
-            return tf.StartNew(() => { Debugger.Execute(text); return new ExecutionResult(true); }); 
+            if (Debugger.IsDebuggingCommandReady)
+                return tf.StartNew(() => { Debugger.ExecuteDebuggingCommand(text); return new ExecutionResult(true); });
+            else
+                return tf.StartNew(() => { Debugger.Execute(text); return new ExecutionResult(true); }); 
         }
 
         public void ExecuteFile(string filename)
@@ -82,7 +94,27 @@ namespace PowerShellTools.Repl
             Debugger.Stop();
         }
 
+        public ExecutionResult EnterRemoteSession(string computerName)
+        {
+            string cmdEnterRemoteSession = string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, computerName);
+            return ExecuteText(cmdEnterRemoteSession).Result;
+        }
 
+        public ExecutionResult ExitRemoteSession()
+        {
+            string cmdExitRemoteSession = string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
+            return ExecuteText(cmdExitRemoteSession).Result;
+        }
+
+        public bool IsRemoteSession()
+        {
+            return Debugger.RemoteSession;
+        }
+
+        public bool IsDebuggerInitialized()
+        {
+            return Debugger != null;
+        }
     }
  
 }

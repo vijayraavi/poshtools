@@ -16,9 +16,9 @@ namespace PowerShellTools.Commands
     /// </remarks>
     internal class ExecuteSelectionCommand : ICommand
     {
-        private DependencyValidator _validator;
+        private IDependencyValidator _validator;
 
-        public ExecuteSelectionCommand(DependencyValidator dependencyValidator)
+        public ExecuteSelectionCommand(IDependencyValidator dependencyValidator)
         {
             _validator = dependencyValidator;
         }
@@ -55,14 +55,14 @@ namespace PowerShellTools.Commands
 
         public void QueryStatus(object sender, EventArgs args)
         {
-            bool bVisible = false;
-
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == "PowerShell")
-            {
-                bVisible = true;
-            }
 
+            bool bVisible = dte2 != null &&
+                    dte2.ActiveDocument != null &&
+                    dte2.ActiveDocument.Language == "PowerShell";
+
+            bVisible = bVisible && dte2.Debugger.CurrentMode == dbgDebugMode.dbgDesignMode;
+            
             var menuItem = sender as OleMenuCommand;
             if (menuItem != null)
             {

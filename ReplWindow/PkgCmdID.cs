@@ -15,7 +15,7 @@
 // PkgCmdID.cs
 // MUST match PkgCmdID.h
 
-namespace Microsoft.VisualStudio.Repl
+namespace PowerShellTools.Repl
 {
     static class PkgCmdIDList
     {
@@ -28,6 +28,8 @@ namespace Microsoft.VisualStudio.Repl
         public const uint cmdidBreakLine = 0x0109;
         public const uint cmdidReplSearchHistoryNext = 0x010A;
         public const uint cmdidReplSearchHistoryPrevious = 0x010B;
+        public const uint cmdidEnterSession = 0x010C;
+        public const uint cmdidExitSession = 0x010D;
         public const uint menuIdReplToolbar = 0x2000;
 
         public const uint comboIdReplScopes = 0x3000;

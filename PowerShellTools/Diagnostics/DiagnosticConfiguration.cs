@@ -1,4 +1,5 @@
 ﻿using log4net;
+using log4net.Appender;
 using log4net.Config;
 using log4net.Layout;
 
@@ -6,7 +7,8 @@ namespace PowerShellTools.Diagnostics
 {
     class DiagnosticConfiguration
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (DiagnosticConfiguration));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(DiagnosticConfiguration));
+        private static bool _initialized = false;
 
         public static void DisableDiagnostics()
         {
@@ -14,13 +16,39 @@ namespace PowerShellTools.Diagnostics
             SetLoggingLevel("OFF");
         }
 
+        private static void EnsureDiagnosticsInitialized()
+        {
+            if (!_initialized)
+            {
+                PatternLayout outputPanePattern = new PatternLayout("%date{ABSOLUTE} - %thread - %logger - %level - %message%newline");
+
+                var appender = new OutputPaneAppender();
+                appender.Layout = outputPanePattern;
+                appender.ActivateOptions();
+
+                BasicConfigurator.Configure(appender);
+
+#if DEBUG
+                PatternLayout debugOutputPattern = new PatternLayout("%date{ABSOLUTE} - %thread - %level - %message%newline");   //The DebugAppender already includes the logger.
+
+                DebugAppender debugAppender = new DebugAppender();
+                debugAppender.Layout = debugOutputPattern;
+                debugAppender.ActivateOptions();
+
+                BasicConfigurator.Configure(debugAppender);
+#endif
+
+                SetLoggingLevel("ALL");
+
+                Log.Info("Initializing Diagnostics.");
+
+                _initialized = true;
+            }
+        }
+
         public static void EnableDiagnostics()
         {
-            var appender = new OutputPaneAppender();
-            appender.Layout = new PatternLayout("%date - %thread - %logger - %level - %message%newline");
-            appender.ActivateOptions();
-
-            BasicConfigurator.Configure(appender);
+            EnsureDiagnosticsInitialized();
 
             SetLoggingLevel("ALL");
 

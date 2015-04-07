@@ -18,7 +18,7 @@ using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Projection;
 using Microsoft.VisualStudio.Utilities;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 
     [Export(typeof(IClassifierProvider)), ContentType(ReplConstants.ReplContentTypeName)]
     class ReplAggregateClassifierProvider : IClassifierProvider {

@@ -120,4 +120,7 @@
   <data name="CanNotCreateWindow" xml:space="preserve">
     <value>Cannot create REPL window</value>
   </data>
+  <data name="PowerShellHostInitialization" xml:space="preserve">
+    <value>Please wait while the PowerShell host is initialized...</value>
+  </data>
 </root>

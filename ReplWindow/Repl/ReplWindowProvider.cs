@@ -17,12 +17,13 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.Win32;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 #if INTERACTIVE_WINDOW
     using IReplWindow = IInteractiveWindow;
     using IReplWindowProvider = IInteractiveWindowProvider;
@@ -104,26 +105,20 @@ namespace Microsoft.VisualStudio.Repl {
         #endregion
 
         #region Registry Serialization
-
-        private const string ActiveReplsKey = "ActiveRepls";
-        private const string ContentTypeKey = "ContentType";
-        private const string RolesKey = "Roles";
-        private const string TitleKey = "Title";
-        private const string ReplIdKey = "ReplId";
-        private const string LanguageServiceGuidKey = "LanguageServiceGuid";
+        
 
         private static RegistryKey GetRegistryRoot() {
-            return VSRegistry.RegistryRoot(__VsLocalRegistryType.RegType_UserSettings, writable: true).CreateSubKey(ActiveReplsKey);
+            return VSRegistry.RegistryRoot(__VsLocalRegistryType.RegType_UserSettings, writable: true).CreateSubKey(ReplConstants.ActiveReplsKey);
         }
 
         private void SaveReplInfo(int id, IReplEvaluator evaluator, IContentType contentType, string[] roles, string title, Guid languageServiceGuid, string replId) {
             using (var root = GetRegistryRoot()) {
                 if (root != null) {
                     using (var replInfo = root.CreateSubKey(id.ToString())) {
-                        replInfo.SetValue(ContentTypeKey, contentType.TypeName);
-                        replInfo.SetValue(TitleKey, title);
-                        replInfo.SetValue(ReplIdKey, replId.ToString());
-                        replInfo.SetValue(LanguageServiceGuidKey, languageServiceGuid.ToString());
+                        replInfo.SetValue(ReplConstants.ContentTypeKey, contentType.TypeName);
+                        replInfo.SetValue(ReplConstants.TitleKey, title);
+                        replInfo.SetValue(ReplConstants.ReplIdKey, replId.ToString());
+                        replInfo.SetValue(ReplConstants.LanguageServiceGuidKey, languageServiceGuid.ToString());
                     }
                 }
             }
@@ -142,22 +137,22 @@ namespace Microsoft.VisualStudio.Repl {
                         return false;
                     }
 
-                    contentTypeName = replInfo.GetValue(ContentTypeKey) as string;
+                    contentTypeName = replInfo.GetValue(ReplConstants.ContentTypeKey) as string;
                     if (contentTypeName == null) {
                         return false;
                     }
 
-                    title = replInfo.GetValue(TitleKey) as string;
+                    title = replInfo.GetValue(ReplConstants.TitleKey) as string;
                     if (title == null) {
                         return false;
                     }
 
-                    replId = replInfo.GetValue(ReplIdKey) as string;
+                    replId = replInfo.GetValue(ReplConstants.ReplIdKey) as string;
                     if (replId == null) {
                         return false;
                     }
 
-                    languageServiceId = replInfo.GetValue(LanguageServiceGuidKey) as string;
+                    languageServiceId = replInfo.GetValue(ReplConstants.LanguageServiceGuidKey) as string;
                     if (languageServiceId == null) {
                         return false;
                     }

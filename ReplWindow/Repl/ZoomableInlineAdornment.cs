@@ -20,7 +20,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using Microsoft.VisualStudio.Text.Editor;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     internal class ZoomableInlineAdornment : ContentControl {
         private readonly ITextView _parent;
         private ResizingAdorner _adorner;

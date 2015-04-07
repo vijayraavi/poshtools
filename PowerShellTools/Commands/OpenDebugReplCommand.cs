@@ -15,12 +15,11 @@
 using System;
 using System.ComponentModel.Design;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Repl;
+using PowerShellTools.Repl;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools;
 using PowerShellTools.LanguageService;
-using PowerShellTools.Repl;
 
 namespace PowerShellTools.Commands
 {
@@ -30,7 +29,7 @@ namespace PowerShellTools.Commands
 #endif
 
     /// <summary>
-    /// Provides the command for starting the Python Debug REPL window.
+    /// Provides the command for starting the PowerShell Debug REPL window.
     /// </summary>
     class OpenDebugReplCommand : ICommand
     {
@@ -43,7 +42,7 @@ namespace PowerShellTools.Commands
             var window = provider.FindReplWindow("PowerShell");
             if (window == null)
             {
-                window = provider.CreateReplWindow(PowerShellToolsPackage.Instance.ContentType, "PowerShell Debug Interactive", typeof(PowerShellLanguageInfo).GUID, "PowerShell");
+                window = provider.CreateReplWindow(PowerShellToolsPackage.Instance.ContentType, "PowerShell Interactive Window", typeof(PowerShellLanguageInfo).GUID, "PowerShell");
             }
             return window;
         }
@@ -52,7 +51,7 @@ namespace PowerShellTools.Commands
         {
             get
             {
-                return "PowerShell Debug Interactive";
+                return "PowerShell Interactive Window";
             }
         }
 

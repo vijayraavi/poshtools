@@ -48,7 +48,7 @@ namespace PowerShellTools.TestAdapter
         {
             using (var ps = PowerShell.Create())
             {
-                ps.AddCommand("Set-ExecutionPolicy").AddParameter("ExecutionPolicy", policy).AddParameter("Scope", scope);
+                ps.AddCommand("Set-ExecutionPolicy").AddParameter("ExecutionPolicy", policy).AddParameter("Scope", scope).AddParameter("Force");
                 ps.Invoke();
             }
         }

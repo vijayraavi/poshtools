@@ -12,7 +12,7 @@
  *
  * ***************************************************************************/
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 #if INTERACTIVE_WINDOW
     using IReplEvaluator = IInteractiveEngine;
 #elif POWERSHELL

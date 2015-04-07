@@ -15,7 +15,7 @@
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
 #if INTERACTIVE_WINDOW
     using IReplCommand = IInteractiveWindowCommand;
     using IReplWindow = IInteractiveWindow;

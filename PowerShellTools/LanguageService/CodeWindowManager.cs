@@ -13,17 +13,16 @@
  * ***************************************************************************/
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Management.Automation.Language;
-using Microsoft.PythonTools.Language;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.Language.Intellisense;
-using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools;
+using PowerShellTools.Classification;
+using PowerShellTools.Language;
 
 namespace PowerShellTools.LanguageService
 {
@@ -34,6 +33,7 @@ namespace PowerShellTools.LanguageService
         private readonly IWpfTextView _textView;
         private static readonly Dictionary<IWpfTextView, CodeWindowManager> _windows = new Dictionary<IWpfTextView, CodeWindowManager>();
         private DropDownBarClient _client;
+        private readonly IPowerShellTokenizationService _tokenizer;
 
         static CodeWindowManager()
         {
@@ -44,17 +44,30 @@ namespace PowerShellTools.LanguageService
         {
             _window = codeWindow;
             _textView = textView;
+            _textView.TextBuffer.Properties.TryGetProperty<IPowerShellTokenizationService>(BufferProperties.PowerShellTokenizer, out _tokenizer);
+
+            Debug.Assert(_tokenizer != null, "PowerShell Tokenizer not found on textBuffer from CodeWindowManager");
 
             var model = CommonPackage.ComponentModel;
             var adaptersFactory = model.GetService<IVsEditorAdaptersFactoryService>();
             var factory = model.GetService<IEditorOperationsFactoryService>();
 
             EditFilter editFilter = _filter = new EditFilter(textView, factory.GetEditorOperations(textView));
-            var adapter = adaptersFactory.GetViewAdapter(textView);
-            editFilter.AttachKeyboardFilter(adapter);
+            var textViewAdapter = adaptersFactory.GetViewAdapter(textView);
+            editFilter.AttachKeyboardFilter(textViewAdapter);
 
             var viewFilter = new TextViewFilter();
-            viewFilter.AttachFilter(adapter);
+            viewFilter.AttachFilter(textViewAdapter);
+
+            _tokenizer.TokenizationComplete += Tokenizer_TokenizationComplete;
+        }
+
+        private void Tokenizer_TokenizationComplete(object sender, Ast ast)
+        {
+            if (_client != null)
+                _client.UpdateAst(ast);
+
+            //TODO: A deeper refactoring to make the client handle the update from the tokenizer.
         }
 
         private static void OnIdle(object sender, ComponentManagerEventArgs e)
@@ -99,18 +112,6 @@ namespace PowerShellTools.LanguageService
         private int AddDropDownBar()
         {
             var text = _textView.TextBuffer.CurrentSnapshot.GetText();
-
-            _textView.TextBuffer.PostChanged += (x, y) =>
-            {
-                var currentText = _textView.TextBuffer.CurrentSnapshot.GetText();
-                Token[] currentTokens;
-                ParseError[] currentErrors;
-
-                var currentAst = Parser.ParseInput(currentText, out currentTokens, out currentErrors);
-
-                if (_client != null)
-                    _client.UpdateAst(currentAst);
-            };
 
             Token[] tokens;
             ParseError[] errors;

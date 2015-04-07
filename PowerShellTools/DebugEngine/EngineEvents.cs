@@ -34,6 +34,9 @@ namespace PowerShellTools.DebugEngine
         void Exception(ScriptProgramNode program, Exception ex);
         void Breakpoint(ScriptProgramNode program, ScriptBreakpoint breakpoint);
         void BreakpointHit(ScriptBreakpoint breakpoint, ScriptProgramNode node);
+        void BreakpointEnabled(ScriptBreakpoint breakpoint, int fEnable);
+        void BreakpointRemoved(ScriptBreakpoint breakpoint);
+        void BreakpointAdded(ScriptBreakpoint breakpoint);
     }
 
     /// <summary>
@@ -45,6 +48,7 @@ namespace PowerShellTools.DebugEngine
         private readonly IDebugEngine2 _engine;
         private readonly IDebugEventCallback2 _callback;
         private static readonly ILog Log = LogManager.GetLogger(typeof (EngineEvents));
+        private static Object _debuggingStateLock = new Object();
         #endregion
 
         #region Constructor
@@ -53,6 +57,16 @@ namespace PowerShellTools.DebugEngine
             _engine = engine;
             _callback = callback;
         } 
+        #endregion
+
+        #region Properties
+        public ScriptDebugger Debugger
+        {
+            get
+            {
+                return PowerShellToolsPackage.Debugger;
+            }
+        }
         #endregion
 
         #region Events
@@ -78,6 +92,13 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("EngineLoaded");
             var iid = new Guid(LoadCompleteEvent.IID);
             _callback.Event(_engine, null, null, null, new LoadCompleteEvent(), ref iid, LoadCompleteEvent.Attributes);
+            lock (_debuggingStateLock)
+            {
+                if (Debugger != null)
+                {
+                    Debugger.IsDebugging = true;
+                }
+            }
         }
 
         /// <summary>
@@ -116,6 +137,13 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("ProgramDestroyed");
             var iid = new Guid(ProgramDestoryedEvent.IID);
             _callback.Event(_engine, null, program, null, new ProgramDestoryedEvent(), ref iid, ProgramDestoryedEvent.Attributes);
+            lock (_debuggingStateLock)
+            {
+                if (Debugger != null)
+                {
+                    Debugger.IsDebugging = false;
+                }
+            }
         }
 
         public void OutputString(string str)
@@ -153,6 +181,35 @@ namespace PowerShellTools.DebugEngine
             _callback.Event(_engine, null, node, node, new BreakPointHitEvent(breakpoint), ref iid, BreakPointHitEvent.Attributes);
         }
 
+        public void BreakpointEnabled(ScriptBreakpoint breakpoint, int fEnable)
+        {
+            Log.Debug("BreakpointEnabled");
+
+            if (Debugger != null)
+            {
+                Debugger.BreakpointManager.EnableBreakpoint(breakpoint, fEnable);
+            }
+        }
+
+        public void BreakpointRemoved(ScriptBreakpoint breakpoint)
+        {
+            Log.Debug("BreakpointRemoved");
+
+            if (Debugger != null)
+            {
+                Debugger.BreakpointManager.RemoveBreakpoint(breakpoint);
+            }
+        }
+
+        public void BreakpointAdded(ScriptBreakpoint breakpoint)
+        {
+            Log.Debug("BreakpointAdded");
+
+            if (Debugger != null)
+            {
+                Debugger.BreakpointManager.SetBreakpoint(breakpoint);
+            }
+        }
 
         #endregion
     }

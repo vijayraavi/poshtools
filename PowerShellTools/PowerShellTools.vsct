@@ -7,9 +7,10 @@
   <KeyBindings>
     <KeyBinding guid="guidPoshToolsCmdSet" id="cmdidExecuteAsScript" editor="guidVSStd97" key1="VK_F5" mod1="Alt Shift"/>
     <KeyBinding guid="guidPoshToolsCmdSet" id="cmdidExecuteSelection" editor="guidVSStd97" key1="VK_F8" mod1="Control"/>
+    <KeyBinding guid="guidPoshToolsCmdSet" id="cmdidReplWindow" editor="guidVSStd97" key1="VK_OEM_5" mod1="Control Shift"/>
   </KeyBindings>
 
-  <!--The Commands section is where we the commands, menus and menu groups are defined.
+  <!--The Commands section is where the commands, menus and menu groups are defined.
       This section uses a Guid to identify the package that provides the command defined inside it. -->
   <Commands package="guidPoshToolsPckg">
     <!-- Inside this section we have different sub-sections: one for the menus, another  
@@ -42,7 +43,7 @@
         <Strings>
           <LocCanonicalName>PowerShell.ExecuteAsScript</LocCanonicalName>
           <CanonicalName>PowerShell.ExecuteAsScript</CanonicalName>
-          <ButtonText>Execute as script</ButtonText>
+          <ButtonText>Execute as Script</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidPoshToolsCmdSet" id="cmdidExecuteAsScriptSolution"
@@ -53,7 +54,7 @@
         <Strings>
           <LocCanonicalName>PowerShell.ExecuteAsScript</LocCanonicalName>
           <CanonicalName>PowerShell.ExecuteAsScript</CanonicalName>
-          <ButtonText>Execute as script</ButtonText>
+          <ButtonText>Execute as Script</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidPoshToolsCmdSet" id="cmdidExecuteSelection"
@@ -64,9 +65,10 @@
         <Strings>
           <LocCanonicalName>PowerShell.ExecuteSelection</LocCanonicalName>
           <CanonicalName>PowerShell.ExecuteSelection</CanonicalName>
-          <ButtonText>Execute selection</ButtonText>
+          <ButtonText>Execute Selection</ButtonText>
         </Strings>
       </Button>
+      <!-- DISABLED AS CURRENTLY NOT FUNCTIONING
       <Button guid="guidPoshToolsCmdSet" id="cmdidPrettyPrint"
         priority="0x0100" type="Button">
         <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
@@ -78,6 +80,7 @@
           <ButtonText>Reformat Script</ButtonText>
         </Strings>
       </Button>
+      -->
       <!--<Button guid="guidPoshToolsCmdSet" id="cmdidGotoDefinition"
         priority="0x0100" type="Button">
         <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
@@ -86,29 +89,29 @@
         <Strings>
           <LocCanonicalName>PowerShell.GotoDefinition</LocCanonicalName>
           <CanonicalName>PowerShell.GotoDefinition</CanonicalName>
-          <ButtonText>Go to definition</ButtonText>
+          <ButtonText>Go to Definition</ButtonText>
         </Strings>
       </Button>-->
-      <Button guid="guidPoshToolsCmdSet" id="cmdidSnippet"
-  priority="0x0100" type="Button">
+      <Button guid="guidPoshToolsCmdSet" id="cmdidSnippet" priority="0x0100" type="Button">
         <Parent guid="guidPoshToolsCmdSet" id="grpidPoshToolsGroup"/>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <LocCanonicalName>PowerShell.Snippet</LocCanonicalName>
           <CanonicalName>PowerShell.Snippet</CanonicalName>
-          <ButtonText>Insert snippet</ButtonText>
+          <ButtonText>Insert Snippet</ButtonText>
         </Strings>
       </Button>
 
       <Button guid="guidPoshToolsCmdSet" id="cmdidReplWindow" priority="0x7f00" type="Button">
+        <Icon guid="guidReplImage" id="1"/> 
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
         <CommandFlag>DynamicVisibility</CommandFlag>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
         <Strings>
           <CommandName>cmdidReplWindow</CommandName>
-          <ButtonText>PowerShell Debug Interactive</ButtonText>
+          <ButtonText>PowerShell Interactive Window</ButtonText>
         </Strings>
       </Button>
     </Buttons>
@@ -121,7 +124,7 @@
             inside a button definition. An important aspect of this declaration is that the element id 
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
       <Bitmap guid="guidImages" href="Resources\Images.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows"/>
-      
+      <Bitmap guid="guidReplImage" href="Resources\PowershellInteractiveWindow_16x.png"/>   
     </Bitmaps>
  
   </Commands>
@@ -167,6 +170,9 @@
       <IDSymbol name="bmpPicArrows" value="5" />
       <IDSymbol name="bmpPicStrikethrough" value="6" />
     </GuidSymbol>
+
+    <GuidSymbol name="guidReplImage" value="{9F35C43F-D1AD-4A84-AB48-732DE8157697}"/>
+      
   </Symbols>
 
 </CommandTable>

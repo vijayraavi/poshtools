@@ -317,4 +317,23 @@
 
 Would you like to download now?</value>
   </data>
+  <data name="ErrorFailToCreateProcess" xml:space="preserve">
+    <value>Timed out to create and initialize the process {0}</value>
+    <comment>{0} - process id</comment>
+  </data>
+  <data name="ErrorPipelineBusy" xml:space="preserve">
+    <value>Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.</value>
+  </data>
+  <data name="MessageBoxErrorTitle" xml:space="preserve">
+    <value>PowerShell Tools for Visual Studio Error</value>
+  </data>
+  <data name="PowerShellHostInitializeFailed" xml:space="preserve">
+    <value>Failed to initialize PowerShell host for PowerShell Tools</value>
+  </data>
+  <data name="PowerShellHostInitializingNotComplete" xml:space="preserve">
+    <value>PowerShell host initializing has not yet completed, please try again later.</value>
+  </data>
+  <data name="PowerShellToolsInitializeFailed" xml:space="preserve">
+    <value>Failed to initialize PowerShell Tools for Visual Studio</value>
+  </data>
 </root>

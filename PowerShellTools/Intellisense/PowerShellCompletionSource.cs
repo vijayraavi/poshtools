@@ -16,7 +16,7 @@ namespace PowerShellTools.Intellisense
     public class PowerShellCompletionSource : ICompletionSource
     {
         private readonly IGlyphService _glyphs;
-        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellCompletionSource));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellCompletionSource));
         private bool _isDisposed;
 
         public PowerShellCompletionSource(IGlyphService glyphService)
@@ -27,19 +27,25 @@ namespace PowerShellTools.Intellisense
 
         public void AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
-            if (!session.Properties.ContainsProperty(BufferProperties.SessionOriginIntellisense) || !session.TextView.TextBuffer.Properties.ContainsProperty(typeof(IList<CompletionResult>)))
+            var textBuffer = session.TextView.TextBuffer;
+
+            if (!session.Properties.ContainsProperty(BufferProperties.SessionOriginIntellisense)
+                || !textBuffer.Properties.ContainsProperty(BufferProperties.LastWordReplacementSpan)
+                || !textBuffer.Properties.ContainsProperty(typeof(IList<CompletionResult>))
+                || !textBuffer.Properties.ContainsProperty(BufferProperties.LineUpToReplacementSpan))
             {
                 return;
             }
 
-            var textBuffer = session.TextView.TextBuffer;
+            ITrackingSpan trackingSpan;
+            IList<CompletionResult> list;
+            ITrackingSpan lineStartToApplicableTo;
+            textBuffer.Properties.TryGetProperty<ITrackingSpan>(BufferProperties.LastWordReplacementSpan, out trackingSpan);
+            textBuffer.Properties.TryGetProperty<IList<CompletionResult>>(typeof(IList<CompletionResult>), out list);
+            textBuffer.Properties.TryGetProperty<ITrackingSpan>(BufferProperties.LineUpToReplacementSpan, out lineStartToApplicableTo);
 
-            var trackingSpan = (ITrackingSpan)textBuffer.Properties.GetProperty(BufferProperties.LastWordReplacementSpan);
-            var list = (IList<CompletionResult>)textBuffer.Properties.GetProperty(typeof(IList<CompletionResult>));
             var currentSnapshot = textBuffer.CurrentSnapshot;
             var filterSpan = currentSnapshot.CreateTrackingSpan(trackingSpan.GetEndPoint(currentSnapshot).Position, 0, SpanTrackingMode.EdgeInclusive);
-            var lineStartToApplicableTo = (ITrackingSpan)textBuffer.Properties.GetProperty(BufferProperties.LineUpToReplacementSpan);
-
             Log.DebugFormat("TrackingSpan: {0}", trackingSpan.GetText(currentSnapshot));
             Log.DebugFormat("FilterSpan: {0}", filterSpan.GetText(currentSnapshot));
 
@@ -67,8 +73,8 @@ namespace PowerShellTools.Intellisense
                     case CompletionResultType.Variable:
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupField, StandardGlyphItem.GlyphItemPublic);
                         break;
-                    case  CompletionResultType.ProviderContainer:
-                    case  CompletionResultType.ProviderItem:
+                    case CompletionResultType.ProviderContainer:
+                    case CompletionResultType.ProviderItem:
                         glyph = _glyphs.GetGlyph(match.ResultType == CompletionResultType.ProviderContainer ? StandardGlyphGroup.GlyphOpenFolder : StandardGlyphGroup.GlyphLibrary, StandardGlyphItem.GlyphItemPublic);
                         break;
                 }
@@ -99,6 +105,26 @@ namespace PowerShellTools.Intellisense
     internal class PowerShellCompletionSet : CompletionSet
     {
         private readonly FilteredObservableCollection<Completion> completions;
+
+        internal PowerShellCompletionSet(string moniker,
+                                         string displayName,
+                                         ITrackingSpan applicableTo,
+                                         IEnumerable<Completion> completions,
+                                         IEnumerable<Completion> completionBuilders,
+                                         ITrackingSpan filterSpan,
+                                         ITrackingSpan lineStartToApplicableTo)
+            : base(moniker, displayName, applicableTo, completions, completionBuilders)
+        {
+            if (filterSpan == null)
+            {
+                throw new ArgumentNullException("filterSpan");
+            }
+            this.completions = new FilteredObservableCollection<Completion>(new ObservableCollection<Completion>(completions));
+            FilterSpan = filterSpan;
+            LineStartToApplicableTo = lineStartToApplicableTo;
+            InitialApplicableTo = applicableTo.GetText(applicableTo.TextBuffer.CurrentSnapshot);
+        }
+
         public override IList<Completion> Completions
         {
             get
@@ -113,25 +139,13 @@ namespace PowerShellTools.Intellisense
 
         internal string InitialApplicableTo { get; private set; }
 
-        internal PowerShellCompletionSet(string moniker, string displayName, ITrackingSpan applicableTo, IEnumerable<Completion> completions, IEnumerable<Completion> completionBuilders, ITrackingSpan filterSpan, ITrackingSpan lineStartToApplicableTo)
-            : base(moniker, displayName, applicableTo, completions, completionBuilders)
-        {
-            if (filterSpan == null)
-            {
-                throw new ArgumentNullException("filterSpan");
-            }
-            this.completions = new FilteredObservableCollection<Completion>(new ObservableCollection<Completion>(completions));
-            FilterSpan = filterSpan;
-            LineStartToApplicableTo = lineStartToApplicableTo;
-            InitialApplicableTo = applicableTo.GetText(applicableTo.TextBuffer.CurrentSnapshot);
-        }
         public override void Filter()
         {
             var filterText = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
             Predicate<Completion> predicate = delegate(Completion completion)
             {
-                var startIndex = completion.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? InitialApplicableTo.Length : 0;
-                return completion.DisplayText.IndexOf(filterText, startIndex, StringComparison.OrdinalIgnoreCase) != -1;
+                var startIndex = completion.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? InitialApplicableTo.Length : 0;
+                return completion.InsertionText.IndexOf(filterText, startIndex, StringComparison.OrdinalIgnoreCase) != -1;
             };
 
             if (Completions.Any(current => predicate(current)))
@@ -139,6 +153,7 @@ namespace PowerShellTools.Intellisense
                 completions.Filter(predicate);
             }
         }
+
         public override void SelectBestMatch()
         {
             var text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
@@ -151,8 +166,8 @@ namespace PowerShellTools.Intellisense
             Completion completion = null;
             foreach (var current in Completions)
             {
-                var startIndex = current.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? this.InitialApplicableTo.Length : 0;
-                var num2 = current.DisplayText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
+                var startIndex = current.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? this.InitialApplicableTo.Length : 0;
+                var num2 = current.InsertionText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
                 if (num2 != -1 && num2 < num)
                 {
                     completion = current;
@@ -164,6 +179,16 @@ namespace PowerShellTools.Intellisense
                 SelectionStatus = new CompletionSelectionStatus(null, false, false);
                 return;
             }
+
+            bool isFullyMatched = completion.InsertionText.Equals(InitialApplicableTo + text, StringComparison.OrdinalIgnoreCase);
+
+            var propertiesCollection = FilterSpan.TextBuffer.Properties;
+            if (propertiesCollection.ContainsProperty(BufferProperties.SessionCompletionFullyMatchedStatus))
+            {
+                propertiesCollection.RemoveProperty(BufferProperties.SessionCompletionFullyMatchedStatus);
+            }
+            propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, isFullyMatched);
+
             SelectionStatus = new CompletionSelectionStatus(completion, true, true);
         }
     }

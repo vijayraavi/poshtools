@@ -1,13 +1,15 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using EnvDTE80;
+﻿using EnvDTE80;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
+using PowerShellTools.ServiceManagement;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows;
 
 namespace PowerShellTools.Project
 {
@@ -32,6 +34,20 @@ namespace PowerShellTools.Project
 
         public int LaunchProject(bool debug)
         {
+            string script = String.Empty;
+            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            if (dte2 != null)
+            {
+                if (dte2.ActiveDocument != null)
+                {
+                    script = dte2.ActiveDocument.FullName;
+                }
+                else
+                {
+                    return VSConstants.E_INVALIDARG;
+                }
+            }
+
             if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
 
             Log.Debug("PowerShellProjectLauncher.LaunchProject");
@@ -41,15 +57,6 @@ namespace PowerShellTools.Project
             var info = new VsDebugTargetInfo();
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
-
-            string script = String.Empty;
-            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null)
-            {
-                script = dte2.ActiveDocument.FullName;
-            }
-
-
             info.bstrExe = script;
             info.bstrCurDir = Path.GetDirectoryName(info.bstrCurDir);
 
@@ -71,6 +78,9 @@ namespace PowerShellTools.Project
 
             IntPtr pInfo = Marshal.AllocCoTaskMem((int)info.cbSize);
             Marshal.StructureToPtr(info, pInfo, false);
+
+            // TODO: UI Work required to give user inidcation that it is waiting for debugger to get alive.
+            PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
 
             var eventManager = new DebugEventManager(PowerShellToolsPackage.Debugger.Runspace);
 
@@ -108,6 +118,17 @@ namespace PowerShellTools.Project
         public int LaunchSelection(string selection)
         {
             if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
+
+            if (PowerShellToolsPackage.Debugger == null)
+            {
+                MessageBox.Show(
+                        Resources.PowerShellHostInitializingNotComplete,
+                        Resources.MessageBoxErrorTitle,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                return VSConstants.S_OK;
+            }
 
             Log.Debug("PowerShellProjectLauncher.LaunchSelection");
             var debugger = (IVsDebugger)Package.GetGlobalService(typeof(IVsDebugger));
@@ -167,6 +188,17 @@ namespace PowerShellTools.Project
         public int LaunchFile(string file, bool debug)
         {
             if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
+
+            if (PowerShellToolsPackage.Debugger == null)
+            {
+                MessageBox.Show(
+                           Resources.PowerShellHostInitializingNotComplete,
+                           Resources.MessageBoxErrorTitle,
+                           MessageBoxButton.OK,
+                           MessageBoxImage.Information);
+
+                return VSConstants.S_OK;
+            }
 
             Log.Debug("PowerShellProjectLauncher.LaunchFile");
             var debugger = (IVsDebugger)Package.GetGlobalService(typeof(IVsDebugger));

@@ -13,7 +13,7 @@
  * ***************************************************************************/
 
 
-namespace Microsoft.VisualStudio.Repl {
+namespace PowerShellTools.Repl {
     /// <summary>
     /// Enumerates the various options that can be configured for a REPL window.
     /// </summary>
