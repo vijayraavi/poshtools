@@ -93,7 +93,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _runspace.StateChanged -= _runspace_StateChanged;
             if (_callback != null)
             {
-                _callback.TerminatingException(new DebuggingServiceException(ex));
+                _callback.TerminatingException(new PowerShellRunTerminatingException(ex));
             }
         }
 
@@ -106,6 +106,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (_callback != null)
             {
+                _callback.OutputStringLine(string.Empty);
                 _callback.RefreshPrompt();
             }
 

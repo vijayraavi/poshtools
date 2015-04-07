@@ -99,7 +99,7 @@ namespace PowerShellTools.DebugEngine
         /// Execution engine has terminating exception thrown
         /// </summary>
         /// <param name="ex">DebuggingServiceException</param>
-        public void TerminatingException(DebuggingServiceException ex)
+        public void TerminatingException(PowerShellRunTerminatingException ex)
         {
             Debugger.TerminateException(ex);
         }

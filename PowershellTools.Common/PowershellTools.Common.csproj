@@ -103,7 +103,7 @@
     <Compile Include="ServiceManagement\DebuggingContract\DebuggerBreakpointUpdatedEventArgs.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\CallStack.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\DebuggerStoppedEventArgs.cs" />
-    <Compile Include="ServiceManagement\DebuggingContract\DebuggingServiceException.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\PowerShellRunTerminatingException.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\IPowershellDebuggingService.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\IDebugEngineCallback.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\PowershellBreakpoint.cs" />

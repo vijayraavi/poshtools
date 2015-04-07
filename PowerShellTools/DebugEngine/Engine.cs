@@ -139,17 +139,16 @@ namespace PowerShellTools.DebugEngine
         /// </remarks>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Debugger_TerminatingException(object sender, EventArgs<Exception> e)
+        void Debugger_TerminatingException(object sender, EventArgs<PowerShellRunTerminatingException> e)
         {
-            if (e.Value is RuntimeException)
+            if (e.Value.Error != null)
             {
-                var re = e.Value as RuntimeException;
-                var scriptLocation = new ScriptLocation(re.ErrorRecord.InvocationInfo.ScriptName, re.ErrorRecord.InvocationInfo.ScriptLineNumber, 0);
+                var scriptLocation = new ScriptLocation(e.Value.Error.InvocationInfo.ScriptName, e.Value.Error.InvocationInfo.ScriptLineNumber, 0);
 
                 //_events.Break(_node);
             }
 
-            _events.Exception(_node, e.Value);
+            _events.Exception(_node, new Exception(e.Value.Message));
         }
 
         /// <summary>

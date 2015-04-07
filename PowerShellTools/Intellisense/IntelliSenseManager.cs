@@ -45,7 +45,8 @@ namespace PowerShellTools.Intellisense
 
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContet)
         {
-            _triggerTag = 0; 
+            _triggerTag = 0;
+            _sw = new Stopwatch();
             _broker = broker;
             NextCommandHandler = commandHandler;
             _textView = textView;
@@ -313,21 +314,21 @@ namespace PowerShellTools.Intellisense
         /// </summary>
         private void TriggerCompletion()
         {
-            _completionCaretPosition = (int)_textView.Caret.Position.BufferPosition; 
-            Tasks.Task.Factory.StartNew(() => 
-            { 
-                try 
-                { 
-                    _completionLine = _textView.Caret.Position.BufferPosition.GetContainingLine(); 
-                    _completionCaretInLine = (_completionCaretPosition - _completionLine.Start); 
+            _completionCaretPosition = (int)_textView.Caret.Position.BufferPosition;
+            Tasks.Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    _completionLine = _textView.Caret.Position.BufferPosition.GetContainingLine();
+                    _completionCaretInLine = (_completionCaretPosition - _completionLine.Start);
                     _completionText = _completionLine.GetText().Substring(0, _completionCaretInLine);
-                    StartIntelliSense(_completionLine.Start, _completionCaretPosition, _completionText); 
-                } 
-                catch (Exception ex) 
-                { 
-                    Log.Warn("Failed to start IntelliSense", ex); 
-                } 
-            });  
+                    StartIntelliSense(_completionLine.Start, _completionCaretPosition, _completionText);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn("Failed to start IntelliSense", ex);
+                }
+            }); 
         }
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
@@ -339,8 +340,7 @@ namespace PowerShellTools.Intellisense
                 _statusBar.SetText("Running IntelliSense...");
             }
 
-            _sw = new Stopwatch();
-            _sw.Start();
+            _sw.Restart();
 
             // Procedures for correctly supporting IntelliSense in REPL window.
             // Step 1, determine if this is REPL windows IntelliSense. If no, continue with normal IntelliSense triggering process. Otherwise, continue with the following steps.            

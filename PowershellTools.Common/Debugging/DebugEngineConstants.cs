@@ -118,5 +118,12 @@ param (
         public const string EnablePSBreakpoint = "Enable-PSBreakpoint -Id {0}";
         public const string RemovePSBreakpoint = "Remove-PSBreakpoint -Id {0}";
         public const string GetPrompt = "prompt";
+
+        // Terminating error output format
+        // {0} - Exception message
+        // {1} - Newline
+        // {2} - CategoryInfo
+        // {3} - FullyQualifiedErrorId
+        public const string TerminatingErrorFormat = "[ERROR] {0}{1}[ERROR] + CategoryInfo          : {2}{1}[ERROR] + FullyQualifiedErrorId : {3}{1}";
     }
 }
