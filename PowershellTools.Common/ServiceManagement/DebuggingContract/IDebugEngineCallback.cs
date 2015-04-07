@@ -27,8 +27,8 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         [ServiceKnownType(typeof(RemotingProgressRecord))]
         void OutputProgress(long sourceId, ProgressRecord record);
 
-        [OperationContract(IsOneWay = true)]
-        void TerminatingException(DebuggingServiceException ex);
+        [OperationContract(IsOneWay = false)]
+        void TerminatingException(PowerShellRunTerminatingException ex);
 
         [OperationContract(IsOneWay = true)]
         void DebuggerFinished();

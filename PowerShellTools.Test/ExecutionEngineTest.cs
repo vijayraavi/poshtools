@@ -124,7 +124,7 @@ namespace PowerShellTools.Test
 
             Assert.IsTrue(mre.WaitOne(5000));
 
-            Assert.AreEqual("Hey\n", outputString);
+            Assert.AreEqual("Hey\n\r\n", outputString);
         }
     }
 }
