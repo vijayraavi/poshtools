@@ -46,6 +46,7 @@ namespace PowerShellTools.Intellisense
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContet)
         {
             _triggerTag = 0;
+            _sw = new Stopwatch();
             _broker = broker;
             NextCommandHandler = commandHandler;
             _textView = textView;
