@@ -21,9 +21,10 @@ namespace PowerShellTools.ServiceManagement
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
 
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
-        private const UInt32 SWP_NOSIZE = 0x0001;
-        private const UInt32 SWP_NOMOVE = 0x0002;
-        private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
+        private const uint SWP_NOSIZE = 0x0001;
+        private const uint SWP_NOMOVE = 0x0002;
+        private const uint SWP_NOACTIVATE = 0x0010;
+        private const uint TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
         private const int SW_HIDE = 0;
 
         public static PowershellHostProcess CreatePowershellHostProcess()
@@ -45,13 +46,10 @@ namespace PowerShellTools.ServiceManagement
 
             powershellHostProcess.StartInfo.Arguments = hostArgs;
             powershellHostProcess.StartInfo.FileName = path;
-//#if DEBUG
+
             powershellHostProcess.StartInfo.CreateNoWindow = false;
             powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
-//#else
-            //powershellHostProcess.StartInfo.UseShellExecute = true;
-            //powershellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-//#endif
+
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, hostProcessReadyEventName);
 
             powershellHostProcess.Start();
