@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Editor.OptionsExtensionMethods;
 using Microsoft.VisualStudio.TextManager.Interop;
 
 namespace PowerShellTools.LanguageService
@@ -38,30 +39,37 @@ namespace PowerShellTools.LanguageService
                 return null;
             }
         }
+	
+	public void Dispose() { }
 
         private int? GetDefaultIndentationImp(ITextSnapshotLine line)
         {
-            var lineNumber = line.LineNumber;
-
+            int lineNumber = line.LineNumber;
             if (lineNumber <= 1) return 0;
 
-            var previousLine = _textView.TextSnapshot.GetLineFromLineNumber(lineNumber - 1);
-            var lineChars = previousLine.GetText().ToCharArray();
+            ITextSnapshotLine previousLine = _textView.TextSnapshot.GetLineFromLineNumber(lineNumber - 1);
+            string lineText = previousLine.GetText();
 
-            if (lineChars.Any() && lineChars[0] == '\t')
+	    // User GetIndentSize() instead of GetTabSize() due to the fact VS always uses Indent Size as a TAB size
+            int tabSize = _textView.Options.GetIndentSize();
+            int indentSize = 0;
+            for (int i = 0; i < lineText.Length; i++)
             {
-                return 4;
-            }
-
-            for (int i = 0; i < lineChars.Length; i++)
-            {
-                if (!char.IsWhiteSpace(lineChars[i]))
+                if (lineText[i] == ' ')
                 {
-                    return i;
+                    indentSize++;
+                }
+                else if (lineText[i] == '\t')
+                {
+                    indentSize += tabSize;
+                }
+                else
+                {
+                    break;
                 }
             }
 
-            return lineChars.Length;
+            return indentSize;
         }
 
         private int? GetSmartIndentationImp(ITextSnapshotLine line)
@@ -87,8 +95,6 @@ namespace PowerShellTools.LanguageService
             }
 
             return lineChars.Length;
-        }
-
-        public void Dispose() { }
+        }	
     }
 }
