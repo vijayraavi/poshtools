@@ -191,8 +191,8 @@ namespace PowerShellTools.Intellisense
             }
             propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, isFullyMatched);
 
-            bool isSelected = matchedCount > 0 ? true : false;
-            bool isUnique = matchedCount == 1 ? true : false;
+            bool isSelected = (matchedCount > 0);
+	    bool isUnique = (matchedCount == 1);
 
             SelectionStatus = new CompletionSelectionStatus(completion, isSelected, isUnique);
         }
