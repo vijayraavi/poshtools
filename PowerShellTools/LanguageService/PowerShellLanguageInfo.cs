@@ -1,10 +1,10 @@
 ﻿using System;
+using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
-using PowerShellTools.Classification;
 
 namespace PowerShellTools.LanguageService
 {
@@ -18,18 +18,46 @@ namespace PowerShellTools.LanguageService
     [Guid("1C4711F1-3766-4F84-9516-43FA4169CC36")]
     internal sealed class PowerShellLanguageInfo : IVsLanguageInfo, IVsLanguageDebugInfo
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceContainer _serviceContainer;
         private readonly IComponentModel _componentModel;
+        private LanguagePreferences _langPrefs;
 
-        public PowerShellLanguageInfo(IServiceProvider serviceProvider)
+        public PowerShellLanguageInfo(IServiceContainer serviceContainer)
         {
-            _serviceProvider = serviceProvider;
-            _componentModel = serviceProvider.GetService(typeof(SComponentModel)) as IComponentModel;
+            _serviceContainer = serviceContainer;
+            _componentModel = serviceContainer.GetService(typeof(SComponentModel)) as IComponentModel;
+
+            IVsTextManager textMgr = (IVsTextManager)serviceContainer.GetService(typeof(SVsTextManager));
+            if (textMgr != null)
+            {
+                // Load the initial settings
+                var langPrefs = new LANGPREFERENCES[1];
+                langPrefs[0].guidLang = typeof(PowerShellLanguageInfo).GUID;
+                ErrorHandler.ThrowOnFailure(textMgr.GetUserPreferences(null, null, langPrefs, null));
+                _langPrefs = new LanguagePreferences(langPrefs[0]);
+
+                // Hook up to the setting change
+                Guid guid = typeof(IVsTextManagerEvents2).GUID;
+                Microsoft.VisualStudio.OLE.Interop.IConnectionPoint connectionPoint;
+                ((Microsoft.VisualStudio.OLE.Interop.IConnectionPointContainer)textMgr).FindConnectionPoint(ref guid, out connectionPoint);
+                uint cookie;
+                connectionPoint.Advise(_langPrefs, out cookie);
+            }
         }
+
+        public LanguagePreferences LangPrefs
+        {
+            get
+            {
+                return _langPrefs;
+            }
+        }
+
+        #region IVsLanguageInfo Implementation
 
         public int GetCodeWindowManager(IVsCodeWindow pCodeWin, out IVsCodeWindowManager ppCodeWinMgr)
         {
-            var model = _serviceProvider.GetService(typeof(SComponentModel)) as IComponentModel;
+            var model = _serviceContainer.GetService(typeof(SComponentModel)) as IComponentModel;
             var service = model.GetService<IVsEditorAdaptersFactoryService>();
 
             IVsTextView textView;
@@ -68,13 +96,7 @@ namespace PowerShellTools.LanguageService
             return VSConstants.E_FAIL;
         }
 
-        public IServiceProvider ServiceProvider
-        {
-            get
-            {
-                return _serviceProvider;
-            }
-        }
+        #endregion
 
         #region IVsLanguageDebugInfo Members
 
@@ -92,7 +114,7 @@ namespace PowerShellTools.LanguageService
 
         public int GetNameOfLocation(IVsTextBuffer pBuffer, int iLine, int iCol, out string pbstrName, out int piLineOffset)
         {
-            var model = _serviceProvider.GetService(typeof(SComponentModel)) as IComponentModel;
+            var model = _serviceContainer.GetService(typeof(SComponentModel)) as IComponentModel;
             var service = model.GetService<IVsEditorAdaptersFactoryService>();
             var buffer = service.GetDataBuffer(pBuffer);
 
@@ -145,8 +167,6 @@ namespace PowerShellTools.LanguageService
             pCodeSpan[0].iEndLine = iLine;
             return VSConstants.E_NOTIMPL;
         }
-
-
 
         #endregion
     }
