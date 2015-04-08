@@ -240,7 +240,12 @@ namespace PowerShellTools.DebugEngine
         /// <returns>user input string</returns>
         public string ReadLine(string message)
         {
-            return Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
+            string input = string.Empty;
+            ThreadHelper.Generic.Invoke(() =>
+            {
+                input = Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
+            });
+            return input;
         }
 
         /// <summary>

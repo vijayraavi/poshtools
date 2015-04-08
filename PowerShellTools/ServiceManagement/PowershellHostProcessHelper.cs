@@ -7,6 +7,7 @@ using System.Threading;
 using PowerShellTools.Common;
 using System.Runtime.InteropServices;
 using log4net;
+using System.Threading.Tasks;
 
 namespace PowerShellTools.ServiceManagement
 {
@@ -48,7 +49,10 @@ namespace PowerShellTools.ServiceManagement
                 _appRunning = value;
                 if (value)
                 {
-                    MonitorUserInputRequest();
+                    Task.Run(() =>
+                    {
+                        MonitorUserInputRequest();
+                    });
                 }
             }
         }
@@ -127,11 +131,16 @@ namespace PowerShellTools.ServiceManagement
 
             inputStreamWriter = powerShellHostProcess.StandardInput;
 
-            AppRunning = true;
-
             return new PowerShellHostProcess(powerShellHostProcess, EndPointGuid);
         }
 
+        /// <summary>
+        /// Monitoring thread for user input request
+        /// </summary>
+        /// <remarks>
+        /// Will be started once app begins to run on remote PowerShell host service
+        /// Stopped once app exits
+        /// </remarks>
         public static void MonitorUserInputRequest()
         {
             while (AppRunning)
@@ -145,7 +154,10 @@ namespace PowerShellTools.ServiceManagement
                             PowerShellToolsPackage.Debugger.HostUi != null)
                         {
                             string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(string.Empty);
+
+                            // Feed into stdin stream
                             inputStreamWriter.WriteLine(inputText);
+                            break;
                         }
                     }
                 }
