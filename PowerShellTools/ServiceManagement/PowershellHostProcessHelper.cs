@@ -30,13 +30,34 @@ namespace PowerShellTools.ServiceManagement
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowershellHostProcessHelper));
 
+        private static Process powerShellHostProcess;
+        private static StreamWriter inputStreamWriter;
+        public static bool _appRunning = false;
+
         public static Guid EndPointGuid { get; private set; }
 
-        public static PowershellHostProcess CreatePowershellHostProcess()
+
+        public static bool AppRunning
+        {
+            get
+            {
+                return _appRunning;
+            }
+            set
+            {
+                _appRunning = value;
+                if (value)
+                {
+                    MonitorUserInputRequest();
+                }
+            }
+        }
+
+        public static PowerShellHostProcess CreatePowershellHostProcess()
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
-            Process powerShellHostProcess = new Process();
+            powerShellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
             EndPointGuid = Guid.NewGuid();
 
@@ -71,6 +92,8 @@ namespace PowerShellTools.ServiceManagement
             powerShellHostProcess.BeginOutputReadLine();
             powerShellHostProcess.BeginErrorReadLine();
 
+            
+
             // For now we dont set timeout and wait infinitely
             // Further UI work might enable some better UX like retry logic for case where remote process being unresponsive
             // By then we will bring timeout back here.
@@ -102,9 +125,33 @@ namespace PowerShellTools.ServiceManagement
                                                                         processId.ToString()));
             }
 
-            //StreamWriter inputStreamWriter = powerShellHostProcess.StandardInput;
+            inputStreamWriter = powerShellHostProcess.StandardInput;
 
-            return new PowershellHostProcess(powerShellHostProcess, EndPointGuid);
+            AppRunning = true;
+
+            return new PowerShellHostProcess(powerShellHostProcess, EndPointGuid);
+        }
+
+        public static void MonitorUserInputRequest()
+        {
+            while (AppRunning)
+            {
+                foreach (ProcessThread thread in powerShellHostProcess.Threads)
+                {
+                    if (thread.ThreadState == System.Diagnostics.ThreadState.Wait
+                        && thread.WaitReason == ThreadWaitReason.UserRequest)
+                    {
+                        if (PowerShellToolsPackage.Debugger != null &&
+                            PowerShellToolsPackage.Debugger.HostUi != null)
+                        {
+                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(string.Empty);
+                            inputStreamWriter.WriteLine(inputText);
+                        }
+                    }
+                }
+
+                Thread.Sleep(1000); 
+            }
         }
 
         private static void powerShellHostProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
@@ -112,7 +159,7 @@ namespace PowerShellTools.ServiceManagement
             powerShellHostProcessOutput(e.Data);
         }
 
-        static void powerShellHostProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        private static void powerShellHostProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             powerShellHostProcessOutput(e.Data);
         }
@@ -144,9 +191,9 @@ namespace PowerShellTools.ServiceManagement
     /// <summary>
     /// The structure containing the process we want and a guid used for the WCF client to establish connection to the service.
     /// </summary>
-    public class PowershellHostProcess
+    public class PowerShellHostProcess
     {
-        public PowershellHostProcess(Process process, Guid guid)
+        public PowerShellHostProcess(Process process, Guid guid)
         {
             Process = process;
             EndpointGuid = guid;
