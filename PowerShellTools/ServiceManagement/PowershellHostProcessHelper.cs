@@ -130,7 +130,7 @@ namespace PowerShellTools.ServiceManagement
                 if (PowerShellToolsPackage.Debugger != null &&
                     PowerShellToolsPackage.Debugger.HostUi != null)
                 {
-                    PowerShellToolsPackage.Debugger.HostUi.VsOutputString(outputData);
+                    PowerShellToolsPackage.Debugger.HostUi.VsOutputString(outputData + Environment.NewLine);
                 }
             }
         }
