@@ -675,6 +675,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Appliation asks for an input:.
+        /// </summary>
+        public static string UserInputRequestMessage {
+            get {
+                return ResourceManager.GetString("UserInputRequestMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the variables that the module exports. Wildcards are permitted..
         /// </summary>
         public static string VariablesToExport_Description {

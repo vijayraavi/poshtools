@@ -155,7 +155,7 @@ namespace PowerShellTools.ServiceManagement
                         if (PowerShellToolsPackage.Debugger != null &&
                             PowerShellToolsPackage.Debugger.HostUi != null)
                         {
-                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(string.Empty);
+                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage);
 
                             // Feed into stdin stream
                             _inputStreamWriter.WriteLine(inputText);
