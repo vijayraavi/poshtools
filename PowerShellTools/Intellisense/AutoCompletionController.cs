@@ -184,25 +184,8 @@ namespace PowerShellTools.Intellisense
         private bool IsInCommentArea()
         {
             int caretPosition = _textView.Caret.Position.BufferPosition.Position;
-            return IsInCommentArea(caretPosition, _textView.TextBuffer);
-        }
-
-        internal bool IsInCommentArea(int caretPosition, ITextBuffer textBuffer)
-        {
-            Token[] pstokens;
-            if (textBuffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out pstokens))
-            {
-                var commentTokens = pstokens.Where(t => t.Kind == TokenKind.Comment).ToArray();
-                foreach (var token in commentTokens)
-                {
-                    if (token.Extent.StartOffset <= caretPosition && caretPosition <= token.Extent.EndOffset)
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
+            return Utilities.IsInCommentArea(caretPosition, _textView.TextBuffer);
+        }        
 
         /// <summary>
         /// Complete the left brace/quotes with matched brace/quotes
