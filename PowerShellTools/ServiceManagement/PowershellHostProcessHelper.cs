@@ -31,9 +31,9 @@ namespace PowerShellTools.ServiceManagement
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowershellHostProcessHelper));
 
-        private static Process powerShellHostProcess;
-        private static StreamWriter inputStreamWriter;
-        public static bool _appRunning = false;
+        private static Process _powerShellHostProcess;
+        private static StreamWriter _inputStreamWriter;
+        private static bool _appRunning = false;
 
         public static Guid EndPointGuid { get; private set; }
 
@@ -47,6 +47,8 @@ namespace PowerShellTools.ServiceManagement
             set
             {
                 _appRunning = value;
+
+                // Start monitoring thread when app starts
                 if (value)
                 {
                     Task.Run(() =>
@@ -61,7 +63,7 @@ namespace PowerShellTools.ServiceManagement
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
-            powerShellHostProcess = new Process();
+            _powerShellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
             EndPointGuid = Guid.NewGuid();
 
@@ -74,27 +76,27 @@ namespace PowerShellTools.ServiceManagement
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
                                             Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName);
 
-            powerShellHostProcess.StartInfo.Arguments = hostArgs;
-            powerShellHostProcess.StartInfo.FileName = path;
+            _powerShellHostProcess.StartInfo.Arguments = hostArgs;
+            _powerShellHostProcess.StartInfo.FileName = path;
 
-            powerShellHostProcess.StartInfo.CreateNoWindow = false;
-            powerShellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+            _powerShellHostProcess.StartInfo.CreateNoWindow = false;
+            _powerShellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
 
-            powerShellHostProcess.StartInfo.UseShellExecute = false;
-            powerShellHostProcess.StartInfo.RedirectStandardInput = true;
-            powerShellHostProcess.StartInfo.RedirectStandardOutput = true;
-            powerShellHostProcess.StartInfo.RedirectStandardError = true;
+            _powerShellHostProcess.StartInfo.UseShellExecute = false;
+            _powerShellHostProcess.StartInfo.RedirectStandardInput = true;
+            _powerShellHostProcess.StartInfo.RedirectStandardOutput = true;
+            _powerShellHostProcess.StartInfo.RedirectStandardError = true;
 
-            powerShellHostProcess.OutputDataReceived += powerShellHostProcess_OutputDataReceived;
-            powerShellHostProcess.ErrorDataReceived += powerShellHostProcess_ErrorDataReceived;
+            _powerShellHostProcess.OutputDataReceived += powerShellHostProcess_OutputDataReceived;
+            _powerShellHostProcess.ErrorDataReceived += powerShellHostProcess_ErrorDataReceived;
 
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, hostProcessReadyEventName);
 
-            powerShellHostProcess.Start();
-            powerShellHostProcess.EnableRaisingEvents = true;
+            _powerShellHostProcess.Start();
+            _powerShellHostProcess.EnableRaisingEvents = true;
 
-            powerShellHostProcess.BeginOutputReadLine();
-            powerShellHostProcess.BeginErrorReadLine();
+            _powerShellHostProcess.BeginOutputReadLine();
+            _powerShellHostProcess.BeginErrorReadLine();
 
             
 
@@ -104,34 +106,34 @@ namespace PowerShellTools.ServiceManagement
             bool success = readyEvent.WaitOne();
             readyEvent.Close();
 
-            MakeTopMost(powerShellHostProcess.MainWindowHandle);
+            MakeTopMost(_powerShellHostProcess.MainWindowHandle);
 
-            ShowWindow(powerShellHostProcess.MainWindowHandle, SW_HIDE);
+            ShowWindow(_powerShellHostProcess.MainWindowHandle, SW_HIDE);
 
             if (!success)
             {
-                int processId = powerShellHostProcess.Id;
+                int processId = _powerShellHostProcess.Id;
                 try
                 {
-                    powerShellHostProcess.Kill();
+                    _powerShellHostProcess.Kill();
                 }
                 catch (Exception)
                 {
                 }
 
-                if (powerShellHostProcess != null)
+                if (_powerShellHostProcess != null)
                 {
-                    powerShellHostProcess.Dispose();
-                    powerShellHostProcess = null;
+                    _powerShellHostProcess.Dispose();
+                    _powerShellHostProcess = null;
                 }
                 throw new PowershellHostProcessException(String.Format(CultureInfo.CurrentCulture,
                                                                         Resources.ErrorFailToCreateProcess,
                                                                         processId.ToString()));
             }
 
-            inputStreamWriter = powerShellHostProcess.StandardInput;
+            _inputStreamWriter = _powerShellHostProcess.StandardInput;
 
-            return new PowerShellHostProcess(powerShellHostProcess, EndPointGuid);
+            return new PowerShellHostProcess(_powerShellHostProcess, EndPointGuid);
         }
 
         /// <summary>
@@ -145,7 +147,7 @@ namespace PowerShellTools.ServiceManagement
         {
             while (AppRunning)
             {
-                foreach (ProcessThread thread in powerShellHostProcess.Threads)
+                foreach (ProcessThread thread in _powerShellHostProcess.Threads)
                 {
                     if (thread.ThreadState == System.Diagnostics.ThreadState.Wait
                         && thread.WaitReason == ThreadWaitReason.UserRequest)
@@ -156,7 +158,7 @@ namespace PowerShellTools.ServiceManagement
                             string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(string.Empty);
 
                             // Feed into stdin stream
-                            inputStreamWriter.WriteLine(inputText);
+                            _inputStreamWriter.WriteLine(inputText);
                             break;
                         }
                     }

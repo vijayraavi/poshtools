@@ -241,10 +241,12 @@ namespace PowerShellTools.DebugEngine
         public string ReadLine(string message)
         {
             string input = string.Empty;
+
             ThreadHelper.Generic.Invoke(() =>
             {
                 input = Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
             });
+
             return input;
         }
 
