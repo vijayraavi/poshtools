@@ -37,7 +37,13 @@ namespace PowerShellTools.LanguageService
 	    return indentSize;
 	}
 
-	public static void SkipPreceedingBlankLines(ITextSnapshotLine line, out string baselineText, out ITextSnapshotLine baseline)
+	/// <summary>
+	/// Get the first preceding non-blank line and its text.
+	/// </summary>
+	/// <param name="line">Current line.</param>
+	/// <param name="baselineText">The first preceding non-blank line text.</param>
+	/// <param name="baseline">The first preceding non-blank line.</param>
+	public static void SkipPrecedingBlankLines(ITextSnapshotLine line, out string baselineText, out ITextSnapshotLine baseline)
 	{
 	    string text;
 	    while (line.LineNumber > 0)
@@ -55,9 +61,14 @@ namespace PowerShellTools.LanguageService
 	    baseline = line;
 	}
 
-	public static bool IsBlankText(string lineText)
+	/// <summary>
+	/// Determine whether the text is all blank.
+	/// </summary>
+	/// <param name="text">The text.</param>
+	/// <returns>True if the text is all blank. False otherwise.</returns>
+	public static bool IsBlankText(string text)
 	{
-	    return lineText.All(c => char.IsWhiteSpace(c));
+	    return text.All(c => char.IsWhiteSpace(c));
 	}
     }
 }

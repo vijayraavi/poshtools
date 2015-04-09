@@ -13,12 +13,22 @@ namespace PowerShellTools.LanguageService
         private ITextView _textView;
         private PowerShellLanguageInfo _info;
 
+	/// <summary>
+	/// Constructor.
+	/// </summary>
+	/// <param name="info">Powershell language service.</param>
+	/// <param name="textView">Current active TextView.</param>
         public SmartIndent(PowerShellLanguageInfo info, ITextView textView)
         {
             _info = info;
             _textView = textView;
         }
 
+	/// <summary>
+	/// Implementation of the interface.
+	/// </summary>
+	/// <param name="line">The current line after Enter.</param>
+	/// <returns>Desired indentation size.</returns>
         public int? GetDesiredIndentation(ITextSnapshotLine line)
         {
 
@@ -48,6 +58,12 @@ namespace PowerShellTools.LanguageService
 	
 	public void Dispose() { }
 
+	/// <summary>
+	/// Implementation of default indentation.
+	/// </summary>
+	/// <param name="line">The current line after Enter.</param>
+	/// <param name="tabSize">The TAB size.</param>
+	/// <returns>Desired indentation size.</returns>
         private int? GetDefaultIndentationImp(ITextSnapshotLine line, int tabSize)
         {
             int lineNumber = line.LineNumber;
@@ -72,7 +88,7 @@ namespace PowerShellTools.LanguageService
 	/// </summary>
 	/// <param name="line">The current line after Enter.</param>
 	/// <param name="tabSize">The TAB size.</param>
-	/// <returns>The indentation to current line.</returns>
+	/// <returns>Desired indentation size.</returns>
         private int? GetSmartIndentationImp(ITextSnapshotLine line, int tabSize)
         {
 	    int lineNumber = line.LineNumber;
@@ -92,7 +108,7 @@ namespace PowerShellTools.LanguageService
 
 	    string baselineText = null;
 	    ITextSnapshotLine baseline = null;
-	    IndentUtilities.SkipPreceedingBlankLines(line, out baselineText, out baseline);
+	    IndentUtilities.SkipPrecedingBlankLines(line, out baselineText, out baseline);
 	    int indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
 	    if (!needExtraEffort || baselineText.Length == 0)
 	    {
