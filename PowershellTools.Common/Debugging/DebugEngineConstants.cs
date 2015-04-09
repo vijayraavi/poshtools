@@ -125,5 +125,8 @@ param (
         // {2} - CategoryInfo
         // {3} - FullyQualifiedErrorId
         public const string TerminatingErrorFormat = "[ERROR] {0}{1}[ERROR] + CategoryInfo          : {2}{1}[ERROR] + FullyQualifiedErrorId : {3}{1}";
+
+        public const string PowerShellHostProcessLogTag = "[{0}]:";
+        public const string PowerShellHostProcessLogFormat = PowerShellHostProcessLogTag + "{1}";
     }
 }

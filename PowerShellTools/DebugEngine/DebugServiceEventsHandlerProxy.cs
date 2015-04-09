@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using Microsoft.VisualStudio.Shell;
+using PowerShellTools.ServiceManagement;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -175,6 +176,23 @@ namespace PowerShellTools.DebugEngine
         {
             return Debugger.HostUi.GetPSCredential(caption, message, userName,
                 targetName, allowedCredentialTypes, options);
+        }
+
+
+        public void StartMonitorUserInputRequest()
+        {
+            if (ConnectionManager.Instance.HostProcess != null)
+            {
+                ConnectionManager.Instance.HostProcess.AppRunning = true;
+            }
+        }
+
+        public void StopMonitorUserInputRequest()
+        {
+            if (ConnectionManager.Instance.HostProcess != null)
+            {
+                ConnectionManager.Instance.HostProcess.AppRunning = false;
+            }
         }
     }
 }
