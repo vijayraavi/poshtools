@@ -8,6 +8,7 @@ using PowerShellTools.Common;
 using System.Runtime.InteropServices;
 using log4net;
 using System.Threading.Tasks;
+using PowerShellTools.Common.Debugging;
 
 namespace PowerShellTools.ServiceManagement
 {
@@ -31,39 +32,13 @@ namespace PowerShellTools.ServiceManagement
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowershellHostProcessHelper));
 
-        private static Process _powerShellHostProcess;
-        private static StreamWriter _inputStreamWriter;
-        private static bool _appRunning = false;
-
-        public static Guid EndPointGuid { get; private set; }
-
-
-        public static bool AppRunning
-        {
-            get
-            {
-                return _appRunning;
-            }
-            set
-            {
-                _appRunning = value;
-
-                // Start monitoring thread when app starts
-                if (value)
-                {
-                    Task.Run(() =>
-                    {
-                        MonitorUserInputRequest();
-                    });
-                }
-            }
-        }
+        public static Guid EndPointGuid { get; set; }
 
         public static PowerShellHostProcess CreatePowershellHostProcess()
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
-            _powerShellHostProcess = new Process();
+            Process powerShellHostProcess = new Process();
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
             EndPointGuid = Guid.NewGuid();
 
@@ -76,27 +51,27 @@ namespace PowerShellTools.ServiceManagement
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
                                             Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName);
 
-            _powerShellHostProcess.StartInfo.Arguments = hostArgs;
-            _powerShellHostProcess.StartInfo.FileName = path;
+            powerShellHostProcess.StartInfo.Arguments = hostArgs;
+            powerShellHostProcess.StartInfo.FileName = path;
 
-            _powerShellHostProcess.StartInfo.CreateNoWindow = false;
-            _powerShellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+            powerShellHostProcess.StartInfo.CreateNoWindow = false;
+            powerShellHostProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
 
-            _powerShellHostProcess.StartInfo.UseShellExecute = false;
-            _powerShellHostProcess.StartInfo.RedirectStandardInput = true;
-            _powerShellHostProcess.StartInfo.RedirectStandardOutput = true;
-            _powerShellHostProcess.StartInfo.RedirectStandardError = true;
+            powerShellHostProcess.StartInfo.UseShellExecute = false;
+            powerShellHostProcess.StartInfo.RedirectStandardInput = true;
+            powerShellHostProcess.StartInfo.RedirectStandardOutput = true;
+            powerShellHostProcess.StartInfo.RedirectStandardError = true;
 
-            _powerShellHostProcess.OutputDataReceived += powerShellHostProcess_OutputDataReceived;
-            _powerShellHostProcess.ErrorDataReceived += powerShellHostProcess_ErrorDataReceived;
+            powerShellHostProcess.OutputDataReceived += PowerShellHostProcess_OutputDataReceived;
+            powerShellHostProcess.ErrorDataReceived += PowerShellHostProcess_ErrorDataReceived;
 
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, hostProcessReadyEventName);
 
-            _powerShellHostProcess.Start();
-            _powerShellHostProcess.EnableRaisingEvents = true;
+            powerShellHostProcess.Start();
+            powerShellHostProcess.EnableRaisingEvents = true;
 
-            _powerShellHostProcess.BeginOutputReadLine();
-            _powerShellHostProcess.BeginErrorReadLine();
+            powerShellHostProcess.BeginOutputReadLine();
+            powerShellHostProcess.BeginErrorReadLine();
 
             
 
@@ -106,81 +81,47 @@ namespace PowerShellTools.ServiceManagement
             bool success = readyEvent.WaitOne();
             readyEvent.Close();
 
-            MakeTopMost(_powerShellHostProcess.MainWindowHandle);
+            MakeTopMost(powerShellHostProcess.MainWindowHandle);
 
-            ShowWindow(_powerShellHostProcess.MainWindowHandle, SW_HIDE);
+            ShowWindow(powerShellHostProcess.MainWindowHandle, SW_HIDE);
 
             if (!success)
             {
-                int processId = _powerShellHostProcess.Id;
+                int processId = powerShellHostProcess.Id;
                 try
                 {
-                    _powerShellHostProcess.Kill();
+                    powerShellHostProcess.Kill();
                 }
                 catch (Exception)
                 {
                 }
 
-                if (_powerShellHostProcess != null)
+                if (powerShellHostProcess != null)
                 {
-                    _powerShellHostProcess.Dispose();
-                    _powerShellHostProcess = null;
+                    powerShellHostProcess.Dispose();
+                    powerShellHostProcess = null;
                 }
                 throw new PowershellHostProcessException(String.Format(CultureInfo.CurrentCulture,
                                                                         Resources.ErrorFailToCreateProcess,
                                                                         processId.ToString()));
             }
 
-            _inputStreamWriter = _powerShellHostProcess.StandardInput;
-
-            return new PowerShellHostProcess(_powerShellHostProcess, EndPointGuid);
+            return new PowerShellHostProcess(powerShellHostProcess, EndPointGuid);
         }
 
-        /// <summary>
-        /// Monitoring thread for user input request
-        /// </summary>
-        /// <remarks>
-        /// Will be started once app begins to run on remote PowerShell host service
-        /// Stopped once app exits
-        /// </remarks>
-        public static void MonitorUserInputRequest()
+        private static void PowerShellHostProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            while (AppRunning)
-            {
-                foreach (ProcessThread thread in _powerShellHostProcess.Threads)
-                {
-                    if (thread.ThreadState == System.Diagnostics.ThreadState.Wait
-                        && thread.WaitReason == ThreadWaitReason.UserRequest)
-                    {
-                        if (PowerShellToolsPackage.Debugger != null &&
-                            PowerShellToolsPackage.Debugger.HostUi != null)
-                        {
-                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage);
-
-                            // Feed into stdin stream
-                            _inputStreamWriter.WriteLine(inputText);
-                            break;
-                        }
-                    }
-                }
-
-                Thread.Sleep(1000); 
-            }
+            PowerShellHostProcessOutput(e.Data);
         }
 
-        private static void powerShellHostProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        private static void PowerShellHostProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            powerShellHostProcessOutput(e.Data);
+            PowerShellHostProcessOutput(e.Data);
         }
 
-        private static void powerShellHostProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        private static void PowerShellHostProcessOutput(string outputData)
         {
-            powerShellHostProcessOutput(e.Data);
-        }
-
-        private static void powerShellHostProcessOutput(string outputData)
-        {
-            if (outputData.StartsWith(string.Format("[{0}]:", PowershellHostProcessHelper.EndPointGuid), StringComparison.OrdinalIgnoreCase))
+            if (outputData.StartsWith(string.Format(DebugEngineConstants.PowerShellHostProcessLogTag, PowershellHostProcessHelper.EndPointGuid), StringComparison.OrdinalIgnoreCase))
             {
                 // debug data
                 Log.Debug(outputData);
@@ -207,14 +148,84 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     public class PowerShellHostProcess
     {
+        private bool _appRunning = false;
+
+        public Process Process 
+        {
+            get; 
+            private set; 
+        }
+
+        public Guid EndpointGuid 
+        {
+            get; 
+            private set; 
+        }
+
+        public bool AppRunning
+        {
+            get
+            {
+                return _appRunning;
+            }
+            set
+            {
+                _appRunning = value;
+
+                // Start monitoring thread when app starts
+                if (value)
+                {
+                    Task.Run(() =>
+                    {
+                        MonitorUserInputRequest();
+                    });
+                }
+            }
+        }
+
         public PowerShellHostProcess(Process process, Guid guid)
         {
             Process = process;
             EndpointGuid = guid;
         }
 
-        public Process Process { get; private set; }
+        /// <summary>
+        /// Monitoring thread for user input request
+        /// </summary>
+        /// <remarks>
+        /// Will be started once app begins to run on remote PowerShell host service
+        /// Stopped once app exits
+        /// </remarks>
+        public void MonitorUserInputRequest()
+        {
+            StreamWriter _inputStreamWriter = Process.StandardInput;
 
-        public Guid EndpointGuid { get; private set; }
+            while (AppRunning)
+            {
+                foreach (ProcessThread thread in Process.Threads)
+                {
+                    if (thread.ThreadState == System.Diagnostics.ThreadState.Wait
+                        && thread.WaitReason == ThreadWaitReason.UserRequest)
+                    {
+                        if (PowerShellToolsPackage.Debugger != null &&
+                            PowerShellToolsPackage.Debugger.HostUi != null)
+                        {
+                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage);
+
+                            if (AppRunning)
+                            {
+                                // Feed into stdin stream
+                                _inputStreamWriter.WriteLine(inputText);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                Thread.Sleep(500);
+            }
+
+            _inputStreamWriter.Flush();
+        }
     }
 }

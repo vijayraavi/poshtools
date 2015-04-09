@@ -181,12 +181,18 @@ namespace PowerShellTools.DebugEngine
 
         public void StartMonitorUserInputRequest()
         {
-            PowershellHostProcessHelper.AppRunning = true;
+            if (ConnectionManager.Instance.HostProcess != null)
+            {
+                ConnectionManager.Instance.HostProcess.AppRunning = true;
+            }
         }
 
         public void StopMonitorUserInputRequest()
         {
-            PowershellHostProcessHelper.AppRunning = false;
+            if (ConnectionManager.Instance.HostProcess != null)
+            {
+                ConnectionManager.Instance.HostProcess.AppRunning = false;
+            }
         }
     }
 }

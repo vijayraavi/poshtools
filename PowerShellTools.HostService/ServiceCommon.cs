@@ -1,4 +1,5 @@
 ﻿using Microsoft.PowerShell;
+using PowerShellTools.Common.Debugging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,7 +47,7 @@ namespace PowerShellTools.HostService
         /// <param name="msg"></param>
         private static void Log(string msg)
         {
-            Console.WriteLine(string.Format("[{0}]:{1}", Program.EndpointGuid, msg));
+            Console.WriteLine(string.Format(DebugEngineConstants.PowerShellHostProcessLogFormat, Program.EndpointGuid, msg));
         }
     }
 }
