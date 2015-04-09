@@ -370,7 +370,7 @@ namespace PowerShellTools
                 IPowerShellTokenizationService psts = new PowerShellTokenizationService(buffer);
 
                 _gotoDefinitionCommand.AddTextBuffer(buffer);
-                buffer.PostChanged += (o, args) => psts.StartTokenization();
+                buffer.ChangedLowPriority += (o, args) => psts.StartTokenization();
 
                 buffer.Properties.AddProperty(BufferProperties.PowerShellTokenizer, psts);
             }

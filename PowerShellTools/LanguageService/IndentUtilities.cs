@@ -9,19 +9,42 @@ namespace PowerShellTools.LanguageService
 {
     internal static class IndentUtilities
     {
-	public static int? GetDesiredIndentation(ITextSnapshotLine line)
+	/// <summary>
+	/// Get current indentation of targeting line.
+	/// </summary>
+	/// <param name="lineText">Text of the targeting line.</param>
+	/// <param name="tabSize">Tab size.</param>
+	/// <returns>The indentation of the targeting line.</returns>
+	public static int GetCurrentLineIndentation(string lineText, int tabSize)
 	{
-	    return null;
+	    int indentSize = 0;
+	    for (int i = 0; i < lineText.Length; i++)
+	    {
+		if (lineText[i] == ' ')
+		{
+		    indentSize++;
+		}
+		else if (lineText[i] == '\t')
+		{
+		    indentSize += tabSize;
+		}
+		else
+		{
+		    break;
+		}
+	    }
+
+	    return indentSize;
 	}
 
-	private static void SkipPreceedingBlankLines(ITextSnapshotLine line, out string baselineText, out ITextSnapshotLine baseline)
+	public static void SkipPreceedingBlankLines(ITextSnapshotLine line, out string baselineText, out ITextSnapshotLine baseline)
 	{
 	    string text;
 	    while (line.LineNumber > 0)
 	    {
 		line = line.Snapshot.GetLineFromLineNumber(line.LineNumber - 1);
 		text = line.GetText();
-		if (!IsBlankLine(text))
+		if (!IsBlankText(text))
 		{
 		    baseline = line;
 		    baselineText = text;
@@ -32,7 +55,7 @@ namespace PowerShellTools.LanguageService
 	    baseline = line;
 	}
 
-	private static bool IsBlankLine(string lineText)
+	public static bool IsBlankText(string lineText)
 	{
 	    return lineText.All(c => char.IsWhiteSpace(c));
 	}
