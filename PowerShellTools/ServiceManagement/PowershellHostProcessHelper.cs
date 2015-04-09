@@ -32,7 +32,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowershellHostProcessHelper));
 
-        public static Guid EndPointGuid { get; set; }
+        private static Guid EndPointGuid { get; set; }
 
         public static PowerShellHostProcess CreatePowershellHostProcess()
         {
@@ -72,8 +72,6 @@ namespace PowerShellTools.ServiceManagement
 
             powerShellHostProcess.BeginOutputReadLine();
             powerShellHostProcess.BeginErrorReadLine();
-
-            
 
             // For now we dont set timeout and wait infinitely
             // Further UI work might enable some better UX like retry logic for case where remote process being unresponsive
@@ -162,6 +160,9 @@ namespace PowerShellTools.ServiceManagement
             private set; 
         }
 
+        /// <summary>
+        /// App running flag indicating if there is app runing on PSHost
+        /// </summary>
         public bool AppRunning
         {
             get
@@ -196,7 +197,7 @@ namespace PowerShellTools.ServiceManagement
         /// Will be started once app begins to run on remote PowerShell host service
         /// Stopped once app exits
         /// </remarks>
-        public void MonitorUserInputRequest()
+        private void MonitorUserInputRequest()
         {
             StreamWriter _inputStreamWriter = Process.StandardInput;
 
@@ -222,7 +223,7 @@ namespace PowerShellTools.ServiceManagement
                     }
                 }
 
-                Thread.Sleep(500);
+                Thread.Sleep(50);
             }
 
             _inputStreamWriter.Flush();
