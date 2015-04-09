@@ -64,17 +64,23 @@ namespace PowerShellTools.Intellisense
         /// <summary>
         /// Main method used to determine how to handle keystrokes within a ITextBuffer.
         /// </summary>
-        /// <param name="pguidCmdGroup"></param>
-        /// <param name="nCmdId"></param>
-        /// <param name="nCmdexecopt"></param>
-        /// <param name="pvaIn"></param>
-        /// <param name="pvaOut"></param>
+        /// <param name="pguidCmdGroup">The GUID of the command group.</param>
+        /// <param name="nCmdId">The command ID.</param>
+        /// <param name="nCmdexecopt">
+        ///    Specifies how the object should execute the command. Possible values are taken from the 
+        ///    Microsoft.VisualStudio.OLE.Interop.OLECMDEXECOPT and Microsoft.VisualStudio.OLE.Interop.OLECMDID_WINDOWSTATE_FLAG
+        ///    enumerations.
+        /// </param>
+        /// <param name="pvaIn">The input arguments of the command.</param>
+        /// <param name="pvaOut">The output arguments of the command.</param>
         /// <returns></returns>
         public int Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
-            if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) || 
+            if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
+                pguidCmdGroup != VSConstants.VSStd2K ||
                 Utilities.IsInCommentArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
             {
+                Log.DebugFormat("Non-VSStd2K command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
                 return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             }
 
@@ -83,7 +89,7 @@ namespace PowerShellTools.Intellisense
             var typedChar = char.MinValue;
             //make sure the input is a char before getting it 
 
-            if (pguidCmdGroup == VSConstants.VSStd2K && nCmdId == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
+            if ((VSConstants.VSStd2KCmdID)nCmdId == VSConstants.VSStd2KCmdID.TYPECHAR)
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
@@ -100,10 +106,10 @@ namespace PowerShellTools.Intellisense
                 Log.DebugFormat("Non-TypeChar command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
             }
 
-            switch (nCmdId)
+            switch ((VSConstants.VSStd2KCmdID)nCmdId)
             {
-                case (uint)VSConstants.VSStd2KCmdID.RETURN:
-                case (uint)VSConstants.VSStd2KCmdID.TAB:
+                case VSConstants.VSStd2KCmdID.RETURN:
+                case VSConstants.VSStd2KCmdID.TAB:
                     //check for a a selection 
                     if (_activeSession != null && !_activeSession.IsDismissed)
                     {
@@ -123,25 +129,19 @@ namespace PowerShellTools.Intellisense
                             _activeSession.Dismiss();
                         }
                     }
-                    else if (nCmdId == (uint)VSConstants.VSStd2KCmdID.TAB && _isRepl)
+                    else if (_isRepl)
                     {
                         TriggerCompletion();
                         return VSConstants.S_OK;
                     }
                     break;
 
-                case (uint)VSConstants.VSStd2KCmdID.COMPLETEWORD:
+                case VSConstants.VSStd2KCmdID.COMPLETEWORD:
                     if (_activeSession != null && !_activeSession.IsDismissed)
                     {
-                        if (_activeSession.CompletionSets[0].SelectionStatus.IsSelected)
-                        {
-                            _activeSession.Commit();
-                        }
+                        _activeSession.Dismiss();                        
                     }
-                    else
-                    {
-                        TriggerCompletion();
-                    }
+                    TriggerCompletion();
                     return VSConstants.S_OK;
 
                 default:
@@ -199,7 +199,7 @@ namespace PowerShellTools.Intellisense
             // If yes, then after deleting the char, we also dismiss the completion session
             // Otherwise, just filter the completion lists
             char charAtCaret = char.MinValue;
-            if (commandId == (uint)VSConstants.VSStd2KCmdID.BACKSPACE && _activeSession != null && !_activeSession.IsDismissed)
+            if ((VSConstants.VSStd2KCmdID)commandId == VSConstants.VSStd2KCmdID.BACKSPACE && _activeSession != null && !_activeSession.IsDismissed)
             {
                 int caretPosition = _textView.Caret.Position.BufferPosition.Position - 1;
                 if (caretPosition >= 0)
@@ -240,8 +240,8 @@ namespace PowerShellTools.Intellisense
                     }
                 }
             }
-            else if (commandId == (uint)VSConstants.VSStd2KCmdID.BACKSPACE //redo the filter if there is a deletion
-                     || commandId == (uint)VSConstants.VSStd2KCmdID.DELETE)
+            else if ((VSConstants.VSStd2KCmdID)commandId == VSConstants.VSStd2KCmdID.BACKSPACE //redo the filter if there is a deletion
+                     || (VSConstants.VSStd2KCmdID)commandId == VSConstants.VSStd2KCmdID.DELETE)
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
                 {
@@ -508,7 +508,6 @@ namespace PowerShellTools.Intellisense
                 _activeSession.SelectedCompletionSet.SelectionStatus = new CompletionSelectionStatus(_activeSession.SelectedCompletionSet.Completions[0], true, false);
             }
         }
-
 
         private void CompletionSession_Dismissed(object sender, EventArgs e)
         {
