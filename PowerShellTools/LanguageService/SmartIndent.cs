@@ -114,14 +114,18 @@ namespace PowerShellTools.LanguageService
 	    indentation = lastGroupStart.Start - lastGroupStartLine.Start;
 	    indentation += lastGroupStart.Length - 1;
 
-	    int lastGroupStartEnd = lastGroupStart.Start + lastGroupStart.Length;
-	    string betweenText = textBuffer.CurrentSnapshot.GetText(lastGroupStartEnd, lastGroupStartLine.End - lastGroupStartEnd);
+	    int lastGroupStartEnd = lastGroupStart.Start + lastGroupStart.Length;	    
 	    if (lastGroupStartEnd == lastGroupStartLine.End)
 	    {
-		indentation += tabSize;
+		string betweenText = textBuffer.CurrentSnapshot.GetText(line.Start, line.Length);
+		if (IndentUtilities.IsBlankText(betweenText))
+		{
+		    indentation += tabSize;
+		}
 	    }
 	    else if (lastGroupStartEnd < lastGroupStartLine.End)
 	    {
+		string betweenText = textBuffer.CurrentSnapshot.GetText(lastGroupStartEnd, lastGroupStartLine.End - lastGroupStartEnd);
 		if (IndentUtilities.IsBlankText(betweenText))
 		{
 		    indentation += tabSize;
