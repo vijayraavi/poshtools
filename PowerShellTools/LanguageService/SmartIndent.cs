@@ -68,9 +68,10 @@ namespace PowerShellTools.LanguageService
 	    int lineNumber = line.LineNumber;
 	    if (lineNumber < 1) return 0;
 
-	    ITextSnapshotLine previousLine = _textView.TextSnapshot.GetLineFromLineNumber(lineNumber - 1);
-	    string lineText = previousLine.GetText();
-	    return IndentUtilities.GetCurrentLineIndentation(lineText, tabSize);
+	    string baselineText = null;
+	    ITextSnapshotLine baseline = null;
+	    IndentUtilities.SkipPrecedingBlankLines(line, out baselineText, out baseline);
+	    return IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
 	}
 
 	/// <summary>
