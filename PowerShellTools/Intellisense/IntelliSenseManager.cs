@@ -106,7 +106,9 @@ namespace PowerShellTools.Intellisense
                 Log.DebugFormat("Non-TypeChar command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
             }
 
-            switch ((VSConstants.VSStd2KCmdID)nCmdId)
+            VSConstants.VSStd2KCmdID command = (VSConstants.VSStd2KCmdID)nCmdId;
+
+            switch (command)
             {
                 case VSConstants.VSStd2KCmdID.RETURN:
                 case VSConstants.VSStd2KCmdID.TAB:
@@ -129,7 +131,7 @@ namespace PowerShellTools.Intellisense
                             _activeSession.Dismiss();
                         }
                     }
-                    else if (_isRepl)
+                    else if (command == VSConstants.VSStd2KCmdID.TAB && _isRepl)
                     {
                         TriggerCompletion();
                         return VSConstants.S_OK;
