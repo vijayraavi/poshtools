@@ -46,7 +46,7 @@ namespace PowerShellTools.LanguageService
 	    {
 		line = line.Snapshot.GetLineFromLineNumber(line.LineNumber - 1);
 		text = line.GetText();
-		if (!IsBlankText(text))
+		if (!String.IsNullOrWhiteSpace(text))
 		{
 		    baseline = line;
 		    baselineText = text;
@@ -55,16 +55,6 @@ namespace PowerShellTools.LanguageService
 	    }
 	    baselineText = line.GetText();
 	    baseline = line;
-	}
-
-	/// <summary>
-	/// Determine whether the text is all blank.
-	/// </summary>
-	/// <param name="text">The text.</param>
-	/// <returns>True if the text is all blank. False otherwise.</returns>
-	public static bool IsBlankText(string text)
-	{
-	    return String.IsNullOrWhiteSpace(text);
 	}
     }
 }
