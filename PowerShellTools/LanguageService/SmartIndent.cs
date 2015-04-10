@@ -82,9 +82,14 @@ namespace PowerShellTools.LanguageService
 	/// Step 1, find the all group starts preceeding the end of baseline we found.
 	/// Step 2, find the closest group start with paired group end exceeding the end of baseline, which means the Enter occurs during this group.
 	/// Step 3, if no such a group start is found during Step 1&2, then follow default indentation. Otherwise, go to Step 4.
-	/// Step 4, find if there are any texts succeeding the found group start in its containing line. 
+	/// Step 4, find if there are any non-whitespace texts succeeding the found group start in its containing line. 
 	///	    Yes, then just add indentation at size of ONE space compared with the group start.
-	///	    No, then add indentation at size of TAB compared with the group start.
+	///	    No, go to Step 5.
+	/// Step 5, find if there are any non-whitespace texts succeeding the current line start.
+	///	    Yes, then see if the char right after line start is the paired group end to the found group start in Step 2.
+	///		Yes, then indent same size as the group start.
+	///		No, then follow the default indentation.
+	///	    No, then just add identation at size of TAB.
 	/// </summary>
 	/// <param name="line">The current line after Enter.</param>
 	/// <param name="tabSize">The TAB size.</param>
@@ -137,6 +142,11 @@ namespace PowerShellTools.LanguageService
 		if (IndentUtilities.IsBlankText(betweenText))
 		{
 		    indentation += tabSize;
+		}
+		else if (baseline.LineNumber != lastGroupStartLine.LineNumber &&
+			 (startBraces[lastGroupStart.Start] + baseline.LineBreakLength) != line.Start)
+		{
+		    indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);		    		    
 		}
 	    }
 	    else if (lastGroupStartEnd < lastGroupStartLine.End)
