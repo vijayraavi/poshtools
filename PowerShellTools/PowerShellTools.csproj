@@ -306,7 +306,7 @@
     <Compile Include="LanguageService\DropDownBarClient.cs" />
     <Compile Include="LanguageService\EditorExtensions.cs" />
     <Compile Include="LanguageService\IndentUtilities.cs" />
-    <Compile Include="LanguageService\LanaguagePreferences.cs" />
+    <Compile Include="LanguageService\PowerShellLanaguagePreferences.cs" />
     <Compile Include="LanguageService\SmartIndent.cs" />
     <Compile Include="LanguageService\SmartIndentProvider.cs" />
     <Compile Include="LanguageService\PowerShellLanguageInfo.cs" />

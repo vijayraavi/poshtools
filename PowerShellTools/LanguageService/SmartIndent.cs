@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Editor.OptionsExtensionMethods;
@@ -10,52 +10,51 @@ namespace PowerShellTools.LanguageService
 {
     internal sealed class SmartIndent : ISmartIndent
     {
-        private ITextView _textView;
-        private PowerShellLanguageInfo _info;
+	private ITextView _textView;
+	private PowerShellLanguageInfo _info;
 
 	/// <summary>
 	/// Constructor.
 	/// </summary>
 	/// <param name="info">Powershell language service.</param>
 	/// <param name="textView">Current active TextView.</param>
-        public SmartIndent(PowerShellLanguageInfo info, ITextView textView)
-        {
-            _info = info;
-            _textView = textView;
-        }
+	public SmartIndent(PowerShellLanguageInfo info, ITextView textView)
+	{
+	    _info = info;
+	    _textView = textView;
+	}
 
 	/// <summary>
 	/// Implementation of the interface.
 	/// </summary>
 	/// <param name="line">The current line after Enter.</param>
 	/// <returns>Desired indentation size.</returns>
-        public int? GetDesiredIndentation(ITextSnapshotLine line)
-        {
-
+	public int? GetDesiredIndentation(ITextSnapshotLine line)
+	{
 	    // User GetIndentSize() instead of GetTabSize() due to the fact VS always uses Indent Size as a TAB size
 	    int tabSize = _textView.Options.GetIndentSize();
 
-            try
-            {
-                switch (_info.LangPrefs.IndentMode)
-                {
-                    case vsIndentStyle.vsIndentStyleNone:
-                        return null;
+	    try
+	    {
+		switch (_info.LangPrefs.IndentMode)
+		{
+		    case vsIndentStyle.vsIndentStyleNone:
+			return null;
 
-                    case vsIndentStyle.vsIndentStyleDefault:
-                        return GetDefaultIndentationImp(line, tabSize);
+		    case vsIndentStyle.vsIndentStyleDefault:
+			return GetDefaultIndentationImp(line, tabSize);
 
-                    case vsIndentStyle.vsIndentStyleSmart:
-                        return GetSmartIndentationImp(line, tabSize);
-                }
-                return null;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-	
+		    case vsIndentStyle.vsIndentStyleSmart:
+			return GetSmartIndentationImp(line, tabSize);
+		}
+		return null;
+	    }
+	    catch (Exception ex)
+	    {
+		throw new Exception(String.Format("Indent stop working. {0}", ex.ToString()), ex);
+	    }
+	}
+
 	public void Dispose() { }
 
 	/// <summary>
@@ -64,15 +63,15 @@ namespace PowerShellTools.LanguageService
 	/// <param name="line">The current line after Enter.</param>
 	/// <param name="tabSize">The TAB size.</param>
 	/// <returns>Desired indentation size.</returns>
-        private int? GetDefaultIndentationImp(ITextSnapshotLine line, int tabSize)
-        {
-            int lineNumber = line.LineNumber;
-            if (lineNumber < 1) return 0;
+	private int? GetDefaultIndentationImp(ITextSnapshotLine line, int tabSize)
+	{
+	    int lineNumber = line.LineNumber;
+	    if (lineNumber < 1) return 0;
 
-            ITextSnapshotLine previousLine = _textView.TextSnapshot.GetLineFromLineNumber(lineNumber - 1);
-            string lineText = previousLine.GetText();
+	    ITextSnapshotLine previousLine = _textView.TextSnapshot.GetLineFromLineNumber(lineNumber - 1);
+	    string lineText = previousLine.GetText();
 	    return IndentUtilities.GetCurrentLineIndentation(lineText, tabSize);
-        }
+	}
 
 	/// <summary>
 	/// Implementation of smart indentation.
@@ -94,10 +93,10 @@ namespace PowerShellTools.LanguageService
 	/// <param name="line">The current line after Enter.</param>
 	/// <param name="tabSize">The TAB size.</param>
 	/// <returns>Desired indentation size.</returns>
-        private int? GetSmartIndentationImp(ITextSnapshotLine line, int tabSize)
-        {
+	private int? GetSmartIndentationImp(ITextSnapshotLine line, int tabSize)
+	{
 	    int lineNumber = line.LineNumber;
-            if (lineNumber < 1) return null;
+	    if (lineNumber < 1) return null;
 
 	    bool needExtraEffort = true;
 	    var textBuffer = line.Snapshot.TextBuffer;
@@ -123,7 +122,7 @@ namespace PowerShellTools.LanguageService
 	    int baselineEndPos = baseline.Extent.End.Position;
 	    var precedingGroupStarts = tokenSpans.FindAll(t => t.ClassificationType.IsOfType(Classifications.PowerShellGroupStart) && t.Start < baselineEndPos);
 	    var lastGroupStart = precedingGroupStarts.FindLast(p => startBraces[p.Start] >= baselineEndPos);
-				
+
 	    if (lastGroupStart.Length == 0)
 	    {
 		return indentation;
@@ -131,22 +130,24 @@ namespace PowerShellTools.LanguageService
 
 	    var groupStartChar = textBuffer.CurrentSnapshot.GetText(lastGroupStart.Start, lastGroupStart.Length);
 	    var lastGroupStartLine = textBuffer.CurrentSnapshot.GetLineFromPosition(lastGroupStart.Start);
-	    	    
+
 	    indentation = lastGroupStart.Start - lastGroupStartLine.Start;
 	    indentation += lastGroupStart.Length - 1;
 
-	    int lastGroupStartEnd = lastGroupStart.Start + lastGroupStart.Length;	    
+	    int lastGroupStartEnd = lastGroupStart.Start + lastGroupStart.Length;
 	    if (lastGroupStartEnd == lastGroupStartLine.End)
 	    {
 		string betweenText = textBuffer.CurrentSnapshot.GetText(line.Start, line.Length);
-		if (IndentUtilities.IsBlankText(betweenText))
+		if (IndentUtilities.IsBlankText(betweenText) ||
+		    (baseline.LineNumber == lastGroupStartLine.LineNumber && 
+		    (startBraces[lastGroupStart.Start] + baseline.LineBreakLength) != line.Start))
 		{
 		    indentation += tabSize;
 		}
 		else if (baseline.LineNumber != lastGroupStartLine.LineNumber &&
 			 (startBraces[lastGroupStart.Start] + baseline.LineBreakLength) != line.Start)
 		{
-		    indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);		    		    
+		    indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
 		}
 	    }
 	    else if (lastGroupStartEnd < lastGroupStartLine.End)
@@ -162,6 +163,6 @@ namespace PowerShellTools.LanguageService
 		}
 	    }
 	    return indentation;
-        }	
+	}
     }
 }

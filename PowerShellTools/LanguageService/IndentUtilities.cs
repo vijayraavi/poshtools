@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text;
 
 namespace PowerShellTools.LanguageService
@@ -68,7 +64,7 @@ namespace PowerShellTools.LanguageService
 	/// <returns>True if the text is all blank. False otherwise.</returns>
 	public static bool IsBlankText(string text)
 	{
-	    return text.All(c => char.IsWhiteSpace(c));
+	    return String.IsNullOrWhiteSpace(text);
 	}
     }
 }
