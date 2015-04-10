@@ -23,6 +23,7 @@ using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.Contracts;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
+using PowerShellTools.Intellisense;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project.PropertyPages;
 using PowerShellTools.Service;
@@ -30,23 +31,22 @@ using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 using Threading = System.Threading.Tasks;
-using PowerShellTools.Intellisense;
 
 namespace PowerShellTools
 {
-	/// <summary>
-	/// This is the class that implements the package exposed by this assembly.
-	///
-	/// The minimum requirement for a class to be considered a valid package for Visual Studio
-	/// is to implement the IVsPackage interface and register itself with the shell.
-	/// This package uses the helper classes defined inside the Managed Package Framework (MPF)
-	/// to do it: it derives from the Package class that provides the implementation of the 
-	/// IVsPackage interface and uses the registration attributes defined in the framework to 
-	/// register itself and its components with the shell.
-	/// </summary>
-	// This attribute tells the PkgDef creation utility (CreatePkgDef.exe) that this class is
-	// a package.
-	[PackageRegistration(UseManagedResourcesOnly = true)]
+    /// <summary>
+    /// This is the class that implements the package exposed by this assembly.
+    ///
+    /// The minimum requirement for a class to be considered a valid package for Visual Studio
+    /// is to implement the IVsPackage interface and register itself with the shell.
+    /// This package uses the helper classes defined inside the Managed Package Framework (MPF)
+    /// to do it: it derives from the Package class that provides the implementation of the 
+    /// IVsPackage interface and uses the registration attributes defined in the framework to 
+    /// register itself and its components with the shell.
+    /// </summary>
+    // This attribute tells the PkgDef creation utility (CreatePkgDef.exe) that this class is
+    // a package.
+    [PackageRegistration(UseManagedResourcesOnly = true)]
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
     //[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
@@ -54,8 +54,9 @@ namespace PowerShellTools
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
                             101,
+                            ShowSmartIndent = true,
                             ShowDropDownOptions = true,
-EnableCommenting = true)]
+                            EnableCommenting = true)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
@@ -163,7 +164,7 @@ EnableCommenting = true)]
         /// <summary>
         /// Returns the PowerShell host for the package.
         /// </summary>
-        internal static ScriptDebugger Debugger 
+        internal static ScriptDebugger Debugger
         {
             get
             {
@@ -183,7 +184,7 @@ EnableCommenting = true)]
                 return ConnectionManager.Instance.PowershellIntelliSenseSerivce;
             }
         }
-        
+
         internal DependencyValidator DependencyValidator { get; set; }
 
         internal override LibraryManager CreateLibraryManager(CommonPackage package)
@@ -194,11 +195,11 @@ EnableCommenting = true)]
         internal IContentType ContentType
         {
             get
-        {
+            {
                 if (_contentType == null)
                 {
                     _contentType = ComponentModel.GetService<IContentTypeRegistryService>().GetContentType(PowerShellConstants.LanguageName);
-        }
+                }
                 return _contentType;
             }
         }
@@ -228,7 +229,7 @@ EnableCommenting = true)]
                 _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
 
                 RegisterServices();
-                }
+            }
             catch (Exception ex)
             {
                 MessageBox.Show(
@@ -313,7 +314,7 @@ EnableCommenting = true)]
                     menuCommand.BeforeQueryStatus += command.QueryStatus;
                     mcs.AddCommand(menuCommand);
                     _commands[command] = menuCommand;
-            }
+                }
             }
         }
 
