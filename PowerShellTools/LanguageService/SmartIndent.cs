@@ -33,7 +33,7 @@ namespace PowerShellTools.LanguageService
 	{
 	    // User GetIndentSize() instead of GetTabSize() due to the fact VS always uses Indent Size as a TAB size
 	    int tabSize = _textView.Options.GetIndentSize();
-
+	    
 	    try
 	    {
 		switch (_info.LangPrefs.IndentMode)
@@ -68,9 +68,10 @@ namespace PowerShellTools.LanguageService
 	    int lineNumber = line.LineNumber;
 	    if (lineNumber < 1) return 0;
 
-	    ITextSnapshotLine previousLine = _textView.TextSnapshot.GetLineFromLineNumber(lineNumber - 1);
-	    string lineText = previousLine.GetText();
-	    return IndentUtilities.GetCurrentLineIndentation(lineText, tabSize);
+	    string baselineText = null;
+	    ITextSnapshotLine baseline = null;
+	    IndentUtilities.SkipPrecedingBlankLines(line, out baselineText, out baseline);
+	    return IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
 	}
 
 	/// <summary>
@@ -103,8 +104,8 @@ namespace PowerShellTools.LanguageService
 	    Dictionary<int, int> startBraces = null;
 	    Dictionary<int, int> endBraces = null;
 	    List<ClassificationInfo> tokenSpans = null;
-	    if (!textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.StartBrace, out startBraces) || startBraces == null ||
-		!textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.EndBrace, out endBraces) || endBraces == null ||
+	    if (!textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.StartBraces, out startBraces) || startBraces == null ||
+		!textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.EndBraces, out endBraces) || endBraces == null ||
 		!textBuffer.Properties.TryGetProperty<List<ClassificationInfo>>(BufferProperties.TokenSpans, out tokenSpans) || tokenSpans == null)
 	    {
 		needExtraEffort = false;

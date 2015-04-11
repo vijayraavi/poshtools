@@ -88,6 +88,7 @@ namespace PowerShellTools.Classification
                             NotifyOnTagsChanged(BufferProperties.Classifier, currentSnapshot);
                             NotifyOnTagsChanged(BufferProperties.ErrorTagger, currentSnapshot);
                             NotifyOnTagsChanged(typeof(PowerShellOutliningTagger).Name, currentSnapshot);
+			    NotifyBufferUpdated();
                             break;
                         }
                     }
@@ -109,6 +110,16 @@ namespace PowerShellTools.Classification
             }
         }
 
+	private void NotifyBufferUpdated()
+	{
+	    INotifyBufferUpdated tagger;
+	    if (_textBuffer.Properties.TryGetProperty<INotifyBufferUpdated>(typeof(PowerShellBraceMatchingTagger).Name, out tagger) && tagger != null)
+	    {
+		tagger.OnBufferUpdated(_textBuffer);
+	    }
+	    
+	}
+    
         private void SetBufferProperty(object key, object propertyValue)
         {
             if (_textBuffer.Properties.ContainsProperty(key))
@@ -172,8 +183,8 @@ namespace PowerShellTools.Classification
             SetBufferProperty(BufferProperties.Tokens, generatedTokens);
             SetBufferProperty(BufferProperties.TokenSpans, tokenSpans);
             SetBufferProperty(BufferProperties.TokenErrorTags, errorTags);
-            SetBufferProperty(BufferProperties.StartBrace, startBraces);
-            SetBufferProperty(BufferProperties.EndBrace, endBraces);
+            SetBufferProperty(BufferProperties.StartBraces, startBraces);
+            SetBufferProperty(BufferProperties.EndBraces, endBraces);
             SetBufferProperty(BufferProperties.Regions, regions);
         }
 
@@ -252,8 +263,8 @@ namespace PowerShellTools.Classification
         public const string Ast = "PSAst";
         public const string Tokens = "PSTokens";
         public const string TokenErrorTags = "PSTokenErrorTags";
-        public const string EndBrace = "PSEndBrace";
-        public const string StartBrace = "PSStartBrace";
+        public const string EndBraces = "PSEndBrace";
+        public const string StartBraces = "PSStartBrace";
         public const string TokenSpans = "PSTokenSpans";
         public const string Regions = "PSRegions";
         public const string RegionTags = "PSRegionTags";
@@ -270,6 +281,11 @@ namespace PowerShellTools.Classification
     public interface INotifyTagsChanged
     {
         void OnTagsChanged(SnapshotSpan span);
+    }
+
+    public interface INotifyBufferUpdated
+    {
+	void OnBufferUpdated(ITextBuffer textBuffer);
     }
 }
 
