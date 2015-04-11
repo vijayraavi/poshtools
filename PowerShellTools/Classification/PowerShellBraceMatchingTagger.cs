@@ -36,14 +36,13 @@ namespace PowerShellTools.Classification
 		
 	public IEnumerable<ITagSpan<TextMarkerTag>> GetTags(NormalizedSnapshotSpanCollection spans)
 	{
-	    if (spans.Count == 0)   
+	    if (spans.Count == 0 ||
+		!_caretPos.HasValue ||
+		_caretPos.Value.Position >= _caretPos.Value.Snapshot.Length ||
+		_textView.Caret.InVirtualSpace)
+	    {
 		yield break;
-
-	    //don't do anything if the current SnapshotPoint is not initialized or at the end of the buffer 
-	    if (!_caretPos.HasValue 
-		|| _caretPos.Value.Position >= _caretPos.Value.Snapshot.Length
-		|| _textView.Caret.InVirtualSpace)
-		yield break;
+	    }	
 
 	    //hold on to a snapshot of the current character
 	    SnapshotPoint caretPos = _caretPos.Value;
