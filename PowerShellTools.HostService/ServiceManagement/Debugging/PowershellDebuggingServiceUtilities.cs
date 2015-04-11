@@ -22,7 +22,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
     {
         // Potential TODO: Refactor this class into either a static Utilities class
 
-        private const string DteVariableName= "dte";
+        private const string DteVariableName = "dte";
 
         private void SetRunspace(Runspace runspace)
         {
@@ -135,13 +135,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        private void objects_DataAdded(object sender, DataAddedEventArgs e)
+        private void objects_DataAdded(object sender, EventArgs e)
         {
-            var list = sender as PSDataCollection<PSObject>;
+            PipelineReader<PSObject> output = sender as PipelineReader<PSObject>;
             StringBuilder outputString = new StringBuilder();
-            foreach (PSObject obj in list)
+            if (output != null)
             {
-                outputString.AppendLine(obj.ToString());
+                while (output.Count > 0)
+                {
+                    outputString.AppendLine(output.Read().ToString());
+                }
             }
 
             if (_debugOutput)
@@ -232,7 +235,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void ReleaseWaitHandler()
         {
-            _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+            _resumeAction = DebugEngineConstants.Debugger_Stop;
             _pausedEvent.Set();
         }
 
@@ -291,9 +294,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _debugOutput = output;
                 _debugCommandOutput = string.Empty;
                 _debuggingCommand = debuggingCommand;
+                _debugCommandEvent.Reset();
                 _pausedEvent.Set();
                 _debugCommandEvent.WaitOne();
                 _debugOutput = true;
+                _debuggingCommand = string.Empty;
                 return _debugCommandOutput;
             }
         }

@@ -1,6 +1,7 @@
 ﻿using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -123,19 +124,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 try
                 {
-                    PSCommand psCommand = new PSCommand();
-                    psCommand.AddScript(_debuggingCommand);
-                    psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                    var output = new PSDataCollection<PSObject>();
-                    output.DataAdded += objects_DataAdded;
-                    DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-
-                    ProcessDebuggingCommandResults(output);
-
-                    if (results.ResumeAction != null)
+                    if (!string.IsNullOrEmpty(_debuggingCommand))
                     {
-                        ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
-                        e.ResumeAction = results.ResumeAction.Value;
+                        var output = new Collection<PSObject>();
+
+                        using (var pipeline = (_runspace.CreateNestedPipeline()))
+                        {
+                            pipeline.Commands.AddScript(_debuggingCommand);
+                            pipeline.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                            output = pipeline.Invoke();
+                        }
+
+                        ProcessDebuggingCommandResults(output);
+                    }
+                    else
+                    {
+                        ServiceCommon.Log(string.Format("Debuggee resume action is {0}", _resumeAction));
+                        e.ResumeAction = _resumeAction;
                         resumed = true; // debugger resumed executing
                     }
                 }
@@ -149,23 +154,37 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        private void ProcessDebuggingCommandResults(PSDataCollection<PSObject> output)
+        private void ProcessDebuggingCommandResults(Collection<PSObject> output)
         {
-            var pobj = output.FirstOrDefault();
-
-            if (pobj != null && pobj.BaseObject is string)
+            if (output != null && output.Count > 0)
             {
-                _debugCommandOutput = (string)pobj.BaseObject;
-            }
-            else if (pobj != null && pobj.BaseObject is LineBreakpoint)
-            {
-                LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
-                if (bp != null)
+                StringBuilder outputString = new StringBuilder();
+                foreach (PSObject obj in output)
                 {
-                    _psBreakpointTable.Add(
-                        new PowerShellBreakpointRecord(
-                            new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
-                            bp.Id));
+                    outputString.AppendLine(obj.ToString());
+                }
+
+                if (_debugOutput)
+                {
+                    NotifyOutputString(outputString.ToString());
+                }
+
+                var pobj = output.FirstOrDefault();
+
+                if (pobj != null && pobj.BaseObject is string)
+                {
+                    _debugCommandOutput = (string)pobj.BaseObject;
+                }
+                else if (pobj != null && pobj.BaseObject is LineBreakpoint)
+                {
+                    LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
+                    if (bp != null)
+                    {
+                        _psBreakpointTable.Add(
+                            new PowerShellBreakpointRecord(
+                                new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
+                                bp.Id));
+                    }
                 }
             }
         }

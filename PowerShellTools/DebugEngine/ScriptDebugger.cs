@@ -120,14 +120,14 @@ namespace PowerShellTools.DebugEngine
             catch (DebugEngineInternalException dbgEx)
             {
                 Log.Debug(dbgEx.Message);
-                DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_Stop);
+                DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_Stop);
 
                 IsDebuggingCommandReady = false;
             }
             catch (Exception ex)
             {
                 Log.Debug(ex.Message);
-                DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_Stop);
+                DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_Stop);
 
                 IsDebuggingCommandReady = false;
                 throw;
@@ -135,7 +135,7 @@ namespace PowerShellTools.DebugEngine
             finally
             {
                 Log.Debug("Waiting for debuggee to resume.");
-                
+
                 IsDebuggingCommandReady = true;
                 RefreshPrompt();
             }
@@ -254,7 +254,7 @@ namespace PowerShellTools.DebugEngine
                 _stoppingCompleteEvent.Reset();
                 if (IsDebuggingCommandReady)
                 {
-                    DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_Stop);
+                    DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_Stop);
                     IsDebuggingCommandReady = false;
                 }
                 else
@@ -280,7 +280,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOver()
         {
             Log.Info("StepOver");
-            DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_StepOver);
+            DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_StepOver);
             IsDebuggingCommandReady = false;
         }
 
@@ -290,7 +290,7 @@ namespace PowerShellTools.DebugEngine
         public void StepInto()
         {
             Log.Info("StepInto");
-            DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_StepInto);
+            DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_StepInto);
             IsDebuggingCommandReady = false;
         }
 
@@ -300,7 +300,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOut()
         {
             Log.Info("StepOut");
-            DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_StepOut);
+            DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_StepOut);
             IsDebuggingCommandReady = false;
         }
 
@@ -310,7 +310,7 @@ namespace PowerShellTools.DebugEngine
         public void Continue()
         {
             Log.Info("Continue");
-            DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_Continue);
+            DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_Continue);
             IsDebuggingCommandReady = false;
         }
 
