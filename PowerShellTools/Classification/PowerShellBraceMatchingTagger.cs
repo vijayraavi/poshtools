@@ -17,8 +17,6 @@ namespace PowerShellTools.Classification
 	SnapshotPoint? _caretPos;
 	private IDictionary<int, int> _startBraces;
 	private IDictionary<int, int> _endBraces;
-
-	private Dictionary<char, char> m_braceList;
 	private const string MarkedColor = "blue";
 	public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 	
@@ -31,13 +29,7 @@ namespace PowerShellTools.Classification
 	    _textBuffer.ContentTypeChanged += TextBuffer_ContentTypeChanged;
 	    textBuffer.Properties.TryGetProperty<IDictionary<int, int>>(BufferProperties.StartBraces, out _startBraces);
 	    textBuffer.Properties.TryGetProperty<IDictionary<int, int>>(BufferProperties.EndBraces, out _endBraces);
-
-	    //here the keys are the open braces, and the values are the close braces
-	    m_braceList = new Dictionary<char, char>();
-	    m_braceList.Add('{', '}');
-	    m_braceList.Add('[', ']');
-	    m_braceList.Add('(', ')');    
-
+	    
 	    _textView.Caret.PositionChanged += CaretPositionChanged;
 	    _textView.LayoutChanged += ViewLayoutChanged;
 	}
@@ -48,7 +40,9 @@ namespace PowerShellTools.Classification
 		yield break;
 
 	    //don't do anything if the current SnapshotPoint is not initialized or at the end of the buffer 
-	    if (!_caretPos.HasValue || _caretPos.Value.Position >= _caretPos.Value.Snapshot.Length)
+	    if (!_caretPos.HasValue 
+		|| _caretPos.Value.Position >= _caretPos.Value.Snapshot.Length
+		|| _textView.Caret.InVirtualSpace)
 		yield break;
 
 	    //hold on to a snapshot of the current character
@@ -60,7 +54,11 @@ namespace PowerShellTools.Classification
 	    {
 		caretPos = caretPos.TranslateTo(spans[0].Snapshot, PointTrackingMode.Positive);
 	    }
-	    
+	    if (caretPos < 0 || caretPos >= caretSnapshot.Length)
+	    {
+		yield break;
+	    }
+
 	    char currentChar = caretPos.GetChar();
 	    SnapshotPoint precedingPos = (caretPos == 0 ? caretPos : (caretPos - 1)); //if currentChar is 0 (beginning of buffer), don't move it back 
 	    char precedingChar = precedingPos.GetChar();
@@ -82,7 +80,8 @@ namespace PowerShellTools.Classification
 		    yield return new TagSpan<TextMarkerTag>(pairSpan, new TextMarkerTag(MarkedColor));
 		}
 	    }
-	    else if (Utilities.IsRightBrace(precedingChar))    
+	    
+	    if (Utilities.IsRightBrace(precedingChar))    
 	    {
 		int openPos;
 		char openChar = Utilities.GetPairedBrace(precedingChar);
