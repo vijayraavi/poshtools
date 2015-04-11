@@ -205,7 +205,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
                 catch (Exception ex)
                 {
-                    ServiceCommon.Log("Failed to create local copy for downloaded file due to exception: {0}", ex);
+                    ServiceCommon.Log("Failed to create local copy for downloaded file due to exception: {0}", ex.Message);
                 }
             }
         }

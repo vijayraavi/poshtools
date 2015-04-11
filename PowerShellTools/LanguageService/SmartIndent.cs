@@ -33,9 +33,7 @@ namespace PowerShellTools.LanguageService
 	{
 	    // User GetIndentSize() instead of GetTabSize() due to the fact VS always uses Indent Size as a TAB size
 	    int tabSize = _textView.Options.GetIndentSize();
-	    
-	    try
-	    {
+
 		switch (_info.LangPrefs.IndentMode)
 		{
 		    case vsIndentStyle.vsIndentStyleNone:
@@ -49,11 +47,6 @@ namespace PowerShellTools.LanguageService
 		}
 		return null;
 	    }
-	    catch (Exception ex)
-	    {
-		throw new Exception(String.Format("Indent stop working. {0}", ex.ToString()), ex);
-	    }
-	}
 
 	public void Dispose() { }
 
@@ -139,7 +132,7 @@ namespace PowerShellTools.LanguageService
 	    if (lastGroupStartEnd == lastGroupStartLine.End)
 	    {
 		string betweenText = textBuffer.CurrentSnapshot.GetText(line.Start, line.Length);
-		if (IndentUtilities.IsBlankText(betweenText) ||
+		if (String.IsNullOrWhiteSpace(betweenText) ||
 		    (baseline.LineNumber == lastGroupStartLine.LineNumber && 
 		    (startBraces[lastGroupStart.Start] + baseline.LineBreakLength) != line.Start))
 		{
@@ -154,7 +147,7 @@ namespace PowerShellTools.LanguageService
 	    else if (lastGroupStartEnd < lastGroupStartLine.End)
 	    {
 		string betweenText = textBuffer.CurrentSnapshot.GetText(lastGroupStartEnd, lastGroupStartLine.End - lastGroupStartEnd);
-		if (IndentUtilities.IsBlankText(betweenText))
+		if (String.IsNullOrWhiteSpace(betweenText))
 		{
 		    indentation += tabSize;
 		}
