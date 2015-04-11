@@ -135,24 +135,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        private void objects_DataAdded(object sender, EventArgs e)
-        {
-            PipelineReader<PSObject> output = sender as PipelineReader<PSObject>;
-            StringBuilder outputString = new StringBuilder();
-            if (output != null)
-            {
-                while (output.Count > 0)
-                {
-                    outputString.AppendLine(output.Read().ToString());
-                }
-            }
-
-            if (_debugOutput)
-            {
-                NotifyOutputString(outputString.ToString());
-            }
-        }
-
         private void InitializeRunspace(PSHost psHost)
         {
             ServiceCommon.Log("Initializing run space with debugger");

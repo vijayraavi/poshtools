@@ -663,8 +663,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-
-
+        /// <summary>
+        /// Client set resume action for debugger
+        /// </summary>
+        /// <param name="resumeAction">DebuggerResumeAction</param>
         public void SetDebuggerResumeAction(DebuggerResumeAction resumeAction)
         {
             lock (_executeDebugCommandLock)
