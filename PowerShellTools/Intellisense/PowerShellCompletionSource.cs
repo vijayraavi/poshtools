@@ -162,7 +162,8 @@ namespace PowerShellTools.Intellisense
                 SelectionStatus = new CompletionSelectionStatus(null, false, false);
                 return;
             }
-            var num = int.MaxValue;
+            int num = int.MaxValue;
+            int matchedCount = 0;
             Completion completion = null;
             foreach (var current in Completions)
             {
@@ -172,6 +173,7 @@ namespace PowerShellTools.Intellisense
                 {
                     completion = current;
                     num = num2;
+                    ++matchedCount;                    
                 }
             }
             if (completion == null)
@@ -189,7 +191,10 @@ namespace PowerShellTools.Intellisense
             }
             propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, isFullyMatched);
 
-            SelectionStatus = new CompletionSelectionStatus(completion, true, true);
+            bool isSelected = (matchedCount > 0);
+	    bool isUnique = (matchedCount == 1);
+
+            SelectionStatus = new CompletionSelectionStatus(completion, isSelected, isUnique);
         }
     }
 }

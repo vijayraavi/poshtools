@@ -96,7 +96,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override void NotifyBeginApplication()
         {
-            return;
+            if (_callback != null)
+            {
+                _callback.StartMonitorUserInputRequest();
+            }
         }
 
         /// <summary>
@@ -107,7 +110,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override void NotifyEndApplication()
         {
-            return;
+            if (_callback != null)
+            {
+                _callback.StopMonitorUserInputRequest();
+            }
         }
 
         /// <summary>
@@ -121,6 +127,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
 
         }
+
         /// <summary>
         /// The culture information of the thread that created
         /// this object.

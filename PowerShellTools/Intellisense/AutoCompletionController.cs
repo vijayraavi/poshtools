@@ -74,7 +74,7 @@ namespace PowerShellTools.Intellisense
             }
 
             char typedChar = Char.MinValue;
-            if (nCmdID == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
+            if ((VSConstants.VSStd2KCmdID)nCmdID == VSConstants.VSStd2KCmdID.TYPECHAR)
             {                
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
             }
@@ -90,10 +90,10 @@ namespace PowerShellTools.Intellisense
         #endregion
 
         internal int ProcessKeystroke(uint nCmdID, char typedChar = Char.MinValue)
-        { 
-            switch (nCmdID)
+        {
+            switch ((VSConstants.VSStd2KCmdID)nCmdID)
             {
-                case (uint)VSConstants.VSStd2KCmdID.TYPECHAR:
+                case VSConstants.VSStd2KCmdID.TYPECHAR:
 
                     // If we processed the typed left brace/quotes, no need to pass along the command as the char is already added to the buffer.
                     if (IsQuotes(typedChar))
@@ -127,7 +127,7 @@ namespace PowerShellTools.Intellisense
                         return VSConstants.S_OK;
                     }
                     break;
-                case (uint)VSConstants.VSStd2KCmdID.RETURN:
+                case VSConstants.VSStd2KCmdID.RETURN:
                     // Return in Repl windows would execute the current command 
                     if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
                     {
@@ -141,7 +141,7 @@ namespace PowerShellTools.Intellisense
                     }
                     SetAutoCompleteState(false);
                     break;
-                case (uint)VSConstants.VSStd2KCmdID.BACKSPACE:
+                case VSConstants.VSStd2KCmdID.BACKSPACE:
                     // As there are no undo history preserved for REPL window, default action is applied to Backspace.
                     if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
                     {
@@ -156,17 +156,17 @@ namespace PowerShellTools.Intellisense
                     }
                     SetAutoCompleteState(false);
                     break;
-                case (uint)VSConstants.VSStd2KCmdID.DELETE:
-                case (uint)VSConstants.VSStd2KCmdID.UNDO:
-                case (uint)VSConstants.VSStd2KCmdID.CUT:
-                case (uint)VSConstants.VSStd2KCmdID.COMMENT_BLOCK:
-                case (uint)VSConstants.VSStd2KCmdID.COMMENTBLOCK:
-                case (uint)VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
-                case (uint)VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
-                case (uint)VSConstants.VSStd2KCmdID.LEFT:
-                case (uint)VSConstants.VSStd2KCmdID.RIGHT:
-                case (uint)VSConstants.VSStd2KCmdID.UP:
-                case (uint)VSConstants.VSStd2KCmdID.DOWN:
+                case VSConstants.VSStd2KCmdID.DELETE:
+                case VSConstants.VSStd2KCmdID.UNDO:
+                case VSConstants.VSStd2KCmdID.CUT:
+                case VSConstants.VSStd2KCmdID.COMMENT_BLOCK:
+                case VSConstants.VSStd2KCmdID.COMMENTBLOCK:
+                case VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
+                case VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
+                case VSConstants.VSStd2KCmdID.LEFT:
+                case VSConstants.VSStd2KCmdID.RIGHT:
+                case VSConstants.VSStd2KCmdID.UP:
+                case VSConstants.VSStd2KCmdID.DOWN:
                     SetAutoCompleteState(false);
                     break;
                 default:
@@ -184,25 +184,8 @@ namespace PowerShellTools.Intellisense
         private bool IsInCommentArea()
         {
             int caretPosition = _textView.Caret.Position.BufferPosition.Position;
-            return IsInCommentArea(caretPosition, _textView.TextBuffer);
-        }
-
-        internal bool IsInCommentArea(int caretPosition, ITextBuffer textBuffer)
-        {
-            Token[] pstokens;
-            if (textBuffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out pstokens))
-            {
-                var commentTokens = pstokens.Where(t => t.Kind == TokenKind.Comment).ToArray();
-                foreach (var token in commentTokens)
-                {
-                    if (token.Extent.StartOffset <= caretPosition && caretPosition <= token.Extent.EndOffset)
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
+            return Utilities.IsInCommentArea(caretPosition, _textView.TextBuffer);
+        }        
 
         /// <summary>
         /// Complete the left brace/quotes with matched brace/quotes

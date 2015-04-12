@@ -124,14 +124,15 @@ namespace PowerShellTools.DebugEngine
         {
             try
             {
+                string prompt = string.Empty;
+
                 if (DebuggingService != null)
                 {
-                    string prompt;
                     if (IsDebuggingCommandReady)
                     {
                         prompt = DebuggingService.ExecuteDebuggingCommandOutNull(DebugEngineConstants.GetPrompt);
                     }
-                    else
+                    else if (DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
                     {
                         prompt = DebuggingService.GetPrompt();
                     }
@@ -139,7 +140,7 @@ namespace PowerShellTools.DebugEngine
                     return prompt;
                 }
 
-                return string.Empty;
+                return prompt;
             }
             catch
             {
@@ -240,7 +241,14 @@ namespace PowerShellTools.DebugEngine
         /// <returns>user input string</returns>
         public string ReadLine(string message)
         {
-            return Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
+            string input = string.Empty;
+
+            ThreadHelper.Generic.Invoke(() =>
+            {
+                input = Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
+            });
+
+            return input;
         }
 
         /// <summary>

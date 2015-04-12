@@ -301,10 +301,14 @@
     <Compile Include="Intellisense\IntelliSenseManager.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSource.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSourceProvider.cs" />
+    <Compile Include="Intellisense\Utilities.cs" />
     <Compile Include="LanguageService\CodeWindowManager.cs" />
     <Compile Include="LanguageService\DropDownBarClient.cs" />
     <Compile Include="LanguageService\EditorExtensions.cs" />
-    <Compile Include="LanguageService\Indenter.cs" />
+    <Compile Include="LanguageService\IndentUtilities.cs" />
+    <Compile Include="LanguageService\PowerShellLanaguagePreferences.cs" />
+    <Compile Include="LanguageService\SmartIndent.cs" />
+    <Compile Include="LanguageService\SmartIndentProvider.cs" />
     <Compile Include="LanguageService\PowerShellLanguageInfo.cs" />
     <Compile Include="LanguageService\TextViewFilter.cs" />
     <Compile Include="LanguageService\EditFilter.cs" />

@@ -58,5 +58,11 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract(IsOneWay = false)]
         void SetRemoteRunspace(bool enabled);
+
+        [OperationContract(IsOneWay = false)]
+        void StartMonitorUserInputRequest();
+
+        [OperationContract(IsOneWay = false)]
+        void StopMonitorUserInputRequest();
     }
 }

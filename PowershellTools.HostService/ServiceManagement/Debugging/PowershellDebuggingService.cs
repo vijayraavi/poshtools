@@ -362,7 +362,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             catch (Exception ex)
             {
-                ServiceCommon.Log("Terminating error,  Exception: {0}", ex);              
+                ServiceCommon.Log("Terminating error,  Exception: {0}", ex.Message);
                 OnTerminatingException(ex);
                 return false;
             }
@@ -552,7 +552,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                     catch (Exception ex)
                     {
-                        ServiceCommon.Log("Property infomation is not able to be retrieved through reflection due to exception: {0} {2} InnerException: {1}", ex, ex.InnerException, Environment.NewLine);
+                        ServiceCommon.Log("Property infomation is not able to be retrieved through reflection due to exception: {0} {2} InnerException: {1}", ex.Message, ex.InnerException, Environment.NewLine);
                     }
                 }
             }
