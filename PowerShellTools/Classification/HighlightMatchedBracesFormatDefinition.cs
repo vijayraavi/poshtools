@@ -25,8 +25,8 @@ namespace PowerShellTools.Classification
 	public HighlightMatchedBracesFormatDefinition()
 	{
 	    // Fill Color
-	    // This is the same default color as C#/VB's HighlightedReferenceMarkerDefinition.  We cannot use their definition without Error.
-	    // This is for the color if not overrideen.  for Dark & High Contrast, see PowerShellToolsColors.pkgdef
+	    // This is the same default color as C#/VB's HighlightedReferenceMarkerDefinition. We cannot use their definition without Error.
+	    // This is for the color if not overridden. For Dark & High Contrast, see PowerShellToolsColors.pkgdef
 	    BackgroundColor = Color.FromRgb(219, 224, 204); 
 
 	    DisplayName = Resources.HighlightMatchedBracesTagDisplayName;

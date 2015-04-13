@@ -340,6 +340,6 @@ Would you like to download now?</value>
     <value>Appliation asks for an input:</value>
   </data>
   <data name="HighlightMatchedBracesTagDisplayName" xml:space="preserve">
-    <value>Highlighted Braces</value>
+    <value>Highlighted Braces for PowerShell</value>
   </data>
 </root>

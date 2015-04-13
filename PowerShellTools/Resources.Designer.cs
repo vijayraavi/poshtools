@@ -331,7 +331,7 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Highlighted Braces.
+        ///   Looks up a localized string similar to Highlighted Braces for PowerShell.
         /// </summary>
         public static string HighlightMatchedBracesTagDisplayName {
             get {
