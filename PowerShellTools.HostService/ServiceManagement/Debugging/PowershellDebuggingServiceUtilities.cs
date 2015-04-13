@@ -282,5 +282,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return _debugCommandOutput;
             }
         }
+
+        private void objects_DataAdded(object sender, DataAddedEventArgs e)
+        {
+            var list = sender as PSDataCollection<PSObject>;
+            StringBuilder outputString = new StringBuilder();
+            foreach (PSObject obj in list)
+            {
+                outputString.AppendLine(obj.ToString());
+            }
+
+            if (_debugOutput)
+            {
+                NotifyOutputString(outputString.ToString());
+            }
+        }
     }
 }

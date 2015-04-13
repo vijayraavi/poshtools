@@ -136,16 +136,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     if (!string.IsNullOrEmpty(_debuggingCommand))
                     {
-                        var output = new Collection<PSObject>();
-
-                        using (var pipeline = (_runspace.CreateNestedPipeline()))
+                        if (_runspace.ConnectionInfo == null)
                         {
-                            pipeline.Commands.AddScript(_debuggingCommand);
-                            pipeline.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                            output = pipeline.Invoke();
-                        }
+                            // local debugging
+                            var output = new Collection<PSObject>();
 
-                        ProcessDebuggingCommandResults(output);
+                            using (var pipeline = (_runspace.CreateNestedPipeline()))
+                            {
+                                pipeline.Commands.AddScript(_debuggingCommand);
+                                pipeline.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                                output = pipeline.Invoke();
+                            }
+
+                            ProcessDebuggingCommandResults(output);
+                        }
+                        else
+                        {
+                            // remote session debugging
+                            ProcessRemoteDebuggingCommandResults(ExecuteDebuggingCommand());
+                        }
                     }
                     else
                     {
@@ -162,6 +171,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 // Notify the debugging command execution call that debugging command was complete.
                 _debugCommandEvent.Set();
             }
+        }
+
+        private PSDataCollection<PSObject> ExecuteDebuggingCommand()
+        {
+            PSCommand psCommand = new PSCommand();
+            psCommand.AddScript(_debuggingCommand);
+            psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+            var output = new PSDataCollection<PSObject>();
+            output.DataAdded += objects_DataAdded;
+            _runspace.Debugger.ProcessCommand(psCommand, output);
+
+            return output;
         }
 
         private void ProcessDebuggingCommandResults(Collection<PSObject> output)
@@ -195,6 +216,27 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
                                 bp.Id));
                     }
+                }
+            }
+        }
+
+        private void ProcessRemoteDebuggingCommandResults(PSDataCollection<PSObject> output)
+        {
+            var pobj = output.FirstOrDefault();
+
+            if (pobj != null && pobj.BaseObject is string)
+            {
+                _debugCommandOutput = (string)pobj.BaseObject;
+            }
+            else if (pobj != null && pobj.BaseObject is LineBreakpoint)
+            {
+                LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
+                if (bp != null)
+                {
+                    _psBreakpointTable.Add(
+                        new PowerShellBreakpointRecord(
+                            new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
+                            bp.Id));
                 }
             }
         }
