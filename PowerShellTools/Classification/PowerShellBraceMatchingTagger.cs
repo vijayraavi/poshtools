@@ -7,7 +7,7 @@ using PowerShellTools.Intellisense;
 
 namespace PowerShellTools.Classification
 {
-    internal sealed class PowerShellBraceMatchingTagger : ITagger<TextMarkerTag>, INotifyBufferUpdated
+    internal sealed class PowerShellBraceMatchingTagger : ITagger<HighlightMatchedBracesTag>, INotifyBufferUpdated
     {
 	ITextView _textView;
 	ITextBuffer _textBuffer;
@@ -31,7 +31,7 @@ namespace PowerShellTools.Classification
 	    _textView.LayoutChanged += ViewLayoutChanged;
 	}
 
-	public IEnumerable<ITagSpan<TextMarkerTag>> GetTags(NormalizedSnapshotSpanCollection spans)
+	public IEnumerable<ITagSpan<HighlightMatchedBracesTag>> GetTags(NormalizedSnapshotSpanCollection spans)
 	{
 	    if (spans.Count == 0 ||
 		!_caretPos.HasValue ||
@@ -67,13 +67,13 @@ namespace PowerShellTools.Classification
 		char closeChar = Utilities.GetPairedBrace(currentChar);
 		if (_startBraces != null && _startBraces.TryGetValue(caretPos, out closePos))
 		{
-		    yield return new TagSpan<TextMarkerTag>(new SnapshotSpan(caretPos, 1), new TextMarkerTag(MarkedColor));
-		    yield return new TagSpan<TextMarkerTag>(new SnapshotSpan(caretSnapshot, closePos, 1), new TextMarkerTag(MarkedColor));
+		    yield return new TagSpan<HighlightMatchedBracesTag>(new SnapshotSpan(caretPos, 1), new HighlightMatchedBracesTag());
+		    yield return new TagSpan<HighlightMatchedBracesTag>(new SnapshotSpan(caretSnapshot, closePos, 1), new HighlightMatchedBracesTag());
 		}
 		else if (PowerShellBraceMatchingTagger.FindMatchingCloseChar(caretPos, currentChar, closeChar, _textView.TextViewLines.Count, out pairSpan))
 		{
-		    yield return new TagSpan<TextMarkerTag>(new SnapshotSpan(caretPos, 1), new TextMarkerTag(MarkedColor));
-		    yield return new TagSpan<TextMarkerTag>(pairSpan, new TextMarkerTag(MarkedColor));
+		    yield return new TagSpan<HighlightMatchedBracesTag>(new SnapshotSpan(caretPos, 1), new HighlightMatchedBracesTag());
+		    yield return new TagSpan<HighlightMatchedBracesTag>(pairSpan, new HighlightMatchedBracesTag());
 		}
 	    }
 
@@ -83,13 +83,13 @@ namespace PowerShellTools.Classification
 		char openChar = Utilities.GetPairedBrace(precedingChar);
 		if (_endBraces != null && _endBraces.TryGetValue(precedingPos, out openPos))
 		{
-		    yield return new TagSpan<TextMarkerTag>(new SnapshotSpan(precedingPos, 1), new TextMarkerTag(MarkedColor));
-		    yield return new TagSpan<TextMarkerTag>(new SnapshotSpan(caretSnapshot, openPos, 1), new TextMarkerTag(MarkedColor));
+		    yield return new TagSpan<HighlightMatchedBracesTag>(new SnapshotSpan(precedingPos, 1), new HighlightMatchedBracesTag());
+		    yield return new TagSpan<HighlightMatchedBracesTag>(new SnapshotSpan(caretSnapshot, openPos, 1), new HighlightMatchedBracesTag());
 		}
 		if (PowerShellBraceMatchingTagger.FindMatchingOpenChar(precedingPos, openChar, precedingChar, _textView.TextViewLines.Count, out pairSpan))
 		{
-		    yield return new TagSpan<TextMarkerTag>(new SnapshotSpan(precedingPos, 1), new TextMarkerTag(MarkedColor));
-		    yield return new TagSpan<TextMarkerTag>(pairSpan, new TextMarkerTag(MarkedColor));
+		    yield return new TagSpan<HighlightMatchedBracesTag>(new SnapshotSpan(precedingPos, 1), new HighlightMatchedBracesTag());
+		    yield return new TagSpan<HighlightMatchedBracesTag>(pairSpan, new HighlightMatchedBracesTag());
 		}
 	    }
 	}

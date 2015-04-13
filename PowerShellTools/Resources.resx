@@ -339,4 +339,7 @@ Would you like to download now?</value>
   <data name="UserInputRequestMessage" xml:space="preserve">
     <value>Appliation asks for an input:</value>
   </data>
+  <data name="HighlightMatchedBracesTagDisplayName" xml:space="preserve">
+    <value>Highlighted Braces</value>
+  </data>
 </root>
