@@ -1,4 +1,5 @@
-﻿using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+﻿using PowerShellTools.Common;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -91,14 +92,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
         {
             ServiceCommon.Log("Debugger stopped ...");
-            try
+
+            if (_installedPowershellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
             {
                 RefreshScopedVariable();
                 RefreshCallStack();
             }
-            catch (Exception ex)
+            else
             {
-                ServiceCommon.Log("typeload ex" + ex.Message);
+                RefreshScopedVariable40();
+                RefreshCallStack40();
             }
 
             ServiceCommon.LogCallbackEvent("Callback to client, and wait for debuggee to resume");

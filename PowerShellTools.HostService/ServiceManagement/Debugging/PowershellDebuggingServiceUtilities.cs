@@ -44,44 +44,22 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void RefreshScopedVariable()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all local variable in scope");
-            if (_runspace.ConnectionInfo != null)
+            using (var pipeline = (_runspace.CreateNestedPipeline()))
             {
-                PSCommand psCommand = new PSCommand();
-                psCommand.AddScript("Get-Variable");
-                var output = new PSDataCollection<PSObject>();
-                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-                _varaiables = output;
-            }
-            else
-            {
-                using (var pipeline = (_runspace.CreateNestedPipeline()))
-                {
-                    var command = new Command("Get-Variable");
-                    pipeline.Commands.Add(command);
-                    _varaiables = pipeline.Invoke();
-                }
+                var command = new Command("Get-Variable");
+                pipeline.Commands.Add(command);
+                _varaiables = pipeline.Invoke();
             }
         }
 
         private void RefreshCallStack()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all call stack frames");
-            if (_runspace.ConnectionInfo != null)
+            using (var pipeline = (_runspace.CreateNestedPipeline()))
             {
-                PSCommand psCommand = new PSCommand();
-                psCommand.AddScript("Get-PSCallstack");
-                var output = new PSDataCollection<PSObject>();
-                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-                _callstack = output;
-            }
-            else
-            {
-                using (var pipeline = (_runspace.CreateNestedPipeline()))
-                {
-                    var command = new Command("Get-PSCallstack");
-                    pipeline.Commands.Add(command);
-                    _callstack = pipeline.Invoke();
-                }
+                var command = new Command("Get-PSCallstack");
+                pipeline.Commands.Add(command);
+                _callstack = pipeline.Invoke();
             }
         }
 

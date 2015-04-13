@@ -20,6 +20,7 @@ using System.Text.RegularExpressions;
 using PowerShellTools.Common.Debugging;
 using System.Diagnostics;
 using PowerShellTools.Common.IntelliSense;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -45,6 +46,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private bool _debugOutput;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
         private DebuggerResumeAction _resumeAction;
+        private Version _installedPowershellVersion;
+
+        /// <summary>
+        /// Minimal powershell version required for remote session debugging
+        /// </summary>
+        private static readonly Version RequiredPowerShellVersionForRemoteSessionDebugging = new Version(4, 0);
 
         public PowerShellDebuggingService()
         {
@@ -56,6 +63,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _mapRemoteToLocal = new Dictionary<string, string>();
             _psBreakpointTable = new List<PowerShellBreakpointRecord>();
             _debugOutput = true;
+            _installedPowershellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             InitializeRunspace(this);
         }
 
