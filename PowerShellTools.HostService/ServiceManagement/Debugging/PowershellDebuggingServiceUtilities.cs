@@ -28,17 +28,41 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             if (_runspace != null)
             {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
+                UnloadRunspace(_runspace);
             }
 
             _runspace = runspace;
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
+            LoadRunspace(_runspace);
 
             ProvideDteVariable(_runspace);
+        }
+
+        private void LoadRunspace(Runspace runspace)
+        {
+            if (_runspace != null)
+            {
+                if (_runspace.ConnectionInfo == null || _installedPowershellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+                {
+                    runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+                    runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+                }
+
+                runspace.StateChanged += _runspace_StateChanged;
+            }
+        }
+
+        private void UnloadRunspace(Runspace runspace)
+        {
+            if (_runspace != null)
+            {
+                if (_runspace.ConnectionInfo == null || _installedPowershellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+                {
+                    runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+                    runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+                }
+            }
+
+            runspace.StateChanged -= _runspace_StateChanged;
         }
 
         private void RefreshScopedVariable()
@@ -66,9 +90,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void OnTerminatingException(Exception ex)
         {
             ServiceCommon.Log("OnTerminatingException");
-            _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-            _runspace.StateChanged -= _runspace_StateChanged;
+            UnloadRunspace(_runspace);
             if (_callback != null)
             {
                 _callback.TerminatingException(new PowerShellRunTerminatingException(ex));
@@ -90,9 +112,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (_runspace != null)
             {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
+                UnloadRunspace(_runspace);
             }
 
             if (_currentPowerShell != null)
