@@ -34,19 +34,19 @@ namespace PowerShellTools.LanguageService
 	    // User GetIndentSize() instead of GetTabSize() due to the fact VS always uses Indent Size as a TAB size
 	    int tabSize = _textView.Options.GetIndentSize();
 
-	    switch (_info.LangPrefs.IndentMode)
-	    {
-		case vsIndentStyle.vsIndentStyleNone:
-		    return null;
+		switch (_info.LangPrefs.IndentMode)
+		{
+		    case vsIndentStyle.vsIndentStyleNone:
+			return null;
 
-		case vsIndentStyle.vsIndentStyleDefault:
-		    return GetDefaultIndentationImp(line, tabSize);
+		    case vsIndentStyle.vsIndentStyleDefault:
+			return GetDefaultIndentationImp(line, tabSize);
 
-		case vsIndentStyle.vsIndentStyleSmart:
-		    return GetSmartIndentationImp(line, tabSize);
+		    case vsIndentStyle.vsIndentStyleSmart:
+			return GetSmartIndentationImp(line, tabSize);
+		}
+		return null;
 	    }
-	    return null;
-	}
 
 	public void Dispose() { }
 
@@ -97,8 +97,8 @@ namespace PowerShellTools.LanguageService
 	    Dictionary<int, int> startBraces = null;
 	    Dictionary<int, int> endBraces = null;
 	    List<ClassificationInfo> tokenSpans = null;
-	    if (!textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.StartBrace, out startBraces) || startBraces == null ||
-		!textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.EndBrace, out endBraces) || endBraces == null ||
+	    if (!textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.StartBraces, out startBraces) || startBraces == null ||
+		!textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.EndBraces, out endBraces) || endBraces == null ||
 		!textBuffer.Properties.TryGetProperty<List<ClassificationInfo>>(BufferProperties.TokenSpans, out tokenSpans) || tokenSpans == null)
 	    {
 		needExtraEffort = false;

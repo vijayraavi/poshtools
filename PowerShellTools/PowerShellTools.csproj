@@ -220,7 +220,11 @@
     </Compile>
     <Compile Include="Classification\Classifier.cs" />
     <Compile Include="Classification\ClassifierServices.cs" />
+    <Compile Include="Classification\HighlightMatchedBracesFormatDefinition.cs" />
+    <Compile Include="Classification\HighlightMatchedBracesTag.cs" />
     <Compile Include="Classification\IPowerShellTokenizationService.cs" />
+    <Compile Include="Classification\PowerShellBraceMatchingTagger.cs" />
+    <Compile Include="Classification\PowerShellBraceMatchingTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellClassifier.cs">
       <SubType>Code</SubType>
     </Compile>

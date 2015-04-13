@@ -96,7 +96,7 @@ namespace PowerShellTools.Intellisense
                 case VSConstants.VSStd2KCmdID.TYPECHAR:
 
                     // If we processed the typed left brace/quotes, no need to pass along the command as the char is already added to the buffer.
-                    if (IsQuotes(typedChar))
+		    if (Utilities.IsQuotes(typedChar))
                     {
                         if (_isLastCmdAutoComplete && IsTypedCharEqualsNextChar(typedChar))
                         {
@@ -112,13 +112,13 @@ namespace PowerShellTools.Intellisense
                         }
                     }
 
-                    if (IsLeftBraceOrQuotes(typedChar))
+                    if (Utilities.IsLeftBraceOrQuotes(typedChar))
                     {
                         CompleteBraceOrQuotes(typedChar);
                         SetAutoCompleteState(true);
                         return VSConstants.S_OK;
                     }
-                    else if (IsRightBraceOrQuotes(typedChar) && ProcessTypedRightBraceOrQuotes(typedChar))
+		    else if (Utilities.IsRightBraceOrQuotes(typedChar) && ProcessTypedRightBraceOrQuotes(typedChar))
                     {
                         // If this right brace/quotes is typed right after typing left brace/quotes,
                         // we just move the caret to the right side of the right brace/quotes and return.
@@ -204,7 +204,7 @@ namespace PowerShellTools.Intellisense
                 _editorOperations.AddBeforeTextBufferChangePrimitive();
 
                 _editorOperations.InsertText(typedCharToString);
-                _editorOperations.InsertText(GetMatchedBraceOrQuotes(leftBraceOrQuotes).ToString());
+		_editorOperations.InsertText(Utilities.GetCloseBraceOrQuotes(leftBraceOrQuotes).ToString());
                 _editorOperations.MoveToPreviousCharacter(false);
 
                 _editorOperations.AddAfterTextBufferChangePrimitive();
@@ -269,7 +269,7 @@ namespace PowerShellTools.Intellisense
 
             ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret - 1, PointTrackingMode.Positive);
             char previousChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
-            return IsLeftBraceOrQuotes(previousChar);
+	    return Utilities.IsLeftBraceOrQuotes(previousChar);
         }
 
         private bool IsTypedCharEqualsNextChar(char currentChar)
@@ -288,7 +288,7 @@ namespace PowerShellTools.Intellisense
 
             ITrackingPoint nextCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret, PointTrackingMode.Positive);
             char nextChar = nextCharPosition.GetCharacter(_textView.TextSnapshot);
-            return IsRightBraceOrQuotes(nextChar);
+	    return Utilities.IsRightBraceOrQuotes(nextChar);
         }
 
         private bool IsCaretInMiddleOfPairedCurlyBrace()
@@ -303,7 +303,7 @@ namespace PowerShellTools.Intellisense
 
             ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret - 1, PointTrackingMode.Positive);
             char previousChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
-            return IsLeftCurlyBrace(previousChar);
+	    return Utilities.IsLeftCurlyBrace(previousChar);
         }
 
         private bool IsNextCharRightCurlyBrace(int currentCaret)
@@ -312,7 +312,7 @@ namespace PowerShellTools.Intellisense
 
             ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret, PointTrackingMode.Positive);
             char nextChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
-            return IsRightCurlyBrace(nextChar);
+	    return Utilities.IsRightCurlyBrace(nextChar);
         }
 
         private void DeleteRightBrace()
@@ -325,44 +325,6 @@ namespace PowerShellTools.Intellisense
 
                 _editorOperations.AddAfterTextBufferChangePrimitive();
                 undo.Complete();
-            }
-        }
-
-        private static bool IsLeftBraceOrQuotes(char ch)
-        {
-            return IsLeftCurlyBrace(ch) || ch == '[' || ch == '(' || IsQuotes(ch);
-        }
-
-        private static bool IsRightBraceOrQuotes(char ch)
-        {
-            return IsRightCurlyBrace(ch) || ch == ']' || ch == ')' || IsQuotes(ch);
-        }
-
-        private static bool IsQuotes(char ch)
-        {
-            return ch == '\'' || ch == '\"';
-        }
-
-        private static bool IsLeftCurlyBrace(char ch)
-        {
-            return ch == '{';
-        }
-
-        private static bool IsRightCurlyBrace(char ch)
-        {
-            return ch == '}';
-        }
-
-        private static char GetMatchedBraceOrQuotes(char ch)
-        {
-            switch (ch)
-            {
-                case '{': return '}';
-                case '[': return ']';
-                case '(': return ')';
-                case '\'': return '\'';
-                case '\"': return '\"';
-                default: throw new InvalidOperationException("The character is unrecognized.");
             }
         }
     }
