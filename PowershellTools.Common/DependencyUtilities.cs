@@ -12,22 +12,22 @@ namespace PowerShellTools.Common
         public static Version GetInstalledPowerShellVersion()
         {
             var version = new Version(0, 0);
-            using (var reg = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\PowerShell\3\PowerShellEngine"))
+            using (var reg = Registry.LocalMachine.OpenSubKey(Constants.NewInstalledPowerShellRegKey))
             {
                 if (reg != null)
                 {
-                    var versionString = reg.GetValue("PowerShellVersion") as string;
+                    var versionString = reg.GetValue(Constants.PowerShellVersionRegKeyName) as string;
 
                     Version.TryParse(versionString, out version);
                     return version;
                 }
             }
 
-            using (var reg = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\PowerShell\1\PowerShellEngine"))
+            using (var reg = Registry.LocalMachine.OpenSubKey(Constants.LegacyInstalledPowershellRegKey))
             {
                 if (reg != null)
                 {
-                    var versionString = reg.GetValue("PowerShellVersion") as string;
+                    var versionString = reg.GetValue(Constants.PowerShellVersionRegKeyName) as string;
                     Version.TryParse(versionString, out version);
                     return version;
                 }
