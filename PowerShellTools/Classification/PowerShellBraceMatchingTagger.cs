@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Tagging;
-using Microsoft.VisualStudio.Utilities;
 using PowerShellTools.Intellisense;
 
 namespace PowerShellTools.Classification
@@ -19,7 +16,7 @@ namespace PowerShellTools.Classification
 	private IDictionary<int, int> _endBraces;
 	private const string MarkedColor = "blue";
 	public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
-	
+
 	internal PowerShellBraceMatchingTagger(ITextView textView, ITextBuffer textBuffer)
 	{
 	    _textView = textView;
@@ -29,11 +26,11 @@ namespace PowerShellTools.Classification
 	    _textBuffer.ContentTypeChanged += TextBuffer_ContentTypeChanged;
 	    textBuffer.Properties.TryGetProperty<IDictionary<int, int>>(BufferProperties.StartBraces, out _startBraces);
 	    textBuffer.Properties.TryGetProperty<IDictionary<int, int>>(BufferProperties.EndBraces, out _endBraces);
-	    
+
 	    _textView.Caret.PositionChanged += CaretPositionChanged;
 	    _textView.LayoutChanged += ViewLayoutChanged;
 	}
-		
+
 	public IEnumerable<ITagSpan<TextMarkerTag>> GetTags(NormalizedSnapshotSpanCollection spans)
 	{
 	    if (spans.Count == 0 ||
@@ -42,7 +39,7 @@ namespace PowerShellTools.Classification
 		_textView.Caret.InVirtualSpace)
 	    {
 		yield break;
-	    }	
+	    }
 
 	    //hold on to a snapshot of the current character
 	    SnapshotPoint caretPos = _caretPos.Value;
@@ -53,7 +50,7 @@ namespace PowerShellTools.Classification
 	    {
 		caretPos = caretPos.TranslateTo(spans[0].Snapshot, PointTrackingMode.Positive);
 	    }
-	    if (caretPos < 0 || caretPos >= caretSnapshot.Length)
+	    if (caretPos < 0 || caretPos >= caretSnapshot.Length || caretPos >= spans[0].Snapshot.Length)
 	    {
 		yield break;
 	    }
@@ -64,7 +61,7 @@ namespace PowerShellTools.Classification
 	    SnapshotSpan pairSpan = new SnapshotSpan();
 	    int currentPos = caretPos.Position;
 
-	    if (Utilities.IsLeftBrace(currentChar)) 
+	    if (Utilities.IsLeftBrace(currentChar))
 	    {
 		int closePos;
 		char closeChar = Utilities.GetPairedBrace(currentChar);
@@ -79,8 +76,8 @@ namespace PowerShellTools.Classification
 		    yield return new TagSpan<TextMarkerTag>(pairSpan, new TextMarkerTag(MarkedColor));
 		}
 	    }
-	    
-	    if (Utilities.IsRightBrace(precedingChar))    
+
+	    if (Utilities.IsRightBrace(precedingChar))
 	    {
 		int openPos;
 		char openChar = Utilities.GetPairedBrace(precedingChar);
@@ -106,7 +103,7 @@ namespace PowerShellTools.Classification
 
 	private void ViewLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
 	{
-	    if (e.NewSnapshot != e.OldSnapshot) 
+	    if (e.NewSnapshot != e.OldSnapshot)
 	    {
 		UpdateAtCaretPosition(_textView.Caret.Position);
 	    }
@@ -124,7 +121,7 @@ namespace PowerShellTools.Classification
 	    {
 		_textBuffer.Properties.RemoveProperty(typeof(PowerShellBraceMatchingTagger).Name);
 	    }
-	    
+
 	    _textView.Caret.PositionChanged -= CaretPositionChanged;
 	    _textView.LayoutChanged -= ViewLayoutChanged;
 	}
@@ -140,8 +137,8 @@ namespace PowerShellTools.Classification
 	    if (tagsChanged != null)
 	    {
 		tagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(_textBuffer.CurrentSnapshot, 0, _textBuffer.CurrentSnapshot.Length)));
-	    }		
-	}	
+	    }
+	}
 
 	private static bool FindMatchingCloseChar(SnapshotPoint startPoint, char open, char close, int maxLines, out SnapshotSpan pairSpan)
 	{
@@ -252,6 +249,6 @@ namespace PowerShellTools.Classification
 		offset = line.Length - 1;
 	    }
 	    return false;
-	}	
+	}
     }
 }
