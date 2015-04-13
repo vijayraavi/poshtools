@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Diagnostics;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -25,6 +26,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// A reference to the runspace used to start an interactive session.
         /// </summary>
         private Runspace _pushedRunspace = null;
+
+        /// <summary>
+        /// Minimal powershell version required for remote session debugging
+        /// </summary>
+        private static readonly Version RequiredPowerShellVersionForRemoteSessionDebugging = new Version(4, 0);
 
         /// <summary>
         /// Gets a string that contains the name of this host implementation. 
@@ -182,7 +188,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             _pushedRunspace = Runspace;
             Runspace = runspace;
-            Runspace.Debugger.SetDebugMode(DebugModes.RemoteScript);
+
+            ServiceCommon.Log("entering...");
+            if (DependencyUtilities.GetInstalledPowerShellVersion() < RequiredPowerShellVersionForRemoteSessionDebugging)
+            {
+                ServiceCommon.Log("version failed...");
+                _callback.OutputStringLine(Resources.Warning_HigherVersionRequiredForDebugging);
+            }
+            else
+            {
+                Runspace.Debugger.SetDebugMode(DebugModes.RemoteScript);
+            }
+            ServiceCommon.Log("exits...");
             _callback.SetRemoteRunspace(true);
 
             RegisterRemoteFileOpenEvent(runspace);

@@ -91,8 +91,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
         {
             ServiceCommon.Log("Debugger stopped ...");
-            RefreshScopedVariable();
-            RefreshCallStack();
+            try
+            {
+                RefreshScopedVariable();
+                RefreshCallStack();
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log("typeload ex" + ex.Message);
+            }
 
             ServiceCommon.LogCallbackEvent("Callback to client, and wait for debuggee to resume");
             if (e.Breakpoints.Count > 0)

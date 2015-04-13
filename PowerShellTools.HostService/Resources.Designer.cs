@@ -95,5 +95,14 @@ namespace PowerShellTools.HostService {
                 return ResourceManager.GetString("Error_PipelineBusy", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning: You&apos;ll need higher version(v4.0 or higher) of PowerShell to debug your remote script execution..
+        /// </summary>
+        public static string Warning_HigherVersionRequiredForDebugging {
+            get {
+                return ResourceManager.GetString("Warning_HigherVersionRequiredForDebugging", resourceCulture);
+            }
+        }
     }
 }

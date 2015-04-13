@@ -358,6 +358,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 return !error;
             }
+            catch (TypeLoadException ex)
+            {
+                ServiceCommon.Log("Type,  Exception: {0}", ex.Message);
+                OnTerminatingException(ex);
+                return false;
+            }
             catch (Exception ex)
             {
                 ServiceCommon.Log("Terminating error,  Exception: {0}", ex.Message);
