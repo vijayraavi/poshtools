@@ -46,7 +46,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private bool _debugOutput;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
         private DebuggerResumeAction _resumeAction;
-        private Version _installedPowershellVersion;
+        private Version _installedPowerShellVersion;
 
         /// <summary>
         /// Minimal powershell version required for remote session debugging
@@ -63,7 +63,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _mapRemoteToLocal = new Dictionary<string, string>();
             _psBreakpointTable = new List<PowerShellBreakpointRecord>();
             _debugOutput = true;
-            _installedPowershellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
+            _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             InitializeRunspace(this);
         }
 

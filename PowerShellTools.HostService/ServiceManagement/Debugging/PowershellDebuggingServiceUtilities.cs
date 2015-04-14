@@ -41,7 +41,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             if (_runspace != null)
             {
-                if (_runspace.ConnectionInfo == null || _installedPowershellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+                if (_runspace.ConnectionInfo == null || _installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
                 {
                     runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
                     runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
@@ -55,7 +55,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             if (_runspace != null)
             {
-                if (_runspace.ConnectionInfo == null || _installedPowershellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+                if (_runspace.ConnectionInfo == null || _installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
                 {
                     runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
                     runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;

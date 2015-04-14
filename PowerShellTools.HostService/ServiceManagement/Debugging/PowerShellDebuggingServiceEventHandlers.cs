@@ -93,7 +93,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ServiceCommon.Log("Debugger stopped ...");
 
-            if (_installedPowershellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
+            if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
             {
                 RefreshScopedVariable();
                 RefreshCallStack();

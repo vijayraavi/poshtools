@@ -184,7 +184,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _pushedRunspace = Runspace;
             Runspace = runspace;
 
-            if (_installedPowershellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
+            if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
             {
                 _callback.OutputStringLine(Resources.Warning_HigherVersionRequiredForDebugging);
             }

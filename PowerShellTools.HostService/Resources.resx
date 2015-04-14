@@ -131,6 +131,6 @@
     <value>Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.</value>
   </data>
   <data name="Warning_HigherVersionRequiredForDebugging" xml:space="preserve">
-    <value>Warning: You'll need higher version(v4.0 or higher) of PowerShell to debug your remote script execution.</value>
+    <value>Warning: PowerShell v4.0 or later is needed to debug during remote script execution.</value>
   </data>
 </root>
