@@ -35,7 +35,7 @@ namespace PowerShellTools.Classification
 	{
 	    if (spans.Count == 0 ||
 		!_caretPos.HasValue ||
-		_caretPos.Value.Position >= _caretPos.Value.Snapshot.Length ||
+		_caretPos.Value.Position > _caretPos.Value.Snapshot.Length ||
 		_textView.Caret.InVirtualSpace)
 	    {
 		yield break;
@@ -50,18 +50,22 @@ namespace PowerShellTools.Classification
 	    {
 		caretPos = caretPos.TranslateTo(spans[0].Snapshot, PointTrackingMode.Positive);
 	    }
-	    if (caretPos < 0 || caretPos >= caretSnapshot.Length || caretPos >= spans[0].Snapshot.Length)
+	    if (caretPos < 0 || caretPos > caretSnapshot.Length || caretPos > spans[0].Snapshot.Length)
 	    {
 		yield break;
 	    }
-
-	    char currentChar = caretPos.GetChar();
+	    
+	    char currentChar = '\0';
+	    if (caretPos < caretSnapshot.Length && caretPos < spans[0].Snapshot.Length)
+	    {
+		currentChar = caretPos.GetChar();; 
+	    }
+		
 	    SnapshotPoint precedingPos = (caretPos == 0 ? caretPos : (caretPos - 1)); //if currentChar is 0 (beginning of buffer), don't move it back 
 	    char precedingChar = precedingPos.GetChar();
 	    SnapshotSpan pairSpan = new SnapshotSpan();
-	    int currentPos = caretPos.Position;
 
-	    if (Utilities.IsLeftBrace(currentChar))
+	    if (caretPos < caretSnapshot.Length && caretPos < spans[0].Snapshot.Length && Utilities.IsLeftBrace(currentChar))
 	    {
 		int closePos;
 		char closeChar = Utilities.GetPairedBrace(currentChar);
@@ -77,7 +81,7 @@ namespace PowerShellTools.Classification
 		}
 	    }
 
-	    if (Utilities.IsRightBrace(precedingChar))
+	    if (precedingPos > 0 && Utilities.IsRightBrace(precedingChar))
 	    {
 		int openPos;
 		char openChar = Utilities.GetPairedBrace(precedingChar);
@@ -86,7 +90,7 @@ namespace PowerShellTools.Classification
 		    yield return new TagSpan<HighlightMatchedBracesTag>(new SnapshotSpan(precedingPos, 1), new HighlightMatchedBracesTag());
 		    yield return new TagSpan<HighlightMatchedBracesTag>(new SnapshotSpan(caretSnapshot, openPos, 1), new HighlightMatchedBracesTag());
 		}
-		if (PowerShellBraceMatchingTagger.FindMatchingOpenChar(precedingPos, openChar, precedingChar, _textView.TextViewLines.Count, out pairSpan))
+		else if (PowerShellBraceMatchingTagger.FindMatchingOpenChar(precedingPos, openChar, precedingChar, _textView.TextViewLines.Count, out pairSpan))
 		{
 		    yield return new TagSpan<HighlightMatchedBracesTag>(new SnapshotSpan(precedingPos, 1), new HighlightMatchedBracesTag());
 		    yield return new TagSpan<HighlightMatchedBracesTag>(pairSpan, new HighlightMatchedBracesTag());
