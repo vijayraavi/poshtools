@@ -104,6 +104,15 @@ namespace PowerShellTools.HostService.ServiceManagement
         }
 
         /// <summary>
+        /// Suspecting this is a powershell bug, the first time you call CommandCompletion.CompleteInput, it takes much longer than usual.
+        /// We are using this dummy call during intializing to warm it up.
+        /// </summary>
+        public void GetDummyCompletionList()
+        {
+            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList("Write-", 6, _runspace);
+        }
+
+        /// <summary>
         /// Get error from parsing
         /// </summary>
         /// <param name="spanText">Script text</param>

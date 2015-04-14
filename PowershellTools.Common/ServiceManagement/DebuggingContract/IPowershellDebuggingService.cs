@@ -62,9 +62,6 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         string GetPrompt();
 
         [OperationContract]
-        RunspaceAvailability GetRunspaceAvailabilityWithExecutionPriority();
-
-        [OperationContract]
         RunspaceAvailability GetRunspaceAvailability();
 
         [OperationContract]
