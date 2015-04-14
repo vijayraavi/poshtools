@@ -20,6 +20,7 @@ using System.Text.RegularExpressions;
 using PowerShellTools.Common.Debugging;
 using System.Diagnostics;
 using PowerShellTools.Common.IntelliSense;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -44,6 +45,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private string _debugCommandOutput;
         private bool _debugOutput;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
+        private DebuggerResumeAction _resumeAction;
+        private Version _installedPowerShellVersion;
+
+        /// <summary>
+        /// Minimal powershell version required for remote session debugging
+        /// </summary>
+        private static readonly Version RequiredPowerShellVersionForRemoteSessionDebugging = new Version(4, 0);
 
         public PowerShellDebuggingService()
         {
@@ -55,6 +63,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _mapRemoteToLocal = new Dictionary<string, string>();
             _psBreakpointTable = new List<PowerShellBreakpointRecord>();
             _debugOutput = true;
+            _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             InitializeRunspace(this);
         }
 
@@ -351,14 +360,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _currentPowerShell.AddCommand("out-default");
                     _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
 
-                    var objects = new PSDataCollection<PSObject>();
-                    objects.DataAdded += objects_DataAdded;
-
-                    _currentPowerShell.Invoke(null, objects);
+                    _currentPowerShell.Invoke();
                     error = _currentPowerShell.HadErrors;
                 }
 
                 return !error;
+            }
+            catch (TypeLoadException ex)
+            {
+                ServiceCommon.Log("Type,  Exception: {0}", ex.Message);
+                OnTerminatingException(ex);
+                return false;
             }
             catch (Exception ex)
             {
@@ -662,6 +674,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
 
                 return prompt;
+            }
+        }
+
+        /// <summary>
+        /// Client set resume action for debugger
+        /// </summary>
+        /// <param name="resumeAction">DebuggerResumeAction</param>
+        public void SetDebuggerResumeAction(DebuggerResumeAction resumeAction)
+        {
+            lock (_executeDebugCommandLock)
+            {
+                ServiceCommon.Log("Client asks for resuming debugger");
+                _resumeAction = resumeAction;
+                _pausedEvent.Set();
             }
         }
 

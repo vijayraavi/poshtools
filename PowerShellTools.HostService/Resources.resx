@@ -130,4 +130,7 @@
   <data name="Error_PipelineBusy" xml:space="preserve">
     <value>Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.</value>
   </data>
+  <data name="Warning_HigherVersionRequiredForDebugging" xml:space="preserve">
+    <value>Warning: PowerShell v4.0 or later is needed to debug during remote script execution.</value>
+  </data>
 </root>

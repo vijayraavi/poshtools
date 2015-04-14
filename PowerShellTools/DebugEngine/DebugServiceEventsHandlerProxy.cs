@@ -21,7 +21,8 @@ namespace PowerShellTools.DebugEngine
         private ScriptDebugger _debugger;
         private bool _uiOutput;
 
-        public DebugServiceEventsHandlerProxy(){}
+        public DebugServiceEventsHandlerProxy()
+            : this(null, true) { }
 
         public DebugServiceEventsHandlerProxy(ScriptDebugger debugger, bool uiOutput)
         {
@@ -31,7 +32,7 @@ namespace PowerShellTools.DebugEngine
 
         public ScriptDebugger Debugger
         {
-            get 
+            get
             {
                 if (_debugger == null)
                 {
