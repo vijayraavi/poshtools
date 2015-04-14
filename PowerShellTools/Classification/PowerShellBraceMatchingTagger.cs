@@ -50,7 +50,11 @@ namespace PowerShellTools.Classification
 	    {
 		caretPos = caretPos.TranslateTo(spans[0].Snapshot, PointTrackingMode.Positive);
 	    }
-	    if (caretPos < 0 || caretPos > caretSnapshot.Length || caretPos > spans[0].Snapshot.Length)
+	    if (caretPos < 0 ||
+		caretPos > caretSnapshot.Length ||
+		caretPos > spans[0].Snapshot.Length ||
+		caretSnapshot.Length == 0 ||
+		spans[0].Snapshot.Length == 0)
 	    {
 		yield break;
 	    }
