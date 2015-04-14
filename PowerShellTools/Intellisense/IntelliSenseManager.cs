@@ -505,10 +505,6 @@ namespace PowerShellTools.Intellisense
             _activeSession.Properties.AddProperty(BufferProperties.SessionOriginIntellisense, "Intellisense");
             _activeSession.Dismissed += CompletionSession_Dismissed;
             _activeSession.Start();
-            if (_activeSession.SelectedCompletionSet.Completions.Count > 0 && !_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
-            {
-                _activeSession.SelectedCompletionSet.SelectionStatus = new CompletionSelectionStatus(_activeSession.SelectedCompletionSet.Completions[0], true, false);
-            }
         }
 
         private void CompletionSession_Dismissed(object sender, EventArgs e)

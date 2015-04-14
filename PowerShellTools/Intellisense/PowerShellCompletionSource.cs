@@ -104,7 +104,7 @@ namespace PowerShellTools.Intellisense
 
     internal class PowerShellCompletionSet : CompletionSet
     {
-        private readonly FilteredObservableCollection<Completion> completions;
+        private readonly FilteredObservableCollection<Completion> _completions;
 
         internal PowerShellCompletionSet(string moniker,
                                          string displayName,
@@ -119,7 +119,7 @@ namespace PowerShellTools.Intellisense
             {
                 throw new ArgumentNullException("filterSpan");
             }
-            this.completions = new FilteredObservableCollection<Completion>(new ObservableCollection<Completion>(completions));
+            _completions = new FilteredObservableCollection<Completion>(new ObservableCollection<Completion>(completions));
             FilterSpan = filterSpan;
             LineStartToApplicableTo = lineStartToApplicableTo;
             InitialApplicableTo = applicableTo.GetText(applicableTo.TextBuffer.CurrentSnapshot);
@@ -129,7 +129,7 @@ namespace PowerShellTools.Intellisense
         {
             get
             {
-                return completions;
+                return _completions;
             }
         }
 
@@ -150,7 +150,7 @@ namespace PowerShellTools.Intellisense
 
             if (Completions.Any(current => predicate(current)))
             {
-                completions.Filter(predicate);
+                _completions.Filter(predicate);
             }
         }
 
@@ -159,7 +159,14 @@ namespace PowerShellTools.Intellisense
             var text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
             if (text.Length == 0)
             {
-                SelectionStatus = new CompletionSelectionStatus(null, false, false);
+		foreach (var current in Completions)
+		{
+		    if (current.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase))
+		    {
+			SelectionStatus = new CompletionSelectionStatus(current, true, true);
+			return;
+		    }
+		}                
                 return;
             }
             int num = int.MaxValue;
