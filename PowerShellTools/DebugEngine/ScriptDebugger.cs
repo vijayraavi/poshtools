@@ -324,9 +324,19 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if (DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available)
+                bool timedOut = false;
+                System.Timers.Timer aTimer = new System.Timers.Timer(1000); // 1 second timeout
+                aTimer.Elapsed += (sender, args) => { timedOut = true; };
+
+                while (DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available
+                    && !timedOut)
                 {
-                    OutputString(this, new EventArgs<string>(Resources.ErrorPipelineBusy));
+                    Thread.Sleep(50);
+                }
+
+                if (timedOut)
+                {
+                    HostUi.VsOutputString(Resources.ErrorPipelineBusy);
 
                     return false;
                 }
@@ -336,13 +346,18 @@ namespace PowerShellTools.DebugEngine
             catch (Exception ex)
             {
                 Log.Error("Failed to execute script", ex);
-                OutputString(this, new EventArgs<string>(ex.Message));
+                HostUi.VsOutputString(ex.Message);
                 return false;
             }
             finally
             {
                 DebuggerFinished();
             }
+        }
+
+        private void OnTimedEvent(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -405,15 +420,6 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-        void objects_DataAdded(object sender, DataAddedEventArgs e)
-        {
-            if (OutputString != null)
-            {
-                var list = sender as PSDataCollection<PSObject>;
-                OutputString(this, new EventArgs<string>(list[e.Index] + Environment.NewLine));
-            }
-        }
-
         public void SetVariable(string name, string value)
         {
             try
@@ -468,7 +474,7 @@ namespace PowerShellTools.DebugEngine
                 catch (Exception ex)
                 {
                     Log.Error("Failed to open remote file through powershell remote session", ex);
-                    OutputString(this, new EventArgs<string>(ex.Message));
+                    HostUi.VsOutputString(ex.Message);
                 }
             }
         }
