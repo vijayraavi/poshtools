@@ -12,7 +12,7 @@ namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
         void RequestCompletionResults(string scriptUpToCaret, int carePosition, long triggerTimeTicks);
 
         [OperationContract]
-        void GetDummyCompletionList(string scriptUpToCaret, int carePosition);
+        void GetDummyCompletionList();
 
         [OperationContract]
         ParseErrorItem[] GetParseErrors(string spanText);
