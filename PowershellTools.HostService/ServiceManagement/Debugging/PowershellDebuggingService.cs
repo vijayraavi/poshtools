@@ -281,21 +281,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// Get runspace availability
-        /// Within execution priority, runspace will try to kill existing low priority task to free up runspace
-        /// </summary>
-        /// <returns>runspace availability enum</returns>
-        public RunspaceAvailability GetRunspaceAvailabilityWithExecutionPriority()
-        {
-            return GetRunspaceAvailability(true);
-        }
-
-        /// <summary>
-        /// Get runspace availability
         /// </summary>
         /// <returns>runspace availability enum</returns>
         public RunspaceAvailability GetRunspaceAvailability()
         {
-            return GetRunspaceAvailability(false);
+            RunspaceAvailability state = _runspace.RunspaceAvailability;
+            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
+
+            return state;
         }
 
         /// <summary>
@@ -304,8 +297,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="commandLine">Command line to execute</param>
         public bool Execute(string commandLine)
         {
-            Debug.Assert(_runspace.RunspaceAvailability == RunspaceAvailability.Available, Resources.Error_PipelineBusy);
-
             ServiceCommon.Log("Start executing ps script ...");
 
             try
@@ -322,6 +313,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     ServiceCommon.Log("No instance context retrieved.");
                     return false;
+                }
+
+                if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
+                {
+                    _callback.OutputStringLine(Resources.Error_PipelineBusy);
+                    return true;
                 }
 
                 bool error = false;

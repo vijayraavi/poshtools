@@ -267,20 +267,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        private RunspaceAvailability GetRunspaceAvailability(bool executionPriority)
-        {
-            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available &&
-                executionPriority)
-            {
-                CommandCompletionHelper.DismissCommandCompletionListRequest();
-            }
-
-            RunspaceAvailability state = _runspace.RunspaceAvailability;
-            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
-
-            return state;
-        }
-
         private string ExecuteDebuggingCommand(string debuggingCommand, bool output)
         {
             // Need to be thread-safe here, to ensure every debugging command get processed.

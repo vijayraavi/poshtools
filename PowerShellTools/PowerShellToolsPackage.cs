@@ -387,6 +387,12 @@ EnableCommenting = true)]
 
             _debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
 
+            // Always warm up the debugging service ahead of other services in host service process
+            DebuggingService.SetRunspace(OverrideExecutionPolicyConfiguration);
+
+            // Warm up intellisense service due to the reason that first intellisense request sometime slow than usual
+            IntelliSenseService.GetDummyCompletionList("Write-", 6);
+
             DebuggerReadyEvent.Set();
         }
     }
