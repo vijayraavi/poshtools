@@ -109,7 +109,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static void PowerShellHostProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (e.Data != null)
+            if (!string.IsNullOrEmpty(e.Data))
             {
                 PowerShellHostProcessOutput(e.Data);
             }
@@ -117,7 +117,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static void PowerShellHostProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (e.Data != null)
+            if (!string.IsNullOrEmpty(e.Data))
             {
                 PowerShellHostProcessOutput(e.Data);
             }
