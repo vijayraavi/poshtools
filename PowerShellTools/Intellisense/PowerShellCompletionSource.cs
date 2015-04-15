@@ -161,7 +161,7 @@ namespace PowerShellTools.Intellisense
             {
 		foreach (var current in Completions)
 		{
-		    if (current.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase))
+		    if (current.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase))
 		    {
 			SelectionStatus = new CompletionSelectionStatus(current, true, true);
 			return;
