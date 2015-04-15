@@ -324,9 +324,19 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if (DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available)
+                bool timedOut = false;
+                System.Timers.Timer aTimer = new System.Timers.Timer(30000); // 30 seconds timeout
+                aTimer.Elapsed += (sender, args) => { timedOut = true; };
+
+                while (DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available
+                    && !timedOut)
                 {
-                    OutputString(this, new EventArgs<string>(Resources.ErrorPipelineBusy));
+                    Thread.Sleep(50); // polling every 50 milliseconds
+                }
+
+                if (timedOut)
+                {
+                    HostUi.VsOutputString(Resources.ErrorPipelineBusy);
 
                     return false;
                 }
@@ -336,7 +346,7 @@ namespace PowerShellTools.DebugEngine
             catch (Exception ex)
             {
                 Log.Error("Failed to execute script", ex);
-                OutputString(this, new EventArgs<string>(ex.Message));
+                HostUi.VsOutputString(ex.Message);
                 return false;
             }
             finally
@@ -405,15 +415,6 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-        void objects_DataAdded(object sender, DataAddedEventArgs e)
-        {
-            if (OutputString != null)
-            {
-                var list = sender as PSDataCollection<PSObject>;
-                OutputString(this, new EventArgs<string>(list[e.Index] + Environment.NewLine));
-            }
-        }
-
         public void SetVariable(string name, string value)
         {
             try
@@ -468,7 +469,7 @@ namespace PowerShellTools.DebugEngine
                 catch (Exception ex)
                 {
                     Log.Error("Failed to open remote file through powershell remote session", ex);
-                    OutputString(this, new EventArgs<string>(ex.Message));
+                    HostUi.VsOutputString(ex.Message);
                 }
             }
         }
