@@ -87,9 +87,9 @@ namespace PowerShellTools.Intellisense
             //make a copy of this so we can look at it after forwarding some commands 
             var commandId = nCmdId;
             var typedChar = char.MinValue;
-            //make sure the input is a char before getting it 
-
-            if ((VSConstants.VSStd2KCmdID)nCmdId == VSConstants.VSStd2KCmdID.TYPECHAR)
+	    
+	    //make sure the input is a char before getting it 
+	    if ((VSConstants.VSStd2KCmdID)nCmdId == VSConstants.VSStd2KCmdID.TYPECHAR)
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
@@ -182,11 +182,21 @@ namespace PowerShellTools.Intellisense
 
             if (IsBothIntelliSenseTriggerAndCommitChar(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
             {
-                //if the selection is fully selected, commit the current session but don't return. Instead, let it continues to trigger IntelliSense  
                 if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
                 {
+		    // A special case: cd..
+		    // It shouldn't be considered as the second one commiting the IntelliSense triggered by first one.
+		    // Instead we dismiss the IntelliSense and add the sceond dot into TextBuffer.
+		    bool isCmdcd = _activeSession.SelectedCompletionSet.SelectionStatus.Completion.InsertionText.Equals("cd..", StringComparison.OrdinalIgnoreCase);
+		    if (isCmdcd)
+		    {
+			Log.Debug(String.Format("Dismissed by {0}", typedChar));
+			_activeSession.Dismiss();
+			return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+		    }
+
                     Log.Debug("Commit");
-                    _activeSession.Commit();
+                    _activeSession.Commit();		    
                 }
                 else
                 {
