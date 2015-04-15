@@ -109,12 +109,18 @@ namespace PowerShellTools.ServiceManagement
 
         private static void PowerShellHostProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            PowerShellHostProcessOutput(e.Data);
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                PowerShellHostProcessOutput(e.Data);
+            }
         }
 
         private static void PowerShellHostProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            PowerShellHostProcessOutput(e.Data);
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                PowerShellHostProcessOutput(e.Data);
+            }
         }
 
         private static void PowerShellHostProcessOutput(string outputData)
