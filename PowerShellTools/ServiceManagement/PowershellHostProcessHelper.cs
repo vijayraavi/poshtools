@@ -217,7 +217,7 @@ namespace PowerShellTools.ServiceManagement
                         if (PowerShellToolsPackage.Debugger != null &&
                             PowerShellToolsPackage.Debugger.HostUi != null)
                         {
-                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage);
+                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage, string.Empty);
 
                             if (AppRunning)
                             {

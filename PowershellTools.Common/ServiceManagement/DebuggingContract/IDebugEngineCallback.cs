@@ -37,7 +37,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void RefreshPrompt();
 
         [OperationContract(IsOneWay = false)]
-        string ReadHostPrompt(string message);
+        string ReadHostPrompt(string message, string name);
 
         [OperationContract(IsOneWay = false)]
         PSCredential ReadSecureStringPrompt(
