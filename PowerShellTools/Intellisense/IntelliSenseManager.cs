@@ -44,7 +44,7 @@ namespace PowerShellTools.Intellisense
         private long _triggerTag;
         private TabCompleteSession _tabCompleteSession;
 
-        public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContet)
+        public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContext)
         {
             _triggerTag = 0;
             _sw = new Stopwatch();
@@ -54,7 +54,7 @@ namespace PowerShellTools.Intellisense
             _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
             _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
-            callbackContet.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
+            callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
         }
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
@@ -89,7 +89,6 @@ namespace PowerShellTools.Intellisense
             //make a copy of this so we can look at it after forwarding some commands 
             var command = (VSConstants.VSStd2KCmdID)nCmdId;
             var typedChar = char.MinValue;
-            //make sure the input is a char before getting it 
 
             // Exit tab complete session if command is any recognized command other than tab
             if (_tabCompleteSession != null && command != VSConstants.VSStd2KCmdID.TAB)
@@ -97,6 +96,7 @@ namespace PowerShellTools.Intellisense
                 _tabCompleteSession = null;
             }
 
+            //make sure the input is a char before getting it 
             if (command == VSConstants.VSStd2KCmdID.TYPECHAR)
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
@@ -218,9 +218,32 @@ namespace PowerShellTools.Intellisense
 
             if (IsBothIntelliSenseTriggerAndCommitChar(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
             {
-                //if the selection is fully selected, commit the current session but don't return. Instead, let it continues to trigger IntelliSense  
-                if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+                var selectionStatus = _activeSession.SelectedCompletionSet.SelectionStatus;
+                if (selectionStatus.IsSelected)
                 {
+                    // If user types the full completion text, which ends with a dot, then we should just commit IntelliSense session ignore user's last typing.
+                    ITrackingSpan lastWordSpan;
+                    var currentSnapshot = _textView.TextBuffer.CurrentSnapshot;
+                    _textView.TextBuffer.Properties.TryGetProperty<ITrackingSpan>(BufferProperties.LastWordReplacementSpan, out lastWordSpan);
+                    if (lastWordSpan != null)
+                    {
+                        string lastWordText = lastWordSpan.GetText(currentSnapshot);
+                        int completionSpanStart = lastWordSpan.GetStartPoint(currentSnapshot);
+                        int completionSpanEnd = _textView.Caret.Position.BufferPosition;
+                        var completionText = currentSnapshot.GetText(completionSpanStart, completionSpanEnd - completionSpanStart);
+                        completionText += typedChar;
+                        Log.DebugFormat("completionSpanStart: {0}", completionSpanStart);
+                        Log.DebugFormat("completionSpanEnd: {0}", completionSpanEnd);
+                        Log.DebugFormat("completionText: {0}", completionText);
+
+                        if (selectionStatus.Completion.InsertionText.Equals(completionText, StringComparison.OrdinalIgnoreCase))
+                        {
+                            Log.Debug(String.Format("Commited by {0}", typedChar));
+                            _activeSession.Commit();
+                            return VSConstants.S_OK;
+                        }
+                    }
+
                     Log.Debug("Commit");
                     _activeSession.Commit();
                 }
@@ -526,6 +549,16 @@ namespace PowerShellTools.Intellisense
             textBuffer.Properties.AddProperty(typeof(IList<CompletionResult>), completionResults);
             textBuffer.Properties.AddProperty(BufferProperties.LastWordReplacementSpan, lastWordReplacementSpan);
             textBuffer.Properties.AddProperty(BufferProperties.LineUpToReplacementSpan, lineUpToReplacementSpan);
+
+            // No point to bring up IntelliSense if there is only one completion which equals user's input case-sensitively.
+            // 
+            if (completionResults.Count == 1)
+            {
+                if (lastWordReplacementSpan.GetText(textBuffer.CurrentSnapshot).Equals(completionResults[0].CompletionText, StringComparison.Ordinal))
+                {
+                    return;
+                }
+            }
 
             Log.Debug("Dismissing all sessions...");
 

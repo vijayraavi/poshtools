@@ -231,13 +231,10 @@ namespace PowerShellTools.Intellisense
                 {
                     _editorOperations.AddBeforeTextBufferChangePrimitive();
 
-                    DeleteRightBrace();
-                    _editorOperations.InsertNewLine();
-                    _editorOperations.InsertText("}");
+		    _editorOperations.InsertNewLine();
                     _editorOperations.MoveLineUp(false);
                     _editorOperations.MoveToEndOfLine(false);
                     _editorOperations.InsertNewLine();
-                    _editorOperations.Indent();
 
                     _editorOperations.AddAfterTextBufferChangePrimitive();
                     undo.Complete();
