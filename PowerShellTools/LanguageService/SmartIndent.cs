@@ -147,7 +147,7 @@ namespace PowerShellTools.LanguageService
 	    {
 		return indentation;
 	    }
-	    if (lastGroupEndLine.LineNumber == line.LineNumber && String.IsNullOrWhiteSpace(textBetweenLineStartAndLastGroupEnd))
+	    if ((lastGroupEndLine.LineNumber + 1) == line.LineNumber && String.IsNullOrWhiteSpace(textBetweenLineStartAndLastGroupEnd))
 	    {
 		try
 		{

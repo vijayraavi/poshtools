@@ -151,8 +151,8 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedCaret = 7;
             int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.RETURN);
             Assert.AreEqual<int>(VSConstants.S_OK, actual);
-            Assert.AreEqual<string>("MyFunc{\r\n  \r\n}", _mockedScript);
-            Assert.AreEqual<int>(11, _mockedCaret);
+            Assert.AreEqual<string>("MyFunc{\r\n\r\n}", _mockedScript);
+            Assert.AreEqual<int>(9, _mockedCaret);
         }
 
         [TestMethod]
