@@ -117,7 +117,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         break;
 
                     default:
-                        string userData = this.ReadLineFromUI(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
+                        string userData = this.ReadLineFromUI(promptMessage, fd.Name);
                         if (userData == null)
                         {
                             return null;
@@ -209,7 +209,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             if (_debuggingService.CallbackService != null)
             {
-                return _debuggingService.CallbackService.ReadHostPrompt(message);
+                return _debuggingService.CallbackService.ReadHostPrompt(message, string.Empty);
+            }
+
+            return string.Empty;
+        }
+
+        private string ReadLineFromUI(string message, string parameterName)
+        {
+            if (_debuggingService.CallbackService != null)
+            {
+                return _debuggingService.CallbackService.ReadHostPrompt(message, parameterName);
             }
 
             return string.Empty;

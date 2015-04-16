@@ -272,6 +272,10 @@
     <Compile Include="DebugEngine\PInvoke.cs" />
     <Compile Include="DebugEngine\PrivateReflectionDynamicObject.cs" />
     <Compile Include="DebugEngine\Profiler.cs" />
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptDialog.xaml.cs">
+      <DependentUpon>ReadHostPromptDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptDialogViewModel.cs" />
     <Compile Include="DebugEngine\ResourceStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -707,6 +711,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="CredentialUI\SecureStringDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DebugEngine\PromptUI\ReadHostPromptDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
