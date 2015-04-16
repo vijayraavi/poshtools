@@ -97,7 +97,7 @@ namespace PowerShellTools.Intellisense
                 _tabCompleteSession = null;
             }
 
-            if ((VSConstants.VSStd2KCmdID)nCmdId == VSConstants.VSStd2KCmdID.TYPECHAR)
+            if (command == VSConstants.VSStd2KCmdID.TYPECHAR)
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
