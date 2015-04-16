@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.Text.Editor;
 namespace PowerShellTools.Intellisense
 {
     /// <summary>
-    /// Class that is used when cycling through completions using the tab command
+    /// Class that is used when cycling through completions using the tab or backtab command
     /// </summary>
     internal class TabCompleteSession
     {
@@ -57,27 +57,48 @@ namespace PowerShellTools.Intellisense
         }
 
         /// <summary>
-        /// Replaces the previous completion with the next completion if one exists
+        /// Replaces the completion with the next completion
         /// </summary>
         /// <param name="textView">The text view in which to replace the token</param>
-        /// <returns>True if the replace occured, false if there were no more completions</returns>
-        public bool ReplaceWithNextCompletion(ITextView textView)
+        public void ReplaceWithNextCompletion(ITextView textView)
         {
-            var previousCompletionLength = _completions[_index].InsertionText.Length;
-            var replacementPosition = textView.Caret.Position.BufferPosition.Position - previousCompletionLength;
-
-            _index++;
+            var newIndex = _index + 1;
 
             // Wrap-around to first completion
-            if (_index == _completions.Count)
+            if (newIndex > _completions.Count - 1)
             {
-                _index = 0;
+                newIndex = 0;
             }
 
-            var replacementText = _completions[_index].InsertionText;
-            textView.TextBuffer.Replace(new Span(replacementPosition, previousCompletionLength), replacementText);
+            UpdateCompletion(textView, _index, newIndex);
+        }
 
-            return true;
+        /// <summary>
+        /// Replaces the completion with the previous completion
+        /// </summary>
+        /// <param name="textView">The text view in which to replace the token</param>
+        public void ReplaceWithPreviousCompletion(ITextView textView)
+        {
+            var newIndex = _index - 1;
+
+            // Wrap-around to last completion
+            if (newIndex < 0)
+            {
+                newIndex = _completions.Count - 1;
+            }
+
+            UpdateCompletion(textView, _index, newIndex);
+        }
+
+        private void UpdateCompletion(ITextView textView, int oldIndex, int newIndex)
+        {
+            var oldCompletionLength = _completions[oldIndex].InsertionText.Length;
+            var replacementPosition = textView.Caret.Position.BufferPosition.Position - oldCompletionLength;
+            var replacementText = _completions[newIndex].InsertionText;
+
+            _index = newIndex;
+
+            textView.TextBuffer.Replace(new Span(replacementPosition, oldCompletionLength), replacementText);
         }
     }
 }

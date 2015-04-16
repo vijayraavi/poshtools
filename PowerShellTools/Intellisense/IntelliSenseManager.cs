@@ -90,7 +90,7 @@ namespace PowerShellTools.Intellisense
             var typedChar = char.MinValue;
 
             // Exit tab complete session if command is any recognized command other than tab
-            if (_tabCompleteSession != null && command != VSConstants.VSStd2KCmdID.TAB)
+            if (_tabCompleteSession != null && command != VSConstants.VSStd2KCmdID.TAB && command != VSConstants.VSStd2KCmdID.BACKTAB)
             {
                 _tabCompleteSession = null;
             }
@@ -137,6 +137,7 @@ namespace PowerShellTools.Intellisense
                     }
                     break;
                 case VSConstants.VSStd2KCmdID.TAB:
+                case VSConstants.VSStd2KCmdID.BACKTAB:
                     //check for a a selection 
                     if (_activeSession != null && !_activeSession.IsDismissed)
                     {
@@ -157,10 +158,13 @@ namespace PowerShellTools.Intellisense
                     }
                     else if (_tabCompleteSession != null && _tabCompleteSession.IsInitialized)
                     {
-                        //Replace with next completion and exit session if there is none
-                        if (!_tabCompleteSession.ReplaceWithNextCompletion(_textView))
+                        if (command == VSConstants.VSStd2KCmdID.TAB)
                         {
-                            _tabCompleteSession = null;
+                            _tabCompleteSession.ReplaceWithNextCompletion(_textView);
+                        }
+                        else
+                        {
+                            _tabCompleteSession.ReplaceWithPreviousCompletion(_textView);
                         }
 
                         //don't add the character to the buffer
@@ -658,6 +662,7 @@ namespace PowerShellTools.Intellisense
                     (command != VSConstants.VSStd2KCmdID.TYPECHAR &&
                      command != VSConstants.VSStd2KCmdID.RETURN &&
                      command != VSConstants.VSStd2KCmdID.TAB &&
+                     command != VSConstants.VSStd2KCmdID.BACKTAB &&
                      command != VSConstants.VSStd2KCmdID.COMPLETEWORD &&
                      command != VSConstants.VSStd2KCmdID.DELETE &&
                      command != VSConstants.VSStd2KCmdID.BACKSPACE));
