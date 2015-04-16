@@ -31,19 +31,19 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 Margin="10,10,10,0">
-            <TextBlock Text="{Binding Path=ParameterMessage}" TextWrapping="WrapWithOverflow" />
+            <TextBlock Text="{Binding Path=ParameterMessage}" TextWrapping="Wrap" />
         </Grid>
         <Grid Grid.Row="1"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 Margin="10,5,10,0">
-            <TextBlock Text="{Binding Path=ParameterName}" TextWrapping="WrapWithOverflow" />
+            <TextBlock Text="{Binding Path=ParameterName}" TextWrapping="Wrap" />
         </Grid>
         <Grid Grid.Row="2"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 Margin="10">            
-            <TextBox Grid.Column="1" 
+            <TextBox Height="22"
                      VerticalContentAlignment="Top" 
                      Text="{Binding Path=ParameterValue}" />
         </Grid>

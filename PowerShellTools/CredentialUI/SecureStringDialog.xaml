@@ -30,18 +30,18 @@
         <Grid Grid.Row="0"
                 HorizontalAlignment="Stretch"
                 Margin="10,10,10,10">
-            <TextBlock Text="{Binding Path=ParameterMessage}" TextWrapping="WrapWithOverflow"/>
+            <TextBlock Text="{Binding Path=ParameterMessage}" TextWrapping="Wrap"/>
         </Grid>
         <Grid Grid.Row="1"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 Margin="10,5,10,0">
-            <TextBlock Text="{Binding Path=ParameterName}" TextWrapping="WrapWithOverflow"/>
+            <TextBlock Text="{Binding Path=ParameterName}" TextWrapping="Wrap"/>
         </Grid>
         <Grid Grid.Row="2"
                 HorizontalAlignment="Stretch"
                 Margin="10,10,10,10">
-            <PasswordBox Name="passwordBox" VerticalContentAlignment="Center"/>
+            <PasswordBox Height="22" Name="passwordBox" VerticalContentAlignment="Center"/>
         </Grid>
         <StackPanel Grid.Row="3"
                     HorizontalAlignment="Right"
