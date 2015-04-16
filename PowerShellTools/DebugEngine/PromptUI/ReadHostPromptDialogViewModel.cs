@@ -19,6 +19,7 @@ namespace PowerShellTools.DebugEngine.PromptUI
         {
             _parameterMessage = paramMessage;
             _parameterName = parameterName;
+            _parameterValue = string.Empty;
             _title = DebugEngineConstants.ReadHostDialogTitle;
         }
 
