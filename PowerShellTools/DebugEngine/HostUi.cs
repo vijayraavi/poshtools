@@ -239,7 +239,9 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Read host from user input
         /// </summary>
-        /// <returns>user input string</returns>
+        /// <param name="message">Prmopt dialog message</param>
+        /// <param name="name">Parameter Name if any</param>
+        /// <returns>User input string</returns>
         public string ReadLine(string message, string name)
         {
             string input = string.Empty;
@@ -275,7 +277,7 @@ namespace PowerShellTools.DebugEngine
             SecureStringDialog dialog = new SecureStringDialog(viewModel);
 
             var ret = dialog.ShowModal();
-            if(ret.HasValue && ret.Value == true)
+            if (ret.HasValue && ret.Value == true)
             {
                 secString = viewModel.SecString;
             }

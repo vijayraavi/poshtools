@@ -20,7 +20,7 @@ namespace PowerShellTools.DebugEngine.PromptUI
     /// </summary>
     public partial class ReadHostPromptDialog : VsShellDialogWindow
     {
-        ReadHostPromptDialogViewModel _viewModel;
+        public ReadHostPromptDialogViewModel _viewModel;
 
         public ReadHostPromptDialog(ReadHostPromptDialogViewModel viewModel)
         {

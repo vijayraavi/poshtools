@@ -105,10 +105,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     case Constants.PSCredentialFullTypeName:
                         PSCredential psCred = this.ReadPSCredential(
                             Resources.CredentialDialogCaption,
-                            Resources.CredentialDialogMessage, 
-                            string.Empty, 
+                            Resources.CredentialDialogMessage,
                             string.Empty,
-                            PSCredentialTypes.Generic | PSCredentialTypes.Domain, 
+                            string.Empty,
+                            PSCredentialTypes.Generic | PSCredentialTypes.Domain,
                             PSCredentialUIOptions.Default);
                         if (psCred != null)
                         {
@@ -207,12 +207,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private string ReadLineFromUI(string message)
         {
-            if (_debuggingService.CallbackService != null)
-            {
-                return _debuggingService.CallbackService.ReadHostPrompt(message, string.Empty);
-            }
-
-            return string.Empty;
+            return ReadLineFromUI(message, string.Empty);
         }
 
         private string ReadLineFromUI(string message, string parameterName)
