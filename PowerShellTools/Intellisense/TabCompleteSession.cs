@@ -63,16 +63,18 @@ namespace PowerShellTools.Intellisense
         /// <returns>True if the replace occured, false if there were no more completions</returns>
         public bool ReplaceWithNextCompletion(ITextView textView)
         {
+            var previousCompletionLength = _completions[_index].InsertionText.Length;
+            var replacementPosition = textView.Caret.Position.BufferPosition.Position - previousCompletionLength;
+
             _index++;
 
-            if (_completions == null || _index >= _completions.Count)
+            // Wrap-around to first completion
+            if (_index == _completions.Count)
             {
-                return false;
+                _index = 0;
             }
 
             var replacementText = _completions[_index].InsertionText;
-            var previousCompletionLength = _completions[_index - 1].InsertionText.Length;
-            var replacementPosition = textView.Caret.Position.BufferPosition.Position - previousCompletionLength;
             textView.TextBuffer.Replace(new Span(replacementPosition, previousCompletionLength), replacementText);
 
             return true;

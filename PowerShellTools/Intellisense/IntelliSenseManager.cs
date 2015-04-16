@@ -78,9 +78,8 @@ namespace PowerShellTools.Intellisense
         public int Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
-                pguidCmdGroup != VSConstants.VSStd2K ||
                 Utilities.IsInCommentArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer) ||
-                IsUnrecognizedCommand(nCmdId))
+                IsUnhandledCommand(pguidCmdGroup, nCmdId))
             {
                 Log.DebugFormat("Non-VSStd2K command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
                 return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
@@ -647,19 +646,21 @@ namespace PowerShellTools.Intellisense
         }
 
         /// <summary>
-        /// Determines whether a command is unrecognized.
+        /// Determines whether a command is unhandled.
         /// </summary>
+        /// <param name="pguidCmdGroup">The GUID of the command group.</param>
         /// <param name="nCmdId">The command ID.</param>
         /// <returns>True if it is an unrecognized command.</returns>
-        private static bool IsUnrecognizedCommand(uint nCmdId)
+        private static bool IsUnhandledCommand(Guid pguidCmdGroup, uint nCmdId)
         {
             var command = (VSConstants.VSStd2KCmdID)nCmdId;
-            return (command != VSConstants.VSStd2KCmdID.TYPECHAR &&
-                    command != VSConstants.VSStd2KCmdID.RETURN &&
-                    command != VSConstants.VSStd2KCmdID.TAB &&
-                    command != VSConstants.VSStd2KCmdID.COMPLETEWORD &&
-                    command != VSConstants.VSStd2KCmdID.DELETE &&
-                    command != VSConstants.VSStd2KCmdID.BACKSPACE);
+            return (pguidCmdGroup != VSConstants.VSStd2K ||
+                    (command != VSConstants.VSStd2KCmdID.TYPECHAR &&
+                     command != VSConstants.VSStd2KCmdID.RETURN &&
+                     command != VSConstants.VSStd2KCmdID.TAB &&
+                     command != VSConstants.VSStd2KCmdID.COMPLETEWORD &&
+                     command != VSConstants.VSStd2KCmdID.DELETE &&
+                     command != VSConstants.VSStd2KCmdID.BACKSPACE));
         }
     }
 
