@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using log4net;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Editor.OptionsExtensionMethods;
@@ -12,6 +13,7 @@ namespace PowerShellTools.LanguageService
     {
 	private ITextView _textView;
 	private PowerShellLanguageInfo _info;
+	private static readonly ILog Log = LogManager.GetLogger(typeof(SmartIndent));
 
 	/// <summary>
 	/// Constructor.
@@ -34,19 +36,19 @@ namespace PowerShellTools.LanguageService
 	    // User GetIndentSize() instead of GetTabSize() due to the fact VS always uses Indent Size as a TAB size
 	    int tabSize = _textView.Options.GetIndentSize();
 
-		switch (_info.LangPrefs.IndentMode)
-		{
-		    case vsIndentStyle.vsIndentStyleNone:
-			return null;
+	    switch (_info.LangPrefs.IndentMode)
+	    {
+		case vsIndentStyle.vsIndentStyleNone:
+		    return null;
 
-		    case vsIndentStyle.vsIndentStyleDefault:
-			return GetDefaultIndentationImp(line, tabSize);
+		case vsIndentStyle.vsIndentStyleDefault:
+		    return GetDefaultIndentationImp(line, tabSize);
 
-		    case vsIndentStyle.vsIndentStyleSmart:
-			return GetSmartIndentationImp(line, tabSize);
-		}
-		return null;
+		case vsIndentStyle.vsIndentStyleSmart:
+		    return GetSmartIndentationImp(line, tabSize);
 	    }
+	    return null;
+	}
 
 	public void Dispose() { }
 
@@ -75,14 +77,12 @@ namespace PowerShellTools.LanguageService
 	/// Step 1, find the all group starts preceeding the end of baseline we found.
 	/// Step 2, find the closest group start with paired group end exceeding the end of baseline, which means the Enter occurs during this group.
 	/// Step 3, if no such a group start is found during Step 1&2, then follow default indentation. Otherwise, go to Step 4.
-	/// Step 4, find if there are any non-whitespace texts succeeding the found group start in its containing line. 
-	///	    Yes, then just add indentation at size of ONE space compared with the group start.
-	///	    No, go to Step 5.
-	/// Step 5, find if there are any non-whitespace texts succeeding the current line start.
-	///	    Yes, then see if the char right after line start is the paired group end to the found group start in Step 2.
-	///		Yes, then indent same size as the group start.
-	///		No, then follow the default indentation.
-	///	    No, then just add identation at size of TAB.
+	/// Step 4, If the caret position (after Enter but before this Indentation takes effect) equals to group end or there is no white spaces between them,
+	///	    indent it at the size as same as the line of group start.
+	/// Step 5, If the group end and caret are at same line and there are white spaces between them, delete these white spaces first, then indent it at the
+	///	    size as same as the line of group start.
+	/// Step 6, otherwise, there is a group start before the caret but the paired group end isn't right succeeding it neither they are at same line with just
+	///	    white spaces between them. In such a situation, add a TAB compared with the indentation of the line of group start. 
 	/// </summary>
 	/// <param name="line">The current line after Enter.</param>
 	/// <param name="tabSize">The TAB size.</param>
@@ -115,48 +115,51 @@ namespace PowerShellTools.LanguageService
 
 	    int baselineEndPos = baseline.Extent.End.Position;
 	    var precedingGroupStarts = tokenSpans.FindAll(t => t.ClassificationType.IsOfType(Classifications.PowerShellGroupStart) && t.Start < baselineEndPos);
-	    var lastGroupStart = precedingGroupStarts.FindLast(p => startBraces[p.Start] >= baselineEndPos);
+	    var lastGroupStart = precedingGroupStarts.FindLast(p =>
+	    {
+		int closeBrace;
+		return !startBraces.TryGetValue(p.Start, out closeBrace) || closeBrace >= baselineEndPos;
+	    });
 
 	    if (lastGroupStart.Length == 0)
 	    {
 		return indentation;
 	    }
 
-	    var groupStartChar = textBuffer.CurrentSnapshot.GetText(lastGroupStart.Start, lastGroupStart.Length);
-	    var lastGroupStartLine = textBuffer.CurrentSnapshot.GetLineFromPosition(lastGroupStart.Start);
+	    string groupStartChar = textBuffer.CurrentSnapshot.GetText(lastGroupStart.Start, lastGroupStart.Length);
+	    ITextSnapshotLine lastGroupStartLine = textBuffer.CurrentSnapshot.GetLineFromPosition(lastGroupStart.Start);
+	    string lastGroupStartLineText = lastGroupStartLine.GetText();
+	    indentation = IndentUtilities.GetCurrentLineIndentation(lastGroupStartLineText, tabSize);
 
-	    indentation = lastGroupStart.Start - lastGroupStartLine.Start;
-	    indentation += lastGroupStart.Length - 1;
+	    int lastGroupEnd;
+	    if (!startBraces.TryGetValue(lastGroupStart.Start, out lastGroupEnd))
+	    {
+		return indentation += tabSize;
+	    }
 
-	    int lastGroupStartEnd = lastGroupStart.Start + lastGroupStart.Length;
-	    if (lastGroupStartEnd == lastGroupStartLine.End)
+	    ITextSnapshotLine lastGroupEndLine = textBuffer.CurrentSnapshot.GetLineFromPosition(lastGroupEnd);
+	    lastGroupEnd += lastGroupEndLine.LineBreakLength;
+	    int textBetweenLineStartAndLastGroupEndLength = lastGroupEnd - line.Start;
+	    textBetweenLineStartAndLastGroupEndLength = textBetweenLineStartAndLastGroupEndLength >= 0 ? textBetweenLineStartAndLastGroupEndLength : 0;
+	    string textBetweenLineStartAndLastGroupEnd = textBuffer.CurrentSnapshot.GetText(line.Start, textBetweenLineStartAndLastGroupEndLength);
+
+	    if (lastGroupEnd == line.Start || textBetweenLineStartAndLastGroupEndLength == 0)
 	    {
-		string betweenText = textBuffer.CurrentSnapshot.GetText(line.Start, line.Length);
-		if (String.IsNullOrWhiteSpace(betweenText) ||
-		    (baseline.LineNumber == lastGroupStartLine.LineNumber && 
-		    (startBraces[lastGroupStart.Start] + baseline.LineBreakLength) != line.Start))
-		{
-		    indentation += tabSize;
-		}
-		else if (baseline.LineNumber != lastGroupStartLine.LineNumber &&
-			 (startBraces[lastGroupStart.Start] + baseline.LineBreakLength) != line.Start)
-		{
-		    indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
-		}
+		return indentation;
 	    }
-	    else if (lastGroupStartEnd < lastGroupStartLine.End)
+	    if (lastGroupEndLine.LineNumber == line.LineNumber && String.IsNullOrWhiteSpace(textBetweenLineStartAndLastGroupEnd))
 	    {
-		string betweenText = textBuffer.CurrentSnapshot.GetText(lastGroupStartEnd, lastGroupStartLine.End - lastGroupStartEnd);
-		if (String.IsNullOrWhiteSpace(betweenText))
+		try
 		{
-		    indentation += tabSize;
+		    textBuffer.Delete(new Span(line.Start, textBetweenLineStartAndLastGroupEndLength));
 		}
-		else
+		catch (Exception ex)
 		{
-		    indentation++;
+		    Log.DebugFormat("Formatting script after indentation failed. Exception: {0}", ex.ToString());
 		}
+		return indentation;
 	    }
-	    return indentation;
+	    return indentation + tabSize;
 	}
     }
 }
