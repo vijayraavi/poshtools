@@ -100,6 +100,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     case Constants.SecureStringFullTypeName:
                         SecureString secString = this.ReadLineAsSecureString(promptMessage, fd.Name);
                         results[fd.Name] = PSObject.AsPSObject(secString);
+                        this.WriteLine(string.Empty);
                         break;
 
                     case Constants.PSCredentialFullTypeName:
