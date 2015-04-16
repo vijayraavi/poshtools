@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using log4net;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Editor.OptionsExtensionMethods;
 using Microsoft.VisualStudio.TextManager.Interop;
 using PowerShellTools.Classification;
+using PowerShellTools.Intellisense;
 
 namespace PowerShellTools.LanguageService
 {
@@ -126,40 +126,57 @@ namespace PowerShellTools.LanguageService
 		return indentation;
 	    }
 
-	    string groupStartChar = textBuffer.CurrentSnapshot.GetText(lastGroupStart.Start, lastGroupStart.Length);
+	    // Group start can be {,(,@{,@(, we only need the brace part to find the group end.
+	    string groupStartString = textBuffer.CurrentSnapshot.GetText(lastGroupStart.Start, lastGroupStart.Length);
+	    char groupStartChar = groupStartString[lastGroupStart.Length - 1];
+
 	    ITextSnapshotLine lastGroupStartLine = textBuffer.CurrentSnapshot.GetLineFromPosition(lastGroupStart.Start);
 	    string lastGroupStartLineText = lastGroupStartLine.GetText();
 	    indentation = IndentUtilities.GetCurrentLineIndentation(lastGroupStartLineText, tabSize);
 
-	    int lastGroupEnd;
-	    if (!startBraces.TryGetValue(lastGroupStart.Start, out lastGroupEnd))
+	    // If there is no group end in the current line, or there is one but there are other non-whitespace chars preceding it
+	    // then add a TAB compared with the indentation of the line of group start. 
+	    SnapshotPoint lastGroupEnd;
+	    if (!FindGroupEndWithoutNonWhiteSpacesPreceding(line, groupStartChar, out lastGroupEnd))
 	    {
 		return indentation += tabSize;
 	    }
 
-	    ITextSnapshotLine lastGroupEndLine = textBuffer.CurrentSnapshot.GetLineFromPosition(lastGroupEnd);
-	    lastGroupEnd += lastGroupEndLine.LineBreakLength;
-	    int textBetweenLineStartAndLastGroupEndLength = lastGroupEnd - line.Start;
-	    textBetweenLineStartAndLastGroupEndLength = textBetweenLineStartAndLastGroupEndLength >= 0 ? textBetweenLineStartAndLastGroupEndLength : 0;
-	    string textBetweenLineStartAndLastGroupEnd = textBuffer.CurrentSnapshot.GetText(line.Start, textBetweenLineStartAndLastGroupEndLength);
+	    // Approach here as the group end was found and there are only white spaces between line start and the group end.
+	    // We need to delete all the white spaces and then indent it the size as same as group start line.
+	    int precedingWhiteSpaces = lastGroupEnd - line.Start;
+	    if (precedingWhiteSpaces > 0 &&
+		!textBuffer.EditInProgress &&
+		textBuffer.CurrentSnapshot.Length >= precedingWhiteSpaces)
+	    {
+		textBuffer.Delete(new Span(line.Start, precedingWhiteSpaces));
+	    }
 
-	    if (lastGroupEnd == line.Start || textBetweenLineStartAndLastGroupEndLength == 0)
+	    return indentation;
+	}
+
+	private static bool FindGroupEndWithoutNonWhiteSpacesPreceding(ITextSnapshotLine line, char groupStartChar, out SnapshotPoint groupEnd)
+	{
+	    string lineText = line.GetText();
+	    int lineNumber = line.LineNumber;
+	    char groupEndChar = Utilities.GetPairedBrace(groupStartChar);
+	    groupEnd = new SnapshotPoint();
+
+	    //walk the entire line 
+	    for (int offset = 0; offset < line.Length; offset++)
 	    {
-		return indentation;
-	    }
-	    if ((lastGroupEndLine.LineNumber + 1) == line.LineNumber && String.IsNullOrWhiteSpace(textBetweenLineStartAndLastGroupEnd))
-	    {
-		try
+		char currentChar = lineText[offset];
+		if (currentChar == groupEndChar)
 		{
-		    textBuffer.Delete(new Span(line.Start, textBetweenLineStartAndLastGroupEndLength));
+		    groupEnd = new SnapshotPoint(line.Snapshot, line.Start + offset);
+		    return true;
 		}
-		catch (Exception ex)
+		if (!char.IsWhiteSpace(currentChar))
 		{
-		    Log.DebugFormat("Formatting script after indentation failed. Exception: {0}", ex.ToString());
+		    return false;
 		}
-		return indentation;
 	    }
-	    return indentation + tabSize;
+	    return false;
 	}
     }
 }
