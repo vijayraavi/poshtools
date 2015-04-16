@@ -17,10 +17,10 @@ namespace PowerShellTools.DebugEngine.PromptUI
 
         public ReadHostPromptDialogViewModel(string paramMessage, string parameterName)
         {
-            _parameterMessage = paramMessage;
+            _parameterMessage = string.IsNullOrEmpty(paramMessage) ? DebugEngineConstants.ReadHostDialogTitle : paramMessage;
             _parameterName = parameterName;
             _parameterValue = string.Empty;
-            _title = DebugEngineConstants.ReadHostDialogTitle;
+            _title = string.IsNullOrEmpty(parameterName) ? DebugEngineConstants.ReadHostDialogTitle : parameterName;
         }
 
         /// <summary>

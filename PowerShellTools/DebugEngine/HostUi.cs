@@ -239,7 +239,7 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Read host from user input
         /// </summary>
-        /// <param name="message">Prmopt dialog message</param>
+        /// <param name="message">Prompt dialog message</param>
         /// <param name="name">Parameter Name if any</param>
         /// <returns>User input string</returns>
         public string ReadLine(string message, string name)

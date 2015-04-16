@@ -33,6 +33,8 @@ namespace PowerShellTools.DebugEngine.PromptUI
 
             _viewModel = viewModel;
             DataContext = viewModel;
+
+            this.SizeToContent = SizeToContent.Height;
         }
 
         /// <summary>

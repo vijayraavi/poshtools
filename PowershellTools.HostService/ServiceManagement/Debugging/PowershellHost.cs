@@ -86,8 +86,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public override Dictionary<string, PSObject> Prompt(string caption, string message,
             Collection<FieldDescription> descriptions)
         {
-            string promptMessage = string.Format("{0}{2}{1}", caption, message, Environment.NewLine);
-            this.WriteLine(promptMessage);
+            string promptMessage = string.Empty;
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                promptMessage = string.Format("{0}{2}{1}", caption, message, Environment.NewLine);
+                this.WriteLine(promptMessage);
+            }
 
             Dictionary<string, PSObject> results =
                      new Dictionary<string, PSObject>();
