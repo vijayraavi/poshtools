@@ -59,8 +59,9 @@ namespace PowerShellTools.Intellisense
         /// <summary>
         /// Replaces the completion with the next completion
         /// </summary>
-        /// <param name="textView">The text view in which to replace the token</param>
-        public void ReplaceWithNextCompletion(ITextView textView)
+        /// <param name="textSnapshot">The text snapshot</param>
+        /// <param name="caretPosition">The caret position</param>
+        public void ReplaceWithNextCompletion(ITextSnapshot textSnapshot, SnapshotPoint caretPosition)
         {
             var newIndex = _index + 1;
 
@@ -70,14 +71,15 @@ namespace PowerShellTools.Intellisense
                 newIndex = 0;
             }
 
-            UpdateCompletion(textView, _index, newIndex);
+            UpdateCompletion(textSnapshot, caretPosition, _index, newIndex);
         }
 
         /// <summary>
         /// Replaces the completion with the previous completion
         /// </summary>
-        /// <param name="textView">The text view in which to replace the token</param>
-        public void ReplaceWithPreviousCompletion(ITextView textView)
+        /// <param name="textSnapshot">The text snapshot</param>
+        /// <param name="caretPosition">The caret position</param>
+        public void ReplaceWithPreviousCompletion(ITextSnapshot textSnapshot, SnapshotPoint caretPosition)
         {
             var newIndex = _index - 1;
 
@@ -87,18 +89,18 @@ namespace PowerShellTools.Intellisense
                 newIndex = _completions.Count - 1;
             }
 
-            UpdateCompletion(textView, _index, newIndex);
+            UpdateCompletion(textSnapshot, caretPosition, _index, newIndex);
         }
 
-        private void UpdateCompletion(ITextView textView, int oldIndex, int newIndex)
+        private void UpdateCompletion(ITextSnapshot textSnapshot, SnapshotPoint caretPosition, int oldIndex, int newIndex)
         {
             var oldCompletionLength = _completions[oldIndex].InsertionText.Length;
-            var replacementPosition = textView.Caret.Position.BufferPosition.Position - oldCompletionLength;
+            var replacementPosition = caretPosition.Position - oldCompletionLength;
             var replacementText = _completions[newIndex].InsertionText;
 
             _index = newIndex;
 
-            textView.TextBuffer.Replace(new Span(replacementPosition, oldCompletionLength), replacementText);
+            textSnapshot.TextBuffer.Replace(new Span(replacementPosition, oldCompletionLength), replacementText);
         }
     }
 }
