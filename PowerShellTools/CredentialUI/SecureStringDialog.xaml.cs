@@ -34,8 +34,6 @@ namespace PowerShellTools.CredentialUI
 
             _viewModel = viewModel;
             DataContext = viewModel;
-
-            this.SizeToContent = SizeToContent.Height;
         }
 
         /// <summary>
