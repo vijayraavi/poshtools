@@ -71,18 +71,6 @@ namespace PowerShellTools.LanguageService
 
         /// <summary>
         /// Implementation of smart indentation.
-        /// If this the first line, then we shouldn't get any indentation.
-        /// If we don't get any token information, just follow the default indentation.
-        /// Otherwise,
-        /// Step 1, find the all group starts preceeding the end of baseline we found.
-        /// Step 2, find the closest group start with paired group end exceeding the end of baseline, which means the Enter occurs during this group.
-        /// Step 3, if no such a group start is found during Step 1&2, then follow default indentation. Otherwise, go to Step 4.
-        /// Step 4, If the caret position (after Enter but before this Indentation takes effect) equals to group end or there is no white spaces between them,
-        ///	    indent it at the size as same as the line of group start.
-        /// Step 5, If the group end and caret are at same line and there are white spaces between them, delete these white spaces first, then indent it at the
-        ///	    size as same as the line of group start.
-        /// Step 6, otherwise, there is a group start before the caret but the paired group end isn't right succeeding it neither they are at same line with just
-        ///	    white spaces between them. In such a situation, add a TAB compared with the indentation of the line of group start. 
         /// </summary>
         /// <param name="line">The current line after Enter.</param>
         /// <param name="tabSize">The TAB size.</param>
@@ -94,13 +82,13 @@ namespace PowerShellTools.LanguageService
 
             string baselineText;
             ITextSnapshotLine baseline;
-            IndentUtilities.SkipPrecedingBlankLines(line, out baselineText, out baseline);
-	    int indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
-
-	    SnapshotPoint groupStart;
 	    char groupStartChar;
 	    string groupStartLineText;
-	    if (!FindFirstGroupStart(baseline, out groupStart, out groupStartChar, out groupStartLineText))
+            IndentUtilities.SkipPrecedingBlankLines(line, out baselineText, out baseline);
+	    int indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
+	    
+	    // If no group start can be found, follow the default indentation
+	    if (!FindFirstGroupStart(baseline, out groupStartChar, out groupStartLineText))
 	    {
 		return indentation;
 	    }
@@ -152,7 +140,7 @@ namespace PowerShellTools.LanguageService
             return false;
         }
 
-        private static bool FindFirstGroupStart(ITextSnapshotLine line, out SnapshotPoint groupStart, out char groupStartChar, out string groupStartLineText)
+        private static bool FindFirstGroupStart(ITextSnapshotLine line, out char groupStartChar, out string groupStartLineText)
         {
             var currentSnapshot = line.Snapshot;
             groupStartLineText = line.GetText();
@@ -171,7 +159,6 @@ namespace PowerShellTools.LanguageService
                     {
                         if (groupChars.Count == 0)
                         {
-                            groupStart = new SnapshotPoint(line.Snapshot, line.Start + offset);
 			    groupStartChar = currentChar;
                             return true;
                         }
@@ -186,7 +173,6 @@ namespace PowerShellTools.LanguageService
                 groupStartLineText = line.GetText();
 		lineNumber--;
             }
-            groupStart = new SnapshotPoint(line.Snapshot, 0);
 	    groupStartChar = char.MinValue;
             return false;
         }
