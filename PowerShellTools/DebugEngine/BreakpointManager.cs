@@ -149,7 +149,7 @@ namespace PowerShellTools.DebugEngine
                 {
                     Debugger.DebuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                 }
-                else
+                else if (Debugger.IsDebuggingCommandReady)
                 {
                     Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.SetPSBreakpoint, breakpoint.File, breakpoint.Line));
                 }
@@ -177,7 +177,7 @@ namespace PowerShellTools.DebugEngine
                 {
                     Debugger.DebuggingService.EnableBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column), fEnable == 0 ? false : true);
                 }
-                else
+                else if (Debugger.IsDebuggingCommandReady)
                 {
                     int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                     if (id >= 0)
@@ -209,7 +209,7 @@ namespace PowerShellTools.DebugEngine
                 {
                     Debugger.DebuggingService.RemoveBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                 }
-                else
+                else if (Debugger.IsDebuggingCommandReady)
                 {
                     int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                     if (id >= 0)
