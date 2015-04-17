@@ -48,7 +48,7 @@ namespace PowerShellTools.HostService.ServiceManagement
                     {
                         try
                         {
-                            CommandCompletion commandCompletion;
+                            CommandCompletion commandCompletion = null;
                             lock (ServiceCommon.RunspaceLock)
                             {
                                 commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
