@@ -75,45 +75,40 @@ namespace PowerShellTools.Intellisense
 
         internal static bool IsInCommentArea(int caretPosition, ITextBuffer buffer)
         {
-            Token[] pstokens;
-            if (buffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out pstokens) && pstokens != null)
-            {
-                return IsCaretInCertainTokenKindArea(caretPosition, pstokens, TokenKind.Comment);
-            }
-            return false;
+            return IsCaretInCertainTokenKindArea(caretPosition, buffer, TokenKind.Comment);
         }
 
         internal static bool IsInStringArea(int caretPosition, ITextBuffer buffer)
         {
-            Token[] pstokens;
-            if (buffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out pstokens) && pstokens != null)
-            {
-                return IsCaretInCertainTokenKindArea(caretPosition, pstokens, TokenKind.StringExpandable, TokenKind.StringLiteral);
-            }
-            return false;
+            return IsCaretInCertainTokenKindArea(caretPosition, buffer, TokenKind.StringExpandable, TokenKind.StringLiteral);
         }
 
-        private static bool IsCaretInCertainTokenKindArea(int caretPosition, Token[] tokens, params TokenKind[] selectedKinds)
+        internal static bool IsInParameterArea(int caretPosition, ITextBuffer buffer)
+        {
+            return IsCaretInCertainTokenKindArea(caretPosition, buffer, TokenKind.Parameter);
+        }
+
+        private static bool IsCaretInCertainTokenKindArea(int caretPosition, ITextBuffer buffer, params TokenKind[] selectedKinds)
         {
             if (caretPosition < 0)
             {
                 throw new ArgumentOutOfRangeException("Caret position should be at least 0.");
             }
 
-            if (tokens == null || tokens.Length == 0)
+            Token[] tokens;
+            if (buffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out tokens) && tokens != null && tokens.Length != 0)
             {
-                return false;
-            }
+                var filteredTokens = tokens.Where(t => selectedKinds.Any(k => t.Kind == k)).ToList();
 
-            var filteredTokens = tokens.Where(t => selectedKinds.Any(k => t.Kind == k)).ToList();
-
-            foreach (var token in filteredTokens)
-            {
-                if (token.Extent.StartOffset <= caretPosition && caretPosition <= token.Extent.EndOffset)
+                foreach (var token in filteredTokens)
                 {
-                    return true;
+                    if (token.Extent.StartOffset <= caretPosition && caretPosition <= token.Extent.EndOffset)
+                    {
+                        return true;
+                    }
                 }
             }
+
             return false;
         }
     }

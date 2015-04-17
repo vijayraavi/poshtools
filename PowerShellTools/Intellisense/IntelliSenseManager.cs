@@ -277,7 +277,9 @@ namespace PowerShellTools.Intellisense
             // pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
-            if (!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar))
+            if ((!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar)) ||
+                // If the previous token before a space was a parameter, trigger intellisense
+                (char.IsWhiteSpace(typedChar) && Utilities.IsInParameterArea(_textView.Caret.Position.BufferPosition.Position - 1, _textView.TextBuffer)))
             {
                 TriggerCompletion();
             }
