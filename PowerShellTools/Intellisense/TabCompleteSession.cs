@@ -59,9 +59,9 @@ namespace PowerShellTools.Intellisense
         /// <summary>
         /// Replaces the completion with the next completion
         /// </summary>
-        /// <param name="textSnapshot">The text snapshot</param>
+        /// <param name="textBuffer">The text buffer</param>
         /// <param name="caretPosition">The caret position</param>
-        public void ReplaceWithNextCompletion(ITextSnapshot textSnapshot, SnapshotPoint caretPosition)
+        public void ReplaceWithNextCompletion(ITextBuffer textBuffer, SnapshotPoint caretPosition)
         {
             var newIndex = _index + 1;
 
@@ -71,15 +71,15 @@ namespace PowerShellTools.Intellisense
                 newIndex = 0;
             }
 
-            UpdateCompletion(textSnapshot, caretPosition, _index, newIndex);
+            UpdateCompletion(textBuffer, caretPosition, _index, newIndex);
         }
 
         /// <summary>
         /// Replaces the completion with the previous completion
         /// </summary>
-        /// <param name="textSnapshot">The text snapshot</param>
+        /// <param name="textBuffer">The text buffer</param>
         /// <param name="caretPosition">The caret position</param>
-        public void ReplaceWithPreviousCompletion(ITextSnapshot textSnapshot, SnapshotPoint caretPosition)
+        public void ReplaceWithPreviousCompletion(ITextBuffer textBuffer, SnapshotPoint caretPosition)
         {
             var newIndex = _index - 1;
 
@@ -89,10 +89,10 @@ namespace PowerShellTools.Intellisense
                 newIndex = _completions.Count - 1;
             }
 
-            UpdateCompletion(textSnapshot, caretPosition, _index, newIndex);
+            UpdateCompletion(textBuffer, caretPosition, _index, newIndex);
         }
 
-        private void UpdateCompletion(ITextSnapshot textSnapshot, SnapshotPoint caretPosition, int oldIndex, int newIndex)
+        private void UpdateCompletion(ITextBuffer textBuffer, SnapshotPoint caretPosition, int oldIndex, int newIndex)
         {
             var oldCompletionLength = _completions[oldIndex].InsertionText.Length;
             var replacementPosition = caretPosition.Position - oldCompletionLength;
@@ -100,7 +100,7 @@ namespace PowerShellTools.Intellisense
 
             _index = newIndex;
 
-            textSnapshot.TextBuffer.Replace(new Span(replacementPosition, oldCompletionLength), replacementText);
+            textBuffer.Replace(new Span(replacementPosition, oldCompletionLength), replacementText);
         }
     }
 }

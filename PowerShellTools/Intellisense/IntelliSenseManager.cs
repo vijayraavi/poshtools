@@ -160,11 +160,11 @@ namespace PowerShellTools.Intellisense
                     {
                         if (command == VSConstants.VSStd2KCmdID.TAB)
                         {
-                            _tabCompleteSession.ReplaceWithNextCompletion(_textView.TextBuffer.CurrentSnapshot, _textView.Caret.Position.BufferPosition);
+                            _tabCompleteSession.ReplaceWithNextCompletion(_textView.TextBuffer, _textView.Caret.Position.BufferPosition);
                         }
                         else
                         {
-                            _tabCompleteSession.ReplaceWithPreviousCompletion(_textView.TextBuffer.CurrentSnapshot, _textView.Caret.Position.BufferPosition);
+                            _tabCompleteSession.ReplaceWithPreviousCompletion(_textView.TextBuffer, _textView.Caret.Position.BufferPosition);
                         }
 
                         //don't add the character to the buffer
