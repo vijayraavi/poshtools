@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.HostService
 {
-    public class ServiceCommon
+    internal sealed class ServiceCommon
     {
         public static object RunspaceLock = new object();
 
