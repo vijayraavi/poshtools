@@ -92,47 +92,20 @@ namespace PowerShellTools.LanguageService
             int lineNumber = line.LineNumber;
             if (lineNumber < 1) return null;
 
-            bool needExtraEffort = true;
-            var textBuffer = line.Snapshot.TextBuffer;
-            Dictionary<int, int> startBraces = null;
-            Dictionary<int, int> endBraces = null;
-            List<ClassificationInfo> tokenSpans = null;
-            if (!textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.StartBraces, out startBraces) || startBraces == null ||
-                !textBuffer.Properties.TryGetProperty<Dictionary<int, int>>(BufferProperties.EndBraces, out endBraces) || endBraces == null ||
-                !textBuffer.Properties.TryGetProperty<List<ClassificationInfo>>(BufferProperties.TokenSpans, out tokenSpans) || tokenSpans == null)
-            {
-                needExtraEffort = false;
-            }
-
-            string baselineText = null;
-            ITextSnapshotLine baseline = null;
+            string baselineText;
+            ITextSnapshotLine baseline;
             IndentUtilities.SkipPrecedingBlankLines(line, out baselineText, out baseline);
-            int indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
-            if (!needExtraEffort || baselineText.Length == 0)
-            {
-                return indentation;
-            }
+	    int indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
 
-            int baselineEndPos = baseline.Extent.End.Position;
-            var precedingGroupStarts = tokenSpans.FindAll(t => t.ClassificationType.IsOfType(Classifications.PowerShellGroupStart) && t.Start < baselineEndPos);
-            var lastGroupStart = precedingGroupStarts.FindLast(p =>
-            {
-                int closeBrace;
-                return !startBraces.TryGetValue(p.Start, out closeBrace) || closeBrace >= baselineEndPos;
-            });
+	    SnapshotPoint groupStart;
+	    char groupStartChar;
+	    string groupStartLineText;
+	    if (!FindFirstGroupStart(baseline, out groupStart, out groupStartChar, out groupStartLineText))
+	    {
+		return indentation;
+	    }
 
-            if (lastGroupStart.Length == 0)
-            {
-                return indentation;
-            }
-
-            // Group start can be {,(,@{,@(, we only need the brace part to find the group end.
-            string groupStartString = textBuffer.CurrentSnapshot.GetText(lastGroupStart.Start, lastGroupStart.Length);
-            char groupStartChar = groupStartString[lastGroupStart.Length - 1];
-
-            ITextSnapshotLine lastGroupStartLine = textBuffer.CurrentSnapshot.GetLineFromPosition(lastGroupStart.Start);
-            string lastGroupStartLineText = lastGroupStartLine.GetText();
-            indentation = IndentUtilities.GetCurrentLineIndentation(lastGroupStartLineText, tabSize);
+	    indentation = IndentUtilities.GetCurrentLineIndentation(groupStartLineText, tabSize);
 
             // If there is no group end in the current line, or there is one but there are other non-whitespace chars preceding it
             // then add a TAB compared with the indentation of the line of group start. 
@@ -144,6 +117,7 @@ namespace PowerShellTools.LanguageService
 
             // Approach here as the group end was found and there are only white spaces between line start and the group end.
             // We need to delete all the white spaces and then indent it the size as same as group start line.
+	    var textBuffer = line.Snapshot.TextBuffer;
             int precedingWhiteSpaces = lastGroupEnd - line.Start;
             if (precedingWhiteSpaces > 0 &&
                 !textBuffer.EditInProgress &&
@@ -178,17 +152,17 @@ namespace PowerShellTools.LanguageService
             return false;
         }
 
-        private static bool FindFirstGroupStart(ITextSnapshotLine line, out SnapshotPoint groupStart)
+        private static bool FindFirstGroupStart(ITextSnapshotLine line, out SnapshotPoint groupStart, out char groupStartChar, out string groupStartLineText)
         {
             var currentSnapshot = line.Snapshot;
-            string lineText = line.GetText();
-            int lineNumber = line.LineNumber;
+            groupStartLineText = line.GetText();
+            int lineNumber = line.LineNumber - 1;
             Stack<char> groupChars = new Stack<char>();
             while(lineNumber >= 0)
             {
                 for (int offset = line.Length - 1; offset >= 0; offset--)
                 {
-                    char currentChar = lineText[offset];
+                    char currentChar = groupStartLineText[offset];
                     if (Utilities.IsGroupEnd(currentChar))
                     {
                         groupChars.Push(currentChar);                              
@@ -198,6 +172,7 @@ namespace PowerShellTools.LanguageService
                         if (groupChars.Count == 0)
                         {
                             groupStart = new SnapshotPoint(line.Snapshot, line.Start + offset);
+			    groupStartChar = currentChar;
                             return true;
                         }
                         
@@ -207,41 +182,13 @@ namespace PowerShellTools.LanguageService
                         }
                     }                          
                 }
-                lineNumber--;
                 line = currentSnapshot.GetLineFromLineNumber(lineNumber);
-                lineText = line.GetText();
+                groupStartLineText = line.GetText();
+		lineNumber--;
             }
             groupStart = new SnapshotPoint(line.Snapshot, 0);
+	    groupStartChar = char.MinValue;
             return false;
         }
-
-        //private static bool FindFirstPairedGroupStart(ITextSnapshotLine line, char groupEndChar, out SnapshotPoint groupStart)
-        //{
-        //    string lineText = line.GetText();
-        //    char groupStartChar = Utilities.GetPairedBrace(groupEndChar);
-        //    int lineNumber = line.LineNumber;
-        //    int startCharCount = 0;
-        //    while(lineNumber >= 0)
-        //    {
-        //        for (int offset = line.Length - 1; offset >= 0; offset--)
-        //        {
-        //            char currentChar = lineText[offset];
-        //            if ()
-        //            if (currentChar == groupStartChar)
-        //            {
-        //                if (startCharCount == 0)
-        //                {
-        //                    groupStart = new SnapshotPoint(line.Snapshot, line.Start + offset);
-        //                    return true;
-        //                }
-        //                else
-        //                {
-        //                    startCharCount--;
-        //                }                        
-        //            }
-        //            if (currentChar == groupEndChar)
-        //        }
-        //    }
-        //}
     }
 }

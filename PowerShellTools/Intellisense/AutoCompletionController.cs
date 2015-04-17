@@ -226,7 +226,7 @@ namespace PowerShellTools.Intellisense
 
         private bool ProcessReturnKey()
         {
-            bool isReturnKeyProcessed = _isLastCmdAutoComplete && IsCaretInMiddleOfPairedCurlyBrace();
+            bool isReturnKeyProcessed = _isLastCmdAutoComplete && IsCaretInMiddleOfGroup();
             if (isReturnKeyProcessed)
             {
                 using (var undo = _undoHistory.CreateTransaction("Insert new line."))
@@ -290,28 +290,23 @@ namespace PowerShellTools.Intellisense
             return Utilities.IsRightBraceOrQuotes(nextChar);
         }
 
-        private bool IsCaretInMiddleOfPairedCurlyBrace()
+        private bool IsCaretInMiddleOfGroup()
         {
             int currentCaret = _textView.Caret.Position.BufferPosition.Position;
-            return IsPreviousCharLeftCurlyBrace(currentCaret) && IsNextCharRightCurlyBrace(currentCaret);
-        }
 
-        private bool IsPreviousCharLeftCurlyBrace(int currentCaret)
-        {
-            if (currentCaret == 0) return false;
+	    // Get preceding char
+	    if (currentCaret == 0) return false;
+	    ITrackingPoint precedingCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret - 1, PointTrackingMode.Positive);
+	    char precedingChar = precedingCharPosition.GetCharacter(_textView.TextSnapshot);	    
 
-            ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret - 1, PointTrackingMode.Positive);
-            char previousChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
-            return Utilities.IsLeftCurlyBrace(previousChar);
-        }
+	    // Get succeeding char
+	    if (currentCaret >= _textView.TextSnapshot.Length) return false;
+	    ITrackingPoint succeedingCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret, PointTrackingMode.Positive);
+	    char succeedingChar = succeedingCharPosition.GetCharacter(_textView.TextSnapshot);
 
-        private bool IsNextCharRightCurlyBrace(int currentCaret)
-        {
-            if (currentCaret >= _textView.TextSnapshot.Length) return false;
+	    // Determine if the two chars are paired.
 
-            ITrackingPoint previousCharPosition = _textView.TextSnapshot.CreateTrackingPoint(currentCaret, PointTrackingMode.Positive);
-            char nextChar = previousCharPosition.GetCharacter(_textView.TextSnapshot);
-            return Utilities.IsRightCurlyBrace(nextChar);
+	    return Utilities.IsGroupStart(precedingChar) && Utilities.IsGroupEnd(succeedingChar) && precedingChar == Utilities.GetPairedBrace(succeedingChar);
         }
 
         private void DeleteRightBrace()

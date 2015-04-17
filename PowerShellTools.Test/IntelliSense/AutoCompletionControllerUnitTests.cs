@@ -170,16 +170,16 @@ namespace PowerShellTools.Test.IntelliSense
         }
 
         [TestMethod]
-        public void ShouldNotProcessReturnKeyWhenCursorNotInCurlyBraces()
+        public void ShouldNotProcessReturnKeyWhenCursorNotInGroups()
         {
             var autoCompletionController = FakeAutoCompletionController();
             autoCompletionController.SetAutoCompleteState(true);
 
-            _mockedScript = @"MyFunc()";
+            _mockedScript = @"MyFunc[]";
             _mockedCaret = 7;
             int actual = autoCompletionController.ProcessKeystroke((uint)VSConstants.VSStd2KCmdID.RETURN);
             Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
-            Assert.AreEqual<string>(@"MyFunc()", _mockedScript);
+            Assert.AreEqual<string>(@"MyFunc[]", _mockedScript);
             Assert.AreEqual<int>(7, _mockedCaret);
         }
 
