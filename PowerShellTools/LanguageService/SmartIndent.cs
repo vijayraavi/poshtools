@@ -82,18 +82,18 @@ namespace PowerShellTools.LanguageService
 
             string baselineText;
             ITextSnapshotLine baseline;
-	    char groupStartChar;
-	    string groupStartLineText;
+            char groupStartChar;
+            string groupStartLineText;
             IndentUtilities.SkipPrecedingBlankLines(line, out baselineText, out baseline);
-	    int indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
-	    
-	    // If no group start can be found, follow the default indentation
-	    if (!FindFirstGroupStart(baseline, out groupStartChar, out groupStartLineText))
-	    {
-		return indentation;
-	    }
+            int indentation = IndentUtilities.GetCurrentLineIndentation(baselineText, tabSize);
 
-	    indentation = IndentUtilities.GetCurrentLineIndentation(groupStartLineText, tabSize);
+            // If no group start can be found, follow the default indentation
+            if (!FindFirstGroupStart(baseline, out groupStartChar, out groupStartLineText))
+            {
+                return indentation;
+            }
+
+            indentation = IndentUtilities.GetCurrentLineIndentation(groupStartLineText, tabSize);
 
             // If there is no group end in the current line, or there is one but there are other non-whitespace chars preceding it
             // then add a TAB compared with the indentation of the line of group start. 
@@ -105,11 +105,11 @@ namespace PowerShellTools.LanguageService
 
             // Approach here as the group end was found and there are only white spaces between line start and the group end.
             // We need to delete all the white spaces and then indent it the size as same as group start line.
-	    var textBuffer = line.Snapshot.TextBuffer;
+            var textBuffer = line.Snapshot.TextBuffer;
             int precedingWhiteSpaces = lastGroupEnd - line.Start;
             if (precedingWhiteSpaces > 0 &&
-                !textBuffer.EditInProgress &&
-                textBuffer.CurrentSnapshot.Length >= precedingWhiteSpaces)
+            !textBuffer.EditInProgress &&
+            textBuffer.CurrentSnapshot.Length >= precedingWhiteSpaces)
             {
                 textBuffer.Delete(new Span(line.Start, precedingWhiteSpaces));
             }
@@ -146,34 +146,34 @@ namespace PowerShellTools.LanguageService
             groupStartLineText = line.GetText();
             int lineNumber = line.LineNumber - 1;
             Stack<char> groupChars = new Stack<char>();
-            while(lineNumber >= 0)
+            while (lineNumber >= 0)
             {
                 for (int offset = line.Length - 1; offset >= 0; offset--)
                 {
                     char currentChar = groupStartLineText[offset];
                     if (Utilities.IsGroupEnd(currentChar))
                     {
-                        groupChars.Push(currentChar);                              
+                        groupChars.Push(currentChar);
                     }
                     else if (Utilities.IsGroupStart(currentChar))
                     {
                         if (groupChars.Count == 0)
                         {
-			    groupStartChar = currentChar;
+                            groupStartChar = currentChar;
                             return true;
                         }
-                        
+
                         if (Utilities.GetPairedBrace(currentChar) == groupChars.Peek())
                         {
                             groupChars.Pop();
                         }
-                    }                          
+                    }
                 }
                 line = currentSnapshot.GetLineFromLineNumber(lineNumber);
                 groupStartLineText = line.GetText();
-		lineNumber--;
+                lineNumber--;
             }
-	    groupStartChar = char.MinValue;
+            groupStartChar = char.MinValue;
             return false;
         }
     }
