@@ -182,31 +182,31 @@ namespace PowerShellTools.Intellisense
 
             if (IsBothIntelliSenseTriggerAndCommitChar(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
             {
-		var selectionStatus = _activeSession.SelectedCompletionSet.SelectionStatus;
+                var selectionStatus = _activeSession.SelectedCompletionSet.SelectionStatus;
                 if (selectionStatus.IsSelected)
                 {
-		    // If user types the full completion text, which ends with a dot, then we should just commit IntelliSense session ignore user's last typing.
-		    ITrackingSpan lastWordSpan;
-		    var currentSnapshot = _textView.TextBuffer.CurrentSnapshot;
-		    _textView.TextBuffer.Properties.TryGetProperty<ITrackingSpan>(BufferProperties.LastWordReplacementSpan, out lastWordSpan);
-		    if (lastWordSpan != null)
-		    {
-			string lastWordText = lastWordSpan.GetText(currentSnapshot);
-			int completionSpanStart = lastWordSpan.GetStartPoint(currentSnapshot);
-			int completionSpanEnd = _textView.Caret.Position.BufferPosition;
-			var completionText = currentSnapshot.GetText(completionSpanStart, completionSpanEnd - completionSpanStart);
-			completionText += typedChar;
-			Log.DebugFormat("completionSpanStart: {0}", completionSpanStart);
-			Log.DebugFormat("completionSpanEnd: {0}", completionSpanEnd);
-			Log.DebugFormat("completionText: {0}", completionText);
+                    // If user types the full completion text, which ends with a dot, then we should just commit IntelliSense session ignore user's last typing.
+                    ITrackingSpan lastWordSpan;
+                    var currentSnapshot = _textView.TextBuffer.CurrentSnapshot;
+                    _textView.TextBuffer.Properties.TryGetProperty<ITrackingSpan>(BufferProperties.LastWordReplacementSpan, out lastWordSpan);
+                    if (lastWordSpan != null)
+                    {
+                        string lastWordText = lastWordSpan.GetText(currentSnapshot);
+                        int completionSpanStart = lastWordSpan.GetStartPoint(currentSnapshot);
+                        int completionSpanEnd = _textView.Caret.Position.BufferPosition;
+                        var completionText = currentSnapshot.GetText(completionSpanStart, completionSpanEnd - completionSpanStart);
+                        completionText += typedChar;
+                        Log.DebugFormat("completionSpanStart: {0}", completionSpanStart);
+                        Log.DebugFormat("completionSpanEnd: {0}", completionSpanEnd);
+                        Log.DebugFormat("completionText: {0}", completionText);
 
-			if (selectionStatus.Completion.InsertionText.Equals(completionText, StringComparison.OrdinalIgnoreCase))
-			{
-			    Log.Debug(String.Format("Commited by {0}", typedChar));
-			    _activeSession.Commit();
-			    return VSConstants.S_OK;
-			}
-		    }		    
+                        if (selectionStatus.Completion.InsertionText.Equals(completionText, StringComparison.OrdinalIgnoreCase))
+                        {
+                            Log.Debug(String.Format("Commited by {0}", typedChar));
+                            _activeSession.Commit();
+                            return VSConstants.S_OK;
+                        }
+                    }
 
                     Log.Debug("Commit");
                     _activeSession.Commit();		    
