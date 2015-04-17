@@ -324,12 +324,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     return false;
                 }
 
-                if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
-                {
-                    _callback.OutputStringLine(Resources.Error_PipelineBusy);
-                    return true;
-                }
-
                 bool error = false;
                 if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
                 {

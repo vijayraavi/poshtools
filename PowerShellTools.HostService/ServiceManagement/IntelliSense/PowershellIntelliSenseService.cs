@@ -49,10 +49,20 @@ namespace PowerShellTools.HostService.ServiceManagement
                         try
                         {
                             CommandCompletion commandCompletion = null;
-                            lock (ServiceCommon.RunspaceLock)
+
+                            if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                             {
-                                commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
+                                lock (ServiceCommon.RunspaceLock)
+                                {
+                                    commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
+                                }
                             }
+                            else
+                            {
+                                // we'll handle it when we work on giving intellisense for debugging command
+                                // for now we just simply return with null for this request to complete.
+                            }
+
                             ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", _caretPosition);
                             _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
 
