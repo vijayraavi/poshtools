@@ -63,15 +63,10 @@ namespace PowerShellTools.Intellisense
         /// <param name="caretPosition">The caret position</param>
         public void ReplaceWithNextCompletion(ITextBuffer textBuffer, SnapshotPoint caretPosition)
         {
-            var newIndex = _index + 1;
+            var oldIndex = _index;
+            _index = ++_index % _completions.Count;
 
-            // Wrap-around to first completion
-            if (newIndex > _completions.Count - 1)
-            {
-                newIndex = 0;
-            }
-
-            UpdateCompletion(textBuffer, caretPosition, _index, newIndex);
+            UpdateCompletion(textBuffer, caretPosition, oldIndex, _index);
         }
 
         /// <summary>
@@ -81,15 +76,10 @@ namespace PowerShellTools.Intellisense
         /// <param name="caretPosition">The caret position</param>
         public void ReplaceWithPreviousCompletion(ITextBuffer textBuffer, SnapshotPoint caretPosition)
         {
-            var newIndex = _index - 1;
+            var oldIndex = _index;
+            _index = (--_index + _completions.Count) % _completions.Count;
 
-            // Wrap-around to last completion
-            if (newIndex < 0)
-            {
-                newIndex = _completions.Count - 1;
-            }
-
-            UpdateCompletion(textBuffer, caretPosition, _index, newIndex);
+            UpdateCompletion(textBuffer, caretPosition, oldIndex, _index);
         }
 
         private void UpdateCompletion(ITextBuffer textBuffer, SnapshotPoint caretPosition, int oldIndex, int newIndex)
@@ -97,8 +87,6 @@ namespace PowerShellTools.Intellisense
             var oldCompletionLength = _completions[oldIndex].InsertionText.Length;
             var replacementPosition = caretPosition.Position - oldCompletionLength;
             var replacementText = _completions[newIndex].InsertionText;
-
-            _index = newIndex;
 
             textBuffer.Replace(new Span(replacementPosition, oldCompletionLength), replacementText);
         }
