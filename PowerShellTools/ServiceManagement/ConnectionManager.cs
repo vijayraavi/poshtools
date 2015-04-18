@@ -123,12 +123,7 @@ namespace PowerShellTools.ServiceManagement
                         _debuggingServiceChannelFactory.Closed += ConnectionExceptionHandler;
                         _debuggingServiceChannelFactory.Open();
                         _powershellDebuggingService = _debuggingServiceChannelFactory.CreateChannel();
-
-                        // Always warm up the debugging service ahead of other services in host service process
-                        if (PowerShellToolsPackage.Debugger != null)
-                        {
-                            _powershellDebuggingService.SetRunspace(PowerShellToolsPackage.OverrideExecutionPolicyConfiguration);
-                        }
+                        _powershellDebuggingService.SetRunspace(PowerShellToolsPackage.OverrideExecutionPolicyConfiguration);
                     }
                     catch
                     {

@@ -109,12 +109,18 @@ namespace PowerShellTools.ServiceManagement
 
         private static void PowerShellHostProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            PowerShellHostProcessOutput(e.Data);
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                PowerShellHostProcessOutput(e.Data);
+            }
         }
 
         private static void PowerShellHostProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            PowerShellHostProcessOutput(e.Data);
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                PowerShellHostProcessOutput(e.Data);
+            }
         }
 
         private static void PowerShellHostProcessOutput(string outputData)
@@ -211,7 +217,7 @@ namespace PowerShellTools.ServiceManagement
                         if (PowerShellToolsPackage.Debugger != null &&
                             PowerShellToolsPackage.Debugger.HostUi != null)
                         {
-                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage);
+                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage, string.Empty);
 
                             if (AppRunning)
                             {

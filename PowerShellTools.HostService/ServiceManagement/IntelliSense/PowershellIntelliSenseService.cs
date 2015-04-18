@@ -4,6 +4,7 @@ using PowerShellTools.HostService.ServiceManagement.Debugging;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.ServiceModel;
@@ -47,7 +48,21 @@ namespace PowerShellTools.HostService.ServiceManagement
                     {
                         try
                         {
-                            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
+                            CommandCompletion commandCompletion = null;
+
+                            if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
+                            {
+                                lock (ServiceCommon.RunspaceLock)
+                                {
+                                    commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
+                                }
+                            }
+                            else
+                            {
+                                // we'll handle it when we work on giving intellisense for debugging command
+                                // for now we just simply return with null for this request to complete.
+                            }
+
                             ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", _caretPosition);
                             _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
 
@@ -101,6 +116,15 @@ namespace PowerShellTools.HostService.ServiceManagement
                 DismissGetCompletionResults();
                 RequestTrigger = triggerTag; // triggering new request processing
             }
+        }
+
+        /// <summary>
+        /// Suspecting this is a powershell bug, the first time you call CommandCompletion.CompleteInput, it takes much longer than usual.
+        /// We are using this dummy call during intializing to warm it up.
+        /// </summary>
+        public void GetDummyCompletionList()
+        {
+            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList("Write-", 6, _runspace);
         }
 
         /// <summary>

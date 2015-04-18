@@ -32,6 +32,7 @@ namespace PowerShellTools.DebugEngine
     using System.Windows.Forms;
     using Microsoft.VisualStudio.Shell;
     using System.Threading.Tasks;
+    using PowerShellTools.DebugEngine.PromptUI;
 #endif
 
     /// <summary>
@@ -238,14 +239,24 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Read host from user input
         /// </summary>
-        /// <returns>user input string</returns>
-        public string ReadLine(string message)
+        /// <param name="message">Prompt dialog message</param>
+        /// <param name="name">Parameter Name if any</param>
+        /// <returns>User input string</returns>
+        public string ReadLine(string message, string name)
         {
             string input = string.Empty;
 
             ThreadHelper.Generic.Invoke(() =>
             {
-                input = Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
+                ReadHostPromptDialogViewModel viewModel = new ReadHostPromptDialogViewModel(message, name);
+                ReadHostPromptDialog dialog = new ReadHostPromptDialog(viewModel);
+
+                var ret = dialog.ShowModal();
+
+                if (ret.HasValue && ret.Value == true)
+                {
+                    input = viewModel.ParameterValue;
+                }
             });
 
             return input;
@@ -266,7 +277,7 @@ namespace PowerShellTools.DebugEngine
             SecureStringDialog dialog = new SecureStringDialog(viewModel);
 
             var ret = dialog.ShowModal();
-            if(ret.HasValue && ret.Value == true)
+            if (ret.HasValue && ret.Value == true)
             {
                 secString = viewModel.SecString;
             }

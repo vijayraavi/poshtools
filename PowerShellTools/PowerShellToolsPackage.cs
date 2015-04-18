@@ -110,6 +110,8 @@ namespace PowerShellTools
 
         public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
 
+        public static bool PowerShellHostInitialized = false;
+
         /// <summary>
         /// Default constructor of the package.
         /// Inside this method you can place any initialization code that does not require 
@@ -388,7 +390,12 @@ namespace PowerShellTools
 
             _debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
 
+            // Warm up intellisense service due to the reason that first intellisense request sometime slow than usual
+            IntelliSenseService.GetDummyCompletionList();
+
             DebuggerReadyEvent.Set();
+
+            PowerShellHostInitialized = true;
         }
     }
 }

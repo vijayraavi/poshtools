@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Diagnostics;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -182,7 +183,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             _pushedRunspace = Runspace;
             Runspace = runspace;
-            Runspace.Debugger.SetDebugMode(DebugModes.RemoteScript);
+
+            if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
+            {
+                _callback.OutputStringLine(Resources.Warning_HigherVersionRequiredForDebugging);
+            }
+            else
+            {
+                SetRemoteScriptDebugMode40(Runspace);
+            }
+
             _callback.SetRemoteRunspace(true);
 
             RegisterRemoteFileOpenEvent(runspace);

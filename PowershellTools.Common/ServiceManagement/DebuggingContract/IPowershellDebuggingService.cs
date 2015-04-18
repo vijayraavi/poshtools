@@ -35,6 +35,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         string ExecuteDebuggingCommandOutNull(string cmdline);
 
         [OperationContract]
+        void SetDebuggerResumeAction(DebuggerResumeAction resumeAction);
+
+        [OperationContract]
         void Stop();
 
         [OperationContract]
@@ -57,9 +60,6 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract]
         string GetPrompt();
-
-        [OperationContract]
-        RunspaceAvailability GetRunspaceAvailabilityWithExecutionPriority();
 
         [OperationContract]
         RunspaceAvailability GetRunspaceAvailability();
