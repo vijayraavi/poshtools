@@ -65,7 +65,7 @@ namespace PowerShellTools.Intellisense
                 case '[': return ']';
                 case '\'': return '\'';
                 case '\"': return '\"';
-                default: throw new InvalidOperationException("The character is unrecognized.");
+                default: throw new ArgumentException(ch.ToString());
             }
         }
 
@@ -79,7 +79,7 @@ namespace PowerShellTools.Intellisense
                 case ')': return '(';
                 case '[': return ']';
                 case ']': return '[';
-                default: throw new InvalidOperationException("The character is unrecognized.");
+                default: throw new ArgumentException(ch.ToString());
             }
         }
 
