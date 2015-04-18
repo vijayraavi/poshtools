@@ -169,8 +169,9 @@ namespace PowerShellTools.DebugEngine
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());
-                _stoppingCompleteEvent.Set();
             }
+
+            _stoppingCompleteEvent.Set();
         }
 
         public void DebuggerBegin()
@@ -252,15 +253,10 @@ namespace PowerShellTools.DebugEngine
             try
             {
                 _stoppingCompleteEvent.Reset();
-                if (IsDebuggingCommandReady)
-                {
-                    DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_Stop);
-                    IsDebuggingCommandReady = false;
-                }
-                else
-                {
-                    DebuggingService.Stop();
-                }
+
+                DebuggingService.Stop();
+                IsDebuggingCommandReady = false;
+
                 _stoppingCompleteEvent.WaitOne();
             }
             catch (Exception ex)
