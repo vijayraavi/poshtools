@@ -324,12 +324,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     return false;
                 }
 
-                if (_runspace.RunspaceAvailability != RunspaceAvailability.Available)
-                {
-                    _callback.OutputStringLine(Resources.Error_PipelineBusy);
-                    return true;
-                }
-
                 bool error = false;
                 if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
                 {
@@ -349,16 +343,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                 }
 
-                using (_currentPowerShell = PowerShell.Create())
+                lock (ServiceCommon.RunspaceLock)
                 {
-                    _currentPowerShell.Runspace = _runspace;
-                    _currentPowerShell.AddScript(commandLine);
+                    using (_currentPowerShell = PowerShell.Create())
+                    {
+                        _currentPowerShell.Runspace = _runspace;
+                        _currentPowerShell.AddScript(commandLine);
 
-                    _currentPowerShell.AddCommand("out-default");
-                    _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                        _currentPowerShell.AddCommand("out-default");
+                        _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
 
-                    _currentPowerShell.Invoke();
-                    error = _currentPowerShell.HadErrors;
+                        _currentPowerShell.Invoke();
+                        error = _currentPowerShell.HadErrors;
+                    }
                 }
 
                 return !error;

@@ -42,6 +42,7 @@ namespace PowerShellTools.Intellisense
         private int _completionCaretPosition;
         private Stopwatch _sw;
         private long _triggerTag;
+        private TabCompleteSession _tabCompleteSession;
 
         public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContext)
         {
@@ -77,19 +78,25 @@ namespace PowerShellTools.Intellisense
         public int Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
-                pguidCmdGroup != VSConstants.VSStd2K ||
-                Utilities.IsInCommentArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
+                Utilities.IsInCommentArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer) ||
+                IsUnhandledCommand(pguidCmdGroup, nCmdId))
             {
                 Log.DebugFormat("Non-VSStd2K command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
                 return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             }
 
             //make a copy of this so we can look at it after forwarding some commands 
-            var commandId = nCmdId;
+            var command = (VSConstants.VSStd2KCmdID)nCmdId;
             var typedChar = char.MinValue;
-	    
-	    //make sure the input is a char before getting it 
-	    if ((VSConstants.VSStd2KCmdID)nCmdId == VSConstants.VSStd2KCmdID.TYPECHAR)
+
+            // Exit tab complete session if command is any recognized command other than tab
+            if (_tabCompleteSession != null && command != VSConstants.VSStd2KCmdID.TAB && command != VSConstants.VSStd2KCmdID.BACKTAB)
+            {
+                _tabCompleteSession = null;
+            }
+
+            //make sure the input is a char before getting it 
+            if (command == VSConstants.VSStd2KCmdID.TYPECHAR)
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
@@ -106,12 +113,9 @@ namespace PowerShellTools.Intellisense
                 Log.DebugFormat("Non-TypeChar command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
             }
 
-            VSConstants.VSStd2KCmdID command = (VSConstants.VSStd2KCmdID)nCmdId;
-
             switch (command)
             {
                 case VSConstants.VSStd2KCmdID.RETURN:
-                case VSConstants.VSStd2KCmdID.TAB:
                     //check for a a selection 
                     if (_activeSession != null && !_activeSession.IsDismissed)
                     {
@@ -131,18 +135,53 @@ namespace PowerShellTools.Intellisense
                             _activeSession.Dismiss();
                         }
                     }
-                    else if (command == VSConstants.VSStd2KCmdID.TAB && _isRepl)
+                    break;
+                case VSConstants.VSStd2KCmdID.TAB:
+                case VSConstants.VSStd2KCmdID.BACKTAB:
+                    //check for a a selection 
+                    if (_activeSession != null && !_activeSession.IsDismissed)
                     {
+                        //if the selection is fully selected, start a new tab complete session
+                        if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+                        {
+                            _tabCompleteSession = new TabCompleteSession(_activeSession);
+
+                            //also, don't add the character to the buffer 
+                            return VSConstants.S_OK;
+                        }
+                        else
+                        {
+                            Log.Debug("Dismiss");
+                            //if there is no selection, dismiss the session
+                            _activeSession.Dismiss();
+                        }
+                    }
+                    else if (_tabCompleteSession != null && _tabCompleteSession.IsInitialized)
+                    {
+                        if (command == VSConstants.VSStd2KCmdID.TAB)
+                        {
+                            _tabCompleteSession.ReplaceWithNextCompletion(_textView.TextBuffer, _textView.Caret.Position.BufferPosition);
+                        }
+                        else
+                        {
+                            _tabCompleteSession.ReplaceWithPreviousCompletion(_textView.TextBuffer, _textView.Caret.Position.BufferPosition);
+                        }
+
+                        //don't add the character to the buffer
+                        return VSConstants.S_OK;
+                    }
+                    else if (_isRepl || !IsPrecedingTextInLineEmpty(_textView.Caret.Position.BufferPosition))
+                    {
+                        _tabCompleteSession = new TabCompleteSession();
                         TriggerCompletion();
+
+                        //don't add the character to the buffer
                         return VSConstants.S_OK;
                     }
                     break;
 
                 case VSConstants.VSStd2KCmdID.COMPLETEWORD:
-                    if (_activeSession != null && !_activeSession.IsDismissed)
-                    {
-                        _activeSession.Dismiss();                        
-                    }
+
                     TriggerCompletion();
                     return VSConstants.S_OK;
 
@@ -209,7 +248,7 @@ namespace PowerShellTools.Intellisense
                     }
 
                     Log.Debug("Commit");
-                    _activeSession.Commit();		    
+                    _activeSession.Commit();
                 }
                 else
                 {
@@ -224,7 +263,7 @@ namespace PowerShellTools.Intellisense
             // If yes, then after deleting the char, we also dismiss the completion session
             // Otherwise, just filter the completion lists
             char charAtCaret = char.MinValue;
-            if ((VSConstants.VSStd2KCmdID)commandId == VSConstants.VSStd2KCmdID.BACKSPACE && _activeSession != null && !_activeSession.IsDismissed)
+            if (command == VSConstants.VSStd2KCmdID.BACKSPACE && _activeSession != null && !_activeSession.IsDismissed)
             {
                 int caretPosition = _textView.Caret.Position.BufferPosition.Position - 1;
                 if (caretPosition >= 0)
@@ -238,13 +277,10 @@ namespace PowerShellTools.Intellisense
             // pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
-            if (!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar))
+            if ((!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar)) ||
+                // If the previous token before a space was a parameter, trigger intellisense
+                (char.IsWhiteSpace(typedChar) && IsPreviousTokenParameter()))
             {
-                // Make sure the completion session is dismissed when starting a new session
-                if (_activeSession != null && !_activeSession.IsDismissed)
-                {
-                    _activeSession.Dismiss();
-                }
                 TriggerCompletion();
             }
             if (!typedChar.Equals(char.MinValue) && IsFilterTrigger(typedChar))
@@ -265,8 +301,8 @@ namespace PowerShellTools.Intellisense
                     }
                 }
             }
-            else if ((VSConstants.VSStd2KCmdID)commandId == VSConstants.VSStd2KCmdID.BACKSPACE //redo the filter if there is a deletion
-                     || (VSConstants.VSStd2KCmdID)commandId == VSConstants.VSStd2KCmdID.DELETE)
+            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE || 
+                     command == VSConstants.VSStd2KCmdID.DELETE) //redo the filter if there is a deletion
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
                 {
@@ -339,6 +375,12 @@ namespace PowerShellTools.Intellisense
         /// </summary>
         private void TriggerCompletion()
         {
+            // Make sure the completion session is dismissed when starting a new session
+            if (_activeSession != null && !_activeSession.IsDismissed)
+            {
+                _activeSession.Dismiss();
+            }
+
             _completionCaretPosition = (int)_textView.Caret.Position.BufferPosition;
             Tasks.Task.Factory.StartNew(() =>
             {
@@ -472,11 +514,6 @@ namespace PowerShellTools.Intellisense
                     catch (Exception ex)
                     {
                         Log.Debug("Failed to process completion results. Exception: " + ex);
-
-                        if (_statusBar != null)
-                        {
-                            _statusBar.SetText(String.Format("Failed to process completion results in {0:0.00} seconds...", _sw.Elapsed.TotalSeconds));
-                        }
                     }
                 });
         }
@@ -513,15 +550,15 @@ namespace PowerShellTools.Intellisense
             textBuffer.Properties.AddProperty(BufferProperties.LastWordReplacementSpan, lastWordReplacementSpan);
             textBuffer.Properties.AddProperty(BufferProperties.LineUpToReplacementSpan, lineUpToReplacementSpan);
 
-	    // No point to bring up IntelliSense if there is only one completion which equals user's input case-sensitively.
-	    // 
-	    if (completionResults.Count == 1)
-	    {
-		if (lastWordReplacementSpan.GetText(textBuffer.CurrentSnapshot).Equals(completionResults[0].CompletionText, StringComparison.Ordinal))
-		{
-		    return;
-		}
-	    }	    
+            // No point to bring up IntelliSense if there is only one completion which equals user's input case-sensitively.
+            // 
+            if (completionResults.Count == 1)
+            {
+                if (lastWordReplacementSpan.GetText(textBuffer.CurrentSnapshot).Equals(completionResults[0].CompletionText, StringComparison.Ordinal))
+                {
+                    return;
+                }
+            }
 
             Log.Debug("Dismissing all sessions...");
 
@@ -543,6 +580,11 @@ namespace PowerShellTools.Intellisense
             _activeSession.Properties.AddProperty(BufferProperties.SessionOriginIntellisense, "Intellisense");
             _activeSession.Dismissed += CompletionSession_Dismissed;
             _activeSession.Start();
+
+            if (_tabCompleteSession != null)
+            {
+                _tabCompleteSession.Initialize(_activeSession);
+            }
         }
 
         private void CompletionSession_Dismissed(object sender, EventArgs e)
@@ -550,6 +592,34 @@ namespace PowerShellTools.Intellisense
             Log.Debug("Session Dismissed.");
             _activeSession.Dismissed -= CompletionSession_Dismissed;
             _activeSession = null;
+        }
+
+        private bool IsPreviousTokenParameter()
+        {
+            ITextBuffer currentActiveBuffer;
+            int currentBufferPosition;
+            if (_textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
+            {
+                currentActiveBuffer = _textView.TextBuffer;
+                currentBufferPosition = _textView.Caret.Position.BufferPosition.Position;
+            }
+            // If in the REPL window, the current textbuffer won't work, so we have to get the last PowerShellLanguage buffer
+            else if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
+            {
+                currentActiveBuffer = _textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
+                                                                   .LastOrDefault();
+                currentBufferPosition = _textView.BufferGraph.MapDownToBuffer(_textView.Caret.Position.BufferPosition,
+                                                                               PointTrackingMode.Positive,
+                                                                               currentActiveBuffer,
+                                                                               PositionAffinity.Successor).Value.Position;
+            }
+            else
+            {
+                Log.Error("The content type of the text buffer isn't recognized.");
+                return false;
+            }
+
+            return Utilities.IsInParameterArea(currentBufferPosition - 1, currentActiveBuffer);
         }
 
         private static bool SpanArgumentsAreValid(ITextSnapshot snapshot, int start, int length)
@@ -589,6 +659,38 @@ namespace PowerShellTools.Intellisense
         {
             Log.DebugFormat("IsIntelliSenseTriggerInStringLiteral: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':';
+        }
+
+        /// <summary>
+        /// Determines if the preceding text in the current line is empty
+        /// </summary>
+        /// <param name="bufferPosition">The buffer position.</param>
+        /// <returns>True if the preceding text is empty.</returns>
+        private static bool IsPrecedingTextInLineEmpty(SnapshotPoint bufferPosition)
+        {
+            var line = bufferPosition.GetContainingLine();
+            var caretInLine = ((int)bufferPosition - line.Start);
+
+            return String.IsNullOrWhiteSpace(line.GetText().Substring(0, caretInLine));
+        }
+
+        /// <summary>
+        /// Determines whether a command is unhandled.
+        /// </summary>
+        /// <param name="pguidCmdGroup">The GUID of the command group.</param>
+        /// <param name="nCmdId">The command ID.</param>
+        /// <returns>True if it is an unrecognized command.</returns>
+        private static bool IsUnhandledCommand(Guid pguidCmdGroup, uint nCmdId)
+        {
+            var command = (VSConstants.VSStd2KCmdID)nCmdId;
+            return (pguidCmdGroup != VSConstants.VSStd2K ||
+                    (command != VSConstants.VSStd2KCmdID.TYPECHAR &&
+                     command != VSConstants.VSStd2KCmdID.RETURN &&
+                     command != VSConstants.VSStd2KCmdID.TAB &&
+                     command != VSConstants.VSStd2KCmdID.BACKTAB &&
+                     command != VSConstants.VSStd2KCmdID.COMPLETEWORD &&
+                     command != VSConstants.VSStd2KCmdID.DELETE &&
+                     command != VSConstants.VSStd2KCmdID.BACKSPACE));
         }
     }
 

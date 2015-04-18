@@ -292,6 +292,7 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="Project\DeveloperActivityAttribute.cs" />
     <Compile Include="Diagnostics\DiagnosticConfiguration.cs" />
     <Compile Include="Diagnostics\DiagnosticsDialogPage.cs">
       <SubType>Component</SubType>
@@ -309,6 +310,7 @@
     <Compile Include="Intellisense\IntelliSenseManager.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSource.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSourceProvider.cs" />
+    <Compile Include="Intellisense\TabCompleteSession.cs" />
     <Compile Include="Intellisense\Utilities.cs" />
     <Compile Include="LanguageService\CodeWindowManager.cs" />
     <Compile Include="LanguageService\DropDownBarClient.cs" />
