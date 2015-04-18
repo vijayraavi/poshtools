@@ -277,7 +277,9 @@ namespace PowerShellTools.Intellisense
             // pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
-            if (!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar))
+            if ((!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar)) ||
+                // If the previous token before a space was a parameter, trigger intellisense
+                (char.IsWhiteSpace(typedChar) && IsPreviousTokenParameter()))
             {
                 TriggerCompletion();
             }
@@ -590,6 +592,34 @@ namespace PowerShellTools.Intellisense
             Log.Debug("Session Dismissed.");
             _activeSession.Dismissed -= CompletionSession_Dismissed;
             _activeSession = null;
+        }
+
+        private bool IsPreviousTokenParameter()
+        {
+            ITextBuffer currentActiveBuffer;
+            int currentBufferPosition;
+            if (_textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
+            {
+                currentActiveBuffer = _textView.TextBuffer;
+                currentBufferPosition = _textView.Caret.Position.BufferPosition.Position;
+            }
+            // If in the REPL window, the current textbuffer won't work, so we have to get the last PowerShellLanguage buffer
+            else if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
+            {
+                currentActiveBuffer = _textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
+                                                                   .LastOrDefault();
+                currentBufferPosition = _textView.BufferGraph.MapDownToBuffer(_textView.Caret.Position.BufferPosition,
+                                                                               PointTrackingMode.Positive,
+                                                                               currentActiveBuffer,
+                                                                               PositionAffinity.Successor).Value.Position;
+            }
+            else
+            {
+                Log.Error("The content type of the text buffer isn't recognized.");
+                return false;
+            }
+
+            return Utilities.IsInParameterArea(currentBufferPosition - 1, currentActiveBuffer);
         }
 
         private static bool SpanArgumentsAreValid(ITextSnapshot snapshot, int start, int length)

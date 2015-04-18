@@ -56,7 +56,10 @@ namespace PowerShellTools.Intellisense
                 switch (match.ResultType)
                 {
                     case CompletionResultType.ParameterName:
-                        glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupProperty, StandardGlyphItem.GlyphItemPublic);
+                        glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupEnum, StandardGlyphItem.GlyphItemPublic);
+                        break;
+                    case CompletionResultType.ParameterValue:
+                        glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupEnumMember, StandardGlyphItem.GlyphItemPublic);
                         break;
                     case CompletionResultType.Command:
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupMethod, StandardGlyphItem.GlyphItemPublic);
