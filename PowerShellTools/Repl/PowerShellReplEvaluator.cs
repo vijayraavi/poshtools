@@ -74,9 +74,21 @@ namespace PowerShellTools.Repl
         public Task<ExecutionResult> ExecuteText(string text)
         {
             if (Debugger.IsDebuggingCommandReady)
-                return tf.StartNew(() => { Debugger.ExecuteDebuggingCommand(text); return new ExecutionResult(true); });
+            {
+                return tf.StartNew(() =>
+                {
+                    Debugger.ExecuteDebuggingCommand(text);
+                    return new ExecutionResult(true);
+                });
+            }
             else
-                return tf.StartNew(() => { Debugger.Execute(text); return new ExecutionResult(true); }); 
+            {
+                return tf.StartNew(() =>
+                {
+                    Debugger.Execute(text);
+                    return new ExecutionResult(true);
+                });
+            }
         }
 
         public void ExecuteFile(string filename)
@@ -94,16 +106,16 @@ namespace PowerShellTools.Repl
             Debugger.Stop();
         }
 
-        public ExecutionResult EnterRemoteSession(string computerName)
+        public void EnterRemoteSession(string computerName)
         {
             string cmdEnterRemoteSession = string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, computerName);
-            return ExecuteText(cmdEnterRemoteSession).Result;
+            ExecuteText(cmdEnterRemoteSession);
         }
 
-        public ExecutionResult ExitRemoteSession()
+        public void ExitRemoteSession()
         {
             string cmdExitRemoteSession = string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
-            return ExecuteText(cmdExitRemoteSession).Result;
+            ExecuteText(cmdExitRemoteSession);
         }
 
         public bool IsRemoteSession()

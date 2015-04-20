@@ -1494,6 +1494,10 @@ namespace PowerShellTools.Repl {
 
         private void ExitRemoteSessionCommand()
         {
+            string oldPrompt = PowerShellPrompt;
+            _powerShellPrompt = Resources.ExitingRemoteSession;
+            UpdatePrompts(ReplSpanKind.Prompt, oldPrompt, PowerShellPrompt);
+
             Evaluator.ExitRemoteSession();
         }
 
@@ -1506,6 +1510,10 @@ namespace PowerShellTools.Repl {
                 string computerName = viewModel.ComputerName;
                 if (!_isRunning)
                 {
+                    string oldPrompt = PowerShellPrompt;
+                    _powerShellPrompt = Resources.ConnectingRemoteSession;
+                    UpdatePrompts(ReplSpanKind.Prompt, oldPrompt, PowerShellPrompt);
+
                     Evaluator.EnterRemoteSession(computerName);                   
                 }
             }

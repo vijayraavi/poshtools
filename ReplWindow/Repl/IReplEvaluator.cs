@@ -102,12 +102,12 @@ namespace PowerShellTools.Repl {
         /// <summary>
         /// Enter remote powershell session.
         /// </summary>
-        ExecutionResult EnterRemoteSession(string computerName);
+        void EnterRemoteSession(string computerName);
 
         /// <summary>
         /// Exit remote powershell session.
         /// </summary>
-        ExecutionResult ExitRemoteSession();
+        void ExitRemoteSession();
 
         /// <summary>
         /// Check if runspace contains remote session
