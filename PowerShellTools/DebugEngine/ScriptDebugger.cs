@@ -169,8 +169,9 @@ namespace PowerShellTools.DebugEngine
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());
-                _stoppingCompleteEvent.Set();
             }
+
+            _stoppingCompleteEvent.Set();
         }
 
         public void DebuggerBegin()
@@ -252,15 +253,10 @@ namespace PowerShellTools.DebugEngine
             try
             {
                 _stoppingCompleteEvent.Reset();
-                if (IsDebuggingCommandReady)
-                {
-                    DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_Stop);
-                    IsDebuggingCommandReady = false;
-                }
-                else
-                {
-                    DebuggingService.Stop();
-                }
+
+                DebuggingService.Stop();
+                IsDebuggingCommandReady = false;
+
                 _stoppingCompleteEvent.WaitOne();
             }
             catch (Exception ex)
@@ -324,23 +320,6 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                bool timedOut = false;
-                System.Timers.Timer aTimer = new System.Timers.Timer(30000); // 30 seconds timeout
-                aTimer.Elapsed += (sender, args) => { timedOut = true; };
-
-                while (DebuggingService.GetRunspaceAvailability() != RunspaceAvailability.Available
-                    && !timedOut)
-                {
-                    Thread.Sleep(50); // polling every 50 milliseconds
-                }
-
-                if (timedOut)
-                {
-                    HostUi.VsOutputString(Resources.ErrorPipelineBusy);
-
-                    return false;
-                }
-
                 return ExecuteInternal(commandLine);
             }
             catch (Exception ex)

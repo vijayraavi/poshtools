@@ -272,6 +272,10 @@
     <Compile Include="DebugEngine\PInvoke.cs" />
     <Compile Include="DebugEngine\PrivateReflectionDynamicObject.cs" />
     <Compile Include="DebugEngine\Profiler.cs" />
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptDialog.xaml.cs">
+      <DependentUpon>ReadHostPromptDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptDialogViewModel.cs" />
     <Compile Include="DebugEngine\ResourceStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -288,6 +292,7 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="Project\DeveloperActivityAttribute.cs" />
     <Compile Include="Diagnostics\DiagnosticConfiguration.cs" />
     <Compile Include="Diagnostics\DiagnosticsDialogPage.cs">
       <SubType>Component</SubType>
@@ -305,6 +310,7 @@
     <Compile Include="Intellisense\IntelliSenseManager.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSource.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSourceProvider.cs" />
+    <Compile Include="Intellisense\TabCompleteSession.cs" />
     <Compile Include="Intellisense\Utilities.cs" />
     <Compile Include="LanguageService\CodeWindowManager.cs" />
     <Compile Include="LanguageService\DropDownBarClient.cs" />
@@ -707,6 +713,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="CredentialUI\SecureStringDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DebugEngine\PromptUI\ReadHostPromptDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
