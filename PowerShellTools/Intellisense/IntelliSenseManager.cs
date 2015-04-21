@@ -43,8 +43,14 @@ namespace PowerShellTools.Intellisense
         private Stopwatch _sw;
         private long _triggerTag;
         private TabCompleteSession _tabCompleteSession;
+        private IntelliSenseEventsHandlerProxy _callbackContext;
 
-        public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContext)
+        public IntelliSenseManager(ICompletionBroker broker,
+            SVsServiceProvider provider,
+            IOleCommandTarget commandHandler,
+            ITextView textView,
+            DteWindowsEventsHandlerProxy dteWindowsEventsHandler,
+            IntelliSenseEventsHandlerProxy callbackContext)
         {
             _triggerTag = 0;
             _sw = new Stopwatch();
@@ -53,8 +59,19 @@ namespace PowerShellTools.Intellisense
             _textView = textView;
             _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
+            dteWindowsEventsHandler.ClearEventHandlers();
+            dteWindowsEventsHandler.WindowActivated += WindowEvents_WindowActivated;
             _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
-            callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
+
+            _callbackContext = callbackContext;
+        }
+        private void WindowEvents_WindowActivated(EnvDTE.Window GotFocus, EnvDTE.Window LostFocus)
+        {
+            if (_callbackContext != null)
+            {
+                _callbackContext.ClearEventHandlers();
+                _callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
+            }
         }
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
@@ -101,12 +118,12 @@ namespace PowerShellTools.Intellisense
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
 
-                if (_activeSession == null && 
+                if (_activeSession == null &&
                     IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar) &&
                     Utilities.IsInStringArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
                 {
                     return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
-                }                
+                }
             }
             else
             {
@@ -301,7 +318,7 @@ namespace PowerShellTools.Intellisense
                     }
                 }
             }
-            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE || 
+            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE ||
                      command == VSConstants.VSStd2KCmdID.DELETE) //redo the filter if there is a deletion
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
@@ -395,7 +412,7 @@ namespace PowerShellTools.Intellisense
                 {
                     Log.Warn("Failed to start IntelliSense", ex);
                 }
-            }); 
+            });
         }
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
@@ -551,7 +568,6 @@ namespace PowerShellTools.Intellisense
             textBuffer.Properties.AddProperty(BufferProperties.LineUpToReplacementSpan, lineUpToReplacementSpan);
 
             // No point to bring up IntelliSense if there is only one completion which equals user's input case-sensitively.
-            // 
             if (completionResults.Count == 1)
             {
                 if (lastWordReplacementSpan.GetText(textBuffer.CurrentSnapshot).Equals(completionResults[0].CompletionText, StringComparison.Ordinal))
