@@ -90,6 +90,7 @@
     <Compile Include="ExecutionEngineTest.cs" />
     <Compile Include="IntelliSense\CommentAreaUnitTests.cs" />
     <Compile Include="IntelliSense\AutoCompletionControllerUnitTests.cs" />
+    <Compile Include="IntelliSense\TabCompleteUnitTests.cs" />
     <Compile Include="RegionAndBraceMatchingService.Test.cs" />
     <Compile Include="ScriptDebuggerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
