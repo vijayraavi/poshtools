@@ -33,7 +33,6 @@ namespace PowerShellTools.Intellisense
         private ICompletionSession _activeSession;
         private readonly SVsServiceProvider _serviceProvider;
         private static readonly ILog Log = LogManager.GetLogger(typeof(IntelliSenseManager));
-        private readonly bool _isRepl;
         private int _replacementIndexOffset;
         private IVsStatusbar _statusBar;
         private ITextSnapshotLine _completionLine;
@@ -52,7 +51,6 @@ namespace PowerShellTools.Intellisense
             _broker = broker;
             NextCommandHandler = commandHandler;
             _textView = textView;
-            _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
             _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
             callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
