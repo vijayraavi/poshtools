@@ -15,22 +15,6 @@ namespace PowerShellTools.TestAdapter
     [ExtensionUri(ExecutorUriString)]
     public class PowerShellTestExecutor : ITestExecutor
     {
-        private readonly IEnumerable<PowerShellTestExecutorBase> _testExecutors;
-
-        internal PowerShellTestExecutor(IEnumerable<PowerShellTestExecutorBase> testExecutors)
-        {
-            _testExecutors = testExecutors;
-        }
-
-        public PowerShellTestExecutor()
-        {
-            _testExecutors = new List<PowerShellTestExecutorBase>
-            {
-                new PesterTestExecutor(),
-                new PsateTestExecutor()
-            };
-        }
-
         public void RunTests(IEnumerable<string> sources, IRunContext runContext,
             IFrameworkHandle frameworkHandle)
         {
@@ -53,25 +37,13 @@ namespace PowerShellTools.TestAdapter
             }
         }
 
-        public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext,
-               IFrameworkHandle frameworkHandle)
+        public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
         {
             _mCancelled = false;
             SetupExecutionPolicy();
             foreach (var test in tests)
             {
                 if (_mCancelled) break;
-
-                var testFramework = test.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[0];
-
-                var executor = _testExecutors.FirstOrDefault(
-                    m => m.TestFramework.Equals(testFramework, StringComparison.OrdinalIgnoreCase));
-
-                if (executor == null)
-                {
-                    frameworkHandle.SendMessage(TestMessageLevel.Error, String.Format("Unknown test executor: {0}", testFramework));
-                    return;
-                }
 
                 var testResult = new TestResult(test);
                 testResult.Outcome = TestOutcome.Failed;
@@ -91,8 +63,7 @@ namespace PowerShellTools.TestAdapter
                     using (var ps = PowerShell.Create())
                     {
                         ps.Runspace = runpsace;
-
-                        testResultData = executor.RunTest(ps, test, runContext);
+                        testResultData = RunTest(ps, test, runContext);
                     }
                 }
                 catch (Exception ex)
@@ -116,7 +87,6 @@ namespace PowerShellTools.TestAdapter
                 
                 frameworkHandle.RecordResult(testResult);
             }
-
         }
 
         public void Cancel()
@@ -127,13 +97,72 @@ namespace PowerShellTools.TestAdapter
         public const string ExecutorUriString = "executor://PowerShellTestExecutor/v1";
         public static readonly Uri ExecutorUri = new Uri(ExecutorUriString);
         private bool _mCancelled;
-    }
 
-    public abstract class PowerShellTestExecutorBase
-    {
-        public abstract string TestFramework { get; }
+        public PowerShellTestResult RunTest(PowerShell powerShell, TestCase testCase, IRunContext runContext)
+        {
+            var module = FindModule("Pester", runContext);
+            powerShell.AddCommand("Import-Module").AddParameter("Name", module);
+            powerShell.Invoke();
+            powerShell.Commands.Clear();
 
-        public abstract PowerShellTestResult RunTest(PowerShell powerShell, TestCase testCase, IRunContext runContext);
+            if (powerShell.HadErrors)
+            {
+                var errorRecord = powerShell.Streams.Error.FirstOrDefault();
+                var errorMessage = errorRecord == null ? String.Empty : errorRecord.ToString();
+                return new PowerShellTestResult(TestOutcome.Failed, "Failed to load Pester module. " + errorMessage, String.Empty);
+            }
+
+            powerShell.AddCommand("Get-Module").AddParameter("Name", "Pester");
+            var moduleInfo = powerShell.Invoke<PSModuleInfo>().FirstOrDefault();
+            powerShell.Commands.Clear();
+
+            if (moduleInfo == null)
+            {
+                return new PowerShellTestResult(TestOutcome.Failed, "Failed to get Pester module version.", String.Empty);
+            }
+
+            var fi = new FileInfo(testCase.CodeFilePath);
+
+            var tempFile = Path.GetTempFileName();
+
+            var describeName = testCase.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[0];
+            var testCaseName = testCase.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[2];
+
+            powerShell.AddCommand("Invoke-Pester")
+                .AddParameter("relative_path", fi.Directory.FullName)
+                .AddParameter("TestName", describeName)
+                .AddParameter("PassThru");
+
+            var pesterResult = powerShell.Invoke().FirstOrDefault();
+
+            var results = pesterResult.Properties["TestResult"].Value as Array;
+            foreach(PSObject result in results)
+            {
+                var describe = result.Properties["Describe"].Value as string;
+                var name = result.Properties["Name"].Value as string;
+
+                if (describeName.Equals(describe, StringComparison.OrdinalIgnoreCase) && 
+                    testCaseName.Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    var testResult = result.Properties["Result"].Value as string;
+                    var stackTrace = result.Properties["StackTrace"].Value as string;
+                    var error = result.Properties["FailureMessage"].Value as string;
+
+                    return new PowerShellTestResult(GetOutcome(testResult), error, stackTrace);
+                }
+            }
+
+            return new PowerShellTestResult(TestOutcome.NotFound);
+        }
+
+        private TestOutcome GetOutcome(string testResult)
+        {
+            if (testResult.Equals("passed", StringComparison.OrdinalIgnoreCase))
+            {
+                return TestOutcome.Passed;
+            }
+            return TestOutcome.Failed;
+        }
 
         protected string FindModule(string moduleName, IRunContext runContext)
         {
@@ -184,5 +213,19 @@ namespace PowerShellTools.TestAdapter
 
             return null;
         }
+    }
+
+    /// <summary>
+    /// Test results
+    /// </summary>
+    public enum TestResultsEnum
+    {
+        Success,
+        Failure,
+        Inconclusive,
+        Ignored,
+        Skipped,
+        Invalid,
+        Error,
     }
 }

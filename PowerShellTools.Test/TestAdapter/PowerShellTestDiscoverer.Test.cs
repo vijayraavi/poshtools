@@ -128,15 +128,15 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("Pester||BuildIfChanged||ThisIsATest||Something", testCases[0].FullyQualifiedName);
+            Assert.AreEqual("BuildIfChanged||ThisIsATest||Something", testCases[0].FullyQualifiedName);
         }
 
         [TestMethod]
-        public void ShouldDiscoverPSateTestCases()
+        public void ShouldFindTestWithoutContext()
         {
-            const string testScript = @"#psate
-            TestFixture 'BuildIfChanged' {
-                TestCase 'ThisIsATest' {
+            const string testScript = @"
+            Describe -Name 'BuildIfChanged' {
+                It -Name 'Something' {
                 }
             }";
 
@@ -148,32 +148,7 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("ThisIsATest", testCases[0].DisplayName);
-            Assert.AreEqual(PowerShellTestExecutor.ExecutorUri, testCases[0].ExecutorUri);
-            Assert.AreEqual(tempFile, testCases[0].CodeFilePath);
-            Assert.AreEqual(3, testCases[0].LineNumber);
-            Assert.AreEqual("PSate||BuildIfChanged||ThisIsATest", testCases[0].FullyQualifiedName);
-        }
-
-        [TestMethod]
-        public void ShouldSupportNameOnTestFixtureAndTestCase()
-        {
-            const string testScript = @"#psate
-            TestFixture -Name 'BuildIfChanged' {
-                TestCase -Name 'ThisIsATest' {
-                }
-            }";
-
-            var tempFile = WriteTestFile(testScript);
-
-            var testCases = new List<TestCase>();
-            _sink.Setup(m => m.SendTestCase(It.IsAny<TestCase>())).Callback<TestCase>(testCases.Add);
-
-            _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
-
-            Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("ThisIsATest", testCases[0].DisplayName);
-            Assert.AreEqual("PSate||BuildIfChanged||ThisIsATest", testCases[0].FullyQualifiedName);
+            Assert.AreEqual("BuildIfChanged||||Something", testCases[0].FullyQualifiedName);
         }
     }
 }
