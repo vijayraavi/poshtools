@@ -43,6 +43,7 @@ namespace PowerShellTools.Intellisense
         private Stopwatch _sw;
         private long _triggerTag;
         private TabCompleteSession _tabCompleteSession;
+        private bool _startTabComplete;
         private IntelliSenseEventsHandlerProxy _callbackContext;
 
         public IntelliSenseManager(ICompletionBroker broker,
@@ -112,6 +113,7 @@ namespace PowerShellTools.Intellisense
             if (_tabCompleteSession != null && command != VSConstants.VSStd2KCmdID.TAB && command != VSConstants.VSStd2KCmdID.BACKTAB)
             {
                 _tabCompleteSession = null;
+                _startTabComplete = false;
             }
 
             //make sure the input is a char before getting it 
@@ -120,12 +122,12 @@ namespace PowerShellTools.Intellisense
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
 
-                if (_activeSession == null &&
+                if (_activeSession == null && 
                     IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar) &&
                     Utilities.IsInStringArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
                 {
                     return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
-                }
+                }                
             }
             else
             {
@@ -157,13 +159,15 @@ namespace PowerShellTools.Intellisense
                     break;
                 case VSConstants.VSStd2KCmdID.TAB:
                 case VSConstants.VSStd2KCmdID.BACKTAB:
-                    //check for a a selection 
+
                     if (_activeSession != null && !_activeSession.IsDismissed)
                     {
-                        //if the selection is fully selected, start a new tab complete session
-                        if (_activeSession.SelectedCompletionSet.SelectionStatus.IsSelected)
+                        var completions = _activeSession.SelectedCompletionSet.Completions;
+                        if (completions != null && completions.Count > 0)
                         {
-                            _tabCompleteSession = new TabCompleteSession(_activeSession);
+                            var startPoint = _activeSession.SelectedCompletionSet.ApplicableTo.GetStartPoint(_textView.TextBuffer.CurrentSnapshot).Position;
+                            _tabCompleteSession = new TabCompleteSession(_activeSession.SelectedCompletionSet.Completions, _activeSession.SelectedCompletionSet.SelectionStatus, startPoint);
+                            _activeSession.Commit();
 
                             //also, don't add the character to the buffer 
                             return VSConstants.S_OK;
@@ -171,19 +175,19 @@ namespace PowerShellTools.Intellisense
                         else
                         {
                             Log.Debug("Dismiss");
-                            //if there is no selection, dismiss the session
+                            //If there are no completions, dismiss the session
                             _activeSession.Dismiss();
                         }
                     }
-                    else if (_tabCompleteSession != null && _tabCompleteSession.IsInitialized)
+                    else if (_tabCompleteSession != null)
                     {
                         if (command == VSConstants.VSStd2KCmdID.TAB)
                         {
-                            _tabCompleteSession.ReplaceWithNextCompletion(_textView.TextBuffer, _textView.Caret.Position.BufferPosition);
+                            _tabCompleteSession.ReplaceWithNextCompletion(_textView.TextBuffer, _textView.Caret.Position.BufferPosition.Position);
                         }
                         else
                         {
-                            _tabCompleteSession.ReplaceWithPreviousCompletion(_textView.TextBuffer, _textView.Caret.Position.BufferPosition);
+                            _tabCompleteSession.ReplaceWithPreviousCompletion(_textView.TextBuffer, _textView.Caret.Position.BufferPosition.Position);
                         }
 
                         //don't add the character to the buffer
@@ -191,7 +195,7 @@ namespace PowerShellTools.Intellisense
                     }
                     else if (_isRepl || !IsPrecedingTextInLineEmpty(_textView.Caret.Position.BufferPosition))
                     {
-                        _tabCompleteSession = new TabCompleteSession();
+                        _startTabComplete = true;
                         TriggerCompletion();
 
                         //don't add the character to the buffer
@@ -320,7 +324,7 @@ namespace PowerShellTools.Intellisense
                     }
                 }
             }
-            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE ||
+            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE || 
                      command == VSConstants.VSStd2KCmdID.DELETE) //redo the filter if there is a deletion
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
@@ -414,7 +418,7 @@ namespace PowerShellTools.Intellisense
                 {
                     Log.Warn("Failed to start IntelliSense", ex);
                 }
-            });
+            }); 
         }
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
@@ -599,9 +603,18 @@ namespace PowerShellTools.Intellisense
             _activeSession.Dismissed += CompletionSession_Dismissed;
             _activeSession.Start();
 
-            if (_tabCompleteSession != null)
+            if (_startTabComplete == true)
             {
-                _tabCompleteSession.Initialize(_activeSession);
+                var completions = _activeSession.SelectedCompletionSet.Completions;
+
+                if (completions != null && completions.Count > 0)
+            {
+                    var startPoint = _activeSession.SelectedCompletionSet.ApplicableTo.GetStartPoint(_textView.TextBuffer.CurrentSnapshot).Position;
+                    _tabCompleteSession = new TabCompleteSession(completions, _activeSession.SelectedCompletionSet.SelectionStatus, startPoint);
+                    _activeSession.Commit();
+                }
+
+                _startTabComplete = false;
             }
         }
 

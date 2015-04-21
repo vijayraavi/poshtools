@@ -12,48 +12,27 @@ namespace PowerShellTools.Intellisense
     {
         private IList<Completion> _completions;
         private int _index;
-        private bool _isInitialized;
-
-        /// <summary>
-        /// Creates an uninitialized TabCompleteSession
-        /// </summary>
-        public TabCompleteSession()
-        {
-            _isInitialized = false;
-        }
+        private int _startPoint;
 
         /// <summary>
         /// Creates and initializes the TabCompleteSession
         /// </summary>
-        /// <param name="activeSession">The active session</param>
-        public TabCompleteSession(ICompletionSession activeSession)
+        /// <param name="completions">The completions</param>
+        /// <param name="selectionStatus">The selection status</param>
+        /// <param name="startPoint">The start point of the completions</param>
+        public TabCompleteSession(IList<Completion> completions, CompletionSelectionStatus selectionStatus, int startPoint)
         {
-            Initialize(activeSession);
-        }
+            _completions = completions;
+            _startPoint = startPoint;
 
-        /// <summary>
-        /// Returns true if the session has been initialized, otherwise false
-        /// </summary>
-        public bool IsInitialized
-        {
-            get
+            if (_completions != null && selectionStatus != null && selectionStatus.IsSelected)
             {
-                return _isInitialized;
+                _index = _completions.IndexOf(selectionStatus.Completion);
             }
-        }
-
-        /// <summary>
-        /// Initializes the TabCompleteSession with Intellisense information
-        /// </summary>
-        /// <param name="activeSession">The active session</param>
-        public void Initialize(ICompletionSession activeSession)
-        {
-            _completions = activeSession.SelectedCompletionSet.Completions;
-            _index = _completions.IndexOf(activeSession.SelectedCompletionSet.SelectionStatus.Completion);
-
-            activeSession.Commit();
-
-            _isInitialized = true;
+            else
+            {
+                _index = -1;
+            }
         }
 
         /// <summary>
@@ -61,12 +40,19 @@ namespace PowerShellTools.Intellisense
         /// </summary>
         /// <param name="textBuffer">The text buffer</param>
         /// <param name="caretPosition">The caret position</param>
-        public void ReplaceWithNextCompletion(ITextBuffer textBuffer, SnapshotPoint caretPosition)
+        public void ReplaceWithNextCompletion(ITextBuffer textBuffer, int caretPosition)
         {
-            var oldIndex = _index;
-            _index = ++_index % _completions.Count;
+            if (_index < 0)
+            {
+                // If there was no selected completion, select the first one
+                _index = 0;
+            }
+            else
+            {
+                _index = ++_index % _completions.Count;
+            }
 
-            UpdateCompletion(textBuffer, caretPosition, oldIndex, _index);
+            UpdateCompletion(textBuffer, caretPosition);
         }
 
         /// <summary>
@@ -74,21 +60,27 @@ namespace PowerShellTools.Intellisense
         /// </summary>
         /// <param name="textBuffer">The text buffer</param>
         /// <param name="caretPosition">The caret position</param>
-        public void ReplaceWithPreviousCompletion(ITextBuffer textBuffer, SnapshotPoint caretPosition)
+        public void ReplaceWithPreviousCompletion(ITextBuffer textBuffer, int caretPosition)
         {
-            var oldIndex = _index;
-            _index = (--_index + _completions.Count) % _completions.Count;
+            if (_index < 0)
+            {
+                // If there was no selected completion, select the last one
+                _index = _completions.Count - 1;
+            }
+            else
+            {
+                _index = (--_index + _completions.Count) % _completions.Count;
+            }
 
-            UpdateCompletion(textBuffer, caretPosition, oldIndex, _index);
+            UpdateCompletion(textBuffer, caretPosition);
         }
 
-        private void UpdateCompletion(ITextBuffer textBuffer, SnapshotPoint caretPosition, int oldIndex, int newIndex)
+        private void UpdateCompletion(ITextBuffer textBuffer, int caretPosition)
         {
-            var oldCompletionLength = _completions[oldIndex].InsertionText.Length;
-            var replacementPosition = caretPosition.Position - oldCompletionLength;
-            var replacementText = _completions[newIndex].InsertionText;
+            var oldCompletionLength = caretPosition - _startPoint;
+            var replacementText = _completions[_index].InsertionText;
 
-            textBuffer.Replace(new Span(replacementPosition, oldCompletionLength), replacementText);
+            textBuffer.Replace(new Span(_startPoint, oldCompletionLength), replacementText);
         }
     }
 }
