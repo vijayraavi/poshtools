@@ -70,24 +70,6 @@ namespace PowerShellTools.Repl {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connecting remote session....
-        /// </summary>
-        public static string ConnectingRemoteSession {
-            get {
-                return ResourceManager.GetString("ConnectingRemoteSession", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Exiting remote session....
-        /// </summary>
-        public static string ExitingRemoteSession {
-            get {
-                return ResourceManager.GetString("ExitingRemoteSession", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Please wait while the PowerShell host is initialized. This may take a few moments....
         /// </summary>
         public static string PowerShellHostInitialization {
