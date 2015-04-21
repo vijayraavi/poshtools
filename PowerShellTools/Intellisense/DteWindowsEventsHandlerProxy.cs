@@ -10,11 +10,17 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace PowerShellTools.Intellisense
 {
+    /// <summary>
+    /// A event handler proxy for DTE windows events.
+    /// </summary>
     public sealed class DteWindowsEventsHandlerProxy
     {
         private static DTE2 _dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
         private List<_dispWindowEvents_WindowActivatedEventHandler> delegates = new List<_dispWindowEvents_WindowActivatedEventHandler>();
 
+        /// <summary>
+        /// Wrapper for the actual windows activated event.
+        /// </summary>
         public event _dispWindowEvents_WindowActivatedEventHandler WindowActivated
         {
             add
@@ -29,6 +35,9 @@ namespace PowerShellTools.Intellisense
             }
         }
 
+        /// <summary>
+        /// Unsubscribe all delegates.
+        /// </summary>
         public void ClearEventHandlers()
         {
             if (delegates.Count == 0)

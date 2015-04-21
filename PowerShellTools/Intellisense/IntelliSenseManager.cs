@@ -59,18 +59,20 @@ namespace PowerShellTools.Intellisense
             _textView = textView;
             _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
+
             dteWindowsEventsHandler.ClearEventHandlers();
             dteWindowsEventsHandler.WindowActivated += WindowEvents_WindowActivated;
-            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
-
             _callbackContext = callbackContext;
+            
+            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));            
         }
+
         private void WindowEvents_WindowActivated(EnvDTE.Window GotFocus, EnvDTE.Window LostFocus)
         {
             if (_callbackContext != null)
             {
                 _callbackContext.ClearEventHandlers();
-                _callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
+                _callbackContext.CompletionListUpdatedEventHandler += IntelliSenseManager_CompletionListUpdated;
             }
         }
 

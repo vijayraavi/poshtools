@@ -31,7 +31,7 @@ namespace PowerShellTools.HostService.UnitTest
             var mre = new ManualResetEvent(false);
 
             CompletionResultList result = null;
-            ((IntelliSenseEventsHandlerProxy)_context).CompletionListUpdated += (sender, args) => { result = args.Value; mre.Set(); };
+            ((IntelliSenseEventsHandlerProxy)_context).CompletionListUpdatedEventHandler += (sender, args) => { result = args.Value; mre.Set(); };
             
             _service.RequestCompletionResults("Write-", 6, DateTime.UtcNow.Ticks);
 
@@ -47,7 +47,7 @@ namespace PowerShellTools.HostService.UnitTest
             var mre = new ManualResetEvent(false);
 
             CompletionResultList result = null;
-            ((IntelliSenseEventsHandlerProxy)_context).CompletionListUpdated += (sender, args) => { result = args.Value; mre.Set(); };
+            ((IntelliSenseEventsHandlerProxy)_context).CompletionListUpdatedEventHandler += (sender, args) => { result = args.Value; mre.Set(); };
 
             string script = @"$myVar = 2; $myStrVar = 'String variable'; Write-Host $";
             _service.RequestCompletionResults(script, 55, DateTime.UtcNow.Ticks);

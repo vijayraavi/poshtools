@@ -12,8 +12,8 @@ namespace PowerShellTools.Intellisense
     [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     public class IntelliSenseEventsHandlerProxy : IIntelliSenseServiceCallback
     {
-        // Real Event for receving completion list from remote service
-        private event EventHandler<EventArgs<CompletionResultList>> RealCompletionListUpdated;
+        // Actual event for receving completion list from remote service
+        private event EventHandler<EventArgs<CompletionResultList>> CompletionListUpdated;
 
         // The list of delegates added to the real event handler.
         private List<EventHandler<EventArgs<CompletionResultList>>> delegates = new List<EventHandler<EventArgs<CompletionResultList>>>();
@@ -24,26 +24,32 @@ namespace PowerShellTools.Intellisense
         /// <param name="completionResultList">Completion list got from intellisense service</param>
         public void PushCompletionResult(CompletionResultList completionResultList)
         {
-            if (RealCompletionListUpdated != null)
+            if (CompletionListUpdated != null)
             {
-                RealCompletionListUpdated(this, new EventArgs<CompletionResultList>(completionResultList));
+                CompletionListUpdated(this, new EventArgs<CompletionResultList>(completionResultList));
             }
         }
 
-        public event EventHandler<EventArgs<CompletionResultList>> CompletionListUpdated
+        /// <summary>
+        /// Wrapper for the actual event handler.
+        /// </summary>
+        public event EventHandler<EventArgs<CompletionResultList>> CompletionListUpdatedEventHandler
         {
             add
             {
-                RealCompletionListUpdated += value;
+                CompletionListUpdated += value;
                 delegates.Add(value);
             }
             remove
             {
-                RealCompletionListUpdated -= value;
+                CompletionListUpdated -= value;
                 delegates.Remove(value);
             }
         }
 
+        /// <summary>
+        /// Unsubscribe all delegates.
+        /// </summary>
         public void ClearEventHandlers()
         {
             if (delegates.Count == 0)
@@ -53,7 +59,7 @@ namespace PowerShellTools.Intellisense
 
             foreach (var d in delegates)
             {
-                RealCompletionListUpdated -= d;
+                CompletionListUpdated -= d;
             }
             delegates.Clear();
         }
