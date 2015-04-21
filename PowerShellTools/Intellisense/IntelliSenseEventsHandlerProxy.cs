@@ -1,10 +1,7 @@
-﻿using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
+using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 
 namespace PowerShellTools.Intellisense
 {
@@ -15,10 +12,11 @@ namespace PowerShellTools.Intellisense
     [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     public class IntelliSenseEventsHandlerProxy : IIntelliSenseServiceCallback
     {
-        /// <summary>
-        /// Event for receving completion list from remote service
-        /// </summary>
-        public event EventHandler<EventArgs<CompletionResultList>> CompletionListUpdated;
+        // Actual event for receving completion list from remote service
+        private event EventHandler<EventArgs<CompletionResultList>> CompletionListUpdated;
+
+        // The list of delegates added to the real event handler.
+        private List<EventHandler<EventArgs<CompletionResultList>>> delegates = new List<EventHandler<EventArgs<CompletionResultList>>>();
 
         /// <summary>
         /// Push completion list result back to client
@@ -30,6 +28,40 @@ namespace PowerShellTools.Intellisense
             {
                 CompletionListUpdated(this, new EventArgs<CompletionResultList>(completionResultList));
             }
+        }
+
+        /// <summary>
+        /// Wrapper for the actual event handler.
+        /// </summary>
+        public event EventHandler<EventArgs<CompletionResultList>> CompletionListUpdatedEventHandler
+        {
+            add
+            {
+                CompletionListUpdated += value;
+                delegates.Add(value);
+            }
+            remove
+            {
+                CompletionListUpdated -= value;
+                delegates.Remove(value);
+            }
+        }
+
+        /// <summary>
+        /// Unsubscribe all delegates.
+        /// </summary>
+        public void ClearEventHandlers()
+        {
+            if (delegates.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var d in delegates)
+            {
+                CompletionListUpdated -= d;
+            }
+            delegates.Clear();
         }
     }
 }

@@ -44,8 +44,14 @@ namespace PowerShellTools.Intellisense
         private long _triggerTag;
         private TabCompleteSession _tabCompleteSession;
         private bool _startTabComplete;
+        private IntelliSenseEventsHandlerProxy _callbackContext;
 
-        public IntelliSenseManager(ICompletionBroker broker, SVsServiceProvider provider, IOleCommandTarget commandHandler, ITextView textView, IntelliSenseEventsHandlerProxy callbackContext)
+        public IntelliSenseManager(ICompletionBroker broker,
+            SVsServiceProvider provider,
+            IOleCommandTarget commandHandler,
+            ITextView textView,
+            DteWindowsEventsHandlerProxy dteWindowsEventsHandler,
+            IntelliSenseEventsHandlerProxy callbackContext)
         {
             _triggerTag = 0;
             _sw = new Stopwatch();
@@ -54,8 +60,21 @@ namespace PowerShellTools.Intellisense
             _textView = textView;
             _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
-            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
-            callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
+
+            dteWindowsEventsHandler.ClearEventHandlers();
+            dteWindowsEventsHandler.WindowActivated += WindowEvents_WindowActivated;
+            _callbackContext = callbackContext;
+            
+            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));            
+        }
+
+        private void WindowEvents_WindowActivated(EnvDTE.Window GotFocus, EnvDTE.Window LostFocus)
+        {
+            if (_callbackContext != null)
+            {
+                _callbackContext.ClearEventHandlers();
+                _callbackContext.CompletionListUpdatedEventHandler += IntelliSenseManager_CompletionListUpdated;
+            }
         }
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
@@ -555,7 +574,6 @@ namespace PowerShellTools.Intellisense
             textBuffer.Properties.AddProperty(BufferProperties.LineUpToReplacementSpan, lineUpToReplacementSpan);
 
             // No point to bring up IntelliSense if there is only one completion which equals user's input case-sensitively.
-            // 
             if (completionResults.Count == 1)
             {
                 if (lastWordReplacementSpan.GetText(textBuffer.CurrentSnapshot).Equals(completionResults[0].CompletionText, StringComparison.Ordinal))
@@ -590,7 +608,7 @@ namespace PowerShellTools.Intellisense
                 var completions = _activeSession.SelectedCompletionSet.Completions;
 
                 if (completions != null && completions.Count > 0)
-                {
+            {
                     var startPoint = _activeSession.SelectedCompletionSet.ApplicableTo.GetStartPoint(_textView.TextBuffer.CurrentSnapshot).Position;
                     _tabCompleteSession = new TabCompleteSession(completions, _activeSession.SelectedCompletionSet.SelectionStatus, startPoint);
                     _activeSession.Commit();
