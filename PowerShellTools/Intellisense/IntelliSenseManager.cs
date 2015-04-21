@@ -94,6 +94,7 @@ namespace PowerShellTools.Intellisense
             if (_tabCompleteSession != null && command != VSConstants.VSStd2KCmdID.TAB && command != VSConstants.VSStd2KCmdID.BACKTAB)
             {
                 _tabCompleteSession = null;
+                _startTabComplete = false;
             }
 
             //make sure the input is a char before getting it 
