@@ -20,8 +20,8 @@ namespace PowerShellTools.Repl
     internal class PowerShellReplEvaluator : IReplEvaluator
     {
         public IReplWindow Window { get; set; }
-        
-        public ScriptDebugger Debugger 
+
+        public ScriptDebugger Debugger
         {
             get
             {
@@ -58,7 +58,7 @@ namespace PowerShellTools.Repl
 
         public void ActiveLanguageBufferChanged(ITextBuffer currentBuffer, ITextBuffer previousBuffer)
         {
-            
+
         }
 
         public Task<ExecutionResult> Reset()
@@ -93,7 +93,7 @@ namespace PowerShellTools.Repl
 
         public void ExecuteFile(string filename)
         {
-            
+
         }
 
         public string FormatClipboard()
@@ -106,16 +106,16 @@ namespace PowerShellTools.Repl
             Debugger.Stop();
         }
 
-        public void EnterRemoteSession(string computerName)
+        public Task<ExecutionResult> EnterRemoteSession(string computerName)
         {
             string cmdEnterRemoteSession = string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, computerName);
-            ExecuteText(cmdEnterRemoteSession);
+            return ExecuteText(cmdEnterRemoteSession);
         }
 
-        public void ExitRemoteSession()
+        public Task<ExecutionResult> ExitRemoteSession()
         {
             string cmdExitRemoteSession = string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
-            ExecuteText(cmdExitRemoteSession);
+            return ExecuteText(cmdExitRemoteSession);
         }
 
         public bool IsRemoteSession()
@@ -128,5 +128,5 @@ namespace PowerShellTools.Repl
             return Debugger != null;
         }
     }
- 
+
 }
