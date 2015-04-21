@@ -170,6 +170,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 ((LineBreakpoint)pobj.BaseObject).Id));
                     }
                 }
+                else
+                {
+                    ServiceCommon.Log("Setting breakpoint failed due to busy runspace.");
+                }
             }
             catch (InvalidOperationException)
             {
@@ -187,10 +191,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (id >= 0)
             {
+                ServiceCommon.Log("Removing breakpoint ...");
+
                 if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                 {
-                    ServiceCommon.Log("Removing breakpoint ...");
-
                     using (var pipeline = (_runspace.CreatePipeline()))
                     {
                         var command = new Command("Remove-PSBreakpoint");
@@ -213,6 +217,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         _psBreakpointTable.Remove(p);
                     }
                 }
+                else
+                {
+                    ServiceCommon.Log("Removing breakpoint failed due to busy runspace.");
+                }
             }
         }
 
@@ -226,10 +234,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (id >= 0)
             {
+                ServiceCommon.Log(string.Format("{0} breakpoint ...", enable ? "Enabling" : "Disabling"));
+
                 if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                 {
-                    ServiceCommon.Log(string.Format("{0} breakpoint ...", enable ? "Enable" : "Disable"));
-
                     using (var pipeline = (_runspace.CreatePipeline()))
                     {
                         string cmd = enable ? "Enable-PSBreakpoint" : "Disable-PSBreakpoint";
@@ -249,6 +257,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         pipeline.Invoke();
                     }
                 }
+                else
+                {
+                    ServiceCommon.Log(string.Format("{0} breakpoint failed due to busy runspace.", enable ? "Enabling" : "Disabling"));
+                }
             }
             else
             {
@@ -261,7 +273,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public void ClearBreakpoints()
         {
-            ServiceCommon.Log("ClearBreakpoints");
+            ServiceCommon.Log("Clearing all breakpoints");
 
             if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
             {
@@ -284,6 +296,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                     pipeline.Invoke();
                 }
+            }
+            else
+            {
+                ServiceCommon.Log("Clearing all breakpoints failed due to busy runspace.");
             }
         }
 
@@ -375,6 +391,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             error = _currentPowerShell.HadErrors;
                         }
                     }
+                }
+                else
+                {
+                    ServiceCommon.Log("Execution skipped due to busy runspace.");
                 }
 
                 return !error;
