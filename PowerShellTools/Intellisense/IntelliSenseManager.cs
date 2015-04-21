@@ -242,7 +242,7 @@ namespace PowerShellTools.Intellisense
                 }
             }
 
-            if (IsBothIntelliSenseTriggerAndCommitChar(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
+            if (IsIntelliSenseTriggerDot(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
             {
                 var selectionStatus = _activeSession.SelectedCompletionSet.SelectionStatus;
                 if (selectionStatus.IsSelected)
@@ -300,9 +300,10 @@ namespace PowerShellTools.Intellisense
             // pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
-            if ((!typedChar.Equals(char.MinValue) && IsIntellisenseTrigger(typedChar)) ||
-                // If the previous token before a space was a parameter, trigger intellisense
-                (char.IsWhiteSpace(typedChar) && IsPreviousTokenParameter()))
+            
+            if (IsIntellisenseTrigger(typedChar) ||
+                (IsIntelliSenseTriggerDot(typedChar) && IsPreviousTokenVariable()) || // If previous token before a dot was a variable, trigger intellisense
+                (char.IsWhiteSpace(typedChar) && IsPreviousTokenParameter())) // If the previous token before a space was a parameter, trigger intellisense
             {
                 TriggerCompletion();
             }
@@ -331,7 +332,7 @@ namespace PowerShellTools.Intellisense
                 {
                     try
                     {
-                        if (IsIntellisenseTrigger(charAtCaret))
+                        if (_textView.Caret.Position.BufferPosition <= _completionCaretPosition)
                         {
                             Log.Debug("Dismiss");
                             _activeSession.Dismiss();
@@ -628,6 +629,27 @@ namespace PowerShellTools.Intellisense
         private bool IsPreviousTokenParameter()
         {
             ITextBuffer currentActiveBuffer;
+            int previousPosition = GetPreviousBufferPosition(out currentActiveBuffer);
+            if (previousPosition < 0)
+            {
+                return false;
+            }
+            return Utilities.IsInParameterArea(previousPosition, currentActiveBuffer);
+        }
+
+        private bool IsPreviousTokenVariable()
+        {
+            ITextBuffer currentActiveBuffer;
+            int previousPosition = GetPreviousBufferPosition(out currentActiveBuffer);
+            if (previousPosition < 0)
+            {
+                return false;
+            }
+            return Utilities.IsInVariableArea(previousPosition, currentActiveBuffer);
+        }
+
+        private int GetPreviousBufferPosition(out ITextBuffer currentActiveBuffer)
+        {
             int currentBufferPosition;
             if (_textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
             {
@@ -647,10 +669,10 @@ namespace PowerShellTools.Intellisense
             else
             {
                 Log.Error("The content type of the text buffer isn't recognized.");
-                return false;
+                currentActiveBuffer = null;
+                return -1;
             }
-
-            return Utilities.IsInParameterArea(currentBufferPosition - 1, currentActiveBuffer);
+            return currentBufferPosition - 1;
         }
 
         private static bool SpanArgumentsAreValid(ITextSnapshot snapshot, int start, int length)
@@ -677,12 +699,12 @@ namespace PowerShellTools.Intellisense
         private static bool IsIntellisenseTrigger(char ch)
         {
             Log.DebugFormat("IsIntellisenseTrigger: [{0}]", ch);
-            return ch == '-' || ch == '$' || ch == '.' || ch == ':' || ch == '\\';
+            return ch == '-' || ch == '$' || ch == ':' || ch == '\\';
         }
 
-        private static bool IsBothIntelliSenseTriggerAndCommitChar(char ch)
+        private static bool IsIntelliSenseTriggerDot(char ch)
         {
-            Log.DebugFormat("IsBothIntelliSenseTriggerAndCommitChar: [{0}]", ch);
+            Log.DebugFormat("IsIntelliSenseTriggerDot: [{0}]", ch);
             return ch == '.';
         }
 
