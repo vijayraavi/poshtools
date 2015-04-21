@@ -15,41 +15,12 @@ namespace PowerShellTools.Intellisense
         private int _startPoint;
 
         /// <summary>
-        /// Creates an uninitialized TabCompleteSession
-        /// </summary>
-        public TabCompleteSession()
-        {
-        }
-
-        /// <summary>
         /// Creates and initializes the TabCompleteSession
         /// </summary>
         /// <param name="completions">The completions</param>
         /// <param name="selectionStatus">The selection status</param>
         /// <param name="startPoint">The start point of the completions</param>
         public TabCompleteSession(IList<Completion> completions, CompletionSelectionStatus selectionStatus, int startPoint)
-        {
-            Initialize(completions, selectionStatus, startPoint);
-        }
-
-        /// <summary>
-        /// Returns true if tab completion is enabled, otherwise false
-        /// </summary>
-        public bool IsEnabled
-        {
-            get
-            {
-                return _completions != null && _completions.Count > 0;
-            }
-        }
-
-        /// <summary>
-        /// Initializes the TabCompleteSession with Intellisense information
-        /// </summary>
-        /// <param name="completions">The tab session completions</param>
-        /// <param name="selectionStatus">The selection status</param>
-        /// <param name="startPoint">The start point of the completions</param>
-        public void Initialize(IList<Completion> completions, CompletionSelectionStatus selectionStatus, int startPoint)
         {
             _completions = completions;
             _startPoint = startPoint;

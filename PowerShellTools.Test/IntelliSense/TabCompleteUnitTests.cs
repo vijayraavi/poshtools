@@ -24,21 +24,6 @@ namespace PowerShellTools.Test.IntelliSense
         private int _mockedCaret;
 
         [TestMethod]
-        public void TestSessionNotEnabled()
-        {
-            var tabCompleteSession = new TabCompleteSession();
-
-            tabCompleteSession.Initialize(null, null, TestStartPoint);
-            Assert.IsFalse(tabCompleteSession.IsEnabled);
-
-            tabCompleteSession.Initialize(new List<Completion>(), null, TestStartPoint);
-            Assert.IsFalse(tabCompleteSession.IsEnabled);
-
-            tabCompleteSession.Initialize(new List<Completion>(), new CompletionSelectionStatus(TestCompletions[0], true, true), TestStartPoint);
-            Assert.IsFalse(tabCompleteSession.IsEnabled);
-        }
-
-        [TestMethod]
         public void TestCyclingReplaceNext()
         {
             var selectedCompletion = TestCompletions[1];
@@ -49,7 +34,6 @@ namespace PowerShellTools.Test.IntelliSense
             var textBuffer = TextBufferMock();
 
             var tabCompleteSession = new TabCompleteSession(TestCompletions, new CompletionSelectionStatus(selectedCompletion, true, true), TestStartPoint);
-            Assert.IsTrue(tabCompleteSession.IsEnabled);
 
             tabCompleteSession.ReplaceWithNextCompletion(textBuffer, _mockedCaret);
             Assert.AreEqual(GetExpectedScript(2), _mockedScript);
@@ -75,7 +59,6 @@ namespace PowerShellTools.Test.IntelliSense
             var textBuffer = TextBufferMock();
 
             var tabCompleteSession = new TabCompleteSession(TestCompletions, new CompletionSelectionStatus(selectedCompletion, true, true), TestStartPoint);
-            Assert.IsTrue(tabCompleteSession.IsEnabled);
 
             tabCompleteSession.ReplaceWithPreviousCompletion(textBuffer, _mockedCaret);
             Assert.AreEqual(GetExpectedScript(0), _mockedScript);
@@ -131,10 +114,7 @@ namespace PowerShellTools.Test.IntelliSense
             _mockedScript = String.Format(TestScript, String.Empty);
             _mockedCaret = TestStartPoint;
 
-            var tabCompleteSession = new TabCompleteSession(TestCompletions, selectionStatus, TestStartPoint);
-            Assert.IsTrue(tabCompleteSession.IsEnabled);
-
-            return tabCompleteSession;
+            return new TabCompleteSession(TestCompletions, selectionStatus, TestStartPoint);
         }
 
         private string GetExpectedScript(int index)
