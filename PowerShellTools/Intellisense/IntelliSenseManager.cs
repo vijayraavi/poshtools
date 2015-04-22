@@ -33,7 +33,6 @@ namespace PowerShellTools.Intellisense
         private ICompletionSession _activeSession;
         private readonly SVsServiceProvider _serviceProvider;
         private static readonly ILog Log = LogManager.GetLogger(typeof(IntelliSenseManager));
-        private readonly bool _isRepl;
         private int _replacementIndexOffset;
         private IVsStatusbar _statusBar;
         private ITextSnapshotLine _completionLine;
@@ -58,7 +57,6 @@ namespace PowerShellTools.Intellisense
             _broker = broker;
             NextCommandHandler = commandHandler;
             _textView = textView;
-            _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
 
             dteWindowsEventsHandler.ClearEventHandlers();
@@ -193,7 +191,7 @@ namespace PowerShellTools.Intellisense
                         //don't add the character to the buffer
                         return VSConstants.S_OK;
                     }
-                    else if (_isRepl || !IsPrecedingTextInLineEmpty(_textView.Caret.Position.BufferPosition))
+                    else if (!IsPrecedingTextInLineEmpty(_textView.Caret.Position.BufferPosition) && _textView.Selection.IsEmpty)
                     {
                         _startTabComplete = true;
                         TriggerCompletion();
