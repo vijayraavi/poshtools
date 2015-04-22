@@ -6,6 +6,7 @@ using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+using EnvDTE80;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -45,12 +46,12 @@ namespace PowerShellTools.Intellisense
         private TabCompleteSession _tabCompleteSession;
         private bool _startTabComplete;
         private IntelliSenseEventsHandlerProxy _callbackContext;
+        private int _currentActiveWindowId;
 
         public IntelliSenseManager(ICompletionBroker broker,
             SVsServiceProvider provider,
             IOleCommandTarget commandHandler,
             ITextView textView,
-            DteWindowsEventsHandlerProxy dteWindowsEventsHandler,
             IntelliSenseEventsHandlerProxy callbackContext)
         {
             _triggerTag = 0;
@@ -58,22 +59,23 @@ namespace PowerShellTools.Intellisense
             _broker = broker;
             NextCommandHandler = commandHandler;
             _textView = textView;
+            _textView.Closed += TextView_Closed;
             _isRepl = _textView.Properties.ContainsProperty(BufferProperties.FromRepl);
             _serviceProvider = provider;
-
-            dteWindowsEventsHandler.ClearEventHandlers();
-            dteWindowsEventsHandler.WindowActivated += WindowEvents_WindowActivated;
             _callbackContext = callbackContext;
-            
-            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));            
+            _callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
+
+            DTE2 dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            _currentActiveWindowId = dte2.ActiveWindow.GetHashCode();
+
+            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
         }
 
-        private void WindowEvents_WindowActivated(EnvDTE.Window GotFocus, EnvDTE.Window LostFocus)
+        private void TextView_Closed(object sender, EventArgs e)
         {
             if (_callbackContext != null)
             {
-                _callbackContext.ClearEventHandlers();
-                _callbackContext.CompletionListUpdatedEventHandler += IntelliSenseManager_CompletionListUpdated;
+                _callbackContext.CompletionListUpdated -= IntelliSenseManager_CompletionListUpdated;
             }
         }
 
@@ -122,12 +124,12 @@ namespace PowerShellTools.Intellisense
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
 
-                if (_activeSession == null && 
+                if (_activeSession == null &&
                     IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar) &&
                     Utilities.IsInStringArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
                 {
                     return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
-                }                
+                }
             }
             else
             {
@@ -300,7 +302,7 @@ namespace PowerShellTools.Intellisense
             // pass along the command so the char is added to the buffer 
             int retVal = NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
-            
+
             if (IsIntellisenseTrigger(typedChar) ||
                 (IsIntelliSenseTriggerDot(typedChar) && IsPreviousTokenVariable()) || // If previous token before a dot was a variable, trigger intellisense
                 (char.IsWhiteSpace(typedChar) && IsPreviousTokenParameter())) // If the previous token before a space was a parameter, trigger intellisense
@@ -325,7 +327,7 @@ namespace PowerShellTools.Intellisense
                     }
                 }
             }
-            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE || 
+            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE ||
                      command == VSConstants.VSStd2KCmdID.DELETE) //redo the filter if there is a deletion
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
@@ -419,7 +421,7 @@ namespace PowerShellTools.Intellisense
                 {
                     Log.Warn("Failed to start IntelliSense", ex);
                 }
-            }); 
+            });
         }
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
@@ -466,7 +468,7 @@ namespace PowerShellTools.Intellisense
             }
 
             // Go out-of-proc here to get the completion list
-            PowerShellToolsPackage.IntelliSenseService.RequestCompletionResults(script, scriptParsePosition, _triggerTag);
+            PowerShellToolsPackage.IntelliSenseService.RequestCompletionResults(script, scriptParsePosition, _currentActiveWindowId, _triggerTag);
         }
 
         /// <summary>
@@ -475,15 +477,20 @@ namespace PowerShellTools.Intellisense
         /// </summary>
         /// <param name="sender">Intellisense service context</param>
         /// <param name="e">Completion list</param>
-        private void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList> e)
+        private void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList, int> e)
         {
+            if (e.Value2 != _currentActiveWindowId)
+            {
+                return;
+            }
+
             ThreadHelper.Generic.Invoke(() =>
                 {
                     try
                     {
                         Log.Debug("Got new intellisense completion list");
 
-                        var commandCompletion = e.Value;
+                        var commandCompletion = e.Value1;
 
                         IList<CompletionResult> completionMatchesList;
                         int completionReplacementIndex;
@@ -609,7 +616,7 @@ namespace PowerShellTools.Intellisense
                 var completions = _activeSession.SelectedCompletionSet.Completions;
 
                 if (completions != null && completions.Count > 0)
-            {
+                {
                     var startPoint = _activeSession.SelectedCompletionSet.ApplicableTo.GetStartPoint(_textView.TextBuffer.CurrentSnapshot).Position;
                     _tabCompleteSession = new TabCompleteSession(completions, _activeSession.SelectedCompletionSet.SelectionStatus, startPoint);
                     _activeSession.Commit();
@@ -747,13 +754,16 @@ namespace PowerShellTools.Intellisense
         }
     }
 
-    public class EventArgs<T> : EventArgs
+    public class EventArgs<T1, T2> : EventArgs
     {
-        public EventArgs(T value)
+        public EventArgs(T1 value1, T2 value2)
         {
-            Value = value;
+            Value1 = value1;
+            Value2 = value2;
         }
 
-        public T Value { get; private set; }
+        public T1 Value1 { get; private set; }
+
+        public T2 Value2 { get; private set; }
     }
 }

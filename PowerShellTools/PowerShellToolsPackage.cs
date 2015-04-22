@@ -107,7 +107,6 @@ namespace PowerShellTools
         private VisualStudioEvents VisualStudioEvents;
         private IContentType _contentType;
         private IntelliSenseEventsHandlerProxy _intelliSenseServiceContext;
-        private DteWindowsEventsHandlerProxy _dteWindowsEventsHandler;
 
         public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
 
@@ -146,14 +145,6 @@ namespace PowerShellTools
             get
             {
                 return _intelliSenseServiceContext;
-            }
-        }
-
-        public DteWindowsEventsHandlerProxy DteWindowsEventsHandler
-        {
-            get
-            {
-                return _dteWindowsEventsHandler;
             }
         }
 
@@ -254,7 +245,6 @@ namespace PowerShellTools
         private void InitializeInternal()
         {
             _intelliSenseServiceContext = new IntelliSenseEventsHandlerProxy();
-            _dteWindowsEventsHandler = new DteWindowsEventsHandlerProxy();
 
             var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
 

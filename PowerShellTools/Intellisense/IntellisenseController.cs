@@ -35,7 +35,7 @@ namespace PowerShellTools.Intellisense
         /// <summary>
         /// Attaches events for invoking Statement completion 
         /// </summary>
-        public IntellisenseController(IntellisenseControllerProvider provider, ITextView textView, DteWindowsEventsHandlerProxy dteWindowsEventsHandler, IntelliSenseEventsHandlerProxy callbackContext)
+        public IntellisenseController(IntellisenseControllerProvider provider, ITextView textView, IntelliSenseEventsHandlerProxy callbackContext)
         {
             _textView = textView;
             _provider = provider;
@@ -43,7 +43,7 @@ namespace PowerShellTools.Intellisense
 
             IEditorOperations editorOperations = provider.EditOperationsFactory.GetEditorOperations(textView);
             ITextUndoHistory undoHistory = provider.UndoHistoryRegistry.GetHistory(textView.TextBuffer);
-            _intelliSenseManager = new IntelliSenseManager(provider.CompletionBroker, provider.ServiceProvider, null, textView, dteWindowsEventsHandler, callbackContext);
+            _intelliSenseManager = new IntelliSenseManager(provider.CompletionBroker, provider.ServiceProvider, null, textView, callbackContext);
             _autoCompletionController = new AutoCompletionController(textView, editorOperations, undoHistory, provider.ServiceProvider);
 
         }
