@@ -6,7 +6,6 @@ using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
-using EnvDTE80;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -64,9 +63,7 @@ namespace PowerShellTools.Intellisense
             _serviceProvider = provider;
             _callbackContext = callbackContext;
             _callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
-
-            DTE2 dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            _currentActiveWindowId = dte2.ActiveWindow.GetHashCode();
+            _currentActiveWindowId = this.GetHashCode();
 
             _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
         }
@@ -479,6 +476,7 @@ namespace PowerShellTools.Intellisense
         /// <param name="e">Completion list</param>
         private void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList, int> e)
         {
+            // If the call back isn't targetting this window, then don't display results.
             if (e.Value2 != _currentActiveWindowId)
             {
                 return;
