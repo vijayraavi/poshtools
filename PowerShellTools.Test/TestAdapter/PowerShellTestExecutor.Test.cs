@@ -21,6 +21,8 @@ namespace PowerShellTools.Test.TestAdapter
         private Runspace _runspace;
         private PowerShell _powerShell;
 
+        private const string TargetPesterVersion = "3.3.5";
+
         public TestContext TestContext { get; set; }
 
 
@@ -35,6 +37,9 @@ namespace PowerShellTools.Test.TestAdapter
             _runspace.Open();
             _powerShell = PowerShell.Create();
             _powerShell.Runspace = _runspace;
+
+            _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
+            _runContext.Setup(m => m.SolutionDirectory).Returns(GetModuleDir(TargetPesterVersion));
         }
 
         [TestCleanup]
@@ -69,24 +74,6 @@ namespace PowerShellTools.Test.TestAdapter
             Assert.IsTrue(result.ErrorMessage.Contains("Failed to load Pester module."));
         }
 
-        [TestMethod]
-        public void ShouldReturnSuccessfulTestResultsForPester335()
-        {
-            ShouldReturnSuccessfulTestResults("3.3.5");
-        }
-
-        [TestMethod]
-        public void ShouldReturnUnsuccessfulTestResultForPester335()
-        {
-            ShouldReturnUnsuccessfulTestResult("3.3.5");
-        }
-
-        [TestMethod]
-        public void ShouldRunTestWithoutContextForPester335()
-        {
-            ShouldRunTestWithoutContext("3.3.5");
-        }
-
         private string GetModuleDir(string pesterVersion)
         {
             return Path.Combine(TestContext.TestDeploymentDir, "Pester-" + pesterVersion);
@@ -106,7 +93,9 @@ namespace PowerShellTools.Test.TestAdapter
             return testCase;
         }
 
-        private void ShouldReturnSuccessfulTestResults(string pesterVersion)
+
+        [TestMethod]
+        public void ShouldReturnSuccessfulTestResults()
         {
             const string testScript = @"
             Describe 'Test' {
@@ -118,16 +107,14 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
-            _runContext.Setup(m => m.SolutionDirectory).Returns(GetModuleDir(pesterVersion));
-
             var testCase = WriteTestFile("Test||Blah||Should pass", testScript);
             var result = _executor.RunTest(_powerShell, testCase, _runContext.Object);
 
             Assert.AreEqual(TestOutcome.Passed, result.Outcome);
         }
 
-        private void ShouldRunTestWithoutContext(string pesterVersion)
+        [TestMethod]
+        public void ShouldRunTestWithoutContext()
         {
             const string testScript = @"
             Describe 'Test' {
@@ -137,16 +124,14 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
-            _runContext.Setup(m => m.SolutionDirectory).Returns(GetModuleDir(pesterVersion));
-
             var testCase = WriteTestFile("Test||||Should pass", testScript);
             var result = _executor.RunTest(_powerShell, testCase, _runContext.Object);
 
             Assert.AreEqual(TestOutcome.Passed, result.Outcome);
         }
 
-        private void ShouldReturnUnsuccessfulTestResult(string pesterVersion)
+        [TestMethod]
+        public void ShouldReturnUnsuccessfulTestResult()
         {
             const string testScript = @"
             Describe 'Test' {
@@ -158,9 +143,6 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
-            _runContext.Setup(m => m.SolutionDirectory).Returns(GetModuleDir(pesterVersion));
-
             var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
 
             var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
@@ -170,7 +152,67 @@ namespace PowerShellTools.Test.TestAdapter
             Assert.IsTrue(result.ErrorStacktrace.StartsWith("at line: 5 in " + testFile.CodeFilePath));
         }
 
-        private void ShouldReturnUnsuccessfulTestResultForAnException(string pesterVersion)
+        [TestMethod]
+        public void ShouldFindSkippedTests()
+        {
+            const string testScript = @"
+            Describe 'Test' {
+                Context 'Blah' {
+                    It 'Should fail' {
+                        1 | Should Be 2
+                    } -Skip
+                }
+            }
+            ";
+
+            var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
+
+            var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
+
+            Assert.AreEqual(TestOutcome.Skipped, result.Outcome);
+        }
+
+
+        [TestMethod]
+        public void ShouldFindPendingTestsWithNoAsserts()
+        {
+            const string testScript = @"
+            Describe 'Test' {
+                Context 'Blah' {
+                    It 'Should fail' {
+                    } 
+                }
+            }
+            ";
+
+            var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
+
+            var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
+
+            Assert.AreEqual(TestOutcome.Skipped, result.Outcome);
+        }
+
+        [TestMethod]
+        public void ShouldFindPendingTests()
+        {
+            const string testScript = @"
+            Describe 'Test' {
+                Context 'Blah' {
+                    It 'Should fail' {
+                    } -Pending
+                }
+            }
+            ";
+
+            var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
+
+            var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
+
+            Assert.AreEqual(TestOutcome.Skipped, result.Outcome);
+        }
+
+        [TestMethod]
+        public void ShouldReturnUnsuccessfulTestResultForAnException()
         {
             const string testScript = @"
             Describe 'Test' {
@@ -182,15 +224,12 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
-            _runContext.Setup(m => m.SolutionDirectory).Returns(GetModuleDir(pesterVersion));
-
             var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
 
             var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
 
             Assert.AreEqual(TestOutcome.Failed, result.Outcome);
-            Assert.AreEqual("Failure [Should fail]\r\nThis sucks!\r\n", result.ErrorMessage);
+            Assert.AreEqual("This sucks!", result.ErrorMessage);
             Assert.AreEqual("at line: 5 in " + testFile.CodeFilePath, result.ErrorStacktrace);
         }
     }

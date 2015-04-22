@@ -161,6 +161,14 @@ namespace PowerShellTools.TestAdapter
             {
                 return TestOutcome.Passed;
             }
+            if (testResult.Equals("skipped", StringComparison.OrdinalIgnoreCase))
+            {
+                return TestOutcome.Skipped;
+            }
+            if (testResult.Equals("pending", StringComparison.OrdinalIgnoreCase))
+            {
+                return TestOutcome.Skipped;
+            }
             return TestOutcome.Failed;
         }
 
@@ -215,17 +223,4 @@ namespace PowerShellTools.TestAdapter
         }
     }
 
-    /// <summary>
-    /// Test results
-    /// </summary>
-    public enum TestResultsEnum
-    {
-        Success,
-        Failure,
-        Inconclusive,
-        Ignored,
-        Skipped,
-        Invalid,
-        Error,
-    }
 }
