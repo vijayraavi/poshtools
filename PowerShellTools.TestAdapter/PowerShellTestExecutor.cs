@@ -129,7 +129,7 @@ namespace PowerShellTools.TestAdapter
             var testCaseName = testCase.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[2];
 
             powerShell.AddCommand("Invoke-Pester")
-                .AddParameter("relative_path", fi.Directory.FullName)
+                .AddParameter("Path", fi.Directory.FullName)
                 .AddParameter("TestName", describeName)
                 .AddParameter("PassThru");
 
