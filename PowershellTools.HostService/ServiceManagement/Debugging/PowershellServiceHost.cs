@@ -172,10 +172,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public void PopRunspace()
         {
-            UnregisterRemoteFileOpenEvent(Runspace);
-            Runspace = _pushedRunspace;
-            _pushedRunspace = null;
-            _callback.SetRemoteRunspace(false);
+            if (_pushedRunspace != null)
+            {
+                UnregisterRemoteFileOpenEvent(Runspace);
+                Runspace = _pushedRunspace;
+                _pushedRunspace = null;
+            }
+
+            if (_callback != null)
+            {
+                _callback.SetRemoteRunspace(false);
+            }
+            
         }
 
 
@@ -184,7 +192,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _pushedRunspace = Runspace;
             Runspace = runspace;
 
-            if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
+            if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging
+                && _callback != null)
             {
                 _callback.OutputStringLine(Resources.Warning_HigherVersionRequiredForDebugging);
             }
@@ -193,7 +202,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 SetRemoteScriptDebugMode40(Runspace);
             }
 
-            _callback.SetRemoteRunspace(true);
+            if (_callback != null)
+            {
+                _callback.SetRemoteRunspace(true);
+            }
 
             RegisterRemoteFileOpenEvent(runspace);
         }
