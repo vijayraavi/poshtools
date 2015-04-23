@@ -632,6 +632,7 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <EmbeddedResource Include="Resources\completionset.bmp" />
+    <Resource Include="Poshtools_128x.png" />
     <Content Include="PowerShellToolsColors.pkgdef">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
