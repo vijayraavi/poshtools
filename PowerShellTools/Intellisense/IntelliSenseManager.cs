@@ -95,7 +95,7 @@ namespace PowerShellTools.Intellisense
         public int Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
-                Utilities.IsInCommentArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer) ||
+                Utilities.IsCaretInCommentArea(_textView) ||
                 IsUnhandledCommand(pguidCmdGroup, nCmdId))
             {
                 Log.DebugFormat("Non-VSStd2K command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
@@ -653,28 +653,7 @@ namespace PowerShellTools.Intellisense
 
         private int GetPreviousBufferPosition(out ITextBuffer currentActiveBuffer)
         {
-            int currentBufferPosition;
-            if (_textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
-            {
-                currentActiveBuffer = _textView.TextBuffer;
-                currentBufferPosition = _textView.Caret.Position.BufferPosition.Position;
-            }
-            // If in the REPL window, the current textbuffer won't work, so we have to get the last PowerShellLanguage buffer
-            else if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
-            {
-                currentActiveBuffer = _textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
-                                                                   .LastOrDefault();
-                currentBufferPosition = _textView.BufferGraph.MapDownToBuffer(_textView.Caret.Position.BufferPosition,
-                                                                               PointTrackingMode.Positive,
-                                                                               currentActiveBuffer,
-                                                                               PositionAffinity.Successor).Value.Position;
-            }
-            else
-            {
-                Log.Error("The content type of the text buffer isn't recognized.");
-                currentActiveBuffer = null;
-                return -1;
-            }
+            int currentBufferPosition = Utilities.GetCurrentBufferPosition(_textView, out currentActiveBuffer);
             return currentBufferPosition - 1;
         }
 

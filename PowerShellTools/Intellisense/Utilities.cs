@@ -6,7 +6,9 @@ using System.Management.Automation.Language;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
 using PowerShellTools.Classification;
+using PowerShellTools.Repl;
 
 namespace PowerShellTools.Intellisense
 {
@@ -82,6 +84,43 @@ namespace PowerShellTools.Intellisense
                 case ']': return '[';
                 default: throw new ArgumentException("ch");
             }
+        }
+
+        internal static bool IsCaretInCommentArea(ITextView textView)
+        {
+            ITextBuffer currentActiveBuffer;
+            int currentPosition = Utilities.GetCurrentBufferPosition(textView, out currentActiveBuffer);
+            if (currentPosition < 0 || currentPosition > currentActiveBuffer.CurrentSnapshot.Length)
+            {
+                return false;
+            }
+            return Utilities.IsInCommentArea(currentPosition, currentActiveBuffer);
+        }
+
+        internal static int GetCurrentBufferPosition(ITextView textView, out ITextBuffer currentActiveBuffer)
+        {
+            int currentBufferPosition;
+            if (textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
+            {
+                currentActiveBuffer = textView.TextBuffer;
+                currentBufferPosition = textView.Caret.Position.BufferPosition.Position;
+            }
+            // If in the REPL window, the current textbuffer won't work, so we have to get the last PowerShellLanguage buffer
+            else if (textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
+            {
+                currentActiveBuffer = textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
+                                                                   .LastOrDefault();
+                currentBufferPosition = textView.BufferGraph.MapDownToBuffer(textView.Caret.Position.BufferPosition,
+                                                                               PointTrackingMode.Positive,
+                                                                               currentActiveBuffer,
+                                                                               PositionAffinity.Successor).Value.Position;
+            }
+            else
+            {
+                currentActiveBuffer = null;
+                return -1;
+            }
+            return currentBufferPosition;
         }
 
         internal static bool IsInCommentArea(int position, ITextBuffer buffer)

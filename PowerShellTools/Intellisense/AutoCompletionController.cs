@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -22,15 +23,15 @@ namespace PowerShellTools.Intellisense
         private readonly ITextView _textView;
         private readonly IEditorOperations _editorOperations;
         private readonly ITextUndoHistory _undoHistory;
-        private readonly SVsServiceProvider _serviceProvider;
-        
+        private readonly SVsServiceProvider _serviceProvider;        
         private int _autoCompleteCount;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(AutoCompletionController));
 
         public AutoCompletionController(ITextView textView,
                                          IEditorOperations editorOperations,
                                          ITextUndoHistory undoHistory,
                                          SVsServiceProvider serviceProvider)
-        {
+        {            
             if (textView == null)
             {
                 throw new ArgumentNullException("textView");
@@ -85,7 +86,7 @@ namespace PowerShellTools.Intellisense
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
                 pguidCmdGroup != VSConstants.VSStd2K ||
                 !_textView.Selection.IsEmpty ||
-                IsInCommentArea() ||
+                Utilities.IsCaretInCommentArea(_textView) ||
                 (!(command == VSConstants.VSStd2KCmdID.BACKSPACE && this.IsLastCmdAutoComplete) && 
                  IsInStringArea()))
             {
@@ -207,18 +208,17 @@ namespace PowerShellTools.Intellisense
             this.IsLastCmdAutoComplete = isAutoComplete;
         }
         
-        private bool IsInCommentArea()
-        {
-            int caretPosition = _textView.Caret.Position.BufferPosition.Position;
-            return Utilities.IsInCommentArea(caretPosition, _textView.TextBuffer);
-        }
-
         private bool IsInStringArea()
         {
-            int caretPosition = _textView.Caret.Position.BufferPosition.Position;
-            return Utilities.IsInStringArea(caretPosition, _textView.TextBuffer);
+            ITextBuffer currentActiveBuffer;
+            int currentPosition = Utilities.GetCurrentBufferPosition(_textView, out currentActiveBuffer);
+            if (currentPosition < 0 || currentPosition > currentActiveBuffer.CurrentSnapshot.Length)
+            {
+                return false;
+            }
+            return Utilities.IsInStringArea(currentPosition, currentActiveBuffer);
         }
-
+        
         /// <summary>
         /// Complete the left brace/quotes with matched brace/quotes
         /// </summary>
