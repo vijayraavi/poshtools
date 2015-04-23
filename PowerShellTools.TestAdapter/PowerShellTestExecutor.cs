@@ -125,8 +125,7 @@ namespace PowerShellTools.TestAdapter
 
             var tempFile = Path.GetTempFileName();
 
-            var describeName = testCase.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[0];
-            var testCaseName = testCase.FullyQualifiedName.Split(new[] { "||" }, StringSplitOptions.None)[2];
+            var describeName = testCase.FullyQualifiedName;
 
             powerShell.AddCommand("Invoke-Pester")
                 .AddParameter("Path", fi.Directory.FullName)
@@ -136,27 +135,46 @@ namespace PowerShellTools.TestAdapter
             var pesterResult = powerShell.Invoke().FirstOrDefault();
 
             var results = pesterResult.Properties["TestResult"].Value as Array;
-            foreach(PSObject result in results)
+
+            TestOutcome testOutcome = TestOutcome.NotFound;
+
+            var error = new StringBuilder();
+            var stackTrace = new StringBuilder();
+
+            foreach (PSObject result in results)
             {
                 var describe = result.Properties["Describe"].Value as string;
-                var name = result.Properties["Name"].Value as string;
-
-                if (describeName.Equals(describe, StringComparison.OrdinalIgnoreCase) && 
-                    testCaseName.Equals(name, StringComparison.OrdinalIgnoreCase))
+                if (describeName.Equals(describe, StringComparison.OrdinalIgnoreCase))
                 {
-                    var testResult = result.Properties["Result"].Value as string;
-                    var stackTrace = result.Properties["StackTrace"].Value as string;
-                    var error = result.Properties["FailureMessage"].Value as string;
+                    testOutcome = GetOutcome(result.Properties["Result"].Value as string);
 
-                    return new PowerShellTestResult(GetOutcome(testResult), error, stackTrace);
+                    var context = result.Properties["Context"].Value as string;
+                    var name = result.Properties["Name"].Value as string;
+                    var stackTraceString = result.Properties["StackTrace"].Value as string;
+                    var errorString = result.Properties["FailureMessage"].Value as string;
+
+                    if (!string.IsNullOrEmpty(stackTraceString))
+                    {
+                        stackTrace.AppendFormat("{0} it {1}\r\n{2}\r\n\r\n", context, name, stackTraceString);
+                    }
+
+                    if (!string.IsNullOrEmpty(errorString))
+                    {
+                        error.AppendFormat("{0} it {1}\r\n{2}\r\n\r\n", context, name, errorString);
+                    }
                 }
             }
 
-            return new PowerShellTestResult(TestOutcome.NotFound);
+            return new PowerShellTestResult(testOutcome, error.ToString(), stackTrace.ToString());
         }
 
         private TestOutcome GetOutcome(string testResult)
         {
+            if (string.IsNullOrEmpty(testResult))
+            {
+                return TestOutcome.NotFound;
+            }
+
             if (testResult.Equals("passed", StringComparison.OrdinalIgnoreCase))
             {
                 return TestOutcome.Passed;

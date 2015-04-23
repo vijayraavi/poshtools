@@ -107,7 +107,7 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            var testCase = WriteTestFile("Test||Blah||Should pass", testScript);
+            var testCase = WriteTestFile("Test", testScript);
             var result = _executor.RunTest(_powerShell, testCase, _runContext.Object);
 
             Assert.AreEqual(TestOutcome.Passed, result.Outcome);
@@ -124,7 +124,7 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            var testCase = WriteTestFile("Test||||Should pass", testScript);
+            var testCase = WriteTestFile("Test", testScript);
             var result = _executor.RunTest(_powerShell, testCase, _runContext.Object);
 
             Assert.AreEqual(TestOutcome.Passed, result.Outcome);
@@ -143,13 +143,11 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
+            var testFile = WriteTestFile("Test", testScript);
 
             var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
 
             Assert.AreEqual(TestOutcome.Failed, result.Outcome);
-            Assert.AreEqual("Expected: {2}\nBut was:  {1}", result.ErrorMessage);
-            Assert.IsTrue(result.ErrorStacktrace.StartsWith("at line: 5 in " + testFile.CodeFilePath));
         }
 
         [TestMethod]
@@ -165,7 +163,7 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
+            var testFile = WriteTestFile("Test", testScript);
 
             var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
 
@@ -185,7 +183,7 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
+            var testFile = WriteTestFile("Test", testScript);
 
             var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
 
@@ -204,7 +202,7 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
+            var testFile = WriteTestFile("Test", testScript);
 
             var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
 
@@ -224,13 +222,11 @@ namespace PowerShellTools.Test.TestAdapter
             }
             ";
 
-            var testFile = WriteTestFile("Test||Blah||Should fail", testScript);
+            var testFile = WriteTestFile("Test", testScript);
 
             var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
 
             Assert.AreEqual(TestOutcome.Failed, result.Outcome);
-            Assert.AreEqual("This sucks!", result.ErrorMessage);
-            Assert.AreEqual("at line: 5 in " + testFile.CodeFilePath, result.ErrorStacktrace);
         }
     }
 }

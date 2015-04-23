@@ -56,6 +56,25 @@ namespace PowerShellTools.TestAdapter
             {
                 var describeName = GetFunctionName(logger, ast1, "describe");
 
+                var testcase = new TestCase(describeName, PowerShellTestExecutor.ExecutorUri, source)
+                {
+                    DisplayName = describeName,
+                    CodeFilePath = source,
+                    LineNumber = ast1.Extent.StartLineNumber
+                };
+
+                SendMessage(TestMessageLevel.Informational,
+                    String.Format("Adding test [{0}] in {1} at {2}.", describeName, source, testcase.LineNumber), logger);
+
+                if (discoverySink != null)
+                {
+                    SendMessage(TestMessageLevel.Informational, "Sending test to sync.", logger);
+                    discoverySink.SendTestCase(testcase);
+                }
+
+                tests.Add(testcase);
+
+                /* TODO: When Pester supports this, we can implement it.
                 var its = ast1.FindAll(
                 m =>
                     (m is CommandAst) &&
@@ -77,25 +96,8 @@ namespace PowerShellTools.TestAdapter
 
                     var displayName = String.Format("{0} It {1}", contextName, itName);
                     var fullName = String.Format("{0}||{1}||{2}", describeName, contextName, itName);
-
-                    var testcase = new TestCase(fullName, PowerShellTestExecutor.ExecutorUri, source)
-                    {
-                        DisplayName = displayName,
-                        CodeFilePath = source,
-                        LineNumber = itAst.Extent.StartLineNumber
-                    };
-
-                    SendMessage(TestMessageLevel.Informational,
-                        String.Format("Adding test [{0}] in {1} at {2}.", displayName, source, testcase.LineNumber), logger);
-
-                    if (discoverySink != null)
-                    {
-                        SendMessage(TestMessageLevel.Informational, "Sending test to sync.", logger);
-                        discoverySink.SendTestCase(testcase);
-                    }
-
-                    tests.Add(testcase);
                 }
+                */
             }
         }
 

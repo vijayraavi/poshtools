@@ -54,7 +54,7 @@ namespace PowerShellTools.TestAdapter
 
         protected string FileExtension
         {
-            get { return ".ps1"; }
+            get { return ".tests.ps1"; }
         }
 
         public event EventHandler TestContainersUpdated;
@@ -230,7 +230,7 @@ namespace PowerShellTools.TestAdapter
 
         private static bool IsPs1File(string path)
         {
-            return ".ps1".Equals(Path.GetExtension(path), StringComparison.OrdinalIgnoreCase);
+            return path.EndsWith(".tests.ps1", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsTestFile(string path)

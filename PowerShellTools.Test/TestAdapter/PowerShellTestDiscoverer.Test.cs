@@ -81,10 +81,10 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new []{tempFile}, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("When there are changes It Builds next version", testCases[0].DisplayName);
+            Assert.AreEqual("BuildIfChanged", testCases[0].DisplayName);
             Assert.AreEqual(PowerShellTestExecutor.ExecutorUri, testCases[0].ExecutorUri);
             Assert.AreEqual(tempFile, testCases[0].CodeFilePath);
-            Assert.AreEqual(4, testCases[0].LineNumber);
+            Assert.AreEqual(2, testCases[0].LineNumber);
         }
 
         [TestMethod]
@@ -106,7 +106,7 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("ThisIsATest It Something", testCases[0].DisplayName);
+            Assert.AreEqual("BuildIfChanged", testCases[0].DisplayName);
         }
 
         [TestMethod]
@@ -128,7 +128,7 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("BuildIfChanged||ThisIsATest||Something", testCases[0].FullyQualifiedName);
+            Assert.AreEqual("BuildIfChanged", testCases[0].FullyQualifiedName);
         }
 
         [TestMethod]
@@ -148,7 +148,7 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("BuildIfChanged||||Something", testCases[0].FullyQualifiedName);
+            Assert.AreEqual("BuildIfChanged", testCases[0].FullyQualifiedName);
         }
     }
 }
