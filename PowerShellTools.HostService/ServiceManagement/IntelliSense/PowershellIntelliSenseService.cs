@@ -20,30 +20,9 @@ namespace PowerShellTools.HostService.ServiceManagement
     {
         private readonly Runspace _runspace = PowerShellDebuggingService.Runspace;
         private long _requestTrigger;
-        private string _script = string.Empty;
-        private int _caretPosition;
         private IIntelliSenseServiceCallback _callback;
         private static object _syncLock = new object();
-
-        /// <summary>
-        /// Request trigger property
-        /// Once it was set, initellisense service starts processing the existing request in background thread
-        /// </summary>
-        public long RequestTrigger
-        {
-            get
-            {
-                return _requestTrigger;
-            }
-            set
-            {
-                lock(_syncLock)
-                {
-                    _requestTrigger = value;      
-                }                          
-            }
-        }
-
+        
         /// <summary>
         /// Default ctor
         /// </summary>
@@ -72,16 +51,13 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// <returns>A completion results list.</returns>
         public void RequestCompletionResults(string script, int caretPosition, int requestWindowId, long triggerTag)
         {
-            ServiceCommon.Log("Intellisense request received, caret position: {0}", _caretPosition.ToString());
+            ServiceCommon.Log("Intellisense request received, caret position: {0}", caretPosition.ToString());
 
-            if (_requestTrigger == 0 || triggerTag > RequestTrigger)
+            if (_requestTrigger == 0 || triggerTag > _requestTrigger)
             {
-                ServiceCommon.Log("Procesing request, caret position: {0}", _caretPosition.ToString());
-                _script = script;
-                _caretPosition = caretPosition;
+                ServiceCommon.Log("Procesing request, caret position: {0}", caretPosition.ToString());
                 DismissGetCompletionResults();
-                RequestTrigger = triggerTag;
-                ProcessCompletion(requestWindowId); // triggering new request processing
+                ProcessCompletion(script, caretPosition, requestWindowId, triggerTag); // triggering new request processing
             }
         }
 
@@ -110,12 +86,17 @@ namespace PowerShellTools.HostService.ServiceManagement
                                               item.Extent.EndOffset)).ToArray();
         }
 
-        private void ProcessCompletion(int requestWindowId)
+        private void ProcessCompletion(string script, int caretPosition, int requestWindowId, long triggerTag)
         {
+            lock (_syncLock)
+            {
+                _requestTrigger = triggerTag;
+            }     
+
             if (_callback == null)
             {
                 _callback = OperationContext.Current.GetCallbackChannel<IIntelliSenseServiceCallback>();
-            }
+            }                   
 
             // Start process the existing waiting request, should only be one
             Task.Run(() =>
@@ -128,7 +109,7 @@ namespace PowerShellTools.HostService.ServiceManagement
                     {
                         lock (ServiceCommon.RunspaceLock)
                         {
-                            commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
+                            commandCompletion = CommandCompletionHelper.GetCommandCompletionList(script, caretPosition, _runspace);
                         }
                     }
                     else
@@ -137,7 +118,7 @@ namespace PowerShellTools.HostService.ServiceManagement
                         // for now we just simply return with null for this request to complete.
                     }
 
-                    ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", _caretPosition);
+                    ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", caretPosition);
                     _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion), requestWindowId);
 
                     // Reset trigger
