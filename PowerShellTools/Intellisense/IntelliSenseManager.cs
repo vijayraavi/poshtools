@@ -6,7 +6,6 @@ using System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
-using EnvDTE80;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -62,11 +61,9 @@ namespace PowerShellTools.Intellisense
             _serviceProvider = provider;
             _callbackContext = callbackContext;
             _callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
-            
-            DTE2 dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            _currentActiveWindowId = dte2.ActiveWindow.GetHashCode();
+            _currentActiveWindowId = this.GetHashCode();
 
-            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));            
+            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
         }
 
         private void TextView_Closed(object sender, EventArgs e)
@@ -122,12 +119,12 @@ namespace PowerShellTools.Intellisense
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
 
-                if (_activeSession == null && 
+                if (_activeSession == null &&
                     IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar) &&
                     Utilities.IsInStringArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
                 {
                     return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
-                }                
+                }
             }
             else
             {
@@ -325,7 +322,7 @@ namespace PowerShellTools.Intellisense
                     }
                 }
             }
-            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE || 
+            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE ||
                      command == VSConstants.VSStd2KCmdID.DELETE) //redo the filter if there is a deletion
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
@@ -419,7 +416,7 @@ namespace PowerShellTools.Intellisense
                 {
                     Log.Warn("Failed to start IntelliSense", ex);
                 }
-            }); 
+            });
         }
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
@@ -477,8 +474,9 @@ namespace PowerShellTools.Intellisense
         /// <param name="e">Completion list</param>
         private void IntelliSenseManager_CompletionListUpdated(object sender, EventArgs<CompletionResultList, int> e)
         {
+            // If the call back isn't targetting this window, then don't display results.
             if (e.Value2 != _currentActiveWindowId)
-        {
+            {
                 return;
             }
 
@@ -614,7 +612,7 @@ namespace PowerShellTools.Intellisense
                 var completions = _activeSession.SelectedCompletionSet.Completions;
 
                 if (completions != null && completions.Count > 0)
-            {
+                {
                     var startPoint = _activeSession.SelectedCompletionSet.ApplicableTo.GetStartPoint(_textView.TextBuffer.CurrentSnapshot).Position;
                     _tabCompleteSession = new TabCompleteSession(completions, _activeSession.SelectedCompletionSet.SelectionStatus, startPoint);
                     _activeSession.Commit();
