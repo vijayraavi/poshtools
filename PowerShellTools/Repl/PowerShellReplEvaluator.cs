@@ -101,9 +101,13 @@ namespace PowerShellTools.Repl
             return null;
         }
 
-        public void AbortCommand()
+        public Task<ExecutionResult> AbortCommand()
         {
-            Debugger.Stop();
+            return tf.StartNew(() =>
+            {
+                Debugger.Stop();
+                return new ExecutionResult(true);
+            });
         }
 
         public Task<ExecutionResult> EnterRemoteSession(string computerName)

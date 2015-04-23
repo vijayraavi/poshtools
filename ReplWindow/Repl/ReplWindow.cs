@@ -797,6 +797,10 @@ namespace PowerShellTools.Repl
         {
             if (_isRunning)
             {
+                RequiresLanguageBuffer();
+                AppendLineNoPromptInjection(_currentLanguageBuffer);
+                ApplyProtection(_currentLanguageBuffer, regions: null);
+
                 Evaluator.AbortCommand();
             }
             else
