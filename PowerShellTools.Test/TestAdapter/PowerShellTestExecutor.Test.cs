@@ -131,6 +131,24 @@ namespace PowerShellTools.Test.TestAdapter
         }
 
         [TestMethod]
+        public void ShouldRunTestWithoutContextFailure()
+        {
+            const string testScript = @"
+            Describe 'Test' {
+                It 'Should pass' {
+                    1 | Should be 2
+                }
+            }
+            ";
+
+            var testCase = WriteTestFile("Test", testScript);
+            var result = _executor.RunTest(_powerShell, testCase, _runContext.Object);
+
+            Assert.AreEqual(TestOutcome.Failed, result.Outcome);
+        }
+
+
+        [TestMethod]
         public void ShouldReturnUnsuccessfulTestResult()
         {
             const string testScript = @"
@@ -227,6 +245,78 @@ namespace PowerShellTools.Test.TestAdapter
             var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
 
             Assert.AreEqual(TestOutcome.Failed, result.Outcome);
+        }
+
+        [TestMethod]
+        public void UnsuccessfulItBlockShouldOverrideSuccessfulItBlock()
+        {
+            const string testScript = @"
+            Describe 'Test' {
+                Context 'Blah' {
+                    It 'Should fail' {
+                        1 | Should be 2
+                    }
+
+                    It 'Should succeed' {
+                        1 | Should be 1
+                    }
+                }
+            }
+            ";
+
+            var testFile = WriteTestFile("Test", testScript);
+
+            var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
+
+            Assert.AreEqual(TestOutcome.Failed, result.Outcome);
+        }
+
+        [TestMethod]
+        public void SkippedItBlockShouldOverrideSuccessfulItBlock()
+        {
+            const string testScript = @"
+            Describe 'Test' {
+                Context 'Blah' {
+                    It 'Should fail' -Skip {
+                        1 | Should be 1
+                    }
+
+                    It 'Should succeed' {
+                        1 | Should be 1
+                    }
+                }
+            }
+            ";
+
+            var testFile = WriteTestFile("Test", testScript);
+
+            var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
+
+            Assert.AreEqual(TestOutcome.Skipped, result.Outcome);
+        }
+
+        [TestMethod]
+        public void PendingItBlockShouldOverrideSuccessfulItBlock()
+        {
+            const string testScript = @"
+            Describe 'Test' {
+                Context 'Blah' {
+                    It 'Should fail' -Pending {
+                        1 | Should be 1
+                    }
+
+                    It 'Should succeed' {
+                        1 | Should be 1
+                    }
+                }
+            }
+            ";
+
+            var testFile = WriteTestFile("Test", testScript);
+
+            var result = _executor.RunTest(_powerShell, testFile, _runContext.Object);
+
+            Assert.AreEqual(TestOutcome.Skipped, result.Outcome);
         }
     }
 }

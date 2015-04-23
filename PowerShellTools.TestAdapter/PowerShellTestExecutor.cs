@@ -146,7 +146,20 @@ namespace PowerShellTools.TestAdapter
                 var describe = result.Properties["Describe"].Value as string;
                 if (describeName.Equals(describe, StringComparison.OrdinalIgnoreCase))
                 {
-                    testOutcome = GetOutcome(result.Properties["Result"].Value as string);
+                    var currentOutcome = GetOutcome(result.Properties["Result"].Value as string);
+                    if(currentOutcome == TestOutcome.Failed)
+                    {
+                        testOutcome = TestOutcome.Failed;
+                    }
+                    else if (testOutcome == TestOutcome.Passed && currentOutcome != TestOutcome.Passed)
+                    {
+                        testOutcome = currentOutcome;
+                    }
+                    else if (testOutcome == TestOutcome.NotFound)
+                    {
+                        testOutcome = currentOutcome;
+                    }
+
 
                     var context = result.Properties["Context"].Value as string;
                     var name = result.Properties["Name"].Value as string;

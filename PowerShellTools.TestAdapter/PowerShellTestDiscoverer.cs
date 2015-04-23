@@ -56,6 +56,8 @@ namespace PowerShellTools.TestAdapter
             {
                 var describeName = GetFunctionName(logger, ast1, "describe");
 
+                var tags = GetDescribeTags(logger, ast1);
+
                 var testcase = new TestCase(describeName, PowerShellTestExecutor.ExecutorUri, source)
                 {
                     DisplayName = describeName,
@@ -63,6 +65,11 @@ namespace PowerShellTools.TestAdapter
                     LineNumber = ast1.Extent.StartLineNumber
                 };
 
+                foreach(var tag in tags)
+                {
+                    testcase.Traits.Add(tag, string.Empty);
+                }
+                
                 SendMessage(TestMessageLevel.Informational,
                     String.Format("Adding test [{0}] in {1} at {2}.", describeName, source, testcase.LineNumber), logger);
 
@@ -149,6 +156,32 @@ namespace PowerShellTools.TestAdapter
             }
 
             return contextName;
+        }
+
+        private static IEnumerable<string> GetDescribeTags(IMessageLogger logger, Ast context)
+        {
+            var contextAst = (CommandAst)context;
+            var contextName = string.Empty;
+            bool nextElementIsName1 = false;
+            foreach (var element in contextAst.CommandElements)
+            {
+                if (nextElementIsName1)
+                {
+                    var tagStrings = element.FindAll(m => m is StringConstantExpressionAst, true);
+                    foreach(StringConstantExpressionAst tag in tagStrings)
+                    {
+                        yield return tag.Value;
+                    }
+                    break;
+                }
+
+                if (element is CommandParameterAst &&
+                    (element as CommandParameterAst).ParameterName.Equals("tags",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    nextElementIsName1 = true;
+                }
+            }
         }
 
         private static void SendMessage(TestMessageLevel level, string message, IMessageLogger logger)

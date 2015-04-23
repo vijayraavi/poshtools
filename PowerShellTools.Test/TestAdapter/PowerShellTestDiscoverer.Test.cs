@@ -150,5 +150,46 @@ namespace PowerShellTools.Test.TestAdapter
             Assert.IsTrue(testCases.Any(), "No test cases found.");
             Assert.AreEqual("BuildIfChanged", testCases[0].FullyQualifiedName);
         }
+
+        [TestMethod]
+        public void ShouldFindSingleTag()
+        {
+            const string testScript = @"
+            Describe -Name 'BuildIfChanged' -Tags MyTag {
+                It -Name 'Something' {
+                }
+            }";
+
+            var tempFile = WriteTestFile(testScript);
+
+            var testCases = new List<TestCase>();
+            _sink.Setup(m => m.SendTestCase(It.IsAny<TestCase>())).Callback<TestCase>(testCases.Add);
+
+            _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
+
+            Assert.IsTrue(testCases.Any(), "No test cases found.");
+            Assert.AreEqual("MyTag", testCases[0].Traits.FirstOrDefault().Name);
+        }
+
+        [TestMethod]
+        public void ShouldFindArrayOfTags()
+        {
+            const string testScript = @"
+            Describe -Name 'BuildIfChanged' -Tags @('MyTag','MyTag2') {
+                It -Name 'Something' {
+                }
+            }";
+
+            var tempFile = WriteTestFile(testScript);
+
+            var testCases = new List<TestCase>();
+            _sink.Setup(m => m.SendTestCase(It.IsAny<TestCase>())).Callback<TestCase>(testCases.Add);
+
+            _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
+
+            Assert.IsTrue(testCases.Any(), "No test cases found.");
+            Assert.AreEqual("MyTag", testCases[0].Traits.FirstOrDefault().Name);
+            Assert.AreEqual("MyTag2", testCases[0].Traits.LastOrDefault().Name);
+        }
     }
 }
