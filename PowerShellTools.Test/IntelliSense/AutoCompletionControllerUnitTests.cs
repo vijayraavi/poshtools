@@ -100,6 +100,33 @@ namespace PowerShellTools.Test.IntelliSense
         }
 
         [TestMethod]
+        public void ShouldKeepMovingToRightByTypingCompletedBracesInNestedBracePairs()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+            autoCompletionController.SetAutoCompleteState(true);
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc{([])}";
+            _mockedCaret = 9;
+
+            int actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.TYPECHAR, ']');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc{([])}", _mockedScript);
+            Assert.AreEqual<int>(_mockedCaret, 10);
+
+            actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.TYPECHAR, ']');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc{([])}", _mockedScript);
+            Assert.AreEqual<int>(_mockedCaret, 11);
+
+            actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.TYPECHAR, ']');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc{([])}", _mockedScript);
+            Assert.AreEqual<int>(_mockedCaret, 12);
+        }
+
+        [TestMethod]
         public void ShouldCompletedQuotesWhenNextCharIsNotSameQuotes()
         {
             var autoCompletionController = FakeAutoCompletionController();
@@ -253,6 +280,46 @@ namespace PowerShellTools.Test.IntelliSense
             Assert.AreEqual<int>(6, _mockedCaret);
         }
 
+        [TestMethod]
+        public void ShouldProcessBackspaceInNestedAutoCompletions()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc(())";
+            _mockedCaret = 8;
+            int actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.BACKSPACE);
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc()", _mockedScript);
+            Assert.AreEqual<int>(7, _mockedCaret);
+
+            actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.BACKSPACE);
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc", _mockedScript);
+            Assert.AreEqual<int>(6, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldProcessBackspaceWhenInStringButRightAfterAutoCompletions()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc("""")";
+            _mockedCaret = 8;
+            int actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.BACKSPACE);
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc()", _mockedScript);
+            Assert.AreEqual<int>(7, _mockedCaret);
+
+            actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.BACKSPACE);
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc", _mockedScript);
+            Assert.AreEqual<int>(6, _mockedCaret);
+        }
+        
         private AutoCompletionController FakeAutoCompletionController(string contentType = PowerShellConstants.LanguageName)
         {
             var textView = TextViewMock(contentType);
