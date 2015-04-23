@@ -9,6 +9,7 @@ using Microsoft.PowerShell;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using PowerShellTools.TestAdapter.Properties;
 
 namespace PowerShellTools.TestAdapter
 {
@@ -47,7 +48,7 @@ namespace PowerShellTools.TestAdapter
 
                 var testResult = new TestResult(test);
                 testResult.Outcome = TestOutcome.Failed;
-                testResult.ErrorMessage = "Unexpected error! Failed to run tests!";
+                testResult.ErrorMessage = Resources.UnexpectedError;
 
                 PowerShellTestResult testResultData = null;
                 var testOutput = new StringBuilder();
@@ -108,17 +109,8 @@ namespace PowerShellTools.TestAdapter
             if (powerShell.HadErrors)
             {
                 var errorRecord = powerShell.Streams.Error.FirstOrDefault();
-                var errorMessage = errorRecord == null ? String.Empty : errorRecord.ToString();
-                return new PowerShellTestResult(TestOutcome.Failed, "Failed to load Pester module. " + errorMessage, String.Empty);
-            }
-
-            powerShell.AddCommand("Get-Module").AddParameter("Name", "Pester");
-            var moduleInfo = powerShell.Invoke<PSModuleInfo>().FirstOrDefault();
-            powerShell.Commands.Clear();
-
-            if (moduleInfo == null)
-            {
-                return new PowerShellTestResult(TestOutcome.Failed, "Failed to get Pester module version.", String.Empty);
+                var errorMessage = errorRecord == null ? string.Empty : errorRecord.ToString();
+                return new PowerShellTestResult(TestOutcome.Failed, Resources.FailedToLoadPesterModule + errorMessage, string.Empty);
             }
 
             var fi = new FileInfo(testCase.CodeFilePath);
@@ -168,12 +160,12 @@ namespace PowerShellTools.TestAdapter
 
                     if (!string.IsNullOrEmpty(stackTraceString))
                     {
-                        stackTrace.AppendFormat("{0} it {1}\r\n{2}\r\n\r\n", context, name, stackTraceString);
+                        stackTrace.AppendLine(string.Format("{0} it {1}\r\n{2}", context, name, stackTraceString));
                     }
 
                     if (!string.IsNullOrEmpty(errorString))
                     {
-                        error.AppendFormat("{0} it {1}\r\n{2}\r\n\r\n", context, name, errorString);
+                        error.AppendLine(string.Format("{0} it {1}\r\n{2}", context, name, errorString));
                     }
                 }
             }
@@ -206,12 +198,12 @@ namespace PowerShellTools.TestAdapter
         protected string FindModule(string moduleName, IRunContext runContext)
         {
             var pesterPath = GetModulePath(moduleName, runContext.TestRunDirectory);
-            if (String.IsNullOrEmpty(pesterPath))
+            if (string.IsNullOrEmpty(pesterPath))
             {
                 pesterPath = GetModulePath(moduleName, runContext.SolutionDirectory);
             }
 
-            if (String.IsNullOrEmpty(pesterPath))
+            if (string.IsNullOrEmpty(pesterPath))
             {
                 pesterPath = moduleName;
             }
@@ -231,18 +223,18 @@ namespace PowerShellTools.TestAdapter
                 var packagePath = Directory.GetDirectories(packagesRoot, moduleName + "*", SearchOption.TopDirectoryOnly).FirstOrDefault();
                 if (null != packagePath)
                 {
-                    var psd1 = Path.Combine(packagePath, String.Format(@"tools\{0}.psd1", moduleName));
+                    var psd1 = Path.Combine(packagePath, string.Format(@"tools\{0}.psd1", moduleName));
                     if (File.Exists(psd1))
                     {
                         return psd1;
                     }
 
-                    var psm1 = Path.Combine(packagePath, String.Format(@"tools\{0}.psm1", moduleName));
+                    var psm1 = Path.Combine(packagePath, string.Format(@"tools\{0}.psm1", moduleName));
                     if (File.Exists(psm1))
                     {
                         return psm1;
                     }
-                    var dll = Path.Combine(packagePath, String.Format(@"tools\{0}.dll", moduleName));
+                    var dll = Path.Combine(packagePath, string.Format(@"tools\{0}.dll", moduleName));
                     if (File.Exists(dll))
                     {
                         return dll;

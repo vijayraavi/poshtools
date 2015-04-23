@@ -118,7 +118,18 @@
     <Compile Include="PowerShellTestContainerDiscoverer.cs" />
     <Compile Include="PowerShellTestDiscoverer.cs" />
     <Compile Include="PowerShellTestResult.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="TestAdapterHost.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Build\ProjectAfter.settings" />
 </Project>

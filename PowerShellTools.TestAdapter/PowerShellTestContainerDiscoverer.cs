@@ -90,7 +90,7 @@ namespace PowerShellTools.TestAdapter
             _logger.Log(MessageLevel.Diagnostic, "PowerShellTestContainerDiscoverer:OnSolutionProjectChanged");
             if (e != null)
             {
-                IEnumerable<string> files = FindPs1Files(e.Project);
+                IEnumerable<string> files = FindPowerShellTestFiles(e.Project);
                 if (e.ChangedReason == SolutionChangedReason.Load)
                 {
                     _logger.Log(MessageLevel.Diagnostic,
@@ -138,7 +138,7 @@ namespace PowerShellTools.TestAdapter
             if (e != null)
             {
                 // Don't do anything for files we are sure can't be test files
-                if (!IsPs1File(e.File)) return;
+                if (!IsPowerShellTestFile(e.File)) return;
 
                 _logger.Log(MessageLevel.Diagnostic, "PowerShellTestContainerDiscoverer:OnProjectItemChanged - IsPs1File");
 
@@ -171,7 +171,7 @@ namespace PowerShellTools.TestAdapter
 
         private void AddTestContainerIfTestFile(string file)
         {
-            bool isTestFile = IsTestFile(file);
+            bool isTestFile = IsPowerShellTestFile(file);
             RemoveTestContainer(file); // Remove if there is an existing container
 
             // If this is a test file
@@ -202,43 +202,38 @@ namespace PowerShellTools.TestAdapter
             if (_initialContainerSearch)
             {
                 _cachedContainers.Clear();
-                IEnumerable<string> xmlFiles = FindPs1Files();
-                UpdateFileWatcher(xmlFiles, true);
+                IEnumerable<string> testFiles = FindPowerShellTestFiles();
+                UpdateFileWatcher(testFiles, true);
                 _initialContainerSearch = false;
             }
 
             return _cachedContainers;
         }
 
-        private IEnumerable<string> FindPs1Files()
+        private IEnumerable<string> FindPowerShellTestFiles()
         {
             var solution = (IVsSolution) _serviceProvider.GetService(typeof (SVsSolution));
             IEnumerable<IVsProject> loadedProjects =
                 solution.EnumerateLoadedProjects(__VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION).OfType<IVsProject>();
 
-            return loadedProjects.SelectMany(FindPs1Files).ToList();
+            return loadedProjects.SelectMany(FindPowerShellTestFiles).ToList();
         }
 
-        private IEnumerable<string> FindPs1Files(IVsProject project)
+        private IEnumerable<string> FindPowerShellTestFiles(IVsProject project)
         {
             _logger.Log(MessageLevel.Diagnostic,
                 "PowerShellTestContainerDiscoverer:OnTestContainersChanged - FindPs1Files");
             return from item in VsSolutionHelper.GetProjectItems(project)
-                where IsTestFile(item)
+                where IsPowerShellTestFile(item)
                 select item;
         }
 
-        private static bool IsPs1File(string path)
-        {
-            return path.EndsWith(".tests.ps1", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private bool IsTestFile(string path)
+        private bool IsPowerShellTestFile(string path)
         {
             try
             {
                 _logger.Log(MessageLevel.Diagnostic, "PowerShellTestContainerDiscoverer:IsTestFile - " + path);
-                return IsPs1File(path);
+                return path.EndsWith(".tests.ps1", StringComparison.OrdinalIgnoreCase);
             }
             catch (IOException e)
             {

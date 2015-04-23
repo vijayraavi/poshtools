@@ -5,6 +5,7 @@ using System.Management.Automation.Language;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using PowerShellTools.TestAdapter.Properties;
 
 namespace PowerShellTools.TestAdapter
 {
@@ -31,7 +32,7 @@ namespace PowerShellTools.TestAdapter
         private static void DiscoverPesterTests(ITestCaseDiscoverySink discoverySink, IMessageLogger logger, string source,
             List<TestCase> tests)
         {
-            SendMessage(TestMessageLevel.Informational, String.Format("Searching for tests in [{0}].", source), logger);
+            SendMessage(TestMessageLevel.Informational, string.Format(Resources.SearchingForTestsFormat, source), logger);
             Token[] tokens;
             ParseError[] errors;
             var ast = Parser.ParseFile(source, out tokens, out errors);
@@ -40,17 +41,16 @@ namespace PowerShellTools.TestAdapter
             {
                 foreach (var error in errors)
                 {
-                    SendMessage(TestMessageLevel.Error, String.Format("Parser error. {0}", error.Message), logger);
+                    SendMessage(TestMessageLevel.Error, string.Format(Resources.ParserErrorFormat, error.Message), logger);
                 }
                 return;
             }
 
             var testSuites =
                 ast.FindAll(
-                    m => 
+                    m =>
                         (m is CommandAst) &&
-                        (m as CommandAst).GetCommandName() != null &&
-                        (m as CommandAst).GetCommandName().Equals("describe", StringComparison.OrdinalIgnoreCase), true);
+                        string.Equals("describe", (m as CommandAst).GetCommandName(), StringComparison.OrdinalIgnoreCase), true);
 
             foreach (var ast1 in testSuites)
             {
@@ -71,11 +71,10 @@ namespace PowerShellTools.TestAdapter
                 }
                 
                 SendMessage(TestMessageLevel.Informational,
-                    String.Format("Adding test [{0}] in {1} at {2}.", describeName, source, testcase.LineNumber), logger);
+                    string.Format(Resources.AddingTestFormat, describeName, source, testcase.LineNumber), logger);
 
                 if (discoverySink != null)
                 {
-                    SendMessage(TestMessageLevel.Informational, "Sending test to sync.", logger);
                     discoverySink.SendTestCase(testcase);
                 }
 
@@ -111,8 +110,7 @@ namespace PowerShellTools.TestAdapter
         private static string GetParentContextName(IMessageLogger logger, Ast ast)
         {
             if  (ast.Parent is CommandAst &&
-                (ast.Parent as CommandAst).GetCommandName() != null &&
-                (ast.Parent as CommandAst).GetCommandName().Equals("context", StringComparison.OrdinalIgnoreCase))
+                string.Equals("context", (ast.Parent as CommandAst).GetCommandName(), StringComparison.OrdinalIgnoreCase))
             {
                 return GetFunctionName(logger, ast.Parent, "context");
             }
@@ -128,8 +126,7 @@ namespace PowerShellTools.TestAdapter
         private static string GetFunctionName(IMessageLogger logger, Ast context, string functionName)
         {
             var contextAst = (CommandAst) context;
-            SendMessage(TestMessageLevel.Informational, String.Format("Found {0} block.", functionName), logger);
-            var contextName = String.Empty;
+            var contextName = string.Empty;
             bool nextElementIsName1 = false;
             foreach (var element in contextAst.CommandElements)
             {
