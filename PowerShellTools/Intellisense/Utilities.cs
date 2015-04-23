@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Text;
 using System.Threading.Tasks;
@@ -83,36 +84,40 @@ namespace PowerShellTools.Intellisense
             }
         }
 
-        internal static bool IsInCommentArea(int caretPosition, ITextBuffer buffer)
+        internal static bool IsInCommentArea(int position, ITextBuffer buffer)
         {
-            return IsCaretInCertainTokenKindArea(caretPosition, buffer, TokenKind.Comment);
+            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.Comment);
         }
 
-        internal static bool IsInStringArea(int caretPosition, ITextBuffer buffer)
+        internal static bool IsInStringArea(int position, ITextBuffer buffer)
         {
-            return IsCaretInCertainTokenKindArea(caretPosition, buffer, TokenKind.StringExpandable, TokenKind.StringLiteral);
+            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.String);
         }
 
-        internal static bool IsInParameterArea(int caretPosition, ITextBuffer buffer)
+        internal static bool IsInParameterArea(int position, ITextBuffer buffer)
         {
-            return IsCaretInCertainTokenKindArea(caretPosition, buffer, TokenKind.Parameter);
+            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.CommandParameter);
         }
 
-        private static bool IsCaretInCertainTokenKindArea(int caretPosition, ITextBuffer buffer, params TokenKind[] selectedKinds)
+        internal static bool IsInVariableArea(int position, ITextBuffer buffer)
         {
-            if (caretPosition < 0)
+            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.Variable);
+        }
+        private static bool IsInCertainPSTokenTypesArea(int position, ITextBuffer buffer, params PSTokenType[] selectedPSTokenTypes)
+        {
+            if (position < 0)
             {
-                throw new ArgumentOutOfRangeException("Caret position should be at least 0.");
+                throw new ArgumentOutOfRangeException("Buffer position should be at least 0.");
             }
 
             Token[] tokens;
             if (buffer.Properties.TryGetProperty<Token[]>(BufferProperties.Tokens, out tokens) && tokens != null && tokens.Length != 0)
             {
-                var filteredTokens = tokens.Where(t => selectedKinds.Any(k => t.Kind == k)).ToList();
+                var filteredTokens = tokens.Where(t => selectedPSTokenTypes.Any(k => PSToken.GetPSTokenType(t) == k)).ToList();
 
                 foreach (var token in filteredTokens)
                 {
-                    if (token.Extent.StartOffset <= caretPosition && caretPosition <= token.Extent.EndOffset)
+                    if (token.Extent.StartOffset <= position && position <= token.Extent.EndOffset)
                     {
                         return true;
                     }
