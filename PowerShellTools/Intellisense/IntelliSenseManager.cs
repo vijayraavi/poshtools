@@ -62,8 +62,8 @@ namespace PowerShellTools.Intellisense
             _callbackContext = callbackContext;
             _callbackContext.CompletionListUpdated += IntelliSenseManager_CompletionListUpdated;
             _currentActiveWindowId = this.GetHashCode();
-            
-            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));            
+
+            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
         }
 
         private void TextView_Closed(object sender, EventArgs e)
@@ -95,7 +95,7 @@ namespace PowerShellTools.Intellisense
         public int Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
-                Utilities.IsInCommentArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer) ||
+                Utilities.IsCaretInCommentArea(_textView) ||
                 IsUnhandledCommand(pguidCmdGroup, nCmdId))
             {
                 Log.DebugFormat("Non-VSStd2K command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
@@ -119,12 +119,12 @@ namespace PowerShellTools.Intellisense
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
 
-                if (_activeSession == null && 
+                if (_activeSession == null &&
                     IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar) &&
                     Utilities.IsInStringArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
                 {
                     return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
-                }                
+                }
             }
             else
             {
@@ -322,7 +322,7 @@ namespace PowerShellTools.Intellisense
                     }
                 }
             }
-            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE || 
+            else if (command == VSConstants.VSStd2KCmdID.BACKSPACE ||
                      command == VSConstants.VSStd2KCmdID.DELETE) //redo the filter if there is a deletion
             {
                 if (_activeSession != null && !_activeSession.IsDismissed)
@@ -416,7 +416,7 @@ namespace PowerShellTools.Intellisense
                 {
                     Log.Warn("Failed to start IntelliSense", ex);
                 }
-            }); 
+            });
         }
 
         private void StartIntelliSense(int lineStartPosition, int caretPosition, string lineTextUpToCaret)
@@ -476,7 +476,7 @@ namespace PowerShellTools.Intellisense
         {
             // If the call back isn't targetting this window, then don't display results.
             if (e.Value2 != _currentActiveWindowId)
-        {
+            {
                 return;
             }
 
@@ -612,7 +612,7 @@ namespace PowerShellTools.Intellisense
                 var completions = _activeSession.SelectedCompletionSet.Completions;
 
                 if (completions != null && completions.Count > 0)
-            {
+                {
                     var startPoint = _activeSession.SelectedCompletionSet.ApplicableTo.GetStartPoint(_textView.TextBuffer.CurrentSnapshot).Position;
                     _tabCompleteSession = new TabCompleteSession(completions, _activeSession.SelectedCompletionSet.SelectionStatus, startPoint);
                     _activeSession.Commit();
@@ -653,28 +653,7 @@ namespace PowerShellTools.Intellisense
 
         private int GetPreviousBufferPosition(out ITextBuffer currentActiveBuffer)
         {
-            int currentBufferPosition;
-            if (_textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
-            {
-                currentActiveBuffer = _textView.TextBuffer;
-                currentBufferPosition = _textView.Caret.Position.BufferPosition.Position;
-            }
-            // If in the REPL window, the current textbuffer won't work, so we have to get the last PowerShellLanguage buffer
-            else if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
-            {
-                currentActiveBuffer = _textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
-                                                                   .LastOrDefault();
-                currentBufferPosition = _textView.BufferGraph.MapDownToBuffer(_textView.Caret.Position.BufferPosition,
-                                                                               PointTrackingMode.Positive,
-                                                                               currentActiveBuffer,
-                                                                               PositionAffinity.Successor).Value.Position;
-            }
-            else
-            {
-                Log.Error("The content type of the text buffer isn't recognized.");
-                currentActiveBuffer = null;
-                return -1;
-            }
+            int currentBufferPosition = Utilities.GetCurrentBufferPosition(_textView, out currentActiveBuffer);
             return currentBufferPosition - 1;
         }
 
