@@ -86,6 +86,11 @@ namespace PowerShellTools.Intellisense
             }
         }
 
+        /// <summary>
+        /// Determines if caret is in comment area.
+        /// </summary>
+        /// <param name="textView">Current text view.</param>
+        /// <returns>True if caret is in comment area. Otherwise, false.</returns>
         internal static bool IsCaretInCommentArea(ITextView textView)
         {
             ITextBuffer currentActiveBuffer;
@@ -97,6 +102,15 @@ namespace PowerShellTools.Intellisense
             return Utilities.IsInCommentArea(currentPosition, currentActiveBuffer);
         }
 
+        /// <summary>
+        /// Get current caret position on a PowerShell textbuffer. If current top text buffer is of type PowerShell, then directly return caret postion.
+        /// If current top text buffer is of type REPL, we need to map caret position from REPL text buffer to last PowerShell text buffer and return it. 
+        /// If such a mapping doesn't exist, then return -1.
+        /// If current top text buffer is neither PowerShell or REPL, we don't deal with it. Just return -1.
+        /// </summary>
+        /// <param name="textView">The current text view</param>
+        /// <param name="currentActiveBuffer">Get the active buffer the caret is on.</param>
+        /// <returns>Return the right caret position in a PowerShell text buffer or -1 if none is found.</returns>
         internal static int GetCurrentBufferPosition(ITextView textView, out ITextBuffer currentActiveBuffer)
         {
             int currentBufferPosition;
@@ -105,7 +119,7 @@ namespace PowerShellTools.Intellisense
                 currentActiveBuffer = textView.TextBuffer;
                 currentBufferPosition = textView.Caret.Position.BufferPosition.Position;
             }
-            // If in the REPL window, the current textbuffer won't work, so we have to get the last PowerShellLanguage buffer
+            // If in the REPL window, the current textbuffer won't work, so we have to get the last PowerShell buffer
             else if (textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
             {
                 currentActiveBuffer = textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
@@ -150,6 +164,7 @@ namespace PowerShellTools.Intellisense
         {
             return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.Variable, PSTokenType.Member);
         }
+
         private static bool IsInCertainPSTokenTypesArea(int position, ITextBuffer buffer, params PSTokenType[] selectedPSTokenTypes)
         {
             if (position < 0 || position > buffer.CurrentSnapshot.Length)
