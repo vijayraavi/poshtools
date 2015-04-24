@@ -110,10 +110,18 @@ namespace PowerShellTools.Intellisense
             {
                 currentActiveBuffer = textView.BufferGraph.GetTextBuffers(p => p.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
                                                                    .LastOrDefault();
-                currentBufferPosition = textView.BufferGraph.MapDownToBuffer(textView.Caret.Position.BufferPosition,
+                var currentSnapshotPoint = textView.BufferGraph.MapDownToBuffer(textView.Caret.Position.BufferPosition,
                                                                                PointTrackingMode.Positive,
                                                                                currentActiveBuffer,
-                                                                               PositionAffinity.Successor).Value.Position;
+                                                                               PositionAffinity.Successor);
+                if (currentSnapshotPoint != null)
+                {
+                    currentBufferPosition = currentSnapshotPoint.Value.Position;
+                }
+                else
+                {
+                    currentBufferPosition = -1; 
+                }
             }
             else
             {
@@ -140,13 +148,13 @@ namespace PowerShellTools.Intellisense
 
         internal static bool IsInVariableArea(int position, ITextBuffer buffer)
         {
-            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.Variable);
+            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.Variable, PSTokenType.Member);
         }
         private static bool IsInCertainPSTokenTypesArea(int position, ITextBuffer buffer, params PSTokenType[] selectedPSTokenTypes)
         {
-            if (position < 0)
+            if (position < 0 || position > buffer.CurrentSnapshot.Length)
             {
-                throw new ArgumentOutOfRangeException("Buffer position should be at least 0.");
+                return false;
             }
 
             Token[] tokens;
