@@ -171,19 +171,15 @@ namespace PowerShellTools.ServiceManagement
         }
 
         /// <summary>
-        /// Monitoring thread for user input request
+        /// Write user input into standard input pipe(redirected)
         /// </summary>
-        /// <remarks>
-        /// Will be started once app begins to run on remote PowerShell host service
-        /// Stopped once app exits
-        /// </remarks>
+        /// <param name="content">User input string</param>
         public void WriteHostProcessStandardInputStream(string content)
         {
             StreamWriter _inputStreamWriter = Process.StandardInput;
 
             // Feed into stdin stream
             _inputStreamWriter.WriteLine(content);
-
             _inputStreamWriter.Flush();
         }
     }

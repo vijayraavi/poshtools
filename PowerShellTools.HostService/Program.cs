@@ -9,7 +9,6 @@ using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.HostService.ServiceManagement;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.HostService.ServiceManagement.Debugging;
-using System.Runtime.InteropServices;
 
 namespace PowerShellTools.HostService
 {
@@ -41,7 +40,7 @@ namespace PowerShellTools.HostService
             {
                 return 1;
             }
-            
+
             int vsProcessId;
             if (!Int32.TryParse(args[1].Remove(0, Constants.VsProcessIdArg.Length),
                             NumberStyles.None,
@@ -59,7 +58,7 @@ namespace PowerShellTools.HostService
             {
                 return 1;
             }
-            
+
             // Step 1: Create the NetNamedPipeBinding. 
             // Note: the setup of the binding should be same as the client side, otherwise, the connection won't get established
             Uri baseAddress = new Uri(Constants.ProcessManagerHostUri + EndpointGuid);
@@ -123,7 +122,7 @@ namespace PowerShellTools.HostService
                 _powershellDebuggingServiceHost.Close();
                 _powershellDebuggingServiceHost = null;
             }
-            
+
             Environment.Exit(0);
             return 0;
         }

@@ -182,7 +182,7 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
-        /// 
+        /// App running in host process requiring an user input
         /// </summary>
         public void RequestUserInputOnStdIn()
         {
@@ -191,7 +191,10 @@ namespace PowerShellTools.DebugEngine
             // Feed into stdin stream
             if (!string.IsNullOrEmpty(inputText))
             {
-                ConnectionManager.Instance.HostProcess.WriteHostProcessStandardInputStream(inputText);
+                if (ConnectionManager.Instance != null && ConnectionManager.Instance.HostProcess != null)
+                {
+                    ConnectionManager.Instance.HostProcess.WriteHostProcessStandardInputStream(inputText);
+                }
             }
         }
     }

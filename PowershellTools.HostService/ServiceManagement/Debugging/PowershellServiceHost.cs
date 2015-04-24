@@ -18,16 +18,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     public partial class PowerShellDebuggingService : PSHost, IHostSupportsInteractiveSession
     {
+        const int STD_INPUT_HANDLE = -10;
+
         [DllImport("kernel32.dll")]
         static extern IntPtr GetStdHandle(int handle);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
 
-        const int STD_INPUT_HANDLE = -10;
-
         /// <summary>
-        /// Indicate if there is app running from PSHOST
+        /// App running flag indicating if there is app runing on PSHost
         /// </summary>
         private bool _appRunning = false;
 
@@ -40,6 +40,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// A reference to the runspace used to start an interactive session.
         /// </summary>
         private Runspace _pushedRunspace = null;
+
+        /// <summary>
+        /// Thread lock
+        /// </summary>
+        private object _synLock = new object();
 
         /// <summary>
         /// Gets a string that contains the name of this host implementation. 
@@ -90,15 +95,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             set
             {
-                _appRunning = value;
-
-                // Start monitoring thread when app starts
-                if (value)
+                lock (_synLock)
                 {
-                    Task.Run(() =>
+                    _appRunning = value;
+
+                    // Start monitoring thread
+                    if (value)
                     {
-                        MonitorUserInputRequest();
-                    });
+                        Task.Run(() =>
+                        {
+                            MonitorUserInputRequest();
+                        });
+                    }
                 }
             }
         }
@@ -291,6 +299,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Monitoring thread for user input request
+        /// Get a handle of the console console input file object,
+        /// and check whether it's signalled by calling WaiForSingleobject with zero timeout. 
+        /// If it's not signalled, the process issued a pending Read on the handle
+        /// </summary>
+        /// <remarks>
+        /// Will be started once app begins to run on remote PowerShell host service
+        /// Stopped once app exits
+        /// </remarks>
         private void MonitorUserInputRequest()
         {
             while (_appRunning)
