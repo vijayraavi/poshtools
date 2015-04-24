@@ -152,8 +152,6 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     public class PowerShellHostProcess
     {
-        private bool _appRunning = false;
-
         public Process Process 
         {
             get; 
@@ -164,30 +162,6 @@ namespace PowerShellTools.ServiceManagement
         {
             get; 
             private set; 
-        }
-
-        /// <summary>
-        /// App running flag indicating if there is app runing on PSHost
-        /// </summary>
-        public bool AppRunning
-        {
-            get
-            {
-                return _appRunning;
-            }
-            set
-            {
-                _appRunning = value;
-
-                // Start monitoring thread when app starts
-                if (value)
-                {
-                    Task.Run(() =>
-                    {
-                        MonitorUserInputRequest();
-                    });
-                }
-            }
         }
 
         public PowerShellHostProcess(Process process, Guid guid)
@@ -203,34 +177,12 @@ namespace PowerShellTools.ServiceManagement
         /// Will be started once app begins to run on remote PowerShell host service
         /// Stopped once app exits
         /// </remarks>
-        private void MonitorUserInputRequest()
+        public void WriteHostProcessStandardInputStream(string content)
         {
             StreamWriter _inputStreamWriter = Process.StandardInput;
 
-            while (AppRunning)
-            {
-                foreach (ProcessThread thread in Process.Threads)
-                {
-                    if (thread.ThreadState == System.Diagnostics.ThreadState.Wait
-                        && thread.WaitReason == ThreadWaitReason.UserRequest)
-                    {
-                        if (PowerShellToolsPackage.Debugger != null &&
-                            PowerShellToolsPackage.Debugger.HostUi != null)
-                        {
-                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage, string.Empty);
-
-                            if (AppRunning)
-                            {
-                                // Feed into stdin stream
-                                _inputStreamWriter.WriteLine(inputText);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                Thread.Sleep(50);
-            }
+            // Feed into stdin stream
+            _inputStreamWriter.WriteLine(content);
 
             _inputStreamWriter.Flush();
         }

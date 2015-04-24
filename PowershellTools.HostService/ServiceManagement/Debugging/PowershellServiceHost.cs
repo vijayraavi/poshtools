@@ -12,11 +12,25 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Diagnostics;
 using PowerShellTools.Common;
+using System.Runtime.InteropServices;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     public partial class PowerShellDebuggingService : PSHost, IHostSupportsInteractiveSession
     {
+        [DllImport("kernel32.dll")]
+        static extern IntPtr GetStdHandle(int handle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+
+        const int STD_INPUT_HANDLE = -10;
+
+        /// <summary>
+        /// Indicate if there is app running from PSHOST
+        /// </summary>
+        private bool _appRunning = false;
+
         /// <summary>
         /// The identifier of this PSHost implementation.
         /// </summary>
@@ -66,6 +80,30 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// App running flag indicating if there is app runing on PSHost
+        /// </summary>
+        public bool AppRunning
+        {
+            get
+            {
+                return _appRunning;
+            }
+            set
+            {
+                _appRunning = value;
+
+                // Start monitoring thread when app starts
+                if (value)
+                {
+                    Task.Run(() =>
+                    {
+                        MonitorUserInputRequest();
+                    });
+                }
+            }
+        }
+
+        /// <summary>
         /// This API Instructs the host to interrupt the currently running 
         /// pipeline and start a new nested input loop. In this example this 
         /// functionality is not needed so the method throws a 
@@ -97,10 +135,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override void NotifyBeginApplication()
         {
-            if (_callback != null)
-            {
-                _callback.StartMonitorUserInputRequest();
-            }
+            AppRunning = true;
         }
 
         /// <summary>
@@ -111,10 +146,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override void NotifyEndApplication()
         {
-            if (_callback != null)
-            {
-                _callback.StopMonitorUserInputRequest();
-            }
+            AppRunning = false;
         }
 
         /// <summary>
@@ -256,6 +288,22 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 catch (RemoteException)
                 {
                 }
+            }
+        }
+
+        private void MonitorUserInputRequest()
+        {
+            while (_appRunning)
+            {
+                IntPtr handle = GetStdHandle(STD_INPUT_HANDLE);
+                UInt32 ret = WaitForSingleObject(handle, 0);
+
+                if (ret != 0 && _callback != null)
+                {
+                    _callback.RequestUserInputOnStdIn();
+                }
+
+                System.Threading.Thread.Sleep(50);
             }
         }
 

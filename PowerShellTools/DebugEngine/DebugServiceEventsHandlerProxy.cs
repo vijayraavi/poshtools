@@ -181,20 +181,17 @@ namespace PowerShellTools.DebugEngine
                 targetName, allowedCredentialTypes, options);
         }
 
-
-        public void StartMonitorUserInputRequest()
+        /// <summary>
+        /// 
+        /// </summary>
+        public void RequestUserInputOnStdIn()
         {
-            if (ConnectionManager.Instance.HostProcess != null)
+            string inputText = Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage, string.Empty);
+         
+            // Feed into stdin stream
+            if (!string.IsNullOrEmpty(inputText))
             {
-                ConnectionManager.Instance.HostProcess.AppRunning = true;
-            }
-        }
-
-        public void StopMonitorUserInputRequest()
-        {
-            if (ConnectionManager.Instance.HostProcess != null)
-            {
-                ConnectionManager.Instance.HostProcess.AppRunning = false;
+                ConnectionManager.Instance.HostProcess.WriteHostProcessStandardInputStream(inputText);
             }
         }
     }
