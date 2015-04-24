@@ -45,10 +45,17 @@ namespace PowerShellTools.Intellisense
             textBuffer.Properties.TryGetProperty<ITrackingSpan>(BufferProperties.LineUpToReplacementSpan, out lineStartToApplicableTo);
 
             var currentSnapshot = textBuffer.CurrentSnapshot;
-            var filterSpan = currentSnapshot.CreateTrackingSpan(trackingSpan.GetEndPoint(currentSnapshot).Position, 0, SpanTrackingMode.EdgeInclusive);
-            Log.DebugFormat("TrackingSpan: {0}", trackingSpan.GetText(currentSnapshot));
-            Log.DebugFormat("FilterSpan: {0}", filterSpan.GetText(currentSnapshot));
+            var trackingSpanEndPoint = trackingSpan.GetEndPoint(currentSnapshot);
 
+            // When IntelliSense for path completion is triggered in double quotes, the quotes are both part of completion, which makes the endpoint of tracking span not boudary of the final completion.
+            var endCharPoint = trackingSpanEndPoint - 1;
+            char trackingSpanEndPointChar = endCharPoint.GetChar();
+            if ( trackingSpanEndPointChar == '\"')
+            {
+                trackingSpanEndPoint = endCharPoint;
+            }
+            var filterSpan = currentSnapshot.CreateTrackingSpan(trackingSpanEndPoint, 0, SpanTrackingMode.EdgeInclusive);
+            
             var compList = new List<Completion>();
             foreach (var match in list)
             {
@@ -160,30 +167,43 @@ namespace PowerShellTools.Intellisense
         public override void SelectBestMatch()
         {
             var text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
+
             if (text.Length == 0)
             {
-		foreach (var current in Completions)
-		{
-		    if (current.DisplayText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase))
-		    {
-			SelectionStatus = new CompletionSelectionStatus(current, true, true);
-			return;
-		    }
-		}                
+                if (InitialApplicableTo.EndsWith("\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                foreach (var current in Completions)
+                {
+                    if (current.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase))
+                    {
+                        SelectionStatus = new CompletionSelectionStatus(current, true, true);
+                        return;
+                    }
+                }
                 return;
             }
             int num = int.MaxValue;
             int matchedCount = 0;
             Completion completion = null;
             foreach (var current in Completions)
-            {
+            {               
+                string currentInsertionText = current.InsertionText;
+                if (current.InsertionText.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && current.InsertionText.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentInsertionText = currentInsertionText.Substring(1, currentInsertionText.Length - 2);
+                }
+
                 var startIndex = current.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? this.InitialApplicableTo.Length : 0;
-                var num2 = current.InsertionText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
+                var num2 = currentInsertionText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
+
                 if (num2 != -1 && num2 < num)
                 {
                     completion = current;
                     num = num2;
-                    ++matchedCount;                    
+                    ++matchedCount;
                 }
             }
             if (completion == null)
@@ -202,7 +222,7 @@ namespace PowerShellTools.Intellisense
             propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, isFullyMatched);
 
             bool isSelected = (matchedCount > 0);
-	    bool isUnique = (matchedCount == 1);
+            bool isUnique = (matchedCount == 1);
 
             SelectionStatus = new CompletionSelectionStatus(completion, isSelected, isUnique);
         }
