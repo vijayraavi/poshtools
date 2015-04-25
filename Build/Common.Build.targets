@@ -25,8 +25,19 @@
     <appveyor_build_version Condition=" '$(appveyor_build_version)' == '' ">1.2.3.4</appveyor_build_version>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- If we are building on a local dev machine, pretend we're given this other version number. Dev builds will have this number.-->
+    <VsixGuid Condition=" '$(VSTarget)' == '11.0' ">58dce676-42b0-4dd6-9ee4-afbc8e582b8b</VsixGuid>
+    <VsixGuid Condition=" '$(VSTarget)' == '12.0' ">58dce676-42b0-4dd6-9ee4-afbc8e582b8a</VsixGuid>
+    <VsixGuid Condition=" '$(VSTarget)' == '14.0' ">58dce676-42b0-4dd6-9ee4-afbc8e582b8a</VsixGuid> <!-- TODO: Change for VS RTM -->
+  </PropertyGroup>
+
+
   <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them -->
+  <!-- TODO: Bring the below into its own .targets file, possibly Vsix.Targets, and import it. -->
   <Target Name="GetVsixVersion" Outputs="$(appveyor_build_version)" />
+  <Target Name="GetVsixVSTarget" Outputs="$(VSTarget)" />
+  <Target Name="GetVsixGuid" Outputs=$(VsixGuid)" />
   
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="'$(Language)' == 'C#'" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(Language)' == 'C#' and '$(CreateVsixContainer)' != '' and $(CreateVsixContainer) and '$(VSToolsPath)' != ''" />

@@ -626,7 +626,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="Manifest\$(VisualStudioVersion)\source.extension.vsixmanifest" />
+    <None Include="Manifest\source.extension.vsixmanifest" />
     <Content Include="poshtools.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
