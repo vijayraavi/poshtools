@@ -187,14 +187,11 @@ namespace PowerShellTools.DebugEngine
         public void RequestUserInputOnStdIn()
         {
             string inputText = Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage, string.Empty);
-         
+
             // Feed into stdin stream
-            if (!string.IsNullOrEmpty(inputText))
+            if (ConnectionManager.Instance != null && ConnectionManager.Instance.HostProcess != null)
             {
-                if (ConnectionManager.Instance != null && ConnectionManager.Instance.HostProcess != null)
-                {
-                    ConnectionManager.Instance.HostProcess.WriteHostProcessStandardInputStream(inputText);
-                }
+                ConnectionManager.Instance.HostProcess.WriteHostProcessStandardInputStream(inputText);
             }
         }
     }

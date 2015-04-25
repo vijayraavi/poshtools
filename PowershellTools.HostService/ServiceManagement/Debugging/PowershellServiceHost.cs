@@ -318,7 +318,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 if (ret != 0 && _callback != null)
                 {
-                    _callback.RequestUserInputOnStdIn();
+                    // Give a bit of time for case where app crashed on readline/readkey
+                    // We dont want to put any dirty content into stdin stream buffer
+                    // Which can only be flushed out till the next readline/readkey
+                    System.Threading.Thread.Sleep(50);
+
+                    if (_appRunning)
+                    {
+                        _callback.RequestUserInputOnStdIn();
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
 
                 System.Threading.Thread.Sleep(50);

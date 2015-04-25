@@ -176,11 +176,14 @@ namespace PowerShellTools.ServiceManagement
         /// <param name="content">User input string</param>
         public void WriteHostProcessStandardInputStream(string content)
         {
-            StreamWriter _inputStreamWriter = Process.StandardInput;
+            if (PowerShellToolsPackage.Debugger.IsAppRunningInPsHost())
+            {
+                StreamWriter _inputStreamWriter = Process.StandardInput;
 
-            // Feed into stdin stream
-            _inputStreamWriter.WriteLine(content);
-            _inputStreamWriter.Flush();
+                // Feed into stdin stream
+                _inputStreamWriter.WriteLine(content);
+                _inputStreamWriter.Flush();
+            }
         }
     }
 }
