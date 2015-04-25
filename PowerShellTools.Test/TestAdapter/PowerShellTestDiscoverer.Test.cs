@@ -191,5 +191,25 @@ namespace PowerShellTools.Test.TestAdapter
             Assert.AreEqual("MyTag", testCases[0].Traits.FirstOrDefault().Name);
             Assert.AreEqual("MyTag2", testCases[0].Traits.LastOrDefault().Name);
         }
+
+        [TestMethod]
+        public void ShouldFindPartialTagsParameter()
+        {
+            const string testScript = @"
+            Describe -Name 'BuildIfChanged' -Tag MyTag {
+                It -Name 'Something' {
+                }
+            }";
+
+            var tempFile = WriteTestFile(testScript);
+
+            var testCases = new List<TestCase>();
+            _sink.Setup(m => m.SendTestCase(It.IsAny<TestCase>())).Callback<TestCase>(testCases.Add);
+
+            _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
+
+            Assert.IsTrue(testCases.Any(), "No test cases found.");
+            Assert.AreEqual("MyTag", testCases[0].Traits.FirstOrDefault().Name);
+        }
     }
 }

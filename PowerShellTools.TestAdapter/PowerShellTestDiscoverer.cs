@@ -173,8 +173,7 @@ namespace PowerShellTools.TestAdapter
                 }
 
                 if (element is CommandParameterAst &&
-                    (element as CommandParameterAst).ParameterName.Equals("tags",
-                        StringComparison.OrdinalIgnoreCase))
+                    "tags".Contains((element as CommandParameterAst).ParameterName.ToLower()))
                 {
                     nextElementIsName1 = true;
                 }

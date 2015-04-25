@@ -152,7 +152,6 @@ namespace PowerShellTools.TestAdapter
                         testOutcome = currentOutcome;
                     }
 
-
                     var context = result.Properties["Context"].Value as string;
                     var name = result.Properties["Name"].Value as string;
                     var stackTraceString = result.Properties["StackTrace"].Value as string;
