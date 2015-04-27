@@ -671,7 +671,7 @@
     <None Include="Templates\Files\Script.psm1" />
     <None Include="Templates\Projects\Module.psd1" />
     <None Include="Templates\Projects\Module.psm1" />
-    <None Include="Templates\Projects\Module.test.ps1" />
+    <None Include="Templates\Projects\Module.tests.ps1" />
     <None Include="Templates\Projects\PowerShellModuleProject.pssproj">
       <SubType>Designer</SubType>
     </None>
