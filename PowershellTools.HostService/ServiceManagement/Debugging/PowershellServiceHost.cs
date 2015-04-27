@@ -174,6 +174,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             if (_pushedRunspace != null)
             {
+                Runspace.StateChanged -= Runspace_StateChanged;
                 UnregisterRemoteFileOpenEvent(Runspace);
                 Runspace = _pushedRunspace;
                 _pushedRunspace = null;
@@ -183,7 +184,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 _callback.SetRemoteRunspace(false);
             }
-            
         }
 
 
@@ -191,6 +191,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             _pushedRunspace = Runspace;
             Runspace = runspace;
+
+            Runspace.StateChanged += Runspace_StateChanged;
 
             if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging
                 && _callback != null
@@ -216,6 +218,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             RegisterRemoteFileOpenEvent(runspace);
+        }
+
+        private void Runspace_StateChanged(object sender, RunspaceStateEventArgs e)
+        {
+            ServiceCommon.Log("Remote runspace State Changed: {0}", e.RunspaceStateInfo.State);
+
+            switch (e.RunspaceStateInfo.State)
+            {
+                case RunspaceState.Broken:
+                case RunspaceState.Closed:
+                case RunspaceState.Disconnected:
+                    PopRunspace();
+                    break;
+            }
         }
 
         Runspace IHostSupportsInteractiveSession.Runspace
