@@ -193,13 +193,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             Runspace = runspace;
 
             if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging
-                && _callback != null)
+                && _callback != null
+                )
             {
                 _callback.OutputStringLine(Resources.Warning_HigherVersionRequiredForDebugging);
             }
             else
             {
-                SetRemoteScriptDebugMode40(Runspace);
+                if (Runspace.Debugger != null)
+                {
+                    SetRemoteScriptDebugMode40(Runspace);
+                }
+                else
+                {
+                    _callback.OutputStringLine(Resources.Warning_HigherVersionOnTargetRequiredForDebugging);
+                }
             }
 
             if (_callback != null)
