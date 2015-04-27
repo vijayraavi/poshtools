@@ -330,6 +330,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 if (ret != 0 && _callback != null)
                 {
+                    // Tactic Fix (TODO: github issue https://github.com/Microsoft/poshtools/issues/479)
                     // Give a bit of time for case where app crashed on readline/readkey
                     // We dont want to put any dirty content into stdin stream buffer
                     // Which can only be flushed out till the next readline/readkey

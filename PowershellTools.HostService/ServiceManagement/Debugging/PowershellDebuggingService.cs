@@ -733,7 +733,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Check if there is an app running inside PSHost
         /// </summary>
         /// <returns>Boolean indicates if there is an app running</returns>
-        public bool isAppRunning()
+        public bool IsAppRunning()
         {
             return AppRunning;
         }
