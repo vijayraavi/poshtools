@@ -54,15 +54,12 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             PSCredentialUIOptions options);
 
         [OperationContract(IsOneWay = false)]
+        void RequestUserInputOnStdIn();
+
+        [OperationContract(IsOneWay = false)]
         void OpenRemoteFile(string fullName);
 
         [OperationContract(IsOneWay = false)]
         void SetRemoteRunspace(bool enabled);
-
-        [OperationContract(IsOneWay = false)]
-        void StartMonitorUserInputRequest();
-
-        [OperationContract(IsOneWay = false)]
-        void StopMonitorUserInputRequest();
     }
 }
