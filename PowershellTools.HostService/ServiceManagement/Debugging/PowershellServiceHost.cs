@@ -197,7 +197,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging
                 && _callback != null)
             {
-                _callback.OutputStringLine(Resources.Warning_HigherVersionRequiredForDebugging);
+                _callback.OutputStringLine(string.Format(Resources.Warning_HigherVersionRequiredForDebugging, Constants.PowerShellInstallFWLink));
             }
             else
             {
@@ -207,7 +207,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
                 else
                 {
-                    _callback.OutputStringLine(Resources.Warning_HigherVersionOnTargetRequiredForDebugging);
+                    _callback.OutputStringLine(string.Format(Resources.Warning_HigherVersionOnTargetRequiredForDebugging, Constants.PowerShellInstallFWLink));
                 }
             }
 

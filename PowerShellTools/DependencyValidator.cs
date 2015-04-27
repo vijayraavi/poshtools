@@ -39,7 +39,7 @@ namespace PowerShellTools
                                         MessageBoxButton.YesNo,
                                         MessageBoxImage.Warning) == MessageBoxResult.Yes)
                     {
-                        System.Diagnostics.Process.Start("http://go.microsoft.com/fwlink/?LinkID=524571");
+                        System.Diagnostics.Process.Start(PowerShellTools.Common.Constants.PowerShellInstallFWLink);
                     }
                 }
                 catch (InvalidOperationException)
