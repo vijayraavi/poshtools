@@ -239,7 +239,6 @@
     <Compile Include="Cmdlets\GetVisualStudioServiceCommand.cs" />
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
-    <Compile Include="Commands\GotoDefinitionCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
@@ -292,6 +291,7 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="LanguageService\NavigationExtensions.cs" />
     <Compile Include="Project\DeveloperActivityAttribute.cs" />
     <Compile Include="Diagnostics\DiagnosticConfiguration.cs" />
     <Compile Include="Diagnostics\DiagnosticsDialogPage.cs">

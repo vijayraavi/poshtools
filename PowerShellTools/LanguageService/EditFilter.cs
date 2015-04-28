@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Linq;
+using System.Windows;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
@@ -13,12 +17,15 @@ namespace PowerShellTools.LanguageService
         private readonly ITextView _textView;
         private readonly IEditorOperations _editorOps;
         private IOleCommandTarget _next;
+        private IVsStatusbar _statusBar;
 
         public EditFilter(ITextView textView, IEditorOperations editorOps)
         {
             _textView = textView;
             _textView.Properties[typeof(EditFilter)] = this;
             _editorOps = editorOps;
+
+            _statusBar = (IVsStatusbar)PowerShellToolsPackage.Instance.GetService(typeof(SVsStatusbar));
         }
 
         internal void AttachKeyboardFilter(IVsTextView vsTextView)
@@ -41,6 +48,17 @@ namespace PowerShellTools.LanguageService
                         case VSConstants.VSStd2KCmdID.COMMENTBLOCK:
                         case VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
                         case VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
+                            return VSConstants.S_OK;
+                    }
+                }
+            }
+            else if (pguidCmdGroup == VSConstants.GUID_VSStandardCommandSet97)
+            {
+                for (int i = 0; i < cCmds; i++)
+                {
+                    switch ((VSConstants.VSStd97CmdID)prgCmds[i].cmdID)
+                    {
+                        case VSConstants.VSStd97CmdID.GotoDefn:
                             return VSConstants.S_OK;
                     }
                 }
@@ -71,7 +89,38 @@ namespace PowerShellTools.LanguageService
                         break;
                 }
             }
+            else if (pguidCmdGroup == VSConstants.GUID_VSStandardCommandSet97)
+            {
+                switch ((VSConstants.VSStd97CmdID)nCmdID)
+                {
+                    case VSConstants.VSStd97CmdID.GotoDefn:
+                        GoToDefinition();
+                        return VSConstants.S_OK;
+                }
+            }
             return _next.Exec(pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+        }
+
+        private void GoToDefinition()
+        {
+            var definitions = NavigationExtensions.FindDefinitionUnderCaret(_textView.TextBuffer, _textView.Caret.Position.BufferPosition.Position);
+
+            if (definitions != null && definitions.Any())
+            {
+                if (definitions.Count > 1 && _statusBar != null)
+                {
+                    // If outside the scope of the call, there is no way to determine which function definition is used until run-time.
+                    // Letting the user know in the status bar, and we will arbitrarily navigate to the first definition
+                    _statusBar.SetText(Resources.GoToDefinitionAmbiguousMessage);
+                }
+
+                NavigationExtensions.NavigateToDefinition(_textView, definitions.First());
+            }
+            else
+            {
+                var message = Resources.GoToDefinitionName + "\n\n" + Resources.GoToDefinitionFailureMessage;
+                MessageBox.Show(message, Resources.MessageBoxCaption, MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
     }
 }

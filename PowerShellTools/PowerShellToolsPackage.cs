@@ -103,7 +103,6 @@ namespace PowerShellTools
         private static ScriptDebugger _debugger;
         private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
-        private static GotoDefinitionCommand _gotoDefinitionCommand;
         private VisualStudioEvents VisualStudioEvents;
         private IContentType _contentType;
         private IntelliSenseEventsHandlerProxy _intelliSenseServiceContext;
@@ -274,12 +273,9 @@ namespace PowerShellTools
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            _gotoDefinitionCommand = new GotoDefinitionCommand();
-
             RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
                             new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
                             new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
-                            _gotoDefinitionCommand,
                             new PrettyPrintCommand(),
                             new OpenDebugReplCommand());
 
@@ -371,7 +367,6 @@ namespace PowerShellTools
             {
                 IPowerShellTokenizationService psts = new PowerShellTokenizationService(buffer);
 
-                _gotoDefinitionCommand.AddTextBuffer(buffer);
                 buffer.PostChanged += (o, args) => psts.StartTokenization();
 
                 buffer.Properties.AddProperty(BufferProperties.PowerShellTokenizer, psts);
