@@ -101,7 +101,7 @@ namespace PowerShellTools.ServiceManagement
             {
                 if (_powershellIntelliSenseService == null || _powershellDebuggingService == null)
                 {
-                    EnsureCloseProcess(_process);
+                    EnsureCloseProcess();
                     _hostProcess = PowershellHostProcessHelper.CreatePowershellHostProcess();
                     _process = _hostProcess.Process;
                     _process.Exited += ConnectionExceptionHandler;
@@ -138,6 +138,29 @@ namespace PowerShellTools.ServiceManagement
             }
         }
 
+        public void ProcessEventHandler(PowerShellTools.GeneralDialogPage.BitnessOptions bitness)
+        {
+            Log.DebugFormat("Bitness had been changed to {1}", bitness);
+            EnsureCloseProcess();
+        }
+
+        private void EnsureCloseProcess()
+        {
+            if (_process != null)
+            {
+                try
+                {
+                    EnsureClearServiceChannel();
+                    _process.Kill();
+                    _process = null;
+                }
+                catch
+                {
+                    //TODO: log excetion info here
+                }
+            }
+        }
+
         private void ConnectionExceptionHandler(object sender, EventArgs e)
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
@@ -148,23 +171,7 @@ namespace PowerShellTools.ServiceManagement
             {
                 ConnectionException(this, EventArgs.Empty);
             }
-        }
-
-        private void EnsureCloseProcess(Process process)
-        {
-            if (process != null)
-            {
-                try
-                {
-                    process.Kill();
-                    process = null;
-                }
-                catch
-                {
-                    //TODO: log excetion info here
-                }
-            }
-        }
+        }        
 
         private void EnsureClearServiceChannel()
         {

@@ -1,17 +1,14 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Microsoft.VisualStudio.Shell;
 
 namespace PowerShellTools
 {
-    class GeneralDialogPage : DialogPage
+    public class GeneralDialogPage : DialogPage
     {
-        [DisplayName(@"Enable Unrestricted Execution Policy")]
-        [Description("This setting controls the execution policy for executing PowerShell scripts in Visual Studio.  True, will set the Visual Studio process execution policy to \"Unrestricted\".  False, will use the current user or local machine policy.")]
-        public bool OverrideExecutionPolicyConfiguration { get; set; }
+        private BitnessOptions _bitness;
 
-        [DisplayName(@"Multiline REPL Window")]
-        [Description("When false, pressing enter invokes the command line in the REPL Window rather than starting a new line.")]
-        public bool MultilineRepl { get; set; }
+        public event EventHandler<BitnessEventArgs> BitnessSettingChanged;
 
         /// <summary>
         /// The constructor
@@ -19,6 +16,42 @@ namespace PowerShellTools
         public GeneralDialogPage()
         {
             InitializeSettings();
+        }
+
+        [DisplayName(@"Enable Unrestricted Execution Policy")]
+        [Description("This setting controls the execution policy for executing PowerShell scripts in Visual Studio. True, will set the Visual Studio process execution policy to \"Unrestricted\".  False, will use the current user or local machine policy.")]
+        public bool OverrideExecutionPolicyConfiguration { get; set; }
+
+        [DisplayName(@"Multiline REPL Window")]
+        [Description("When false, pressing enter invokes the command line in the REPL Window rather than starting a new line.")]
+        public bool MultilineRepl { get; set; }
+
+        [Browsable(true)]
+        [DisplayName(@"Bitness")]
+        [Description("This setting controls the bitness of remote host process.")]
+        public BitnessOptions Bitness 
+        {
+            get
+            {
+                return _bitness;
+            }
+            set
+            {
+                if (_bitness != value)
+                {
+                    _bitness = value;
+                    var changed = BitnessSettingChanged;
+                    if (changed != null)
+                    {
+                        changed(this, new BitnessEventArgs(_bitness));
+                    }
+                }
+            }
+        }
+
+        protected override void OnApply(DialogPage.PageApplyEventArgs e)
+        {            
+            base.OnApply(e);
         }
 
         /// <summary>
@@ -29,6 +62,32 @@ namespace PowerShellTools
             this.OverrideExecutionPolicyConfiguration = true;
 
             this.MultilineRepl = false;
+
+            _bitness = Environment.Is64BitOperatingSystem ? BitnessOptions.Use64bit : BitnessOptions.Use32bit;
+        }
+
+        public enum BitnessOptions
+        {
+            Use32bit = 0,
+            Use64bit = 1
+        }
+
+        public class BitnessEventArgs : EventArgs
+        {
+            private readonly BitnessOptions _newBitness;
+
+            public BitnessEventArgs(BitnessOptions newBitness)
+            {
+                _newBitness = newBitness;
+            }
+
+            public BitnessOptions NewBitness
+            {
+                get
+                {
+                    return _newBitness;
+                }
+            }
         }
     }
 }

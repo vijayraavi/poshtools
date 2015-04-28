@@ -384,6 +384,8 @@ namespace PowerShellTools
         private void InitializePowerShellHost()
         {
             var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
+            page.BitnessSettingChanged += BitnessSettingChanged;
+
             OverrideExecutionPolicyConfiguration = page.OverrideExecutionPolicyConfiguration;
 
             Log.Info("InitializePowerShellHost");
@@ -396,6 +398,11 @@ namespace PowerShellTools
             DebuggerReadyEvent.Set();
 
             PowerShellHostInitialized = true;
+        }
+
+        private void BitnessSettingChanged(object sender, PowerShellTools.GeneralDialogPage.BitnessEventArgs e)
+        {
+            ConnectionManager.Instance.ProcessEventHandler(e.NewBitness);
         }
     }
 }
