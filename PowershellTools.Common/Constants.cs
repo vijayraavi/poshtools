@@ -21,6 +21,8 @@ namespace PowerShellTools.Common
 
         public const string PowershellHostExeName = "PowerShellToolsProcessHost.exe";
 
+        public const string PowershellHostExeNameFor32bit = "PowerShellToolsProcessHost32bit.exe";
+
         // 10M in bytes
         public const int BindingMaxReceivedMessageSize = 10000000;
 
