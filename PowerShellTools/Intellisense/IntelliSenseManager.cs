@@ -239,6 +239,7 @@ namespace PowerShellTools.Intellisense
                 }
             }
 
+            bool justCommitIntelliSense = false;
             if (IsIntelliSenseTriggerDot(typedChar) && _activeSession != null && !_activeSession.IsDismissed)
             {
                 var selectionStatus = _activeSession.SelectedCompletionSet.SelectionStatus;
@@ -269,6 +270,7 @@ namespace PowerShellTools.Intellisense
 
                     Log.Debug("Commit");
                     _activeSession.Commit();
+                    justCommitIntelliSense = true;
                 }
                 else
                 {
@@ -299,7 +301,7 @@ namespace PowerShellTools.Intellisense
             bool handled = false;
 
             if (IsIntellisenseTrigger(typedChar) ||
-                (IsIntelliSenseTriggerDot(typedChar) && IsPreviousTokenVariable()) || // If previous token before a dot was a variable, trigger intellisense
+                (justCommitIntelliSense || (IsIntelliSenseTriggerDot(typedChar) && IsPreviousTokenVariable())) || // If dot just commit a session or previous token before a dot was a variable, trigger intellisense
                 (char.IsWhiteSpace(typedChar) && IsPreviousTokenParameter())) // If the previous token before a space was a parameter, trigger intellisense
             {
                 TriggerCompletion();
