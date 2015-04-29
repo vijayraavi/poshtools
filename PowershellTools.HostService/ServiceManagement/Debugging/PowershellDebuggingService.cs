@@ -335,7 +335,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public bool Execute(string commandLine)
         {
             ServiceCommon.Log("Start executing ps script ...");
-            
+
             bool commandExecuted = false;
 
             try
@@ -373,9 +373,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                 }
 
-                if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
+                lock (ServiceCommon.RunspaceLock)
                 {
-                    lock (ServiceCommon.RunspaceLock)
+                    if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                     {
                         commandExecuted = true;
 
@@ -391,10 +391,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             error = _currentPowerShell.HadErrors;
                         }
                     }
-                }
-                else
-                {
-                    ServiceCommon.Log("Execution skipped due to busy runspace.");
+                    else
+                    {
+                        ServiceCommon.Log("Execution skipped due to busy runspace.");
+                    }
                 }
 
                 return !error;
@@ -410,7 +410,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 ServiceCommon.Log("Terminating error,  Exception: {0}", ex.Message);
                 OnTerminatingException(ex);
-                
+
                 return false;
             }
             finally
