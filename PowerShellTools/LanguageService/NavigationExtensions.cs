@@ -67,7 +67,6 @@ namespace PowerShellTools.LanguageService
         /// <param name="definition">The function definition</param>
         public static void NavigateToFunctionDefinition(ITextView textView, FunctionDefinitionAst definition)
         {
-            var functionNameStart = definition.Extent.StartOffset + definition.Extent.Text.IndexOf(definition.Name);
             var functionNameSpan = GetFunctionNameSpan(textView.TextBuffer, definition);
 
             textView.Caret.MoveTo(new SnapshotPoint(textView.TextBuffer.CurrentSnapshot, functionNameSpan.End));
@@ -92,7 +91,9 @@ namespace PowerShellTools.LanguageService
 
         private static SnapshotSpan GetFunctionNameSpan(ITextBuffer textBuffer, FunctionDefinitionAst definition)
         {
-            var functionNameStart = definition.Extent.StartOffset + definition.Extent.Text.IndexOf(definition.Name);
+            var functionConst = "function";
+
+            var functionNameStart = definition.Extent.StartOffset + definition.Extent.Text.IndexOf(definition.Name, functionConst.Length);
             return new SnapshotSpan(textBuffer.CurrentSnapshot, functionNameStart, definition.Name.Length);
         }
 

@@ -1,4 +1,6 @@
-﻿using System.Management.Automation.Language;
+﻿using System;
+using System.Linq;
+using System.Management.Automation.Language;
 
 namespace PowerShellTools.LanguageService.DropDownBar
 {
@@ -25,7 +27,15 @@ namespace PowerShellTools.LanguageService.DropDownBar
         {
             get
             {
-                return _functionDefinition.Name;
+                var parameters = _functionDefinition.Parameters;
+                if (parameters != null && parameters.Any())
+                {
+                    return _functionDefinition.Name + "(" + String.Join(", ", parameters.Select(param => param.Name)) + ")";
+                }
+                else
+                {
+                    return _functionDefinition.Name;
+                }
             }
         }
 

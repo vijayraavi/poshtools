@@ -58,6 +58,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
         private ReadOnlyCollection<IDropDownEntryInfo> _topLevelEntries; // entries for top-level members of the file
         private ReadOnlyCollection<IDropDownEntryInfo> _nestedEntries;   // entries for nested members in the file
         private int _topLevelIndex = -1, _nestedIndex = -1;       // currently selected indices for each bar
+        private bool _isFunctionSelected = false;
 
         private static readonly ImageList _imageList = GetImageList();
 
@@ -135,16 +136,9 @@ namespace PowerShellTools.LanguageService.DropDownBar
             pAttr = (uint)DROPDOWNFONTATTR.FONTATTR_PLAIN;
 
             var selectedIndex = GetSelectedIndex(iCombo);
-            if (iIndex == selectedIndex)
+            if (iIndex == selectedIndex && !_isFunctionSelected)
             {
-                var entries = GetEntries(iCombo);
-                var position = _textView.Caret.Position.BufferPosition.Position;
-                if (entries == null || selectedIndex < entries.Count ||
-                    position < entries[selectedIndex].Start ||
-                    position > entries[selectedIndex].End)
-                {
-                    pAttr = (uint)DROPDOWNFONTATTR.FONTATTR_GRAY;
-                }
+                pAttr = (uint)DROPDOWNFONTATTR.FONTATTR_GRAY;
             }
 
             return VSConstants.S_OK;
@@ -205,10 +199,10 @@ namespace PowerShellTools.LanguageService.DropDownBar
             var entries = GetEntries(iCombo);
             if (entries !=null && iIndex < entries.Count)
             {
-                int oldIndex = GetSelectedIndex(iCombo);
                 SetSelectedIndex(iCombo, iIndex);
-                if (oldIndex == -1)
+                if (_isFunctionSelected)
                 {
+                    _isFunctionSelected = true;
                     _dropDownBar.RefreshCombo(iCombo, iIndex);
                 }
 
@@ -302,48 +296,48 @@ namespace PowerShellTools.LanguageService.DropDownBar
             }
 
             var entriesByScope = entries.OrderBy(entry => entry.End);
-            if (comboBoxId == ComboBoxId.TopLevel || GetSelectedIndex(ComboBoxId.TopLevel) != -1)
+            var activeEntry = entriesByScope.FirstOrDefault(entry => newPosition >= entry.Start && newPosition <= entry.End);
+            if (activeEntry != null)
             {
-                var activeEntry = entriesByScope.FirstOrDefault(entry => newPosition >= entry.Start && newPosition <= entry.End);
-                if (activeEntry != null)
+                var newIndex = entries.IndexOf(activeEntry);
+
+                SetSelectedIndex(comboBoxId, newIndex);
+
+                if (!_isFunctionSelected)
                 {
-                    var newIndex = entries.IndexOf(activeEntry);
-
-                    SetSelectedIndex(comboBoxId, newIndex);
-
-                    if (oldPosition == -1)
-                    {
-                        // we've selected something new, we need to refresh the combo to remove the grayed out entry
-                        _dropDownBar.RefreshCombo(comboBoxId, newIndex);
-                    }
-                    else
-                    {
-                        // changing from one to another, just update the selection
-                        _dropDownBar.SetCurrentSelection(comboBoxId, newIndex);
-                    }
-
-                    if (comboBoxId == ComboBoxId.TopLevel)
-                    {
-                        // update the nested entries
-                        //TODO: CalculateNestedEntries();
-                        _dropDownBar.RefreshCombo(ComboBoxId.Nested, 0);
-                        UpdateComboSelection(newPosition, ComboBoxId.Nested);
-                    }
+                    // we've selected something new, we need to refresh the combo to remove the grayed out entry
+                    _isFunctionSelected = true;
+                    _dropDownBar.RefreshCombo(comboBoxId, newIndex);
                 }
                 else
                 {
-                    // If outside all entries, select the entry just before it
-                    var closestEntry = entriesByScope.LastOrDefault(entry => newPosition >= entry.End);
-                    if (closestEntry == null)
-                    {
-                        // if the mouse is before any entries, select the first one
-                        closestEntry = entries.OrderBy(entry => entry.Start).First();
-                    }
-
-                    var closestIndex = entries.IndexOf(closestEntry);
-                    SetSelectedIndex(comboBoxId, closestIndex);
-                    _dropDownBar.RefreshCombo(comboBoxId, closestIndex);
+                    // changing from one to another, just update the selection
+                    _dropDownBar.SetCurrentSelection(comboBoxId, newIndex);
                 }
+
+                if (comboBoxId == ComboBoxId.TopLevel)
+                {
+                    // update the nested entries
+                    //TODO: CalculateNestedEntries();
+                    _isFunctionSelected = true;
+                    _dropDownBar.RefreshCombo(ComboBoxId.Nested, 0);
+                    UpdateComboSelection(newPosition, ComboBoxId.Nested);
+                }
+            }
+            else
+            {
+                // If outside all entries, select the entry just before it
+                var closestEntry = entriesByScope.LastOrDefault(entry => newPosition >= entry.End);
+                if (closestEntry == null)
+                {
+                    // if the mouse is before any entries, select the first one
+                    closestEntry = entries.OrderBy(entry => entry.Start).First();
+                }
+
+                var closestIndex = entries.IndexOf(closestEntry);
+                SetSelectedIndex(comboBoxId, closestIndex);
+                _isFunctionSelected = false;
+                _dropDownBar.RefreshCombo(comboBoxId, closestIndex);
             }
         }
 
