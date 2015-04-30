@@ -1,12 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
-namespace PowerShellTools
+namespace PowerShellTools.Options
 {
-    public class GeneralDialogPage : DialogPage
+    internal class GeneralDialogPage : DialogPage
     {
-        private BitnessOptions _bitness;
+        private BitnessOptions _savedBitness;
 
         public event EventHandler<BitnessEventArgs> BitnessSettingChanged;
 
@@ -29,29 +31,27 @@ namespace PowerShellTools
         [Browsable(true)]
         [DisplayName(@"Bitness")]
         [Description("This setting controls the bitness of remote host process.")]
-        public BitnessOptions Bitness 
-        {
-            get
-            {
-                return _bitness;
-            }
-            set
-            {
-                if (_bitness != value)
-                {
-                    _bitness = value;
-                    var changed = BitnessSettingChanged;
-                    if (changed != null)
-                    {
-                        changed(this, new BitnessEventArgs(_bitness));
-                    }
-                }
-            }
-        }
+        public BitnessOptions Bitness { get; set; }
 
         protected override void OnApply(DialogPage.PageApplyEventArgs e)
-        {            
+        {
             base.OnApply(e);
+
+            // On a non-64bit machine, bitness cannot be changed.
+            if (!Environment.Is64BitOperatingSystem)
+            {
+                Bitness = BitnessOptions.Use64bit;
+                return;
+            }
+            if (_savedBitness != Bitness)
+            {
+                var changed = BitnessSettingChanged;
+                if (changed != null)
+                {
+                    changed(this, new BitnessEventArgs(_savedBitness));
+                }
+            }
+            _savedBitness = Bitness;
         }
 
         /// <summary>
@@ -62,32 +62,17 @@ namespace PowerShellTools
             this.OverrideExecutionPolicyConfiguration = true;
 
             this.MultilineRepl = false;
-
-            _bitness = Environment.Is64BitOperatingSystem ? BitnessOptions.Use64bit : BitnessOptions.Use32bit;
-        }
-
-        public enum BitnessOptions
-        {
-            Use32bit = 0,
-            Use64bit = 1
-        }
-
-        public class BitnessEventArgs : EventArgs
-        {
-            private readonly BitnessOptions _newBitness;
-
-            public BitnessEventArgs(BitnessOptions newBitness)
+            if (Environment.Is64BitOperatingSystem)
             {
-                _newBitness = newBitness;
+                _savedBitness = Bitness;
             }
-
-            public BitnessOptions NewBitness
+            else
             {
-                get
-                {
-                    return _newBitness;
-                }
+                Bitness = BitnessOptions.Use64bit;
             }
-        }
+            
+            
+            BitnessSettingChanged += PowerShellToolsPackage.Instance.BitnessSettingChanged;
+        }        
     }
 }

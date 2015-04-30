@@ -25,6 +25,7 @@ using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.Intellisense;
 using PowerShellTools.LanguageService;
+using PowerShellTools.Options;
 using PowerShellTools.Project.PropertyPages;
 using PowerShellTools.Service;
 using PowerShellTools.ServiceManagement;
@@ -384,7 +385,6 @@ namespace PowerShellTools
         private void InitializePowerShellHost()
         {
             var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
-            page.BitnessSettingChanged += BitnessSettingChanged;
 
             OverrideExecutionPolicyConfiguration = page.OverrideExecutionPolicyConfiguration;
 
@@ -400,7 +400,7 @@ namespace PowerShellTools
             PowerShellHostInitialized = true;
         }
 
-        private void BitnessSettingChanged(object sender, PowerShellTools.GeneralDialogPage.BitnessEventArgs e)
+        internal void BitnessSettingChanged(object sender, BitnessEventArgs e)
         {
             ConnectionManager.Instance.ProcessEventHandler(e.NewBitness);
         }

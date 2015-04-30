@@ -292,6 +292,8 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="Options\BitnessEventArgs.cs" />
+    <Compile Include="Options\BitnessOption.cs" />
     <Compile Include="Project\DeveloperActivityAttribute.cs" />
     <Compile Include="Diagnostics\DiagnosticConfiguration.cs" />
     <Compile Include="Diagnostics\DiagnosticsDialogPage.cs">
@@ -299,7 +301,7 @@
     </Compile>
     <Compile Include="Diagnostics\OutputPaneAppender.cs" />
     <Compile Include="EditorImports.cs" />
-    <Compile Include="GeneralDialogPage.cs">
+    <Compile Include="Options\GeneralDialogPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="IDependencyValidator.cs" />

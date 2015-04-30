@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using log4net;
 using System.Threading.Tasks;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Options;
 
 namespace PowerShellTools.ServiceManagement
 {
@@ -34,7 +35,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static Guid EndPointGuid { get; set; }
 
-        public static PowerShellHostProcess CreatePowershellHostProcess()
+        public static PowerShellHostProcess CreatePowershellHostProcess(BitnessOptions bitness)
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
@@ -42,7 +43,17 @@ namespace PowerShellTools.ServiceManagement
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
             EndPointGuid = Guid.NewGuid();
 
-            string exeName = Constants.PowershellHostExeName;
+            string exeName;
+            switch (bitness)
+            {
+                case BitnessOptions.Use32bit:
+                    exeName = Constants.PowershellHostExeNameIn32bit;
+                    break;
+                case BitnessOptions.Use64bit:
+                default:
+                    exeName = Constants.PowershellHostExeName;
+                    break;
+            }
             string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string path = Path.Combine(currentPath, exeName);
             string hostArgs = String.Format(CultureInfo.InvariantCulture,

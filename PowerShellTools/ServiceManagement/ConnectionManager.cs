@@ -6,6 +6,7 @@ using PowerShellTools.Common;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.DebugEngine;
+using PowerShellTools.Options;
 
 namespace PowerShellTools.ServiceManagement
 {
@@ -102,7 +103,8 @@ namespace PowerShellTools.ServiceManagement
                 if (_powershellIntelliSenseService == null || _powershellDebuggingService == null)
                 {
                     EnsureCloseProcess();
-                    _hostProcess = PowershellHostProcessHelper.CreatePowershellHostProcess();
+                    var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
+                    _hostProcess = PowershellHostProcessHelper.CreatePowershellHostProcess(page.Bitness);
                     _process = _hostProcess.Process;
                     _process.Exited += ConnectionExceptionHandler;
 
@@ -138,7 +140,7 @@ namespace PowerShellTools.ServiceManagement
             }
         }
 
-        public void ProcessEventHandler(PowerShellTools.GeneralDialogPage.BitnessOptions bitness)
+        public void ProcessEventHandler(BitnessOptions bitness)
         {
             Log.DebugFormat("Bitness had been changed to {1}", bitness);
             EnsureCloseProcess();
@@ -150,7 +152,6 @@ namespace PowerShellTools.ServiceManagement
             {
                 try
                 {
-                    EnsureClearServiceChannel();
                     _process.Kill();
                     _process = null;
                 }

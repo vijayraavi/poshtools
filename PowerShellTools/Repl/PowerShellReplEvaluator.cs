@@ -14,6 +14,7 @@ namespace PowerShellTools.Repl
     using IReplEvaluator = IPowerShellReplEvaluator;
     using IReplWindow = IPowerShellReplWindow;
     using PowerShellTools.Common.Debugging;
+    using PowerShellTools.Options;
 #endif
 
     [ReplRole("Debug")]
