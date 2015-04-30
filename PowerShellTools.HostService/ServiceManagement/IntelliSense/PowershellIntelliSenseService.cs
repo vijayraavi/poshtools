@@ -22,7 +22,7 @@ namespace PowerShellTools.HostService.ServiceManagement
         private long _requestTrigger;
         private IIntelliSenseServiceCallback _callback;
         private static object _syncLock = new object();
-        
+
         /// <summary>
         /// Default ctor
         /// </summary>
@@ -33,7 +33,7 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// </summary>
         /// <param name="callback">Callback context object (unit test hook)</param>
         public PowerShellIntelliSenseService(IIntelliSenseServiceCallback callback)
-            :this()
+            : this()
         {
             _callback = callback;
             _runspace = RunspaceFactory.CreateRunspace();
@@ -91,12 +91,12 @@ namespace PowerShellTools.HostService.ServiceManagement
             lock (_syncLock)
             {
                 _requestTrigger = triggerTag;
-            }     
+            }
 
             if (_callback == null)
             {
                 _callback = OperationContext.Current.GetCallbackChannel<IIntelliSenseServiceCallback>();
-            }                   
+            }
 
             // Start process the existing waiting request, should only be one
             Task.Run(() =>
@@ -105,17 +105,17 @@ namespace PowerShellTools.HostService.ServiceManagement
                 {
                     CommandCompletion commandCompletion = null;
 
-                    if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
+                    lock (ServiceCommon.RunspaceLock)
                     {
-                        lock (ServiceCommon.RunspaceLock)
+                        if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                         {
                             commandCompletion = CommandCompletionHelper.GetCommandCompletionList(script, caretPosition, _runspace);
                         }
-                    }
-                    else
-                    {
-                        // we'll handle it when we work on giving intellisense for debugging command
-                        // for now we just simply return with null for this request to complete.
+                        else
+                        {
+                            // we'll handle it when we work on giving intellisense for debugging command
+                            // for now we just simply return with null for this request to complete.
+                        }
                     }
 
                     ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", caretPosition);
@@ -125,7 +125,7 @@ namespace PowerShellTools.HostService.ServiceManagement
                     lock (_syncLock)
                     {
                         _requestTrigger = 0;
-                    }                    
+                    }
                 }
                 catch (Exception ex)
                 {

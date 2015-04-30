@@ -40,7 +40,7 @@ namespace PowerShellTools.HostService
             {
                 return 1;
             }
-            
+
             int vsProcessId;
             if (!Int32.TryParse(args[1].Remove(0, Constants.VsProcessIdArg.Length),
                             NumberStyles.None,
@@ -122,7 +122,7 @@ namespace PowerShellTools.HostService
                 _powershellDebuggingServiceHost.Close();
                 _powershellDebuggingServiceHost = null;
             }
-            
+
             Environment.Exit(0);
             return 0;
         }

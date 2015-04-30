@@ -163,8 +163,6 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     public class PowerShellHostProcess
     {
-        private bool _appRunning = false;
-
         public Process Process 
         {
             get; 
@@ -177,30 +175,6 @@ namespace PowerShellTools.ServiceManagement
             private set; 
         }
 
-        /// <summary>
-        /// App running flag indicating if there is app runing on PSHost
-        /// </summary>
-        public bool AppRunning
-        {
-            get
-            {
-                return _appRunning;
-            }
-            set
-            {
-                _appRunning = value;
-
-                // Start monitoring thread when app starts
-                if (value)
-                {
-                    Task.Run(() =>
-                    {
-                        MonitorUserInputRequest();
-                    });
-                }
-            }
-        }
-
         public PowerShellHostProcess(Process process, Guid guid)
         {
             Process = process;
@@ -208,42 +182,19 @@ namespace PowerShellTools.ServiceManagement
         }
 
         /// <summary>
-        /// Monitoring thread for user input request
+        /// Write user input into standard input pipe(redirected)
         /// </summary>
-        /// <remarks>
-        /// Will be started once app begins to run on remote PowerShell host service
-        /// Stopped once app exits
-        /// </remarks>
-        private void MonitorUserInputRequest()
+        /// <param name="content">User input string</param>
+        public void WriteHostProcessStandardInputStream(string content)
         {
-            StreamWriter _inputStreamWriter = Process.StandardInput;
-
-            while (AppRunning)
+            if (PowerShellToolsPackage.Debugger.IsAppRunningInPowerShellHost())
             {
-                foreach (ProcessThread thread in Process.Threads)
-                {
-                    if (thread.ThreadState == System.Diagnostics.ThreadState.Wait
-                        && thread.WaitReason == ThreadWaitReason.UserRequest)
-                    {
-                        if (PowerShellToolsPackage.Debugger != null &&
-                            PowerShellToolsPackage.Debugger.HostUi != null)
-                        {
-                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage, string.Empty);
+                StreamWriter _inputStreamWriter = Process.StandardInput;
 
-                            if (AppRunning)
-                            {
-                                // Feed into stdin stream
-                                _inputStreamWriter.WriteLine(inputText);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                Thread.Sleep(50);
+                // Feed into stdin stream
+                _inputStreamWriter.WriteLine(content);
+                _inputStreamWriter.Flush();
             }
-
-            _inputStreamWriter.Flush();
         }
     }
 }

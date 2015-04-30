@@ -54,5 +54,10 @@ namespace PowerShellTools.Common
         /// PowerShell install version registry key name
         /// </summary>
         public const string PowerShellVersionRegKeyName = "PowerShellVersion";
+
+        /// <summary>
+        /// Latest PowerShell install link
+        /// </summary>
+        public const string PowerShellInstallFWLink = "http://go.microsoft.com/fwlink/?LinkID=524571";
     }
 }
