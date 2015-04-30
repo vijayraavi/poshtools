@@ -22,9 +22,7 @@ namespace PowerShellTools.LanguageService
         public static List<FunctionDefinitionAst> FindFunctionDefinitionUnderCaret(ITextBuffer textBuffer, int caretPosition)
         {
             Ast scriptTree;
-            textBuffer.Properties.TryGetProperty(BufferProperties.Ast, out scriptTree);
-
-            if (scriptTree != null)
+            if (textBuffer.Properties.TryGetProperty(BufferProperties.Ast, out scriptTree) && scriptTree != null)
             {
                 var reference = scriptTree.Find(node =>
                     node is CommandAst &&
@@ -50,7 +48,11 @@ namespace PowerShellTools.LanguageService
 
                             return false;
                         }, true) as FunctionDefinitionAst;
-                    return new List<FunctionDefinitionAst>() { definition };
+                    
+                    if (definition != null)
+                    {
+                        return new List<FunctionDefinitionAst>() { definition };
+                    }
                 }
             }
 
