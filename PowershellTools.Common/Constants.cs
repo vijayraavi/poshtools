@@ -19,9 +19,9 @@ namespace PowerShellTools.Common
         // 20 minutes
         public const int HostProcessStartupTimeout = 20 * 60 * 1000; // wait for 20 minutes max for remote powershell host process to initialize
 
-        public const string PowershellHostExeName = "PowerShellToolsProcessHost.exe";
+        public const string PowerShellHostExeName = "PowerShellToolsProcessHost.exe";
 
-        public const string PowershellHostExeNameIn32bit = "PowerShellToolsProcessHost32bit.exe";
+        public const string PowerShellHostExeNameForx86 = "PowerShellToolsProcessHostx86.exe";
 
         // 10M in bytes
         public const int BindingMaxReceivedMessageSize = 10000000;

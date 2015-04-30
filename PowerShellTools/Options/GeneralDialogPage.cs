@@ -40,7 +40,7 @@ namespace PowerShellTools.Options
             // On a non-64bit machine, bitness cannot be changed.
             if (!Environment.Is64BitOperatingSystem)
             {
-                Bitness = BitnessOptions.Use64bit;
+                Bitness = BitnessOptions.DefaultAsAnyCPU;
                 return;
             }
             if (_savedBitness != Bitness)
@@ -68,7 +68,7 @@ namespace PowerShellTools.Options
             }
             else
             {
-                Bitness = BitnessOptions.Use64bit;
+                Bitness = BitnessOptions.DefaultAsAnyCPU;
             }
             
             

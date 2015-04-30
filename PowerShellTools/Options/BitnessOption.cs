@@ -8,7 +8,7 @@ namespace PowerShellTools.Options
 {
     internal enum BitnessOptions
     {
-        Use64bit = 0,
-        Use32bit = 1
+	DefaultAsAnyCPU = 0,
+        x86 = 1
     }
 }

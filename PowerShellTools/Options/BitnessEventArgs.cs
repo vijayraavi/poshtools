@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.Options
 {
+    /// <summary>
+    /// An event contains info about user's new choice of bitness for remote host.
+    /// </summary>
     internal class BitnessEventArgs : EventArgs
     {
         private readonly BitnessOptions _newBitness;

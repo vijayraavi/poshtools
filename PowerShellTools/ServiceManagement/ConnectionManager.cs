@@ -157,7 +157,7 @@ namespace PowerShellTools.ServiceManagement
                 }
                 catch
                 {
-                    //TODO: log excetion info here
+                    //TODO: log exception info here
                 }
             }
         }

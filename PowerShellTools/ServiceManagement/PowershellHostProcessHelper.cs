@@ -46,12 +46,12 @@ namespace PowerShellTools.ServiceManagement
             string exeName;
             switch (bitness)
             {
-                case BitnessOptions.Use32bit:
-                    exeName = Constants.PowershellHostExeNameIn32bit;
+                case BitnessOptions.x86:
+                    exeName = Constants.PowerShellHostExeNameForx86;
                     break;
-                case BitnessOptions.Use64bit:
+                case BitnessOptions.DefaultAsAnyCPU:
                 default:
-                    exeName = Constants.PowershellHostExeName;
+                    exeName = Constants.PowerShellHostExeName;
                     break;
             }
             string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
