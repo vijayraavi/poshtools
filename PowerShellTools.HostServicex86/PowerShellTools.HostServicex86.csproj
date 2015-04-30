@@ -50,7 +50,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PowerShellTools.HostService</RootNamespace>
-    <AssemblyName>PowerShellToolsProcessHost32bit</AssemblyName>
+    <AssemblyName>PowerShellToolsProcessHostx86</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

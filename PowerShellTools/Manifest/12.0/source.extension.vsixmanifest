@@ -32,7 +32,7 @@
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%.Repl" Path="|PowerShellTools.Repl;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%.Repl" Path="|PowerShellTools.Repl|" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%.HostService" Path="|PowerShellTools.HostService|" AssemblyName="|PowerShellTools.HostService;AssemblyName|" />
-    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%.HostService32bit" Path="|PowerShellTools.HostService32bit|" AssemblyName="|PowerShellTools.HostService32bit;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%.HostServicex86" Path="|PowerShellTools.HostServicex86|" AssemblyName="|PowerShellTools.HostServicex86;AssemblyName|" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" Path="|PowerShellTools.Common|" AssemblyName="|PowerShellTools.Common;AssemblyName|" d:ProjectName="%CurrentProject%.Common" />
   </Assets>
 </PackageManifest>
