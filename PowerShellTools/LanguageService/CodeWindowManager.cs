@@ -23,6 +23,7 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools;
 using PowerShellTools.Classification;
 using PowerShellTools.Language;
+using PowerShellTools.LanguageService.DropDownBar;
 
 namespace PowerShellTools.LanguageService
 {
@@ -72,7 +73,7 @@ namespace PowerShellTools.LanguageService
         private void Tokenizer_TokenizationComplete(object sender, Ast ast)
         {
             if (_client != null)
-                _client.UpdateAst(ast);
+                _client.UpdateDropDownEntries(ast);
 
             //TODO: A deeper refactoring to make the client handle the update from the tokenizer.
         }

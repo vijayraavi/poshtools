@@ -103,7 +103,7 @@ namespace PowerShellTools.LanguageService
 
         private void GoToDefinition()
         {
-            var definitions = NavigationExtensions.FindDefinitionUnderCaret(_textView.TextBuffer, _textView.Caret.Position.BufferPosition.Position);
+            var definitions = NavigationExtensions.FindFunctionDefinitionUnderCaret(_textView.TextBuffer, _textView.Caret.Position.BufferPosition.Position);
 
             if (definitions != null && definitions.Any())
             {
@@ -114,7 +114,7 @@ namespace PowerShellTools.LanguageService
                     _statusBar.SetText(Resources.GoToDefinitionAmbiguousMessage);
                 }
 
-                NavigationExtensions.NavigateToDefinition(_textView, definitions.First());
+                NavigationExtensions.NavigateToFunctionDefinition(_textView, definitions.First());
             }
             else
             {

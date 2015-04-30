@@ -291,6 +291,10 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
+    <Compile Include="LanguageService\DropDownBar\StaticEntryInfo.cs" />
+    <Compile Include="LanguageService\DropDownBar\FunctionDefinitionEntryInfo.cs" />
+    <Compile Include="LanguageService\DropDownBar\IDropDownEntryInfo.cs" />
     <Compile Include="LanguageService\NavigationExtensions.cs" />
     <Compile Include="Project\DeveloperActivityAttribute.cs" />
     <Compile Include="Diagnostics\DiagnosticConfiguration.cs" />
@@ -313,7 +317,7 @@
     <Compile Include="Intellisense\TabCompleteSession.cs" />
     <Compile Include="Intellisense\Utilities.cs" />
     <Compile Include="LanguageService\CodeWindowManager.cs" />
-    <Compile Include="LanguageService\DropDownBarClient.cs" />
+    <Compile Include="LanguageService\DropDownBar\DropDownBarClient.cs" />
     <Compile Include="LanguageService\EditorExtensions.cs" />
     <Compile Include="LanguageService\IndentUtilities.cs" />
     <Compile Include="LanguageService\PowerShellLanaguagePreferences.cs" />
