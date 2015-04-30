@@ -141,7 +141,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="e"></param>
         void Debugger_TerminatingException(object sender, EventArgs<PowerShellRunTerminatingException> e)
         {
-            if (e.Value.Error != null)
+            if (e.Value.Error != null && e.Value.Error.InvocationInfo != null)
             {
                 var scriptLocation = new ScriptLocation(e.Value.Error.InvocationInfo.ScriptName, e.Value.Error.InvocationInfo.ScriptLineNumber, 0);
 
