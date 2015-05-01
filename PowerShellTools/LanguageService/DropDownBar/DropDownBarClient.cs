@@ -25,6 +25,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools.Project;
+using PowerShellTools.Classification;
 
 namespace PowerShellTools.LanguageService.DropDownBar
 {
@@ -58,27 +59,33 @@ namespace PowerShellTools.LanguageService.DropDownBar
         private ReadOnlyCollection<IDropDownEntryInfo> _topLevelEntries; // entries for top-level members of the file
         private ReadOnlyCollection<IDropDownEntryInfo> _nestedEntries;   // entries for nested members in the file
         private int _topLevelIndex = -1, _nestedIndex = -1;       // currently selected indices for each bar
-        private bool _isFunctionSelected = false;
 
         private static readonly ImageList _imageList = GetImageList();
+        private IPowerShellTokenizationService _tokenizer;
 
-        public DropDownBarClient(IWpfTextView textView, Ast ast)
+        public DropDownBarClient(IWpfTextView textView)
         {
             Utilities.ArgumentNotNull("textView", textView);
-            Utilities.ArgumentNotNull("ast", ast);
-
             _textView = textView;
 
-            _topLevelEntries = CalculateTopLevelEntries(ast);
-            _nestedEntries = CalculateNestedEntries(ast);
+            if (_textView.TextBuffer.ContentType.IsOfType(PowerShellConstants.LanguageName))
+            {
+                _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.PowerShellTokenizer, out _tokenizer);
+            }
+            else
+            {
+                _tokenizer = new PowerShellTokenizationService(textView.TextBuffer);
+            }
 
             _dispatcher = Dispatcher.CurrentDispatcher;
-            _textView.Caret.PositionChanged += CaretPositionChanged;
+            _textView.Caret.PositionChanged += Caret_PositionChanged;
+            _tokenizer.TokenizationComplete += Tokenizer_TokenizationComplete;
         }
 
         internal void Unregister()
         {
-            _textView.Caret.PositionChanged -= CaretPositionChanged;
+            _textView.Caret.PositionChanged -= Caret_PositionChanged;
+            _tokenizer.TokenizationComplete -= Tokenizer_TokenizationComplete;
         }
 
         #region IVsDropdownBarClient Members
@@ -93,16 +100,6 @@ namespace PowerShellTools.LanguageService.DropDownBar
         /// </summary>
         public int GetComboAttributes(int iCombo, out uint pcEntries, out uint puEntryType, out IntPtr phImageList)
         {
-            switch (iCombo)
-            {
-                case ComboBoxId.TopLevel:
-                    //_topLevelEntries = CalculateTopLevelEntries(_ast);
-                    break;
-                case ComboBoxId.Nested:
-                    //_nestedEntries = CalculateNestedEntries(_ast);
-                    break;
-            }
-
             var entries = GetEntries(iCombo);
             if (entries != null)
             {
@@ -118,25 +115,40 @@ namespace PowerShellTools.LanguageService.DropDownBar
             return VSConstants.S_OK;
         }
 
+        /// <summary>
+        /// Gets the tool tip for the given combo box.
+        /// </summary>
         public int GetComboTipText(int iCombo, out string pbstrText)
         {
             pbstrText = null;
+
+            if (iCombo == ComboBoxId.Nested)
+            {
+                var index = GetSelectedIndex(iCombo);
+                var entries = GetEntries(iCombo);
+                if (entries != null && index != -1 && index < entries.Count)
+                {
+                    pbstrText = entries[index].DisplayText + "\n\n" + Resources.DropDownToolTip;
+                }
+            }
+
             return VSConstants.S_OK;
         }
 
         /// <summary>
         /// Gets the entry attributes for the given combo box and index.
-        /// 
-        /// We always use plain text unless we are not inside of a valid entry
-        /// for the given combo box.  In that case we ensure the 1st item
-        /// is selected and we gray out the 1st entry.
         /// </summary>
         public int GetEntryAttributes(int iCombo, int iIndex, out uint pAttr)
         {
             pAttr = (uint)DROPDOWNFONTATTR.FONTATTR_PLAIN;
 
+            var entries = GetEntries(iCombo);
             var selectedIndex = GetSelectedIndex(iCombo);
-            if (iIndex == selectedIndex && !_isFunctionSelected)
+            var caretPosition = _textView.Caret.Position.BufferPosition.Position;
+            if (entries != null && iIndex < entries.Count &&
+                iIndex == selectedIndex &&
+                (caretPosition < entries[selectedIndex].Start ||
+                 caretPosition > entries[selectedIndex].End))
             {
                 pAttr = (uint)DROPDOWNFONTATTR.FONTATTR_GRAY;
             }
@@ -145,8 +157,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
         }
 
         /// <summary>
-        /// Gets the image which is associated with the given index for the
-        /// given combo box.
+        /// Gets the image for the given combo box and index.
         /// </summary>
         public int GetEntryImage(int iCombo, int iIndex, out int piImageIndex)
         {
@@ -162,16 +173,16 @@ namespace PowerShellTools.LanguageService.DropDownBar
         }
 
         /// <summary>
-        /// Gets the text which is displayed for the given index for the
-        /// given combo box.
+        /// Gets the text displayed for the given combo box and index.
         /// </summary>
         public int GetEntryText(int iCombo, int iIndex, out string ppszText)
         {
             ppszText = String.Empty;
+
             var entries = GetEntries(iCombo);
             if (entries != null && iIndex < entries.Count)
             {
-                ppszText = entries[iIndex].Name;
+                ppszText = entries[iIndex].DisplayText;
             }
 
             return VSConstants.S_OK;
@@ -200,11 +211,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
             if (entries !=null && iIndex < entries.Count)
             {
                 SetSelectedIndex(iCombo, iIndex);
-                if (_isFunctionSelected)
-                {
-                    _isFunctionSelected = true;
-                    _dropDownBar.RefreshCombo(iCombo, iIndex);
-                }
+                _dropDownBar.RefreshCombo(iCombo, iIndex);
 
                 var functionEntryInfo = entries[iIndex] as FunctionDefinitionEntryInfo;
                 if (functionEntryInfo != null)
@@ -233,6 +240,12 @@ namespace PowerShellTools.LanguageService.DropDownBar
         public int SetDropdownBar(IVsDropdownBar pDropdownBar)
         {
             _dropDownBar = pDropdownBar;
+
+            ParseError[] errors;
+            Token[] tokens;
+            var ast = Parser.ParseInput(_textView.TextBuffer.CurrentSnapshot.GetText(), out tokens, out errors);
+            UpdateDropDownEntries(ast);
+
             return VSConstants.S_OK;
         }
 
@@ -240,125 +253,70 @@ namespace PowerShellTools.LanguageService.DropDownBar
 
         #region Selection Synchronization
 
-        private void CaretPositionChanged(object sender, CaretPositionChangedEventArgs e)
+        private void Caret_PositionChanged(object sender, CaretPositionChangedEventArgs e)
         {
-            int newPosition = e.NewPosition.BufferPosition.Position;
-
-            var topLevelEntries = GetEntries(ComboBoxId.TopLevel);
-            var topLevelIndex = GetSelectedIndex(ComboBoxId.TopLevel);
-
-            if (topLevelIndex != -1 && topLevelEntries != null && topLevelIndex < topLevelEntries.Count)
-            {
-                if (newPosition >= topLevelEntries[topLevelIndex].Start && newPosition <= topLevelEntries[topLevelIndex].End)
-                {
-                    UpdateComboSelection(newPosition, ComboBoxId.TopLevel);
-                }
-                else
-                {
-                    FindActiveSelection(newPosition, topLevelIndex, topLevelEntries, ComboBoxId.TopLevel);
-                }
-            }
-            else
-            {
-                FindActiveSelection(newPosition, topLevelIndex, topLevelEntries, ComboBoxId.TopLevel);
-            }
+            // At the moment, the topLevel drop down box never changes, so we only update the nested drop down box
+            SetActiveSelection(ComboBoxId.Nested);
         }
-        
-        private void UpdateComboSelection(int newPosition, int comboBoxId)
-        {
-            var entries = GetEntries(comboBoxId);
-            var selectedIndex = GetSelectedIndex(comboBoxId);
 
-            if (selectedIndex != -1 && entries != null && selectedIndex < entries.Count)
+        private void Tokenizer_TokenizationComplete(object sender, Ast ast)
+        {
+            if (_dropDownBar != null)
             {
-                if (newPosition < entries[selectedIndex].Start || 
-                    newPosition > entries[selectedIndex].End || 
-                    comboBoxId == ComboBoxId.Nested) //Always update nested combo box because functions can be defined inside of each other
-                {
-                    FindActiveSelection(newPosition, selectedIndex, entries, comboBoxId);
-                }
-                else if (comboBoxId == ComboBoxId.TopLevel)
-                {
-                    UpdateComboSelection(newPosition, ComboBoxId.Nested);
-                }
-            }
-            else
-            {
-                FindActiveSelection(newPosition, selectedIndex, entries, comboBoxId);
+                Action callback = () => {
+                    UpdateDropDownEntries(ast);
+                };
+                _dispatcher.BeginInvoke(callback, DispatcherPriority.Background);
             }
         }
 
-        private void FindActiveSelection(int newPosition, int oldPosition, ReadOnlyCollection<IDropDownEntryInfo> entries, int comboBoxId)
+        private void UpdateDropDownEntries(Ast ast)
         {
-            if (_dropDownBar == null || entries == null || !entries.Any())
-            {
-                return;
-            }
+            _topLevelEntries = CalculateTopLevelEntries(ast);
+            SetActiveSelection(ComboBoxId.TopLevel);
+            _nestedEntries = CalculateNestedEntries(ast);
+            SetActiveSelection(ComboBoxId.Nested);
+        }
 
-            var entriesByScope = entries.OrderBy(entry => entry.End);
-            var activeEntry = entriesByScope.FirstOrDefault(entry => newPosition >= entry.Start && newPosition <= entry.End);
-            if (activeEntry != null)
+        private void SetActiveSelection(int comboBoxId)
+        {
+            if (_dropDownBar != null)
             {
-                var newIndex = entries.IndexOf(activeEntry);
+                var newIndex = -1;
+
+                var entries = GetEntries(comboBoxId);
+                if (entries != null && entries.Any())
+                {
+                    var newPosition = _textView.Caret.Position.BufferPosition.Position;
+                    var entriesByScope = entries.OrderBy(entry => entry.End);
+                    var activeEntry = entriesByScope.FirstOrDefault(entry => newPosition >= entry.Start && newPosition <= entry.End);
+
+                    if (activeEntry != null)
+                    {
+                        newIndex = entries.IndexOf(activeEntry);
+                    }
+                    else
+                    {
+                        // If outside all entries, select the entry just before it
+                        var closestEntry = entriesByScope.LastOrDefault(entry => newPosition >= entry.End);
+                        if (closestEntry == null)
+                        {
+                            // if the mouse is before any entries, select the first one
+                            closestEntry = entries.OrderBy(entry => entry.Start).First();
+                        }
+
+                        newIndex = entries.IndexOf(closestEntry);
+                    }
+                }
 
                 SetSelectedIndex(comboBoxId, newIndex);
-
-                if (!_isFunctionSelected)
-                {
-                    // we've selected something new, we need to refresh the combo to remove the grayed out entry
-                    _isFunctionSelected = true;
-                    _dropDownBar.RefreshCombo(comboBoxId, newIndex);
-                }
-                else
-                {
-                    // changing from one to another, just update the selection
-                    _dropDownBar.SetCurrentSelection(comboBoxId, newIndex);
-                }
-
-                if (comboBoxId == ComboBoxId.TopLevel)
-                {
-                    // update the nested entries
-                    //TODO: CalculateNestedEntries();
-                    _isFunctionSelected = true;
-                    _dropDownBar.RefreshCombo(ComboBoxId.Nested, 0);
-                    UpdateComboSelection(newPosition, ComboBoxId.Nested);
-                }
-            }
-            else
-            {
-                // If outside all entries, select the entry just before it
-                var closestEntry = entriesByScope.LastOrDefault(entry => newPosition >= entry.End);
-                if (closestEntry == null)
-                {
-                    // if the mouse is before any entries, select the first one
-                    closestEntry = entries.OrderBy(entry => entry.Start).First();
-                }
-
-                var closestIndex = entries.IndexOf(closestEntry);
-                SetSelectedIndex(comboBoxId, closestIndex);
-                _isFunctionSelected = false;
-                _dropDownBar.RefreshCombo(comboBoxId, closestIndex);
+                _dropDownBar.RefreshCombo(comboBoxId, newIndex);
             }
         }
 
         #endregion
 
         #region Entry Calculation
-
-        public void UpdateDropDownEntries(Ast ast)
-        {
-            if (_dropDownBar != null)
-            {
-                Action callback = () => {
-                    _topLevelEntries = CalculateTopLevelEntries(ast);
-                    _nestedEntries = CalculateNestedEntries(ast);
-                    _topLevelIndex = -1;
-                    _nestedIndex = -1;
-                    FindActiveSelection(_textView.Caret.Position.BufferPosition.Position, _topLevelIndex, _topLevelEntries, ComboBoxId.TopLevel);
-                };
-                _dispatcher.BeginInvoke(callback, DispatcherPriority.Background);
-            }
-        }
 
         /// <summary>
         /// Reads our image list from our DLLs resource stream.
@@ -373,31 +331,31 @@ namespace PowerShellTools.LanguageService.DropDownBar
             return list;
         }
 
-        private static ReadOnlyCollection<IDropDownEntryInfo> CalculateTopLevelEntries(Ast scriptTree)
+        private static ReadOnlyCollection<IDropDownEntryInfo> CalculateTopLevelEntries(Ast script)
         {
             var newEntries = new Collection<IDropDownEntryInfo>();
 
-            if (scriptTree != null)
+            if (script != null)
             {
-                newEntries.Add(new StaticEntryInfo("(Script)", (int)ImageListKind.Class, scriptTree.Extent.StartOffset, scriptTree.Extent.EndOffset));
+                newEntries.Add(new StaticEntryInfo("(Script)", (int)ImageListKind.Class, script));
             }
 
             return new ReadOnlyCollection<IDropDownEntryInfo>(newEntries);
         }
 
-        private static ReadOnlyCollection<IDropDownEntryInfo> CalculateNestedEntries(Ast scriptTree)
+        private static ReadOnlyCollection<IDropDownEntryInfo> CalculateNestedEntries(Ast script)
         {
             List<IDropDownEntryInfo> newEntries = new List<IDropDownEntryInfo>();
 
-            if (scriptTree != null)
+            if (script != null)
             {
-                foreach (var function in scriptTree.FindAll(node => node is FunctionDefinitionAst, true).Cast<FunctionDefinitionAst>())
+                foreach (var function in script.FindAll(node => node is FunctionDefinitionAst, true).Cast<FunctionDefinitionAst>())
                 {
                     newEntries.Add(new FunctionDefinitionEntryInfo(function));
                 }
             }
 
-            newEntries.Sort((x, y) => String.CompareOrdinal(x.Name, y.Name));
+            newEntries.Sort((x, y) => String.CompareOrdinal(x.DisplayText, y.DisplayText));
             return new ReadOnlyCollection<IDropDownEntryInfo>(newEntries);
         }
 

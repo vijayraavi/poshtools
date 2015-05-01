@@ -6,9 +6,9 @@
     internal interface IDropDownEntryInfo
     {
         /// <summary>
-        /// Gets the name to be displayed
+        /// Gets the text to be displayed
         /// </summary>
-        string Name { get; }
+        string DisplayText { get; }
 
         /// <summary>
         /// Gets the index in our image list which should be used for the icon to be displayed

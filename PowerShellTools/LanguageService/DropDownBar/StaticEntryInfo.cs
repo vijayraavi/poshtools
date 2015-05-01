@@ -1,28 +1,30 @@
-﻿namespace PowerShellTools.LanguageService.DropDownBar
+﻿using System.Management.Automation.Language;
+
+namespace PowerShellTools.LanguageService.DropDownBar
 {
     /// <summary>
     /// Class used for tracking static elements in the navigation bar drop down.
     /// </summary>
     internal class StaticEntryInfo : IDropDownEntryInfo
     {
-        private string _name;
+        private string _displayText;
         private int _imageListIndex, _start, _end;
 
-        public StaticEntryInfo(string name, int imageListIndex, int start, int end)
+        public StaticEntryInfo(string displayText, int imageListIndex, Ast script)
         {
-            _name = name;
+            _displayText = displayText;
             _imageListIndex = imageListIndex;
-            _start = start;
-            _end = end;
+            _start = script.Extent.StartOffset;
+            _end = script.Extent.EndOffset;
         }
         /// <summary>
-        /// Gets the name to be displayed
+        /// Gets the text to be displayed
         /// </summary>
-        public string Name
+        public string DisplayText
         {
             get
             {
-                return _name;
+                return _displayText;
             }
         }
 

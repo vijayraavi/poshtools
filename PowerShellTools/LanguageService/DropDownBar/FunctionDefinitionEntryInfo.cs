@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TextManager.Interop;
+using System;
 using System.Linq;
 using System.Management.Automation.Language;
 
@@ -21,9 +22,9 @@ namespace PowerShellTools.LanguageService.DropDownBar
         }
 
         /// <summary>
-        /// Gets the name to be displayed
+        /// Gets the text to be displayed
         /// </summary>
-        public string Name
+        public string DisplayText
         {
             get
             {
@@ -47,7 +48,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
             get
             {
                 var overlay = ImageListOverlay.ImageListOverlayNone;
-                if (Name != null && Name.StartsWith("_") && !(Name.StartsWith("__") && Name.EndsWith("__")))
+                if (DisplayText != null && DisplayText.StartsWith("_") && !(DisplayText.StartsWith("__") && DisplayText.EndsWith("__")))
                 {
                     overlay = ImageListOverlay.ImageListOverlayPrivate;
                 }

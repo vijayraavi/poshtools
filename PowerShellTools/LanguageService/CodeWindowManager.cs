@@ -34,7 +34,6 @@ namespace PowerShellTools.LanguageService
         private readonly IWpfTextView _textView;
         private static readonly Dictionary<IWpfTextView, CodeWindowManager> _windows = new Dictionary<IWpfTextView, CodeWindowManager>();
         private DropDownBarClient _client;
-        private readonly IPowerShellTokenizationService _tokenizer;
 
         static CodeWindowManager()
         {
@@ -45,16 +44,6 @@ namespace PowerShellTools.LanguageService
         {
             _window = codeWindow;
             _textView = textView;
-	    if (_textView.TextBuffer.ContentType.IsOfType(PowerShellConstants.LanguageName))
-	    {
-		_textView.TextBuffer.Properties.TryGetProperty<IPowerShellTokenizationService>(BufferProperties.PowerShellTokenizer, out _tokenizer);
-	    }
-	    else
-	    {
-		_tokenizer = new PowerShellTokenizationService(_textView.TextBuffer);
-	    }
-
-            Debug.Assert(_tokenizer != null, "PowerShell Tokenizer not found on textBuffer from CodeWindowManager");
 
             var model = CommonPackage.ComponentModel;
             var adaptersFactory = model.GetService<IVsEditorAdaptersFactoryService>();
@@ -66,16 +55,6 @@ namespace PowerShellTools.LanguageService
 
             var viewFilter = new TextViewFilter();
             viewFilter.AttachFilter(textViewAdapter);
-
-            _tokenizer.TokenizationComplete += Tokenizer_TokenizationComplete;
-        }
-
-        private void Tokenizer_TokenizationComplete(object sender, Ast ast)
-        {
-            if (_client != null)
-                _client.UpdateDropDownEntries(ast);
-
-            //TODO: A deeper refactoring to make the client handle the update from the tokenizer.
         }
 
         private static void OnIdle(object sender, ComponentManagerEventArgs e)
@@ -119,14 +98,9 @@ namespace PowerShellTools.LanguageService
 
         private int AddDropDownBar()
         {
-            var text = _textView.TextBuffer.CurrentSnapshot.GetText();
+            
 
-            Token[] tokens;
-            ParseError[] errors;
-
-            var ast = Parser.ParseInput(text, out tokens, out errors);
-
-            DropDownBarClient dropDown = _client = new DropDownBarClient(_textView, ast);
+            DropDownBarClient dropDown = _client = new DropDownBarClient(_textView);
 
             IVsDropdownBarManager manager = (IVsDropdownBarManager)_window;
 

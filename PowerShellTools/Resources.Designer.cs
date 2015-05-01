@@ -223,6 +223,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use the dropdown to view and navigate to other items in this file..
+        /// </summary>
+        public static string DropDownToolTip {
+            get {
+                return ResourceManager.GetString("DropDownToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Timed out to create and initialize the process {0}.
         /// </summary>
         public static string ErrorFailToCreateProcess {
