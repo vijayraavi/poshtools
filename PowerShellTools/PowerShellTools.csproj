@@ -744,6 +744,10 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.HostService\PowerShellTools.HostService.csproj">
+      <Project>{8b0f3db2-ad3d-4d3a-85c3-4850263054e9}</Project>
+      <Name>PowerShellTools.HostService</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.PublicContract\PowerShellTools.Contracts.csproj">
       <Project>{103c9af2-f8a5-4bf0-a341-a43147c320aa}</Project>
       <Name>PowerShellTools.Contracts</Name>

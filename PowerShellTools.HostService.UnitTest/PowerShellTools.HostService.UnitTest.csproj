@@ -64,6 +64,10 @@
       <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
       <Name>PowerShellTools.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.HostService\PowerShellTools.HostService.csproj">
+      <Project>{8b0f3db2-ad3d-4d3a-85c3-4850263054e9}</Project>
+      <Name>PowerShellTools.HostService</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowerShellTools\PowerShellTools.csproj">
       <Project>{456d66a8-e05e-496d-bdce-af24bbc12e0d}</Project>
       <Name>PowerShellTools</Name>
