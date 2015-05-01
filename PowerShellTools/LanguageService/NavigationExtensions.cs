@@ -14,12 +14,9 @@ namespace PowerShellTools.LanguageService
     internal static class NavigationExtensions
     {
         /// <summary>
-        /// Finds the function definition(s) for the token under the caret if there is one
+        /// Finds all possible function definitions for the token at the caret position
         /// </summary>
-        /// <param name="textBuffer">The text buffer to search</param>
-        /// <param name="caretPosition">The current caret position</param>
-        /// <returns>A list of all possible function definitions</returns>
-        public static List<FunctionDefinitionAst> FindFunctionDefinitionUnderCaret(ITextBuffer textBuffer, int caretPosition)
+        public static List<FunctionDefinitionAst> FindFunctionDefinitions(ITextBuffer textBuffer, int caretPosition)
         {
             Ast scriptTree;
             if (textBuffer.Properties.TryGetProperty(BufferProperties.Ast, out scriptTree) && scriptTree != null)
@@ -36,7 +33,6 @@ namespace PowerShellTools.LanguageService
                 }
                 else
                 {
-                    // If caret is already under a function definition name, stay at that definition and don't prompt user of failure
                     definition = scriptTree.Find(node =>
                         {
                             if (node is FunctionDefinitionAst)
@@ -62,11 +58,9 @@ namespace PowerShellTools.LanguageService
         /// <summary>
         /// 1. Moves the caret to the end of the name of the function.
         /// 2. Highlights the name of the function.  
-        /// 2. Updates the viewport so that the function name will be centered.
-        /// 3. Moves focus to the text view to ensure the user can continue typing.
+        /// 3. Updates the viewport so that the function name will be centered.
+        /// 4. Moves focus to the text view to ensure the user can continue typing.
         /// </summary>
-        /// <param name="textView">The text view</param>
-        /// <param name="definition">The function definition</param>
         public static void NavigateToFunctionDefinition(ITextView textView, FunctionDefinitionAst definition)
         {
             var functionNameSpan = GetFunctionNameSpan(textView.TextBuffer, definition);
@@ -82,8 +76,6 @@ namespace PowerShellTools.LanguageService
         /// 2. Updates the viewport so that the caret will be centered.
         /// 3. Moves focus to the text view to ensure the user can continue typing.
         /// </summary>
-        /// <param name="textView">The text view</param>
-        /// <param name="location">The location to move the caret to</param>
         public static void NavigateToLocation(ITextView textView, int location)
         {
             textView.Caret.MoveTo(new SnapshotPoint(textView.TextBuffer.CurrentSnapshot, location));

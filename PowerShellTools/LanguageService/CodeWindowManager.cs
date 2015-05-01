@@ -13,15 +13,12 @@
  * ***************************************************************************/
 
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Management.Automation.Language;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools;
-using PowerShellTools.Classification;
 using PowerShellTools.Language;
 using PowerShellTools.LanguageService.DropDownBar;
 
@@ -128,7 +125,7 @@ namespace PowerShellTools.LanguageService
             if (_client != null)
             {
                 IVsDropdownBarManager manager = (IVsDropdownBarManager)_window;
-                _client.Unregister();
+                _client.Dispose();
                 _client = null;
                 _textView.TextBuffer.Properties.RemoveProperty(typeof(DropDownBarClient));
                 return manager.RemoveDropdownBar();

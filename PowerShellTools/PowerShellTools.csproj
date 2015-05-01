@@ -292,7 +292,7 @@
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
     <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
-    <Compile Include="LanguageService\DropDownBar\StaticEntryInfo.cs" />
+    <Compile Include="LanguageService\DropDownBar\ScriptEntryInfo.cs" />
     <Compile Include="LanguageService\DropDownBar\FunctionDefinitionEntryInfo.cs" />
     <Compile Include="LanguageService\DropDownBar\IDropDownEntryInfo.cs" />
     <Compile Include="LanguageService\NavigationExtensions.cs" />

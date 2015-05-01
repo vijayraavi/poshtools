@@ -31,35 +31,17 @@ namespace PowerShellTools.LanguageService.DropDownBar
 {
     /// <summary>
     /// Implements the navigation bar which appears above a source file in the editor.
-    /// 
-    /// The navigation bar consists of two drop-down boxes.  On the left hand side is a list
-    /// of top level constructs.  On the right hand side are list of nested constructs for the
-    /// currently selected top-level construct.
-    /// 
-    /// When the user moves the caret the current selections are automatically updated.  If the
-    /// user is inside of a top level construct but not inside any of the available nested 
-    /// constructs then the first element of the nested construct list is selected and displayed
-    /// grayed out.  If the user is inside of no top level constructs then the 1st top-level
-    /// construct is selected and displayed as grayed out.  It's first top-level construct is
-    /// also displayed as being grayed out.
-    /// 
-    /// The most difficult part of this is handling the transitions from one state to another.
-    /// We need to change the current selections due to events from two sources:  The first is selections
-    /// in the drop down and the 2nd is the user navigating within the source code.  When a change
-    /// occurs we may need to update the left hand side (along w/ a corresponding update to the right
-    /// hand side) or we may need to update the right hand side.  If we are transitioning from
-    /// being outside of a known element to being in a known element we also need to refresh 
-    /// the drop down to remove grayed out elements.
+    /// The navigation bar consists of two drop-down boxes.  The left hand side is simply a static node for the script
+    /// The right hand side is a list of function definitions in the script
     /// </summary>
-    internal class DropDownBarClient : IVsDropdownBarClient
+    internal class DropDownBarClient : IVsDropdownBarClient, IDisposable
     {
-        private readonly Dispatcher _dispatcher;                        // current dispatcher so we can get back to our thread
-        private readonly IWpfTextView _textView;                        // text view we're drop downs for
-        private IVsDropdownBar _dropDownBar;                            // drop down bar - used to refresh when changes occur
-        private ReadOnlyCollection<IDropDownEntryInfo> _topLevelEntries; // entries for top-level members of the file
-        private ReadOnlyCollection<IDropDownEntryInfo> _nestedEntries;   // entries for nested members in the file
-        private int _topLevelIndex = -1, _nestedIndex = -1;       // currently selected indices for each bar
-
+        private ReadOnlyCollection<IDropDownEntryInfo> _topLevelEntries;
+        private ReadOnlyCollection<IDropDownEntryInfo> _nestedEntries;
+        private readonly Dispatcher _dispatcher;
+        private readonly IWpfTextView _textView;
+        private IVsDropdownBar _dropDownBar;
+        private int _topLevelIndex = -1, _nestedIndex = -1;
         private static readonly ImageList _imageList = GetImageList();
         private IPowerShellTokenizationService _tokenizer;
 
@@ -82,7 +64,10 @@ namespace PowerShellTools.LanguageService.DropDownBar
             _tokenizer.TokenizationComplete += Tokenizer_TokenizationComplete;
         }
 
-        internal void Unregister()
+        /// <summary>
+        /// Disposes handlers
+        /// </summary>
+        public void Dispose()
         {
             _textView.Caret.PositionChanged -= Caret_PositionChanged;
             _tokenizer.TokenizationComplete -= Tokenizer_TokenizationComplete;
@@ -91,44 +76,40 @@ namespace PowerShellTools.LanguageService.DropDownBar
         #region IVsDropdownBarClient Members
 
         /// <summary>
-        /// Gets the attributes for the specified combo box.  We return the number of elements that we will
-        /// display, the various attributes that VS should query for next (text, image, and attributes of
-        /// the text such as being grayed out), along with the appropriate image list.
-        /// 
-        /// We always return the # of entries based off our entries list, the exact same image list, and
-        /// we have VS query for text, image, and text attributes all the time.
+        /// Gets the attributes for the specified comboBox
+        /// (text, image, and attributes of the text such as being grayed out)
         /// </summary>
-        public int GetComboAttributes(int iCombo, out uint pcEntries, out uint puEntryType, out IntPtr phImageList)
+        public int GetComboAttributes(int comboBoxId, out uint count, out uint attributes, out IntPtr imageList)
         {
-            var entries = GetEntries(iCombo);
+            var entries = GetEntries(comboBoxId);
             if (entries != null)
             {
-                pcEntries = (uint)entries.Count;
+                count = (uint)entries.Count;
             }
             else
             {
-                pcEntries = 0;
+                count = 0;
             }
 
-            puEntryType = (uint)(DROPDOWNENTRYTYPE.ENTRY_TEXT | DROPDOWNENTRYTYPE.ENTRY_IMAGE | DROPDOWNENTRYTYPE.ENTRY_ATTR);
-            phImageList = _imageList.Handle;
+            attributes = (uint)(DROPDOWNENTRYTYPE.ENTRY_TEXT | DROPDOWNENTRYTYPE.ENTRY_IMAGE | DROPDOWNENTRYTYPE.ENTRY_ATTR);
+            imageList = _imageList.Handle;
             return VSConstants.S_OK;
         }
 
         /// <summary>
         /// Gets the tool tip for the given combo box.
         /// </summary>
-        public int GetComboTipText(int iCombo, out string pbstrText)
+        public int GetComboTipText(int comboBoxId, out string toolTipText)
         {
-            pbstrText = null;
+            toolTipText = null;
 
-            if (iCombo == ComboBoxId.Nested)
+            if (comboBoxId == ComboBoxId.Nested)
             {
-                var index = GetSelectedIndex(iCombo);
-                var entries = GetEntries(iCombo);
+                var index = GetSelectedIndex(comboBoxId);
+                var entries = GetEntries(comboBoxId);
                 if (entries != null && index != -1 && index < entries.Count)
                 {
-                    pbstrText = entries[index].DisplayText + "\n\n" + Resources.DropDownToolTip;
+                    toolTipText = entries[index].DisplayText + "\n\n" + Resources.DropDownToolTip;
                 }
             }
 
@@ -138,19 +119,19 @@ namespace PowerShellTools.LanguageService.DropDownBar
         /// <summary>
         /// Gets the entry attributes for the given combo box and index.
         /// </summary>
-        public int GetEntryAttributes(int iCombo, int iIndex, out uint pAttr)
+        public int GetEntryAttributes(int comboBoxId, int index, out uint textColor)
         {
-            pAttr = (uint)DROPDOWNFONTATTR.FONTATTR_PLAIN;
+            textColor = (uint)DROPDOWNFONTATTR.FONTATTR_PLAIN;
 
-            var entries = GetEntries(iCombo);
-            var selectedIndex = GetSelectedIndex(iCombo);
+            var entries = GetEntries(comboBoxId);
+            var selectedIndex = GetSelectedIndex(comboBoxId);
             var caretPosition = _textView.Caret.Position.BufferPosition.Position;
-            if (entries != null && iIndex < entries.Count &&
-                iIndex == selectedIndex &&
+            if (entries != null && index < entries.Count &&
+                index == selectedIndex &&
                 (caretPosition < entries[selectedIndex].Start ||
                  caretPosition > entries[selectedIndex].End))
             {
-                pAttr = (uint)DROPDOWNFONTATTR.FONTATTR_GRAY;
+                textColor = (uint)DROPDOWNFONTATTR.FONTATTR_GRAY;
             }
 
             return VSConstants.S_OK;
@@ -159,14 +140,14 @@ namespace PowerShellTools.LanguageService.DropDownBar
         /// <summary>
         /// Gets the image for the given combo box and index.
         /// </summary>
-        public int GetEntryImage(int iCombo, int iIndex, out int piImageIndex)
+        public int GetEntryImage(int comboBoxId, int index, out int piImageIndex)
         {
             piImageIndex = 0;
 
-            var entries = GetEntries(iCombo);
-            if (entries != null && iIndex < entries.Count)
+            var entries = GetEntries(comboBoxId);
+            if (entries != null && index < entries.Count)
             {
-                piImageIndex = entries[iIndex].ImageListIndex;
+                piImageIndex = entries[index].ImageListIndex;
             }
 
             return VSConstants.S_OK;
@@ -175,71 +156,71 @@ namespace PowerShellTools.LanguageService.DropDownBar
         /// <summary>
         /// Gets the text displayed for the given combo box and index.
         /// </summary>
-        public int GetEntryText(int iCombo, int iIndex, out string ppszText)
+        public int GetEntryText(int comboBoxId, int index, out string displayText)
         {
-            ppszText = String.Empty;
+            displayText = String.Empty;
 
-            var entries = GetEntries(iCombo);
-            if (entries != null && iIndex < entries.Count)
+            var entries = GetEntries(comboBoxId);
+            if (entries != null && index < entries.Count)
             {
-                ppszText = entries[iIndex].DisplayText;
+                displayText = entries[index].DisplayText;
             }
 
             return VSConstants.S_OK;
         }
 
-        public int OnComboGetFocus(int iCombo)
+        /// <summary>
+        /// Called when the user chooses an item from the drop down
+        /// </summary>
+        public int OnComboGetFocus(int comboBoxId)
         {
             return VSConstants.S_OK;
         }
 
         /// <summary>
-        /// Called when the user selects an item from the drop down.  We will
-        /// update the caret to beat the correct location, move the view port
-        /// so that the code is centered on the screen, and we may refresh
-        /// the combo box so that the 1st item is no longer grayed out if
-        /// the user was originally outside of valid selection.
+        /// Called when the user chooses an item from the drop down
         /// </summary>
-        public int OnItemChosen(int iCombo, int iIndex)
+        public int OnItemChosen(int comboBoxId, int index)
         {
             if (_dropDownBar == null)
             {
                 return VSConstants.E_UNEXPECTED;
             }
 
-            var entries = GetEntries(iCombo);
-            if (entries !=null && iIndex < entries.Count)
+            var entries = GetEntries(comboBoxId);
+            if (entries !=null && index < entries.Count)
             {
-                SetSelectedIndex(iCombo, iIndex);
-                _dropDownBar.RefreshCombo(iCombo, iIndex);
+                SetSelectedIndex(comboBoxId, index);
+                _dropDownBar.RefreshCombo(comboBoxId, index);
 
-                var functionEntryInfo = entries[iIndex] as FunctionDefinitionEntryInfo;
+                var functionEntryInfo = entries[index] as FunctionDefinitionEntryInfo;
                 if (functionEntryInfo != null)
                 {
                     NavigationExtensions.NavigateToFunctionDefinition(_textView, functionEntryInfo.FunctionDefinition);
                 }
                 else
                 {
-                    NavigationExtensions.NavigateToLocation(_textView, entries[iIndex].Start);
+                    NavigationExtensions.NavigateToLocation(_textView, entries[index].Start);
                 }
             }
 
             return VSConstants.S_OK;
         }
 
-        public int OnItemSelected(int iCombo, int iIndex)
+        /// <summary>
+        /// Called when the user selects an item from the drop down
+        /// </summary>
+        public int OnItemSelected(int comboBoxId, int index)
         {
             return VSConstants.S_OK;
         }
 
         /// <summary>
-        /// Called by VS to provide us with the drop down bar.  We can call back
-        /// on the drop down bar to force VS to refresh the combo box or change
-        /// the current selection.
+        /// Called by VS to provide us with the drop down bar
         /// </summary>
-        public int SetDropdownBar(IVsDropdownBar pDropdownBar)
+        public int SetDropdownBar(IVsDropdownBar dropDownBar)
         {
-            _dropDownBar = pDropdownBar;
+            _dropDownBar = dropDownBar;
 
             ParseError[] errors;
             Token[] tokens;
@@ -255,8 +236,11 @@ namespace PowerShellTools.LanguageService.DropDownBar
 
         private void Caret_PositionChanged(object sender, CaretPositionChangedEventArgs e)
         {
-            // At the moment, the topLevel drop down box never changes, so we only update the nested drop down box
-            SetActiveSelection(ComboBoxId.Nested);
+            Action callback = () => {
+                // At the moment, the topLevel drop down box never changes, so we only update the nested drop down box
+                SetActiveSelection(ComboBoxId.Nested);
+            };
+            _dispatcher.BeginInvoke(callback, DispatcherPriority.Background);
         }
 
         private void Tokenizer_TokenizationComplete(object sender, Ast ast)
@@ -337,7 +321,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
 
             if (script != null)
             {
-                newEntries.Add(new StaticEntryInfo("(Script)", (int)ImageListKind.Class, script));
+                newEntries.Add(new ScriptEntryInfo(script));
             }
 
             return new ReadOnlyCollection<IDropDownEntryInfo>(newEntries);
@@ -365,9 +349,9 @@ namespace PowerShellTools.LanguageService.DropDownBar
             public const int Nested = 1;
         }
 
-        private ReadOnlyCollection<IDropDownEntryInfo> GetEntries(int iCombo)
+        private ReadOnlyCollection<IDropDownEntryInfo> GetEntries(int comboBoxId)
         {
-            switch (iCombo)
+            switch (comboBoxId)
             {
                 case ComboBoxId.TopLevel:
                     return _topLevelEntries;
@@ -378,9 +362,9 @@ namespace PowerShellTools.LanguageService.DropDownBar
             }
         }
 
-        private int GetSelectedIndex(int iCombo)
+        private int GetSelectedIndex(int comboBoxId)
         {
-            switch (iCombo)
+            switch (comboBoxId)
             {
                 case ComboBoxId.TopLevel:
                     return _topLevelIndex;
@@ -391,15 +375,15 @@ namespace PowerShellTools.LanguageService.DropDownBar
             }
         }
 
-        private void SetSelectedIndex(int iCombo, int iIndex)
+        private void SetSelectedIndex(int comboBoxId, int index)
         {
-            switch (iCombo)
+            switch (comboBoxId)
             {
                 case ComboBoxId.TopLevel:
-                    _topLevelIndex = iIndex;
+                    _topLevelIndex = index;
                     break;
                 case ComboBoxId.Nested:
-                    _nestedIndex = iIndex;
+                    _nestedIndex = index;
                     break;
             }
         }

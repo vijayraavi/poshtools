@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.TextManager.Interop;
-using System;
+﻿using System;
 using System.Linq;
 using System.Management.Automation.Language;
 
@@ -12,10 +11,6 @@ namespace PowerShellTools.LanguageService.DropDownBar
     {
         private readonly FunctionDefinitionAst _functionDefinition;
 
-        /// <summary>
-        /// A constructor
-        /// </summary>
-        /// <param name="functionDefinition">The function definition</param>
         public FunctionDefinitionEntryInfo(FunctionDefinitionAst functionDefinition)
         {
             _functionDefinition = functionDefinition;

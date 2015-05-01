@@ -11,6 +11,9 @@ using PowerShellTools.LanguageService;
 
 namespace PowerShellTools.Test.LanguageService
 {
+    /// <summary>
+    /// Tests finding function definitions in a script
+    /// </summary>
     [TestClass]
     public class NavigationUnitTests
     {
@@ -20,32 +23,31 @@ namespace PowerShellTools.Test.LanguageService
         [TestMethod]
         public void FindFunctionDefinition()
         {
-            
-            var script = new List<TestScriptSection>()
+            var script = new List<ScriptSectionMock>()
             {
                 /*
                 function zero { 0 }
                 zero
                 */
-                new TestScriptSection("function ", null),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>(){  new ExpectedDefinitionHelper("zero", 1) }),
-                new TestScriptSection(" { 0 }\n", null ),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>(){  new ExpectedDefinitionHelper("zero", 1) })
+                new ScriptSectionMock("function ", null),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>(){  new ExpectedDefinitionMock("zero", 1) }),
+                new ScriptSectionMock(" { 0 }\n", null ),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>(){  new ExpectedDefinitionMock("zero", 1) })
             };
 
             ValidateDefinitions(script);
         }
 
         /// <summary>
-        /// Return nothing if...
-        /// 1. If the function is referenced before it is defined
-        /// 2. If the function is referenced outside of the scope it is defined
-        /// 3. If the function is not defined
+        /// Return nothing if the function...
+        /// 1. ...is referenced before it is defined
+        /// 2. ...is referenced outside of the scope it is defined
+        /// 3. ...is not defined
         /// </summary>
         [TestMethod]
         public void FunctionDefinitionNotFound()
         {
-            var script = new List<TestScriptSection>()
+            var script = new List<ScriptSectionMock>()
             {
                 /*
                 { 
@@ -55,9 +57,9 @@ namespace PowerShellTools.Test.LanguageService
                 zero
                 bogus
                 */
-                new TestScriptSection("{\n\tzero\n\tfunction ", null),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>(){  new ExpectedDefinitionHelper("zero", 2) }),
-                new TestScriptSection(" { 0 }\n}\nzero\nbogus", null),
+                new ScriptSectionMock("{\n\tzero\n\tfunction ", null),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>(){  new ExpectedDefinitionMock("zero", 2) }),
+                new ScriptSectionMock(" { 0 }\n}\nzero\nbogus", null),
             };
 
             ValidateDefinitions(script);
@@ -70,7 +72,7 @@ namespace PowerShellTools.Test.LanguageService
         [TestMethod]
         public void FindFunctionDefinitionByScope()
         {
-            var script = new List<TestScriptSection>()
+            var script = new List<ScriptSectionMock>()
             {
                 /*
                 { 
@@ -80,15 +82,15 @@ namespace PowerShellTools.Test.LanguageService
                 }
                 function zero { 0 }
                 */
-                new TestScriptSection("{\n\t", null ),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>(){ new ExpectedDefinitionHelper("zero", 6) }),
-                new TestScriptSection("\n\tfunction ", null),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>(){  new ExpectedDefinitionHelper("zero", 3) }),
-                new TestScriptSection(" { 0 }\n\t", null),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>(){  new ExpectedDefinitionHelper("zero", 3) }),
-                new TestScriptSection("\n}\nfunction ", null),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>(){  new ExpectedDefinitionHelper("zero", 6) }),
-                new TestScriptSection(" { 0 }\n", null),
+                new ScriptSectionMock("{\n\t", null ),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>(){ new ExpectedDefinitionMock("zero", 6) }),
+                new ScriptSectionMock("\n\tfunction ", null),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>(){  new ExpectedDefinitionMock("zero", 3) }),
+                new ScriptSectionMock(" { 0 }\n\t", null),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>(){  new ExpectedDefinitionMock("zero", 3) }),
+                new ScriptSectionMock("\n}\nfunction ", null),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>(){  new ExpectedDefinitionMock("zero", 6) }),
+                new ScriptSectionMock(" { 0 }\n", null),
             };
 
             ValidateDefinitions(script);
@@ -100,7 +102,7 @@ namespace PowerShellTools.Test.LanguageService
         [TestMethod]
         public void FindAmbiguousFunctionDefinition()
         {
-            var script = new List<TestScriptSection>()
+            var script = new List<ScriptSectionMock>()
             {
                 /*
                 { 
@@ -109,55 +111,48 @@ namespace PowerShellTools.Test.LanguageService
                 function zero { 0 }
                 function zero { 0 }
                 */
-                new TestScriptSection("{\n\t", null ),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>()
+                new ScriptSectionMock("{\n\t", null ),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>()
                 {
-                    new ExpectedDefinitionHelper("zero", 4),
-                    new ExpectedDefinitionHelper("zero", 5)
+                    new ExpectedDefinitionMock("zero", 4),
+                    new ExpectedDefinitionMock("zero", 5)
                 }),
-                new TestScriptSection("}\nfunction ", null),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>(){  new ExpectedDefinitionHelper("zero", 4) }),
-                new TestScriptSection(" { 0 }\n", null),
-                new TestScriptSection("\nfunction ", null),
-                new TestScriptSection("zero", new List<ExpectedDefinitionHelper>(){  new ExpectedDefinitionHelper("zero", 5) }),
-                new TestScriptSection(" { 0 }\n", null),
+                new ScriptSectionMock("}\nfunction ", null),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>(){  new ExpectedDefinitionMock("zero", 4) }),
+                new ScriptSectionMock(" { 0 }\n", null),
+                new ScriptSectionMock("\nfunction ", null),
+                new ScriptSectionMock("zero", new List<ExpectedDefinitionMock>(){  new ExpectedDefinitionMock("zero", 5) }),
+                new ScriptSectionMock(" { 0 }\n", null),
             };
 
             ValidateDefinitions(script);
         }
 
-        private struct TestScriptSection
+        private struct ScriptSectionMock
         {
             public string Code;
-            public IEnumerable<ExpectedDefinitionHelper> ExpectedValues;
+            public IEnumerable<ExpectedDefinitionMock> ExpectedValues;
 
-            public TestScriptSection(string code, IEnumerable<ExpectedDefinitionHelper> expectedValues)
+            public ScriptSectionMock(string code, IEnumerable<ExpectedDefinitionMock> expectedValues)
             {
                 Code = code;
                 ExpectedValues = expectedValues;
             }
         }
 
-        private class ExpectedDefinitionHelper
+        private struct ExpectedDefinitionMock
         {
-            private string _name;
-            private int _startLineNumber;
+            public string Name;
+            public int StartLineNumber;
 
-            public ExpectedDefinitionHelper(string name, int startLineNumber)
+            public ExpectedDefinitionMock(string name, int startLineNumber)
             {
-                _name = name;
-                _startLineNumber = startLineNumber;
-            }
-
-            public bool AssertEquals(FunctionDefinitionAst actual)
-            {
-                Assert.AreEqual(_name, actual.Name);
-                Assert.AreEqual(_startLineNumber, actual.Extent.StartLineNumber);
-                return true;
+                Name = name;
+                StartLineNumber = startLineNumber;
             }
         }
 
-        private static void ValidateDefinitions(IEnumerable<TestScriptSection> script)
+        private static void ValidateDefinitions(IEnumerable<ScriptSectionMock> script)
         {
             var textBuffer = TextBufferMock(String.Concat(script.Select(s => s.Code)));
 
@@ -170,7 +165,7 @@ namespace PowerShellTools.Test.LanguageService
 
                 for (var i = start; i < previousCodeLength + scriptSection.Code.Length + includeEnd; i++)
                 {
-                    var actualVals = NavigationExtensions.FindFunctionDefinitionUnderCaret(textBuffer, i);
+                    var actualVals = NavigationExtensions.FindFunctionDefinitions(textBuffer, i);
 
                     if (scriptSection.ExpectedValues == null)
                     {
@@ -180,7 +175,12 @@ namespace PowerShellTools.Test.LanguageService
                     {
                         Assert.IsNotNull(actualVals);
                         Assert.AreEqual(scriptSection.ExpectedValues.Count(), actualVals.Count);
-                        scriptSection.ExpectedValues.Zip(actualVals, (expected, actual) => expected.AssertEquals(actual));
+                        scriptSection.ExpectedValues.Zip(actualVals, (expected, actual) =>
+                        {
+                            Assert.AreEqual(expected.Name, actual.Name);
+                            Assert.AreEqual(expected.StartLineNumber, actual.Extent.StartLineNumber);
+                            return true;
+                        });
                     }
                 }
 

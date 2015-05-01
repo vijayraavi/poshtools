@@ -3,20 +3,18 @@
 namespace PowerShellTools.LanguageService.DropDownBar
 {
     /// <summary>
-    /// Class used for tracking static elements in the navigation bar drop down.
+    /// Class used for tracking the script element in the navigation bar drop down.
     /// </summary>
-    internal class StaticEntryInfo : IDropDownEntryInfo
+    internal class ScriptEntryInfo : IDropDownEntryInfo
     {
-        private string _displayText;
-        private int _imageListIndex, _start, _end;
+        private int _start, _end;
 
-        public StaticEntryInfo(string displayText, int imageListIndex, Ast script)
+        public ScriptEntryInfo(Ast script)
         {
-            _displayText = displayText;
-            _imageListIndex = imageListIndex;
             _start = script.Extent.StartOffset;
             _end = script.Extent.EndOffset;
         }
+
         /// <summary>
         /// Gets the text to be displayed
         /// </summary>
@@ -24,7 +22,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
         {
             get
             {
-                return _displayText;
+                return Resources.DropDownScriptName;
             }
         }
 
@@ -35,7 +33,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
         {
             get
             {
-                return _imageListIndex;
+                return (int)ImageListKind.Class;
             }
         }
 

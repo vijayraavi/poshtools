@@ -4,7 +4,6 @@ using System.Windows;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
@@ -103,7 +102,7 @@ namespace PowerShellTools.LanguageService
 
         private void GoToDefinition()
         {
-            var definitions = NavigationExtensions.FindFunctionDefinitionUnderCaret(_textView.TextBuffer, _textView.Caret.Position.BufferPosition.Position);
+            var definitions = NavigationExtensions.FindFunctionDefinitions(_textView.TextBuffer, _textView.Caret.Position.BufferPosition.Position);
 
             if (definitions != null && definitions.Any())
             {
