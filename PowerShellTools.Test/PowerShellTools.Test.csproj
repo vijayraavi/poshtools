@@ -111,10 +111,6 @@
       <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
       <Name>PowerShellTools.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PowershellTools.HostService\PowerShellTools.HostService.csproj">
-      <Project>{c9d4aac3-51d3-4ed9-ab9b-564d4d2d30e8}</Project>
-      <Name>PowerShellTools.HostService</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.PublicContract\PowerShellTools.Contracts.csproj">
       <Project>{103c9af2-f8a5-4bf0-a341-a43147c320aa}</Project>
       <Name>PowerShellTools.Contracts</Name>
