@@ -46,16 +46,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}</ProjectGuid>
+    <ProjectGuid>{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PowerShellTools.HostService</RootNamespace>
-    <AssemblyName>PowerShellToolsProcessHost</AssemblyName>
+    <AssemblyName>PowerShellToolsProcessHostx86</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -64,8 +64,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
- <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -108,24 +108,50 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PowerShellServiceHostBehaviorAttribute.cs" />
-    <Compile Include="Resources.Designer.cs">
+    <Compile Include="..\PowerShellTools.HostService\PowerShellServiceHostBehaviorAttribute.cs">
+      <Link>PowerShellServiceHostBehaviorAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ServiceManagement\Debugging\DTEManager.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowerShellBreakpointRecord.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingService.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities40.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowerShellHost.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowerShellServiceHost.cs" />
-    <Compile Include="ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceCommon.cs" />
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\DTEManager.cs">
+      <Link>ServiceManagement\Debugging\DTEManager.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellBreakpointRecord.cs">
+      <Link>ServiceManagement\Debugging\PowerShellBreakpointRecord.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingService.cs">
+      <Link>ServiceManagement\Debugging\PowerShellDebuggingService.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs">
+      <Link>ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs">
+      <Link>ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities40.cs">
+      <Link>ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities40.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellHost.cs">
+      <Link>ServiceManagement\Debugging\PowerShellHost.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellServiceHost.cs">
+      <Link>ServiceManagement\Debugging\PowerShellServiceHost.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs">
+      <Link>ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\Program.cs">
+      <Link>Program.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceCommon.cs">
+      <Link>ServiceCommon.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PowerShellTools.Common\PowerShellTools.Common.csproj">
@@ -134,9 +160,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources.resx">
+    <EmbeddedResource Include="..\PowerShellTools.HostService\Resources.resx">
+      <Link>Resources.resx</Link>
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <LastGenOutput>..\PowerShellTools.HostService\Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Build\ProjectAfter.settings" />

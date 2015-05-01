@@ -10,7 +10,7 @@ build:
   verbosity: minimal
 
 artifacts:
-- path: Binaries\Release12.0\PowerShellTools.vsix
+- path: bin\VS120\Release\PowerShellTools.vsix
   name: PowerShellTools.vsix
 
 assembly_info:

@@ -6,6 +6,7 @@ using PowerShellTools.Common;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.DebugEngine;
+using PowerShellTools.Options;
 
 namespace PowerShellTools.ServiceManagement
 {
@@ -101,8 +102,9 @@ namespace PowerShellTools.ServiceManagement
             {
                 if (_powershellIntelliSenseService == null || _powershellDebuggingService == null)
                 {
-                    EnsureCloseProcess(_process);
-                    _hostProcess = PowershellHostProcessHelper.CreatePowershellHostProcess();
+                    EnsureCloseProcess();
+                    var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
+                    _hostProcess = PowershellHostProcessHelper.CreatePowershellHostProcess(page.Bitness);
                     _process = _hostProcess.Process;
                     _process.Exited += ConnectionExceptionHandler;
 
@@ -138,6 +140,28 @@ namespace PowerShellTools.ServiceManagement
             }
         }
 
+        public void ProcessEventHandler(BitnessOptions bitness)
+        {
+            Log.DebugFormat("Bitness had been changed to {1}", bitness);
+            EnsureCloseProcess();
+        }
+
+        private void EnsureCloseProcess()
+        {
+            if (_process != null)
+            {
+                try
+                {
+                    _process.Kill();
+                    _process = null;
+                }
+                catch
+                {
+                    //TODO: log exception info here
+                }
+            }
+        }
+
         private void ConnectionExceptionHandler(object sender, EventArgs e)
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
@@ -148,23 +172,7 @@ namespace PowerShellTools.ServiceManagement
             {
                 ConnectionException(this, EventArgs.Empty);
             }
-        }
-
-        private void EnsureCloseProcess(Process process)
-        {
-            if (process != null)
-            {
-                try
-                {
-                    process.Kill();
-                    process = null;
-                }
-                catch
-                {
-                    //TODO: log excetion info here
-                }
-            }
-        }
+        }        
 
         private void EnsureClearServiceChannel()
         {
