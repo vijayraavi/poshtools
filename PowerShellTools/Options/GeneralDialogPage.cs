@@ -1,8 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 
 namespace PowerShellTools.Options
 {
@@ -30,7 +28,7 @@ namespace PowerShellTools.Options
 
         [Browsable(true)]
         [DisplayName(@"Bitness")]
-        [Description("This setting controls the bitness of remote host process.")]
+        [Description("This setting controls the bitness of PowerShell execution within Visual Studio.")]
         public BitnessOptions Bitness { get; set; }
 
         protected override void OnApply(DialogPage.PageApplyEventArgs e)
@@ -40,7 +38,7 @@ namespace PowerShellTools.Options
             // On a non-64bit machine, bitness cannot be changed.
             if (!Environment.Is64BitOperatingSystem)
             {
-                Bitness = BitnessOptions.DefaultAsAnyCPU;
+                Bitness = BitnessOptions.DefaultToOperatingSystem;
                 return;
             }
             if (_savedBitness != Bitness)
@@ -68,11 +66,11 @@ namespace PowerShellTools.Options
             }
             else
             {
-                Bitness = BitnessOptions.DefaultAsAnyCPU;
+                Bitness = BitnessOptions.DefaultToOperatingSystem;
             }
-            
-            
+
+
             BitnessSettingChanged += PowerShellToolsPackage.Instance.BitnessSettingChanged;
-        }        
+        }
     }
 }

@@ -3,11 +3,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using System.Threading;
-using PowerShellTools.Common;
 using System.Runtime.InteropServices;
+using System.Threading;
 using log4net;
-using System.Threading.Tasks;
+using PowerShellTools.Common;
 using PowerShellTools.Common.Debugging;
 using PowerShellTools.Options;
 
@@ -22,7 +21,7 @@ namespace PowerShellTools.ServiceManagement
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int W, int H, uint uFlags);
 
         [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
         private const uint SWP_NOSIZE = 0x0001;
@@ -49,7 +48,7 @@ namespace PowerShellTools.ServiceManagement
                 case BitnessOptions.x86:
                     exeName = Constants.PowerShellHostExeNameForx86;
                     break;
-                case BitnessOptions.DefaultAsAnyCPU:
+                case BitnessOptions.DefaultToOperatingSystem:
                 default:
                     exeName = Constants.PowerShellHostExeName;
                     break;
@@ -163,16 +162,16 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     public class PowerShellHostProcess
     {
-        public Process Process 
+        public Process Process
         {
-            get; 
-            private set; 
+            get;
+            private set;
         }
 
-        public Guid EndpointGuid 
+        public Guid EndpointGuid
         {
-            get; 
-            private set; 
+            get;
+            private set;
         }
 
         public PowerShellHostProcess(Process process, Guid guid)
