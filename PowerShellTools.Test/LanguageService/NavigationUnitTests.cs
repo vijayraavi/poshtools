@@ -4,9 +4,7 @@ using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Utilities;
 using Moq;
-using PowerShellTools.Classification;
 using PowerShellTools.LanguageService;
 
 namespace PowerShellTools.Test.LanguageService
@@ -154,7 +152,8 @@ namespace PowerShellTools.Test.LanguageService
 
         private static void ValidateDefinitions(IEnumerable<ScriptSectionMock> script)
         {
-            var textBuffer = TextBufferMock(String.Concat(script.Select(s => s.Code)));
+            var mockedScript = String.Concat(script.Select(s => s.Code));
+            var textSnapshotMock = TextSnapshotMock(mockedScript);
 
             var includeEnd = 0;
             var previousCodeLength = 0;
@@ -165,7 +164,10 @@ namespace PowerShellTools.Test.LanguageService
 
                 for (var i = start; i < previousCodeLength + scriptSection.Code.Length + includeEnd; i++)
                 {
-                    var actualVals = NavigationExtensions.FindFunctionDefinitions(textBuffer, i);
+                    Token[] generatedTokens;
+                    ParseError[] errors;
+                    var generatedAst = Parser.ParseInput(mockedScript, out generatedTokens, out errors);
+                    var actualVals = NavigationExtensions.FindFunctionDefinitions(generatedAst, textSnapshotMock, i);
 
                     if (scriptSection.ExpectedValues == null)
                     {
@@ -174,7 +176,7 @@ namespace PowerShellTools.Test.LanguageService
                     else
                     {
                         Assert.IsNotNull(actualVals);
-                        Assert.AreEqual(scriptSection.ExpectedValues.Count(), actualVals.Count);
+                        Assert.AreEqual(scriptSection.ExpectedValues.Count(), actualVals.Count());
                         scriptSection.ExpectedValues.Zip(actualVals, (expected, actual) =>
                         {
                             Assert.AreEqual(expected.Name, actual.Name);
@@ -188,21 +190,11 @@ namespace PowerShellTools.Test.LanguageService
             }
         }
 
-        private static ITextBuffer TextBufferMock(string mockedScript)
+        private static ITextSnapshot TextSnapshotMock(string mockedScript)
         {
-            var textBufferMock = new Mock<ITextBuffer>();
-            textBufferMock.Setup(t => t.Properties).Returns(new PropertyCollection());
-
             var textSnapshotMock = new Mock<ITextSnapshot>();
             textSnapshotMock.Setup(t => t.Length).Returns(mockedScript.Length);
-            textBufferMock.Setup(t => t.CurrentSnapshot).Returns(textSnapshotMock.Object);
-
-            Token[] generatedTokens;
-            ParseError[] errors;
-            var generatedAst = Parser.ParseInput(mockedScript, out generatedTokens, out errors);
-            textBufferMock.Object.Properties.AddProperty(BufferProperties.Ast, generatedAst);
-
-            return textBufferMock.Object;
+            return textSnapshotMock.Object;
         }
     }
 }

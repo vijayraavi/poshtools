@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
@@ -339,7 +340,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
                 }
             }
 
-            newEntries.Sort((x, y) => String.CompareOrdinal(x.DisplayText, y.DisplayText));
+            newEntries.Sort((x, y) => String.Compare(x.DisplayText, y.DisplayText, CultureInfo.CurrentCulture, CompareOptions.OrdinalIgnoreCase));
             return new ReadOnlyCollection<IDropDownEntryInfo>(newEntries);
         }
 

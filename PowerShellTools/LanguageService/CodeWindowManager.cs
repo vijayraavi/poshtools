@@ -15,6 +15,7 @@
 using System.Collections.Generic;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
@@ -37,7 +38,7 @@ namespace PowerShellTools.LanguageService
             PowerShellToolsPackage.Instance.OnIdle += OnIdle;
         }
 
-        public CodeWindowManager(IVsCodeWindow codeWindow, IWpfTextView textView)
+        public CodeWindowManager(IVsCodeWindow codeWindow, IWpfTextView textView, IVsStatusbar statusBar)
         {
             _window = codeWindow;
             _textView = textView;
@@ -46,7 +47,7 @@ namespace PowerShellTools.LanguageService
             var adaptersFactory = model.GetService<IVsEditorAdaptersFactoryService>();
             var factory = model.GetService<IEditorOperationsFactoryService>();
 
-            EditFilter editFilter = _filter = new EditFilter(textView, factory.GetEditorOperations(textView));
+            EditFilter editFilter = _filter = new EditFilter(textView, factory.GetEditorOperations(textView), statusBar);
             var textViewAdapter = adaptersFactory.GetViewAdapter(textView);
             editFilter.AttachKeyboardFilter(textViewAdapter);
 

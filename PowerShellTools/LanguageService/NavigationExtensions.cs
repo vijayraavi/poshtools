@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using PowerShellTools.Classification;
 
 namespace PowerShellTools.LanguageService
 {
@@ -16,12 +16,11 @@ namespace PowerShellTools.LanguageService
         /// <summary>
         /// Finds all possible function definitions for the token at the caret position
         /// </summary>
-        public static List<FunctionDefinitionAst> FindFunctionDefinitions(ITextBuffer textBuffer, int caretPosition)
+        public static IEnumerable<FunctionDefinitionAst> FindFunctionDefinitions(Ast script, ITextSnapshot currentSnapshot, int caretPosition)
         {
-            Ast scriptTree;
-            if (textBuffer.Properties.TryGetProperty(BufferProperties.Ast, out scriptTree) && scriptTree != null)
+            if (script != null)
             {
-                var reference = scriptTree.Find(node =>
+                var reference = script.Find(node =>
                     node is CommandAst &&
                     caretPosition >= node.Extent.StartOffset &&
                     caretPosition <= node.Extent.EndOffset, true) as CommandAst;
@@ -33,11 +32,11 @@ namespace PowerShellTools.LanguageService
                 }
                 else
                 {
-                    definition = scriptTree.Find(node =>
+                    definition = script.Find(node =>
                         {
                             if (node is FunctionDefinitionAst)
                             {
-                                var functionNameSpan = GetFunctionNameSpan(textBuffer, node as FunctionDefinitionAst);
+                                var functionNameSpan = GetFunctionNameSpan(currentSnapshot, node as FunctionDefinitionAst);
                                 return caretPosition >= functionNameSpan.Start &&
                                        caretPosition <= functionNameSpan.End;
                             }
@@ -63,12 +62,15 @@ namespace PowerShellTools.LanguageService
         /// </summary>
         public static void NavigateToFunctionDefinition(ITextView textView, FunctionDefinitionAst definition)
         {
-            var functionNameSpan = GetFunctionNameSpan(textView.TextBuffer, definition);
+            var functionNameSpan = GetFunctionNameSpan(textView.TextBuffer.CurrentSnapshot, definition);
 
-            textView.Caret.MoveTo(new SnapshotPoint(textView.TextBuffer.CurrentSnapshot, functionNameSpan.End));
-            textView.Selection.Select(functionNameSpan, false);
-            textView.ViewScroller.EnsureSpanVisible(functionNameSpan, EnsureSpanVisibleOptions.AlwaysCenter);
-            ((Control)textView).Focus();
+            if (functionNameSpan.Start >= 0 &&  functionNameSpan.End <= textView.TextBuffer.CurrentSnapshot.Length)
+            {
+                textView.Caret.MoveTo(new SnapshotPoint(textView.TextBuffer.CurrentSnapshot, functionNameSpan.End));
+                textView.Selection.Select(functionNameSpan, false);
+                textView.ViewScroller.EnsureSpanVisible(functionNameSpan, EnsureSpanVisibleOptions.AlwaysCenter);
+                ((Control)textView).Focus();
+            }
         }
 
         /// <summary>
@@ -83,15 +85,16 @@ namespace PowerShellTools.LanguageService
             ((Control)textView).Focus();
         }
 
-        private static SnapshotSpan GetFunctionNameSpan(ITextBuffer textBuffer, FunctionDefinitionAst definition)
+        private static SnapshotSpan GetFunctionNameSpan(ITextSnapshot currentSnapshot, FunctionDefinitionAst definition)
         {
-            var functionConst = "function";
-
-            var functionNameStart = definition.Extent.StartOffset + definition.Extent.Text.IndexOf(definition.Name, functionConst.Length);
-            return new SnapshotSpan(textBuffer.CurrentSnapshot, functionNameStart, definition.Name.Length);
+            // To find the start of the name, we look for the first occurence of the name after the first white space char
+            var regex = new Regex(@"\s");
+            var firstWhiteSpacChar = regex.Match(definition.Extent.Text);
+            var functionNameStart = definition.Extent.StartOffset + definition.Extent.Text.IndexOf(definition.Name, firstWhiteSpacChar.Index);
+            return new SnapshotSpan(currentSnapshot, functionNameStart, definition.Name.Length);
         }
 
-        private static List<FunctionDefinitionAst> FindDefinition(CommandAst reference)
+        private static IEnumerable<FunctionDefinitionAst> FindDefinition(CommandAst reference)
         {
             var scope = GetParentScope(reference);
             if (scope != null)

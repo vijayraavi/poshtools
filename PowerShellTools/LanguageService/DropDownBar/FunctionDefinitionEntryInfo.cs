@@ -59,7 +59,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
         {
             get
             {
-                return _functionDefinition.Extent.StartOffset;      
+                return _functionDefinition.Extent.StartOffset;
             }
         }
 

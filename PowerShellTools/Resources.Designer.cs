@@ -331,7 +331,7 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function definition is ambiguous.  Navigated to first possible definition..
+        ///   Looks up a localized string similar to Function definition is ambiguous. Navigated to first possible definition..
         /// </summary>
         public static string GoToDefinitionAmbiguousMessage {
             get {
