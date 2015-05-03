@@ -279,7 +279,9 @@ namespace PowerShellTools
 
             RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
                             new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
+                            new ExecuteWithParametersAsScriptCommand(this.DependencyValidator),
                             new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
+                            new ExecuteWithParametersAsScriptFromSolutionExplorerCommand(this.DependencyValidator),
                             _gotoDefinitionCommand,
                             new PrettyPrintCommand(),
                             new OpenDebugReplCommand());

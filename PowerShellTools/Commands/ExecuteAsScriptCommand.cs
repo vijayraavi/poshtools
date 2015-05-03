@@ -70,7 +70,7 @@ namespace PowerShellTools.Commands
                    LanguageUtilities.IsPowerShellFile(selectedItem.ProjectItem.Name);
         }
 
-        private static SelectedItem GetSelectedItem(DTE2 applicationObject)
+        protected static SelectedItem GetSelectedItem(DTE2 applicationObject)
         {
             if (applicationObject.Solution == null)
                 return null;
@@ -121,8 +121,12 @@ namespace PowerShellTools.Commands
         }
 
         protected abstract int Id { get; }
+
         protected abstract string GetTargetFile(DTE2 dte);
+
         protected abstract bool ShouldShowCommand(DTE2 dte);
+
+        protected virtual string ScriptArgs { get; set; }
 
         public CommandID CommandId
         {
@@ -143,7 +147,7 @@ namespace PowerShellTools.Commands
                 return;
 
             Utilities.SaveDirtyFiles();
-            launcher.LaunchFile(file, true);
+            launcher.LaunchFile(file, true, ScriptArgs);
         }
 
         public void QueryStatus(object sender, EventArgs args)
