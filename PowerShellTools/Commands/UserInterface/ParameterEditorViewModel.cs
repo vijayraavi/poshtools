@@ -1,81 +1,149 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Security;
-using EnvDTE80;
-using PowerShellTools.Commands.UserInterface;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using PowerShellTools.Common;
+using PowerShellTools.Common.Controls;
 
-namespace PowerShellTools.Commands
+namespace PowerShellTools.Commands.UserInterface
 {
     /// <summary>
-    /// Command for executing a script with parameters prompt from the editor context menu.
+    /// A view model for a parameter editor view.
     /// </summary>
-    internal sealed class ExecuteWithParametersAsScriptCommand : ExecuteFromEditorContextMenuCommand
+    internal sealed class ParameterEditorViewModel : ObservableObject, IDisposable
     {
-        private string _scriptArgs;
+        private IList<ScriptParameterViewModel> _parameters;
 
-        internal ExecuteWithParametersAsScriptCommand(IDependencyValidator validator)
-            : base(validator)
+        private bool _isSaveEnabled;
+        private System.Windows.Input.ICommand _saveCommand;
+        private readonly string _parameterEditorTip = Resources.ParameterEditorTipLabel;
+
+        public ParameterEditorViewModel(IList<ScriptParameterViewModel> parameterList)
         {
+            _parameters = Arguments.ValidateNotNull(parameterList, "parameterList");
+            HasSecureStrings = parameterList.Any(param => param.Type == ParameterType.SecureString);
 
+            //Hook up property change events to listen to changes in parameter files            
+            foreach (var p in parameterList)
+            {
+                p.PropertyChanged += OnParameterChanged;
+            }
         }
 
-        protected override string ScriptArgs
+        public IEnumerable<ScriptParameterViewModel> Parameters
         {
             get
             {
-                if (_scriptArgs == null)
+                return _parameters;
+            }
+        }
+
+        /// <summary>
+        /// The parameter editor's header label.
+        /// </summary>
+        public string ParameterEditorTip
+        {
+            get
+            {
+                return _parameterEditorTip;
+            }
+        }
+
+        /// <summary>
+        /// Whether the parameter file has secure strings
+        /// </summary>
+        public bool HasSecureStrings { get; private set; }
+
+        /// <summary>
+        /// The save button is disabled if we're in the 
+        ///  verify parameters mode and there are errors (warnings don't matter)
+        /// </summary>
+        public bool IsSaveButtonEnabled
+        {
+            get
+            {
+                bool errorsExist = _parameters.Any(p => p.HasError);
+
+                _isSaveEnabled = !errorsExist;
+                return _isSaveEnabled;
+            }
+        }
+        
+        /// <summary>
+        /// EventHandler for create succeeded event.
+        /// </summary>
+        public event EventHandler<EventArgs> ParameterEditingFinished;
+
+        /// <summary>
+        /// The command to save changes in the parameters editor.
+        /// </summary>
+        public System.Windows.Input.ICommand SaveCommand
+        {
+            get
+            {
+                return LazyInitializer.EnsureInitialized<System.Windows.Input.ICommand>(ref _saveCommand, () => new ViewModelCommand(_ => Save()));
+            }
+        }
+
+        private void Save()
+        {
+            CommitEditedValues();
+        }
+
+
+        /// <summary>
+        /// Commit the in-value modifications made of any values...
+        /// </summary>
+        private void CommitEditedValues()
+        {
+            var handler = this.ParameterEditingFinished;
+            if (handler != null)
+            {
+                handler(this, EventArgs.Empty);
+            }
+        }
+
+        private void NotifyCanSaveButtonChanged()
+        {
+            NotifyPropertyChanged("IsSaveButtonEnabled");
+        }
+
+        //Notify when parameter in list of parameters being edited has a change in its hasError property 
+        private void OnParameterChanged(object sender, PropertyChangedEventArgs e)
+        {
+            NotifyCanSaveButtonChanged();
+        }
+
+        #region IDispose Implementaion
+
+        public void Dispose()
+        {
+            foreach (var p in _parameters)
+            {
+                p.PropertyChanged -= OnParameterChanged;
+            }
+        }
+
+        #endregion
+
+        #region Design-time
+
+        /// <summary>
+        /// Gets an instance of this view model suitable for use at design time.
+        /// </summary>
+        public static object DesignerViewModel
+        {
+            get
+            {
+                return new
                 {
-                    _scriptArgs = GetScriptParamters();
-                }
-                return _scriptArgs;
-            }
-        }
-
-        protected override int Id
-        {
-            get { return (int)GuidList.CmdidExecuteWithParametersAsScript; }
-        }
-
-        protected override bool ShouldShowCommand(DTE2 dte2)
-        {
-            return dte2 != null &&
-                   dte2.ActiveDocument != null &&
-                   dte2.ActiveDocument.Language == "PowerShell" &&
-                   HasParameters();
-        }
-
-        private bool HasParameters()
-        {
-            // TODO: Parse script to see if there are paramters
-            return true;
-        }
-
-        private string GetScriptParamters()
-        {
-            string scriptArgs;
-            if (ShowParameterEditor(out scriptArgs) == true)
-            {
-                return scriptArgs;
-            }
-            return String.Empty;
-        }
-
-        private bool? ShowParameterEditor(out string scriptArgs)
-        {
-            var parameters = ReadParametersFromScript();
-            var viewModel = new ParameterEditorViewModel(parameters);
-            var view = new ParameterEditorView(viewModel);
-            bool? wasOkClicked = view.ShowModal();
-            scriptArgs = parameters[0].Value.ToString();
-            return wasOkClicked;
-        }
-
-        private IList<ScriptParameterViewModel> ReadParametersFromScript()
-        {
-            return new ScriptParameterViewModel[]
-            {
 #if DEBUG
-             
+                    ParameterEditorTip = "This is the designer view model",
+                    Parameters = new ScriptParameterViewModel[] {
                         new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkEmpty", Type="string" })
                         { 
                             Value="",
@@ -188,9 +256,12 @@ namespace PowerShellTools.Commands
                         //{ 
                         //    Value=null
                         //},
-                    
+                    }
 #endif
-            };
+                };
+            }
         }
+
+        #endregion Design-time
     }
 }

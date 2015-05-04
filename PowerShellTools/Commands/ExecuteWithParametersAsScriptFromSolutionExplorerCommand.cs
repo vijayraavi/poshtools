@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EnvDTE80;
 
 namespace PowerShellTools.Commands
@@ -31,7 +27,10 @@ namespace PowerShellTools.Commands
 
         protected override int Id
         {
-            get { return (int)GuidList.CmdidExecuteWithParametersAsScriptFromSolutionExplorer; }
+            get
+            {
+                return (int)GuidList.CmdidExecuteWithParametersAsScriptFromSolutionExplorer;
+            }
         }
 
         protected override bool ShouldShowCommand(DTE2 dte)

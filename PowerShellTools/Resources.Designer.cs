@@ -97,6 +97,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string CancelButtonLabel {
+            get {
+                return ResourceManager.GetString("CancelButtonLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The CLR version that this module requires..
         /// </summary>
         public static string ClrVersion_Description {
@@ -219,6 +228,24 @@ namespace PowerShellTools {
         public static string DotNetFrameworkVersion_DisplayName {
             get {
                 return ResourceManager.GetString("DotNetFrameworkVersion_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This value is not one of the allowed values for parameter &apos;{0}&apos;..
+        /// </summary>
+        public static string Error_DisallowedValue_1arg {
+            get {
+                return ResourceManager.GetString("Error_DisallowedValue_1arg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; must be of type &apos;{1}&apos;..
+        /// </summary>
+        public static string Error_TypeMismatch_2args {
+            get {
+                return ResourceManager.GetString("Error_TypeMismatch_2args", resourceCulture);
             }
         }
         
@@ -450,6 +477,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to _Ok.
+        /// </summary>
+        public static string OkButtonLabel {
+            get {
+                return ResourceManager.GetString("OkButtonLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Output.
         /// </summary>
         public static string OutputCategory {
@@ -491,6 +527,42 @@ namespace PowerShellTools {
         public static string OutputTypeSettingDescription {
             get {
                 return ResourceManager.GetString("OutputTypeSettingDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following parameter values will be used for this execution.
+        /// </summary>
+        public static string ParameterEditorTipLabel {
+            get {
+                return ResourceManager.GetString("ParameterEditorTipLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit Parameters.
+        /// </summary>
+        public static string ParameterEditorTitle {
+            get {
+                return ResourceManager.GetString("ParameterEditorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter Name.
+        /// </summary>
+        public static string ParameterNameHeaderLabel {
+            get {
+                return ResourceManager.GetString("ParameterNameHeaderLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value.
+        /// </summary>
+        public static string ParameterValueHeaderLabel {
+            get {
+                return ResourceManager.GetString("ParameterValueHeaderLabel", resourceCulture);
             }
         }
         
@@ -666,6 +738,16 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap StatusAnnotations_Invalid_color_16x {
+            get {
+                object obj = ResourceManager.GetObject("StatusAnnotations_Invalid_color_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the type files (.ps1xml) that run when the module is imported..
         /// </summary>
         public static string TypesToProcess_Description {
@@ -725,6 +807,34 @@ namespace PowerShellTools {
         public static string Version_DisplayName {
             get {
                 return ResourceManager.GetString("Version_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap Warning_yellow_7231_16x16 {
+            get {
+                object obj = ResourceManager.GetObject("Warning_yellow_7231_16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;Auto-generated&gt;.
+        /// </summary>
+        public static string WatermarkAutoGenerated {
+            get {
+                return ResourceManager.GetString("WatermarkAutoGenerated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;Null&gt;.
+        /// </summary>
+        public static string WatermarkNull {
+            get {
+                return ResourceManager.GetString("WatermarkNull", resourceCulture);
             }
         }
     }
