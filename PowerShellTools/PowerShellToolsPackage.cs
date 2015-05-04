@@ -280,7 +280,7 @@ namespace PowerShellTools
             _gotoDefinitionCommand = new GotoDefinitionCommand();
 
             var textManager = (IVsTextManager)GetService(typeof(SVsTextManager));
-            var adaptersFactory = (IVsEditorAdaptersFactoryService)GetService(typeof(IVsEditorAdaptersFactoryService));
+            var adaptersFactory = componentModel.GetService<IVsEditorAdaptersFactoryService>();
 
             RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
                             new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),

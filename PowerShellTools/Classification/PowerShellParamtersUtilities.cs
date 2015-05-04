@@ -11,7 +11,7 @@ namespace PowerShellTools.Classification
     {
         public static bool HasParamBlock(ITextBuffer buffer)
         {
-
+            return true;
         }
     }
 }

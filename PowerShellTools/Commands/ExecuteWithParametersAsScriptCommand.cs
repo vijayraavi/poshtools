@@ -19,6 +19,7 @@ namespace PowerShellTools.Commands
         private string _scriptArgs;
         private IVsTextManager _textManager;
         private IVsEditorAdaptersFactoryService _adaptersFactory;
+        private Ast _paramBlock;
 
         internal ExecuteWithParametersAsScriptCommand(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextManager textManager, IDependencyValidator validator)
             : base(validator)
@@ -70,9 +71,9 @@ namespace PowerShellTools.Commands
             {
                 return false;
             }
+            _paramBlock = scriptAst.Find(p => p is ParamBlockAst, false);
 
-            
-            return true;
+            return _paramBlock != null;
         }
 
         private string GetScriptParamters()

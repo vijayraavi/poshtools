@@ -235,6 +235,7 @@
     <Compile Include="Classification\PowerShellErrorTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellOutliningTagger.cs" />
     <Compile Include="Classification\PowerShellOutliningTaggerProvider.cs" />
+    <Compile Include="Classification\PowerShellParamtersUtilities.cs" />
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
     <Compile Include="Cmdlets\GetVisualStudioServiceCommand.cs" />
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
