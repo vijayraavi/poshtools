@@ -1,5 +1,7 @@
 ﻿using System;
 using EnvDTE80;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
 
 namespace PowerShellTools.Commands
 {
@@ -7,7 +9,7 @@ namespace PowerShellTools.Commands
     {
         private string _scriptArgs;
 
-        internal ExecuteWithParametersAsScriptFromSolutionExplorerCommand(IDependencyValidator validator)
+        internal ExecuteWithParametersAsScriptFromSolutionExplorerCommand(IVsEditorAdaptersFactoryService adpatersFactory, IVsTextManager textManager, IDependencyValidator validator)
             : base(validator)
         {
 

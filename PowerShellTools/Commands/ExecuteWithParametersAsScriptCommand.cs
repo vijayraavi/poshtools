@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Management.Automation.Language;
 using System.Security;
 using EnvDTE80;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.TextManager.Interop;
+using PowerShellTools.Classification;
 using PowerShellTools.Commands.UserInterface;
 
 namespace PowerShellTools.Commands
@@ -12,11 +17,14 @@ namespace PowerShellTools.Commands
     internal sealed class ExecuteWithParametersAsScriptCommand : ExecuteFromEditorContextMenuCommand
     {
         private string _scriptArgs;
+        private IVsTextManager _textManager;
+        private IVsEditorAdaptersFactoryService _adaptersFactory;
 
-        internal ExecuteWithParametersAsScriptCommand(IDependencyValidator validator)
+        internal ExecuteWithParametersAsScriptCommand(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextManager textManager, IDependencyValidator validator)
             : base(validator)
         {
-
+            _adaptersFactory = adaptersFactory;
+            _textManager = textManager;
         }
 
         protected override string ScriptArgs
@@ -47,6 +55,23 @@ namespace PowerShellTools.Commands
         private bool HasParameters()
         {
             // TODO: Parse script to see if there are paramters
+            IVsTextView vsTextView;
+            _textManager.GetActiveView(1, null, out vsTextView);
+            if (vsTextView == null)
+            {
+                return false;                
+            }
+
+            IVsTextLines textLines;
+            vsTextView.GetBuffer(out textLines);
+            ITextBuffer textBuffer = _adaptersFactory.GetDataBuffer(textLines as IVsTextBuffer);
+            Ast scriptAst;
+            if (!textBuffer.Properties.TryGetProperty<Ast>(BufferProperties.Ast, out scriptAst))
+            {
+                return false;
+            }
+
+            
             return true;
         }
 

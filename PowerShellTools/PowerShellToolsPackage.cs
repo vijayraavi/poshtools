@@ -9,10 +9,12 @@ using System.Windows;
 using log4net;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
@@ -277,11 +279,14 @@ namespace PowerShellTools
 
             _gotoDefinitionCommand = new GotoDefinitionCommand();
 
+            var textManager = (IVsTextManager)GetService(typeof(SVsTextManager));
+            var adaptersFactory = (IVsEditorAdaptersFactoryService)GetService(typeof(IVsEditorAdaptersFactoryService));
+
             RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
                             new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
-                            new ExecuteWithParametersAsScriptCommand(this.DependencyValidator),
+                            new ExecuteWithParametersAsScriptCommand(adaptersFactory, textManager, this.DependencyValidator),
                             new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
-                            new ExecuteWithParametersAsScriptFromSolutionExplorerCommand(this.DependencyValidator),
+                            new ExecuteWithParametersAsScriptFromSolutionExplorerCommand(adaptersFactory, textManager, this.DependencyValidator),
                             _gotoDefinitionCommand,
                             new PrettyPrintCommand(),
                             new OpenDebugReplCommand());
