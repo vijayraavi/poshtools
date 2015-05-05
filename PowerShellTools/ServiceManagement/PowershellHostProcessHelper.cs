@@ -21,7 +21,7 @@ namespace PowerShellTools.ServiceManagement
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int W, int H, uint uFlags);
 
         [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
         private const uint SWP_NOSIZE = 0x0001;
@@ -78,10 +78,6 @@ namespace PowerShellTools.ServiceManagement
             // By then we will bring timeout back here.
             bool success = readyEvent.WaitOne();
             readyEvent.Close();
-
-            MakeTopMost(powerShellHostProcess.MainWindowHandle);
-
-            ShowWindow(powerShellHostProcess.MainWindowHandle, SW_HIDE);
 
             if (!success)
             {
@@ -152,16 +148,16 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     public class PowerShellHostProcess
     {
-        public Process Process 
+        public Process Process
         {
-            get; 
-            private set; 
+            get;
+            private set;
         }
 
-        public Guid EndpointGuid 
+        public Guid EndpointGuid
         {
-            get; 
-            private set; 
+            get;
+            private set;
         }
 
         public PowerShellHostProcess(Process process, Guid guid)
@@ -176,14 +172,14 @@ namespace PowerShellTools.ServiceManagement
         /// <param name="content">User input string</param>
         public void WriteHostProcessStandardInputStream(string content)
         {
-            if (PowerShellToolsPackage.Debugger.IsAppRunningInPowerShellHost())
-            {
-                StreamWriter _inputStreamWriter = Process.StandardInput;
+            //if (PowerShellToolsPackage.Debugger.IsAppRunningInPowerShellHost())
+            //{
+            StreamWriter _inputStreamWriter = Process.StandardInput;
 
-                // Feed into stdin stream
-                _inputStreamWriter.WriteLine(content);
-                _inputStreamWriter.Flush();
-            }
+            // Feed into stdin stream
+            _inputStreamWriter.WriteLine(content);
+            _inputStreamWriter.Flush();
+            //}
         }
     }
 }

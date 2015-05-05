@@ -37,6 +37,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostService", "PowerShellTools.HostService\PowerShellTools.HostService.csproj", "{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShell.HostService.Console", "PowerShell.HostService.Console\PowerShell.HostService.Console.csproj", "{E84FC12D-897F-4244-B44C-B42839D677A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E84FC12D-897F-4244-B44C-B42839D677A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E84FC12D-897F-4244-B44C-B42839D677A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E84FC12D-897F-4244-B44C-B42839D677A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E84FC12D-897F-4244-B44C-B42839D677A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

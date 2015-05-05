@@ -18,7 +18,7 @@ namespace PowerShellTools.Project
         {
             try
             {
-                using (var ps = PowerShell.Create())
+                using (var ps = System.Management.Automation.PowerShell.Create())
                 {
                     ps.AddCommand("Get-ChildItem");
                     ps.AddParameter("Path", Certificate.ItemSpec);
@@ -119,7 +119,7 @@ namespace PowerShellTools.Project
         {
             try
             {
-                using (var ps = PowerShell.Create())
+                using (var ps = System.Management.Automation.PowerShell.Create())
                 {
                     ps.AddCommand("New-ModuleManifest");
 

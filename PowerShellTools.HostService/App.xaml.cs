@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.ServiceModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,9 +24,16 @@ namespace PowerShellTools.HostService
     /// </summary>
     public partial class App : Application
     {
+        const int STD_INPUT_HANDLE = -10;
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr GetStdHandle(int handle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+
         private static ServiceHost _powershellServiceHost;
         private static ServiceHost _powershellDebuggingServiceHost;
-        private static AutoResetEvent _processExitEvent;
 
         public static int VsProcessId { get; private set; }
 
@@ -108,7 +116,7 @@ namespace PowerShellTools.HostService
                                 _powershellDebuggingServiceHost = null;
                             }
 
-                            _processExitEvent.Set();
+                            Environment.Exit(0);
                         });
                 }
             }
@@ -116,27 +124,6 @@ namespace PowerShellTools.HostService
             {
                 // The process need to wait for the parent process to exit.  
             }
-
-            //if (_powershellServiceHost != null)
-            //{
-            //    _powershellServiceHost.Close();
-            //    _powershellServiceHost = null;
-            //}
-
-            //if (_powershellDebuggingServiceHost != null)
-            //{
-            //    _powershellDebuggingServiceHost.Close();
-            //    _powershellDebuggingServiceHost = null;
-            //}
-
-
-            //// Create main application window, starting minimized if specified
-            //MainWindow mainWindow = new MainWindow();
-            //if (startMinimized)
-            //{
-            //    mainWindow.WindowState = WindowState.Minimized;
-            //}
-            //mainWindow.Show();
         }
 
         private static void CreatePowershellIntelliSenseServiceHost(Uri baseAddress, NetNamedPipeBinding binding)

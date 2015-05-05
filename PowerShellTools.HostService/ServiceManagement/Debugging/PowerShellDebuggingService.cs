@@ -386,8 +386,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                             _currentPowerShell.AddCommand("out-default");
                             _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-
+                            
+                            AppRunning = true;
+                            
                             _currentPowerShell.Invoke();
+                            
+                            AppRunning = false;
+                            
                             error = _currentPowerShell.HadErrors;
                         }
                     }

@@ -437,7 +437,17 @@ namespace PowerShellTools.DebugEngine
 
         public bool IsAppRunningInPowerShellHost()
         {
-            return DebuggingService.IsAppRunning();
+            bool x;
+            try
+            {
+                x = DebuggingService.IsAppRunning();
+            }
+            catch (Exception ex)
+            {
+ 
+            }
+
+            return true;
         }
 
         internal void OpenRemoteFile(string fullName)
