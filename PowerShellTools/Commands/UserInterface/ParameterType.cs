@@ -10,6 +10,7 @@ namespace PowerShellTools.Commands.UserInterface
     {
         Unknown,
         Boolean,
+        Switch,
         Integer,
         String,
         SecureString,

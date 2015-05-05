@@ -23,9 +23,11 @@ namespace PowerShellTools.Commands.UserInterface
 
         // Parameter types
         public const string BoolType = "bool";
-        public const string IntType = "int";
-        public const string StringType = "string";
-        public const string SecureStringType = "securestring";
+        public const string SwitchType = "Switch";
+        public const string Int32Type = "Int32";
+        public const string Int64Type = "Int64";
+        public const string StringType = "String";
+        public const string SecureStringType = "SecureString";
 
         /// <summary>
         /// Constructor
@@ -33,6 +35,13 @@ namespace PowerShellTools.Commands.UserInterface
         public ScriptParameter()
         {
 
+        }
+
+        public ScriptParameter(string name, string type, HashSet<object> allowedValues)
+        {
+            _name = name;
+            _type = type;
+            _allowedValues = allowedValues;
         }
 
         /// <summary>

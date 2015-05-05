@@ -28,7 +28,12 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 this.Type = ParameterType.Boolean;
             }
-            else if (DoParameterTypeNamesMatch(ParameterDefinition.Type, ScriptParameter.IntType))
+            else if (DoParameterTypeNamesMatch(parameterDefinition.Type, ScriptParameter.SwitchType))
+            {
+                this.Type = ParameterType.Switch;
+            }
+            else if (DoParameterTypeNamesMatch(ParameterDefinition.Type, ScriptParameter.Int32Type) ||
+                DoParameterTypeNamesMatch(parameterDefinition.Type, ScriptParameter.Int64Type))
             {
                 this.Type = ParameterType.Integer;
             }
@@ -171,7 +176,11 @@ namespace PowerShellTools.Commands.UserInterface
                     _allowedValues.Add(true);
                     _allowedValues.Add(false);
                 }
-
+                else if (this.Type == ParameterType.Switch)
+                {
+                    _allowedValues.Add("On");
+                    _allowedValues.Add("Off");
+                }
                 if (_allowedValues.Count > 0)
                 {
                     // If the current value is not in the list of allowed values, we have to
@@ -292,6 +301,10 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 case ParameterType.Boolean:
                     return this.Value is bool;
+
+                case ParameterType.Switch:
+                    string value = this.Value.ToString();
+                    return value.Equals("On", StringComparison.Ordinal) || value.Equals("Off", StringComparison.Ordinal);
 
                 case ParameterType.Integer:
                     return this.Value is int;

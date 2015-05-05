@@ -147,6 +147,10 @@ namespace PowerShellTools.Commands
                 return;
 
             Utilities.SaveDirtyFiles();
+            if (ScriptArgs.Equals(String.Empty))
+            {
+                return;
+            }
             launcher.LaunchFile(file, true, ScriptArgs);
         }
 
