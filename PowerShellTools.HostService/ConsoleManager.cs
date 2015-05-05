@@ -64,9 +64,9 @@ namespace PowerShellTools.HostService
                         AttachConsole((uint)p.Id);
                     }
                 }
-                catch(Exception ex)
+                catch
                 {
-                    ServiceCommon.Log("Failed to attach console to PowerShell host process");
+                    ServiceCommon.Log("Failed to attach console to PowerShell host process.");
                 }
             }
         }
@@ -99,7 +99,7 @@ namespace PowerShellTools.HostService
             }
             catch
             {
-                ServiceCommon.Log("Failed to create console for PowerShell host process");
+                ServiceCommon.Log("Failed to create console for PowerShell host process.");
             }
 
             return p;

@@ -292,6 +292,8 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="Options\BitnessEventArgs.cs" />
+    <Compile Include="Options\BitnessOption.cs" />
     <Compile Include="Project\DeveloperActivityAttribute.cs" />
     <Compile Include="Diagnostics\DiagnosticConfiguration.cs" />
     <Compile Include="Diagnostics\DiagnosticsDialogPage.cs">
@@ -299,7 +301,7 @@
     </Compile>
     <Compile Include="Diagnostics\OutputPaneAppender.cs" />
     <Compile Include="EditorImports.cs" />
-    <Compile Include="GeneralDialogPage.cs">
+    <Compile Include="Options\GeneralDialogPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="IDependencyValidator.cs" />
@@ -666,6 +668,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <None Include="PowerShellToolsProcessHostConsole.exe.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
@@ -750,11 +755,17 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.HostService.x86\PowerShellTools.HostService.x86.csproj">
+      <Project>{528d75e0-71d8-408c-aeae-485d84e08bd2}</Project>
+      <Name>PowerShellTools.HostService.x86</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.HostService\PowerShellTools.HostService.csproj">
       <Project>{8b0f3db2-ad3d-4d3a-85c3-4850263054e9}</Project>
       <Name>PowerShellTools.HostService</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PowerShellTools.PublicContract\PowerShellTools.Contracts.csproj">
+    <ProjectReference Include="..\PowerShellTools.Contracts\PowerShellTools.Contracts.csproj">
       <Project>{103c9af2-f8a5-4bf0-a341-a43147c320aa}</Project>
       <Name>PowerShellTools.Contracts</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>

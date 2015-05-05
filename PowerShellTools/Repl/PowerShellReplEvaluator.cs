@@ -1,19 +1,16 @@
-﻿
-using System.Management.Automation.Runspaces;
-using System.Threading.Tasks;
-using PowerShellTools.Repl;
-using Microsoft.VisualStudio.Text;
+﻿using Microsoft.VisualStudio.Text;
 using PowerShellTools.Classification;
 using PowerShellTools.DebugEngine;
-using PowerShellTools.Diagnostics;
+using System.Threading.Tasks;
 
 namespace PowerShellTools.Repl
 {
 #if POWERSHELL
-    using ReplRoleAttribute = PowerShellReplRoleAttribute;
+    using PowerShellTools.Common.Debugging;
+    using PowerShellTools.Options;
     using IReplEvaluator = IPowerShellReplEvaluator;
     using IReplWindow = IPowerShellReplWindow;
-    using PowerShellTools.Common.Debugging;
+    using ReplRoleAttribute = PowerShellReplRoleAttribute;
 #endif
 
     [ReplRole("Debug")]
