@@ -24,14 +24,6 @@ namespace PowerShellTools.HostService
     /// </summary>
     public partial class App : Application
     {
-        const int STD_INPUT_HANDLE = -10;
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr GetStdHandle(int handle);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
-
         private static ServiceHost _powershellServiceHost;
         private static ServiceHost _powershellDebuggingServiceHost;
 

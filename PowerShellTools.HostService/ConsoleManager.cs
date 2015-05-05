@@ -14,17 +14,9 @@ using System.Threading.Tasks;
 namespace PowerShellTools.HostService
 {
     [SuppressUnmanagedCodeSecurity]
-    public static class ConsoleManager
+    internal static class ConsoleManager
     {
         private const string Kernel32_DllName = "kernel32.dll";
-
-        const int STD_INPUT_HANDLE = -10;
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr GetStdHandle(int handle);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
 
         [DllImport(Kernel32_DllName)]
         private static extern bool AllocConsole();
@@ -36,11 +28,12 @@ namespace PowerShellTools.HostService
         private static extern IntPtr GetConsoleWindow();
 
         [DllImport(Kernel32_DllName)]
-        private static extern int GetConsoleOutputCP();
-
-        [DllImport(Kernel32_DllName)]
         public static extern bool AttachConsole(uint dwProcessId);
 
+        /// <summary>
+        /// Check if there is already a console attached.
+        /// One application can only have one console attached.
+        /// </summary>
         public static bool HasConsole
         {
             get { return GetConsoleWindow() != IntPtr.Zero; }
@@ -55,30 +48,33 @@ namespace PowerShellTools.HostService
             {
                 ServiceCommon.Log("Creating and Attaching a console into pshost!");
 
-                Process p = CreateConsole();
-                if (p != null)
+                try
                 {
-                    p.EnableRaisingEvents = true;
-                    p.Exited += new EventHandler(
-                        (s, eventArgs) =>
-                        {
-                            AttachConsole();
-                        });
+                    Process p = CreateConsole();
+                    if (p != null)
+                    {
+                        p.EnableRaisingEvents = true;
+                        p.Exited += new EventHandler(
+                            (s, eventArgs) =>
+                            {
+                                AttachConsole();
+                            });
 
-                    ServiceCommon.Log("Attaching the created console");
-                    AttachConsole((uint)p.Id);
+                        ServiceCommon.Log("Attaching the created console");
+                        AttachConsole((uint)p.Id);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    ServiceCommon.Log("Failed to attach console to PowerShell host process");
                 }
             }
         }
 
-        //public static void ListenForConsoleInput()
-        //{
-        //    Task.Run(() =>
-        //    {
-        //        MonitorUserInputRequest();
-        //    });
-        //}
-
+        /// <summary>
+        /// Create console process
+        /// </summary>
+        /// <returns>Console process created</returns>
         private static Process CreateConsole()
         {
             Process p = new Process(); ;
@@ -103,49 +99,10 @@ namespace PowerShellTools.HostService
             }
             catch
             {
-                ServiceCommon.Log("Failed to create console to attach to PowerShell host process");
+                ServiceCommon.Log("Failed to create console for PowerShell host process");
             }
 
             return p;
         }
-
-        /// <summary>
-        /// Monitoring thread for user input request
-        /// Get a handle of the console console input file object,
-        /// and check whether it's signalled by calling WaiForSingleobject with zero timeout. 
-        /// If it's not signalled, the process issued a pending Read on the handle
-        /// </summary>
-        /// <remarks>
-        /// Will be started once app begins to run on remote PowerShell host service
-        /// Stopped once app exits
-        /// </remarks>
-        //private static void MonitorUserInputRequest(IDebugEngineCallback callback)
-        //{
-        //    while (true)
-        //    {
-        //        IntPtr handle = GetStdHandle(STD_INPUT_HANDLE);
-        //        UInt32 ret = WaitForSingleObject(handle, 0);
-
-        //        if (ret != 0 && callback != null)
-        //        {
-        //            // Tactic Fix (TODO: github issue https://github.com/Microsoft/poshtools/issues/479)
-        //            // Give a bit of time for case where app crashed on readline/readkey
-        //            // We dont want to put any dirty content into stdin stream buffer
-        //            // Which can only be flushed out till the next readline/readkey
-        //            System.Threading.Thread.Sleep(50);
-
-        //            if (_appRunning)
-        //            {
-        //                _callback.RequestUserInputOnStdIn();
-        //            }
-        //            else
-        //            {
-        //                break;
-        //            }
-        //        }
-
-        //        System.Threading.Thread.Sleep(50);
-        //    }
-        //}
     }
 }

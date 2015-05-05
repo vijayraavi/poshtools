@@ -144,8 +144,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public override void NotifyBeginApplication()
         {
             ServiceCommon.Log(@"For some reason, we don't get notified from this API anymore during execution when we have wpf application based PSHost process, 
-leaving this comments here in case someone is wondering. Should never been logged except when there is a debugger attached to this process.");
-            //AppRunning = true;
+leaving this log/comment here in case someone is wondering. It should never been logged unless there is a debugger attached to this process.
+Also leaving the implementation here as a reference because that is going to be more ideal way if we have the above issue solved by powershell team in future.");
+            // AppRunning = true;
         }
 
         /// <summary>
@@ -156,7 +157,10 @@ leaving this comments here in case someone is wondering. Should never been logge
         /// </summary>
         public override void NotifyEndApplication()
         {
-            //AppRunning = false;
+            ServiceCommon.Log(@"For some reason, we don't get notified from this API anymore during execution when we have wpf application based PSHost process, 
+leaving this log/comment here in case someone is wondering. It should never been logged unless there is a debugger attached to this process.
+Also leaving the implementation here as a reference because that is going to be more ideal way if we have the above issue solved by powershell team in future.");
+            // AppRunning = false;
         }
 
         /// <summary>

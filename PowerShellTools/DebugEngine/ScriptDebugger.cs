@@ -435,21 +435,6 @@ namespace PowerShellTools.DebugEngine
             _stoppingCompleteEvent.Set();
         }
 
-        public bool IsAppRunningInPowerShellHost()
-        {
-            bool x;
-            try
-            {
-                x = DebuggingService.IsAppRunning();
-            }
-            catch (Exception ex)
-            {
- 
-            }
-
-            return true;
-        }
-
         internal void OpenRemoteFile(string fullName)
         {
             var dte2 = (DTE80.DTE2)Package.GetGlobalService(typeof(DTE.DTE));
