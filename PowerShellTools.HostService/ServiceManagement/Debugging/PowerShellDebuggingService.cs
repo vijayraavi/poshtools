@@ -24,7 +24,7 @@ using PowerShellTools.Common;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
-    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
+    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     [PowerShellServiceHostBehavior]
     public partial class PowerShellDebuggingService : IPowershellDebuggingService
     {
