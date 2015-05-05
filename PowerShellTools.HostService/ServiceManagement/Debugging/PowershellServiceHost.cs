@@ -220,6 +220,7 @@ Also leaving the implementation here as a reference because that is going to be 
         {
             if (_pushedRunspace != null)
             {
+                Runspace.StateChanged -= Runspace_StateChanged;
                 UnregisterRemoteFileOpenEvent(Runspace);
                 Runspace = _pushedRunspace;
                 _pushedRunspace = null;
@@ -229,7 +230,6 @@ Also leaving the implementation here as a reference because that is going to be 
             {
                 _callback.SetRemoteRunspace(false);
             }
-            
         }
 
 
@@ -238,14 +238,23 @@ Also leaving the implementation here as a reference because that is going to be 
             _pushedRunspace = Runspace;
             Runspace = runspace;
 
+            Runspace.StateChanged += Runspace_StateChanged;
+
             if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging
                 && _callback != null)
             {
-                _callback.OutputStringLine(Resources.Warning_HigherVersionRequiredForDebugging);
+                _callback.OutputStringLine(string.Format(Resources.Warning_HigherVersionRequiredForDebugging, Constants.PowerShellInstallFWLink));
             }
             else
             {
-                SetRemoteScriptDebugMode40(Runspace);
+                if (Runspace.Debugger != null)
+                {
+                    SetRemoteScriptDebugMode40(Runspace);
+                }
+                else
+                {
+                    _callback.OutputStringLine(string.Format(Resources.Warning_HigherVersionOnTargetRequiredForDebugging, Constants.PowerShellInstallFWLink));
+                }
             }
 
             if (_callback != null)
@@ -254,6 +263,20 @@ Also leaving the implementation here as a reference because that is going to be 
             }
 
             RegisterRemoteFileOpenEvent(runspace);
+        }
+
+        private void Runspace_StateChanged(object sender, RunspaceStateEventArgs e)
+        {
+            ServiceCommon.Log("Remote runspace State Changed: {0}", e.RunspaceStateInfo.State);
+
+            switch (e.RunspaceStateInfo.State)
+            {
+                case RunspaceState.Broken:
+                case RunspaceState.Closed:
+                case RunspaceState.Disconnected:
+                    PopRunspace();
+                    break;
+            }
         }
 
         Runspace IHostSupportsInteractiveSession.Runspace
