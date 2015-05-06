@@ -309,7 +309,12 @@ namespace PowerShellTools.DebugEngine
                 position.GetFileName(out fileName);
 
                 //VS has a 0 based line\column value. PowerShell starts at 1
-                var breakpoint = new ScriptBreakpoint(_node, fileName, (int)start[0].dwLine + 1, (int)start[0].dwColumn, _events);
+                var breakpoint = new ScriptBreakpoint(
+                    _node, 
+                    fileName, 
+                    (int)start[0].dwLine + 1,
+                    (int)start[0].dwColumn,
+                    _events);
                 ppPendingBP = breakpoint;
 
                 _events.BreakpointAdded(breakpoint);

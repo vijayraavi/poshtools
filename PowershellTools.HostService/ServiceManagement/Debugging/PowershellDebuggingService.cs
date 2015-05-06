@@ -676,7 +676,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     var frame = psobj.BaseObject as CallStackFrame;
                     if (frame != null)
                     {
-                        callStackFrames.Add(new CallStack(frame.ScriptName, frame.FunctionName, frame.ScriptLineNumber));
+                        callStackFrames.Add(
+                            new CallStack(
+                                frame.ScriptName, 
+                                frame.FunctionName, 
+                                frame.Position.StartLineNumber, 
+                                frame.Position.EndLineNumber,
+                                frame.Position.StartColumnNumber,
+                                frame.Position.EndColumnNumber));
                     }
                 }
                 else
@@ -687,7 +694,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         new CallStack(
                             psFrame.ScriptName == null ? string.Empty : _mapRemoteToLocal[(string)psFrame.ScriptName.ToString()],
                             (string)psFrame.FunctionName.ToString(),
-                            (int)psFrame.ScriptLineNumber));
+                            (int)psFrame.Position.StartLineNumber,
+                            (int)psFrame.Position.EndLineNumber,
+                            (int)psFrame.Position.StartColumnNumber,
+                            (int)psFrame.Position.EndColumnNumber));
                 }
             }
 
