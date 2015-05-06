@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.22822.1
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools", "PowerShellTools\PowerShellTools.csproj", "{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}"
 EndProject
@@ -20,7 +20,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostService
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostService.UnitTest", "PowerShellTools.HostService.UnitTest\PowerShellTools.HostService.UnitTest.csproj", "{D5C4094D-04D7-4490-B506-22B9E9909EE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Contracts", "PowerShellTools.PublicContract\PowerShellTools.Contracts.csproj", "{103C9AF2-F8A5-4BF0-A341-A43147C320AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Contracts", "PowerShellTools.Contracts\PowerShellTools.Contracts.csproj", "{103C9AF2-F8A5-4BF0-A341-A43147C320AA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D28D5434-20BA-4BFD-BA3B-F98178134E83}"
 	ProjectSection(SolutionItems) = preProject
@@ -39,6 +39,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		appveyor.yml = appveyor.yml
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostServicex86", "PowerShellTools.HostServicex86\PowerShellTools.HostServicex86.csproj", "{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,6 +80,10 @@ Global
 		{103C9AF2-F8A5-4BF0-A341-A43147C320AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{103C9AF2-F8A5-4BF0-A341-A43147C320AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{103C9AF2-F8A5-4BF0-A341-A43147C320AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
