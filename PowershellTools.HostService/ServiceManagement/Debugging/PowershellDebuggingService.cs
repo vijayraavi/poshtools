@@ -694,10 +694,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         new CallStack(
                             psFrame.ScriptName == null ? string.Empty : _mapRemoteToLocal[(string)psFrame.ScriptName.ToString()],
                             (string)psFrame.FunctionName.ToString(),
-                            (int)psFrame.Position.StartLineNumber,
-                            (int)psFrame.Position.EndLineNumber,
-                            (int)psFrame.Position.StartColumnNumber,
-                            (int)psFrame.Position.EndColumnNumber));
+                            (int)psFrame.ScriptLineNumber));
                 }
             }
 

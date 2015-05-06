@@ -31,6 +31,11 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         [DataMember]
         public int EndColumn { get; set; }
 
+        public CallStack(string script, string function, int startLine)
+            : this(script, function, startLine, startLine, 1, 1) // Default column set to 1 (e.g remote session debugging)
+        {
+        }
+
         public CallStack(string script, string function, int startLine, int endLine, int startColumn, int endColumn)
         {
             ScriptFullPath = script;
