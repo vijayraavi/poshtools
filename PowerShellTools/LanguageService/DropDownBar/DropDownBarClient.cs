@@ -340,7 +340,7 @@ namespace PowerShellTools.LanguageService.DropDownBar
                 }
             }
 
-            newEntries.Sort((x, y) => string.Compare(x.DisplayText, y.DisplayText, true, CultureInfo.CurrentCulture));
+            newEntries.Sort((x, y) => string.Compare(x.DisplayText, y.DisplayText, StringComparison.CurrentCultureIgnoreCase));
             return new ReadOnlyCollection<IDropDownEntryInfo>(newEntries);
         }
 
