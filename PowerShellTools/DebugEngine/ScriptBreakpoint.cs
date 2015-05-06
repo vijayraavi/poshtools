@@ -11,7 +11,7 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public class ScriptBreakpoint : IDebugBoundBreakpoint2, IEnumDebugBoundBreakpoints2, IDebugPendingBreakpoint2, IDebugBreakpointResolution2
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptBreakpoint));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptBreakpoint));
 
         private readonly IEngineEvents _callback;
         private readonly ScriptProgramNode _node;
@@ -21,10 +21,12 @@ namespace PowerShellTools.DebugEngine
         /// Line where this breakpoint is set.
         /// </summary>
         public int Line { get; private set; }
+
         /// <summary>
         /// Column where this breakpoint is set.
         /// </summary>
         public int Column { get; private set; }
+
         /// <summary>
         /// Full path to the file this breakpoint is set within.
         /// </summary>
@@ -210,12 +212,12 @@ namespace PowerShellTools.DebugEngine
             pBPType[0] = enum_BP_TYPE.BPT_CODE;
             return VSConstants.S_OK;
         }
-         
+
 
         public int GetResolutionInfo(enum_BPRESI_FIELDS dwFields, BP_RESOLUTION_INFO[] pBPResolutionInfo)
         {
             //VS line\column is zero based. PowerShell is 1
-            var documentContext = new ScriptDocumentContext(File, Line - 1, Column, "");
+            var documentContext = new ScriptDocumentContext(File, "", Line - 1, Column);
 
             Log.Debug("ScriptBreakpoint: GetResolutionInfo");
             if (dwFields == enum_BPRESI_FIELDS.BPRESI_ALLFIELDS)

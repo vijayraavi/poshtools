@@ -11,15 +11,23 @@ namespace PowerShellTools.DebugEngine
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptDocumentContext));
         private readonly string _fileName;
         private readonly string _description;
-        private readonly int _line;
-        private readonly int _column;
+        private readonly int _startLine;
+        private readonly int _endLine;
+        private readonly int _startColumn;
+        private readonly int _endColumn;
 
+        public ScriptDocumentContext(string fileName, string description, int startLine, int startColumn)
+            : this(fileName, description, startLine, startLine, startColumn, startColumn)
+        {
+        }
 
-        public ScriptDocumentContext(string fileName, int line, int column, string description)
+        public ScriptDocumentContext(string fileName, string description, int startLine, int endLine, int startColumn, int endColumn)
         {
             _fileName = fileName;
-            _line = line;
-            _column = column;
+            _startLine = startLine;
+            _endLine = endLine;
+            _startColumn = startColumn;
+            _endColumn = endColumn;
             _description = description;
         }
 
@@ -58,10 +66,10 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Debug("ScriptDocumentContext: GetStatementRange");
 
-            pBegPosition[0].dwLine = (uint)_line;
-            pBegPosition[0].dwColumn = (uint)_column;
-            pEndPosition[0].dwLine = (uint)_line;
-            pEndPosition[0].dwColumn = (uint)_column;
+            pBegPosition[0].dwLine = (uint)_startLine;
+            pBegPosition[0].dwColumn = (uint)_startColumn;
+            pEndPosition[0].dwLine = (uint)_endLine;
+            pEndPosition[0].dwColumn = (uint)_endColumn;
 
             return VSConstants.S_OK;
         }
@@ -70,10 +78,10 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Debug("ScriptDocumentContext: GetSourceRange");
 
-            pBegPosition[0].dwLine = (uint)_line;
-            pBegPosition[0].dwColumn = (uint)_column;
-            pEndPosition[0].dwLine = (uint)_line;
-            pEndPosition[0].dwColumn = (uint)_column;
+            pBegPosition[0].dwLine = (uint)_startLine;
+            pBegPosition[0].dwColumn = (uint)_startColumn;
+            pEndPosition[0].dwLine = (uint)_endLine;
+            pEndPosition[0].dwColumn = (uint)_endColumn;
 
             return VSConstants.S_OK;
         }

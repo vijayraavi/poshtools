@@ -676,7 +676,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     var frame = psobj.BaseObject as CallStackFrame;
                     if (frame != null)
                     {
-                        callStackFrames.Add(new CallStack(frame.ScriptName, frame.FunctionName, frame.ScriptLineNumber));
+                        callStackFrames.Add(
+                            new CallStack(
+                                frame.ScriptName, 
+                                frame.FunctionName, 
+                                frame.Position.StartLineNumber, 
+                                frame.Position.EndLineNumber,
+                                frame.Position.StartColumnNumber,
+                                frame.Position.EndColumnNumber));
                     }
                 }
                 else
