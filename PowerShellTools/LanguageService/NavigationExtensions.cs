@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Text.RegularExpressions;
@@ -88,9 +89,11 @@ namespace PowerShellTools.LanguageService
         private static SnapshotSpan GetFunctionNameSpan(ITextSnapshot currentSnapshot, FunctionDefinitionAst definition)
         {
             // To find the start of the name, we look for the first occurence of the name after the first white space char
-            var regex = new Regex(@"\s");
-            var firstWhiteSpacChar = regex.Match(definition.Extent.Text);
-            var functionNameStart = definition.Extent.StartOffset + definition.Extent.Text.IndexOf(definition.Name, firstWhiteSpacChar.Index);
+            var firstWhiteSpaceChar = definition.Extent.Text.IndexOf(definition.Extent.Text.FirstOrDefault(c => char.IsWhiteSpace(c)));
+
+            Debug.Assert(firstWhiteSpaceChar >= 0, "Function definition does not have any whitespace - could not find function name.  This should never happen.");
+
+            var functionNameStart = definition.Extent.StartOffset + definition.Extent.Text.IndexOf(definition.Name, firstWhiteSpaceChar);
             return new SnapshotSpan(currentSnapshot, functionNameStart, definition.Name.Length);
         }
 
