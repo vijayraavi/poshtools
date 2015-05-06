@@ -247,11 +247,13 @@
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
     <Compile Include="Commands\UserInterface\ConfigurableBoolToVisibilityConveter.cs" />
+    <Compile Include="Commands\UserInterface\DataTypeConstants.cs" />
     <Compile Include="Commands\UserInterface\ErrorIconConverter.cs" />
     <Compile Include="Commands\UserInterface\IntValueConverter.cs" />
     <Compile Include="Commands\UserInterface\IPasswordBoxBindingSource.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorTemplateSelector.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorViewModel.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorHelper.cs" />
     <Compile Include="Commands\UserInterface\ParameterType.cs" />
     <Compile Include="Commands\UserInterface\ParameterValueComparer.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorView.xaml.cs">

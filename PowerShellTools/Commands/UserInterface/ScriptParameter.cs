@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PowerShellTools.Common;
 
 namespace PowerShellTools.Commands.UserInterface
@@ -21,14 +18,6 @@ namespace PowerShellTools.Commands.UserInterface
         public const string TypeKey = "type";
         public const string DefaultValueKey = "defaultValue";
 
-        // Parameter types
-        public const string BoolType = "bool";
-        public const string SwitchType = "Switch";
-        public const string Int32Type = "Int32";
-        public const string Int64Type = "Int64";
-        public const string StringType = "String";
-        public const string SecureStringType = "SecureString";
-
         /// <summary>
         /// Constructor
         /// </summary>
@@ -37,10 +26,24 @@ namespace PowerShellTools.Commands.UserInterface
 
         }
 
-        public ScriptParameter(string name, string type, HashSet<object> allowedValues)
+        public ScriptParameter(string name, string type, object defaultValue, HashSet<object> allowedValues)
         {
             _name = name;
             _type = type;
+            if (defaultValue != null && DataTypeConstants.DataTypesSet.Contains(_type))
+            {
+                if (((string)defaultValue).Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                    ((string)defaultValue).Equals("1", StringComparison.OrdinalIgnoreCase))
+                {
+                    defaultValue = true;
+                }
+                else if (((string)defaultValue).Equals("false", StringComparison.OrdinalIgnoreCase) ||
+                    ((string)defaultValue).Equals("0", StringComparison.OrdinalIgnoreCase))
+                {
+                    defaultValue = false;
+                }
+            }
+            _defaultValue = defaultValue;
             _allowedValues = allowedValues;
         }
 

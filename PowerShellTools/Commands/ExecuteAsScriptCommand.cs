@@ -33,7 +33,7 @@ namespace PowerShellTools.Commands
 
         protected override bool ShouldShowCommand(DTE2 dte2)
         {
-            return dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == "PowerShell";
+            return dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == PowerShellConstants.LanguageName;
         }
     }
 
@@ -126,7 +126,7 @@ namespace PowerShellTools.Commands
 
         protected abstract bool ShouldShowCommand(DTE2 dte);
 
-        protected virtual string ScriptArgs { get; set; }
+        protected virtual string ScriptArgs { get; private set; }
 
         public CommandID CommandId
         {
