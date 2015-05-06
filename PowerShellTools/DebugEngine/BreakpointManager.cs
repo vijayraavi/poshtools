@@ -119,14 +119,14 @@ namespace PowerShellTools.DebugEngine
             var bp =
                 _breakpoints.FirstOrDefault(
                     m =>
-                    m.StartColumn == column && line == m.StartLine &&
+                    m.Column == column && line == m.Line &&
                     script.Equals(m.File, StringComparison.InvariantCultureIgnoreCase));
 
             if (bp != null)
             {
                 if (BreakpointHit != null)
                 {
-                    Log.InfoFormat("Breakpoint @ {0} {1} {2} was hit.", bp.File, bp.StartLine, bp.StartColumn);
+                    Log.InfoFormat("Breakpoint @ {0} {1} {2} was hit.", bp.File, bp.Line, bp.Column);
                     BreakpointHit(this, new EventArgs<ScriptBreakpoint>(bp));
                     return true;
                 }
@@ -141,17 +141,17 @@ namespace PowerShellTools.DebugEngine
         /// <param name="breakpoint">Breakpoint to be added</param>
         public void SetBreakpoint(ScriptBreakpoint breakpoint)
         {
-            Log.InfoFormat("SetBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.StartLine, breakpoint.StartColumn);
+            Log.InfoFormat("SetBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column);
 
             try
             {
                 if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
                 {
-                    Debugger.DebuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.StartLine, breakpoint.StartColumn));
+                    Debugger.DebuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                 }
                 else if (Debugger.IsDebuggingCommandReady)
                 {
-                    Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.SetPSBreakpoint, breakpoint.File, breakpoint.StartLine));
+                    Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.SetPSBreakpoint, breakpoint.File, breakpoint.Line));
                 }
             }
             catch (Exception ex)
@@ -169,17 +169,17 @@ namespace PowerShellTools.DebugEngine
         {
             string operation = fEnable == 0 ? "Disable" : "Enable";
 
-            Log.InfoFormat("{3} breakpoint: {0} {1} {2}", breakpoint.File, breakpoint.StartLine, breakpoint.StartColumn, operation);
+            Log.InfoFormat("{3} breakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column, operation);
 
             try
             {
                 if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
                 {
-                    Debugger.DebuggingService.EnableBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.StartLine, breakpoint.StartColumn), fEnable == 0 ? false : true);
+                    Debugger.DebuggingService.EnableBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column), fEnable == 0 ? false : true);
                 }
                 else if (Debugger.IsDebuggingCommandReady)
                 {
-                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.StartLine, breakpoint.StartColumn));
+                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                     if (id >= 0)
                     {
                         Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(
@@ -201,17 +201,17 @@ namespace PowerShellTools.DebugEngine
         /// <param name="breakpoint">Breakpoint to be removed</param>
         public void RemoveBreakpoint(ScriptBreakpoint breakpoint)
         {
-            Log.InfoFormat("RemoveBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.StartLine, breakpoint.StartColumn);
+            Log.InfoFormat("RemoveBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column);
 
             try
             {
                 if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
                 {
-                    Debugger.DebuggingService.RemoveBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.StartLine, breakpoint.StartColumn));
+                    Debugger.DebuggingService.RemoveBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                 }
                 else if (Debugger.IsDebuggingCommandReady)
                 {
-                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.StartLine, breakpoint.StartColumn));
+                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                     if (id >= 0)
                     {
                         Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, id));

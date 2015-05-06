@@ -16,6 +16,10 @@ namespace PowerShellTools.DebugEngine
         private readonly int _startColumn;
         private readonly int _endColumn;
 
+        public ScriptDocumentContext(string fileName, string description, int startLine, int startColumn)
+            : this(fileName, description, startLine, startLine, startColumn, startColumn)
+        {
+        }
 
         public ScriptDocumentContext(string fileName, string description, int startLine, int endLine, int startColumn, int endColumn)
         {

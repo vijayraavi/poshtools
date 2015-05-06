@@ -20,53 +20,27 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Line where this breakpoint is set.
         /// </summary>
-        public int StartLine { get; private set; }
+        public int Line { get; private set; }
 
         /// <summary>
         /// Column where this breakpoint is set.
         /// </summary>
-        public int StartColumn { get; private set; }
-
-        /// <summary>
-        /// Line where this breakpoint is set.
-        /// </summary>
-        public int EndLine { get; private set; }
-
-        /// <summary>
-        /// Column where this breakpoint is set.
-        /// </summary>
-        public int EndColumn { get; private set; }
+        public int Column { get; private set; }
 
         /// <summary>
         /// Full path to the file this breakpoint is set within.
         /// </summary>
         public string File { get; private set; }
 
-        public ScriptBreakpoint(ScriptProgramNode node, string file, int startLine, int startColumn, IEngineEvents callback)
+        public ScriptBreakpoint(ScriptProgramNode node, string file, int line, int column, IEngineEvents callback)
         {
-            Log.InfoFormat("ScriptBreakPoint: {0} {1} {2}", file, startLine, startColumn);
+            Log.InfoFormat("ScriptBreakPoint: {0} {1} {2}", file, line, column);
 
             _node = node;
             _callback = callback;
             _enabled = true;
-            StartLine = startLine;
-            StartColumn = startColumn;
-            EndLine = startLine;
-            EndColumn = startColumn;
-            File = file;
-        }
-
-        public ScriptBreakpoint(ScriptProgramNode node, string file, int startLine, int startColumn, int endLine, int endColumn, IEngineEvents callback)
-        {
-            Log.InfoFormat("ScriptBreakPoint: {0} {1} {2}", file, startLine, startColumn);
-
-            _node = node;
-            _callback = callback;
-            _enabled = true;
-            StartLine = startLine;
-            StartColumn = startColumn;
-            EndLine = endLine;
-            EndColumn = endColumn;
+            Line = line;
+            Column = column;
             File = file;
         }
 
@@ -243,7 +217,7 @@ namespace PowerShellTools.DebugEngine
         public int GetResolutionInfo(enum_BPRESI_FIELDS dwFields, BP_RESOLUTION_INFO[] pBPResolutionInfo)
         {
             //VS line\column is zero based. PowerShell is 1
-            var documentContext = new ScriptDocumentContext(File, "", StartLine - 1, EndLine - 1, StartColumn, EndColumn);
+            var documentContext = new ScriptDocumentContext(File, "", Line - 1, Column);
 
             Log.Debug("ScriptBreakpoint: GetResolutionInfo");
             if (dwFields == enum_BPRESI_FIELDS.BPRESI_ALLFIELDS)
