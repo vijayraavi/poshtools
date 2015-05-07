@@ -129,7 +129,7 @@ namespace PowerShellTools.Commands.UserInterface
 
         private static string WrapStringValueWithQuotes(string value)
         {
-            if (value.StartsWith("\"", StringComparison.Ordinal) && value.EndsWith("\"", StringComparison.Ordinal))
+            if (value.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && value.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
             {
                 return value;
             }

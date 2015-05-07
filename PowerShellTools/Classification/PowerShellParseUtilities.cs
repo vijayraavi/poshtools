@@ -43,7 +43,7 @@ namespace PowerShellTools.Classification
 
                 p.Attributes.Any(a =>
                     {
-                        var any = a.TypeName.FullName.Equals(ValidateSetConst, StringComparison.Ordinal);
+                        var any = a.TypeName.FullName.Equals(ValidateSetConst, StringComparison.OrdinalIgnoreCase);
                         if (!any)
                         {
                             return any;
