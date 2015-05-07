@@ -12,7 +12,7 @@ namespace PowerShellTools.Commands.UserInterface
     /// <summary>
     /// Data structure to provide template definitions and values from the parameter file
     /// </summary>
-    internal class ScriptParameterViewModel : ObservableObject, IPasswordBoxBindingSource, INotifyDataErrorInfo
+    internal class ScriptParameterViewModel : ObservableObject, INotifyDataErrorInfo
     {
         private const string ValuePropertyName = "Value";
 
@@ -41,10 +41,6 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 this.Type = ParameterType.String;
             }
-            else if (DoParameterTypeNamesMatch(ParameterDefinition.Type, DataTypeConstants.SecureStringType))
-            {
-                this.Type = ParameterType.SecureString;
-            }
             else
             {
                 this.Type = ParameterType.Unknown;
@@ -53,17 +49,6 @@ namespace PowerShellTools.Commands.UserInterface
             _value = parameterDefinition.DefaultValue;
 
             Validate();
-        }
-
-        /// <summary>
-        /// Copy constructor.
-        /// </summary>
-        /// <param name="source">The instance to copy.</param>
-        public ScriptParameterViewModel(ScriptParameterViewModel source)
-            : this(source.ParameterDefinition)
-        {
-            Debug.Assert(source != null, "templateParameterValue should not be null");
-            this.Value = source.Value;
         }
 
         /// <summary>
@@ -94,17 +79,6 @@ namespace PowerShellTools.Commands.UserInterface
             }
             set
             {
-                if (this.Type == ParameterType.SecureString)
-                {
-                    // Use SecureString in the UI layer.  If a securestring is in the template or parameters
-                    //   file, we can't control that. However, we can at least use SecureString in the UI layer
-                    //   if the user enters a new one.
-                    var stringValue = value as string;
-                    if (stringValue != null)
-                    {
-                        value = stringValue.ToSecureString();
-                    }
-                }
                 _value = value;
 
                 Validate();
@@ -194,23 +168,6 @@ namespace PowerShellTools.Commands.UserInterface
             return string.Equals(typeName1, typeName2, StringComparison.OrdinalIgnoreCase);
         }
 
-        #region IPasswordBoxBindingSource implementation
-
-        SecureString IPasswordBoxBindingSource.SecurePassword
-        {
-            // Used for databinding to PasswordBox
-            get
-            {
-                return this.Value as SecureString;
-            }
-            set
-            {
-                this.Value = value as SecureString;
-            }
-        }
-
-        #endregion
-
         #region Validation
 
         /// <summary>
@@ -296,9 +253,8 @@ namespace PowerShellTools.Commands.UserInterface
                 case ParameterType.Integer:
                     return this.Value is int;
 
-                case ParameterType.SecureString:
                 case ParameterType.String:
-                    return this.Value is SecureString || this.Value is string;
+                    return this.Value is string;
 
                 case ParameterType.Unknown:
                     return true;
@@ -347,7 +303,7 @@ namespace PowerShellTools.Commands.UserInterface
             get { return this.ValidationResult != null && this.ValidationResult.IsWarning; }
         }
 
-        #endregion IDataErrorInfo implementation
+        #endregion Error/Warnings
 
         #region INotifyDataErrorInfo implementation
 

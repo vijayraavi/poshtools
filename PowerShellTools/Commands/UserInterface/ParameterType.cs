@@ -9,10 +9,12 @@ namespace PowerShellTools.Commands.UserInterface
     internal enum ParameterType
     {
         Unknown,
+        Array,
+        Float,
+        Char,
         Boolean,
         Switch,
         Integer,
-        String,
-        SecureString,
+        String
     }
 }

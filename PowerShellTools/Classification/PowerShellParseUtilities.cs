@@ -12,7 +12,6 @@ namespace PowerShellTools.Classification
     internal static class PowerShellParseUtilities
     {
         public const string ValidateSetConst = "ValidateSet";
-        public const string ParameterAttributeConst = "ParameterAttribute";
 
         /// <summary>
         /// Try to find a Param block on the top level of an AST.
@@ -36,7 +35,7 @@ namespace PowerShellTools.Classification
         {
             List<ScriptParameterViewModel> scriptParameters = new List<ScriptParameterViewModel>();
             var parametersList = paramBlockAst.Parameters.
-                Where(p => !p.StaticType.Name.Equals(DataTypeConstants.SecureStringType, StringComparison.OrdinalIgnoreCase)).
+                Where(p => !DataTypeConstants.UnsupportedDataTypes.Contains(p.StaticType.FullName)).
                 ToList();
             foreach (var p in parametersList)
             {
@@ -44,7 +43,7 @@ namespace PowerShellTools.Classification
 
                 p.Attributes.Any(a =>
                     {
-                        var any = a.TypeName.Name.Equals(ValidateSetConst, StringComparison.Ordinal);
+                        var any = a.TypeName.FullName.Equals(ValidateSetConst, StringComparison.Ordinal);
                         if (!any)
                         {
                             return any;
@@ -57,7 +56,7 @@ namespace PowerShellTools.Classification
                     });
 
                 // Get parameter type
-                string type = p.StaticType.Name;
+                string type = p.StaticType.FullName;
 
                 // Get parameter name
                 string name = p.Name.VariablePath.UserPath;

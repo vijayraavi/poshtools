@@ -42,10 +42,7 @@ namespace PowerShellTools.Commands
 
         protected override bool ShouldShowCommand(DTE2 dte2)
         {
-            return dte2 != null &&
-                   dte2.ActiveDocument != null &&
-                   dte2.ActiveDocument.Language == PowerShellConstants.LanguageName &&
-                   HasParameters();
+            return base.ShouldShowCommand(dte2) && HasParameters();
         }
 
         private bool HasParameters()

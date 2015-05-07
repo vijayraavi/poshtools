@@ -30,11 +30,6 @@ namespace PowerShellTools.Commands.UserInterface
         /// </summary>
         public DataTemplate NumberTemplate { get; set; }
 
-        /// <summary>
-        /// The DataTemplate to use for secure string parameters
-        /// </summary>
-        public DataTemplate SecureStringTemplate { get; set; }
-
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
             if (item != null && item is ScriptParameterViewModel)
@@ -55,9 +50,6 @@ namespace PowerShellTools.Commands.UserInterface
 
                         case ParameterType.Integer:
                             return NumberTemplate;
-
-                        case ParameterType.SecureString:
-                            return SecureStringTemplate;
 
                         case ParameterType.String:
                         case ParameterType.Unknown:

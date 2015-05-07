@@ -45,11 +45,7 @@ namespace PowerShellTools.Commands
 
         protected override bool ShouldShowCommand(DTE2 dte)
         {
-            var selectedItem = ExecuteFromSolutionExplorerContextMenuCommand.GetSelectedItem(dte);
-            return selectedItem != null &&
-                   selectedItem.ProjectItem != null &&
-                   LanguageUtilities.IsPowerShellFile(selectedItem.ProjectItem.Name) &&
-                   HasParameters();
+            return base.ShouldShowCommand(dte) && HasParameters();
         }
 
         private bool HasParameters()

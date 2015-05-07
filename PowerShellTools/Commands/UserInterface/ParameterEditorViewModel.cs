@@ -25,7 +25,6 @@ namespace PowerShellTools.Commands.UserInterface
         public ParameterEditorViewModel(IList<ScriptParameterViewModel> parameterList)
         {
             _parameters = Arguments.ValidateNotNull(parameterList, "parameterList");
-            HasSecureStrings = parameterList.Any(param => param.Type == ParameterType.SecureString);
 
             //Hook up property change events to listen to changes in parameter files            
             foreach (var p in parameterList)
@@ -52,11 +51,6 @@ namespace PowerShellTools.Commands.UserInterface
                 return _parameterEditorTip;
             }
         }
-
-        /// <summary>
-        /// Whether the parameter file has secure strings
-        /// </summary>
-        public bool HasSecureStrings { get; private set; }
 
         /// <summary>
         /// The save button is disabled if we're in the 
@@ -156,10 +150,6 @@ namespace PowerShellTools.Commands.UserInterface
                         { 
                             Value="hi"
                         },
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="SecureStringWithWatermark", Type="string" })
-                        { 
-                            Value=new SecureString()
-                        },
                         new ScriptParameterViewModel(new ScriptParameter() { Name="BoolWithWatermark", Type="bool" })
                         { 
                             Value=null
@@ -208,26 +198,6 @@ namespace PowerShellTools.Commands.UserInterface
                         { 
                             Value=null
                         },
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="GoodPassword", Type="securestring" })
-                        { 
-                            Value="My Password" 
-                        },
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="BadPassword1", Type="securestring" })
-                        { 
-                            Value=1234
-                        },
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="BadPassword2", Type="securestring" })
-                        { 
-                            Value=true
-                        },
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="NullPassword", Type="securestring" })
-                        { 
-                            Value=null
-                        },
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="EmptyPassword", Type="securestring" })
-                        { 
-                            Value=""
-                        },
                         new ScriptParameterViewModel(new ScriptParameter() { Name="TrueBoolean", Type="bool" })
                         { 
                             Value=true
@@ -252,10 +222,6 @@ namespace PowerShellTools.Commands.UserInterface
                         { 
                             Value=null
                         },
-                        //new ScriptParameterViewModel(new ScriptParameter() { Name="BadType", Type="badtype" })
-                        //{ 
-                        //    Value=null
-                        //},
                     }
 #endif
                 };

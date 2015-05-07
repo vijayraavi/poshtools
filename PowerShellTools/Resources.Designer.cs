@@ -738,16 +738,6 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap StatusAnnotations_Invalid_color_16x {
-            get {
-                object obj = ResourceManager.GetObject("StatusAnnotations_Invalid_color_16x", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Specifies the type files (.ps1xml) that run when the module is imported..
         /// </summary>
         public static string TypesToProcess_Description {
@@ -807,16 +797,6 @@ namespace PowerShellTools {
         public static string Version_DisplayName {
             get {
                 return ResourceManager.GetString("Version_DisplayName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap Warning_yellow_7231_16x16 {
-            get {
-                object obj = ResourceManager.GetObject("Warning_yellow_7231_16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         

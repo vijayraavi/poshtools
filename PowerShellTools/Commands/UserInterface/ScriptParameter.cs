@@ -120,51 +120,5 @@ namespace PowerShellTools.Commands.UserInterface
                 return _allowedValues;
             }
         }
-
-        /// <summary>
-        /// Gets the minimum length allowed for values of this parameter.
-        /// </summary>
-        /// <remarks>
-        /// If null, no minimum length has been defined.
-        /// </remarks>
-        public int? MinLength
-        {
-            get
-            {
-                return _minLength;
-            }
-            set
-            {
-                if (_minLength != value)
-                {
-                    _minLength = value;
-
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the maximum length allowed for values of this parameter.
-        /// </summary>
-        /// <remarks>
-        /// If null, no maximum length has been defined.
-        /// </remarks>
-        public int? MaxLength
-        {
-            get
-            {
-                return _maxLength;
-            }
-            set
-            {
-                if (_maxLength != value)
-                {
-                    _maxLength = value;
-
-                    NotifyPropertyChanged();
-                }
-            }
-        }
     }
 }

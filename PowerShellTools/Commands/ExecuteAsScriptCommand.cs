@@ -147,7 +147,7 @@ namespace PowerShellTools.Commands
                 return;
 
             Utilities.SaveDirtyFiles();
-            if (ScriptArgs.Equals(String.Empty))
+            if (ScriptArgs != null && ScriptArgs.Equals(String.Empty))
             {
                 return;
             }

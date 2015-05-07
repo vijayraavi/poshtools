@@ -60,7 +60,6 @@ namespace PowerShellTools.Commands.UserInterface
                             scriptArgs += " " + p.Value;
                             break;
                         case ParameterType.String:
-                        case ParameterType.SecureString:
                         case ParameterType.Unknown:
                             scriptArgs += WrapParameterName(p.Name);
                             scriptArgs += p.Value is string ? WrapStringValueWithQuotes(p.Value as string) : p.Value;
@@ -75,9 +74,27 @@ namespace PowerShellTools.Commands.UserInterface
         {
             IVsTextView vsTextView;
             paramBlock = null;
+
+            //Returns the active or previously active view.
+            //
+            // Parameters:
+            //   fMustHaveFocus:
+            //     [in] If true, then the current UI active view is returned. If false, then
+            //     the last active view is returned, regardless of whether this view is currently
+            //     UI active.
+            //
+            //   pBuffer:
+            //     [in] Pass null for pBuffer to get the previously active code view, regardless
+            //     of the text buffer that it was associated with. If you pass in a valid pointer
+            //     to a buffer, then you are returned the last active view for that particular
+            //     buffer.
+            //
+            //   ppView:
+            //     [out] Pointer to the Microsoft.VisualStudio.TextManager.Interop.IVsTextView
+            //     interface.
             textManager.GetActiveView(1, null, out vsTextView);
             if (vsTextView == null)
-            {                
+            {
                 return false;
             }
 
@@ -95,7 +112,7 @@ namespace PowerShellTools.Commands.UserInterface
 
         private static string WrapParameterName(string name)
         {
-            return " -" + name;
+            return String.Format(" -{0}", name);
         }
 
         private static string WrapStringValueWithQuotes(string value)
@@ -104,7 +121,7 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 return value;
             }
-            return " \"" + value + "\"";
+            return String.Format(" \"{0}\"", value);
         }
 
     }

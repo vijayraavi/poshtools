@@ -97,20 +97,6 @@
                     common:Watermark.Text="{Binding Watermark}"
                     />
             </DataTemplate>
-            <DataTemplate x:Key="SecureStringParameterValueTemplate">
-                <!-- In order for validation UI to appear with ValidatesOnNotifyDataErrors, we must bind any local 
-                     property with ValidatesOnNotifyDataErrors=True (e.g. PasswordSource won't work, it's attached), 
-                     so we bind Tag to the Value. -->
-                <PasswordBox 
-                    BorderThickness="0"
-                    ToolTip="{Binding HelpText}"
-                    Tag="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
-                    AutomationProperties.HelpText="{Binding HelpText}"
-                    AutomationProperties.Name="{Binding Name}"
-                    local:PasswordBoxBinding.PasswordSource="{Binding UpdateSourceTrigger=PropertyChanged}"
-                    Validation.ErrorTemplate="{StaticResource ErrorTemplate}"
-                    common:Watermark.Text="{Binding Watermark}"/>
-            </DataTemplate>
             <DataTemplate x:Key="NumberParameterValueTemplate">
                 <TextBox 
                     BorderThickness="0" 
@@ -179,7 +165,6 @@
                     <DataGridTemplateColumn.CellTemplateSelector>
                         <local:ParameterEditorTemplateSelector
                             StringTemplate="{StaticResource StringParameterValueTemplate}"
-                            SecureStringTemplate="{StaticResource SecureStringParameterValueTemplate}"
                             ChoiceTemplate="{StaticResource ChoiceParameterValueTemplate}"
                             NumberTemplate="{StaticResource NumberParameterValueTemplate}" />
                     </DataGridTemplateColumn.CellTemplateSelector>

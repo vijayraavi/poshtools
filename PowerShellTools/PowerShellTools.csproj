@@ -250,7 +250,6 @@
     <Compile Include="Commands\UserInterface\DataTypeConstants.cs" />
     <Compile Include="Commands\UserInterface\ErrorIconConverter.cs" />
     <Compile Include="Commands\UserInterface\IntValueConverter.cs" />
-    <Compile Include="Commands\UserInterface\IPasswordBoxBindingSource.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorTemplateSelector.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorViewModel.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorHelper.cs" />
@@ -259,7 +258,6 @@
     <Compile Include="Commands\UserInterface\ParameterEditorView.xaml.cs">
       <DependentUpon>ParameterEditorView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Commands\UserInterface\PasswordBoxBinding.cs" />
     <Compile Include="Commands\UserInterface\ScriptParameter.cs" />
     <Compile Include="Commands\UserInterface\ScriptParameterViewModel.cs" />
     <Compile Include="Commands\UserInterface\ValidationResult.cs" />
