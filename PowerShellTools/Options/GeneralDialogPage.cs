@@ -69,7 +69,6 @@ namespace PowerShellTools.Options
                 Bitness = BitnessOptions.DefaultToOperatingSystem;
             }
 
-
             BitnessSettingChanged += PowerShellToolsPackage.Instance.BitnessSettingChanged;
         }
     }

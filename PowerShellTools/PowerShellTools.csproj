@@ -235,13 +235,33 @@
     <Compile Include="Classification\PowerShellErrorTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellOutliningTagger.cs" />
     <Compile Include="Classification\PowerShellOutliningTaggerProvider.cs" />
+    <Compile Include="Classification\PowerShellParseUtilities.cs" />
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
     <Compile Include="Cmdlets\GetVisualStudioServiceCommand.cs" />
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
+    <Compile Include="Commands\ExecuteWithParametersAsScriptCommand.cs" />
+    <Compile Include="Commands\ExecuteWithParametersAsScriptFromSolutionExplorerCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
+    <Compile Include="Commands\UserInterface\Converters\ByteValueConverter.cs" />
+    <Compile Include="Commands\UserInterface\ConfigurableBoolToVisibilityConveter.cs" />
+    <Compile Include="Commands\UserInterface\DataTypeConstants.cs" />
+    <Compile Include="Commands\UserInterface\Converters\ErrorIconConverter.cs" />
+    <Compile Include="Commands\UserInterface\Converters\IntValueConverter.cs" />
+    <Compile Include="Commands\UserInterface\Converters\LongValueConverter.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorTemplateSelector.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorViewModel.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorHelper.cs" />
+    <Compile Include="Commands\UserInterface\ParameterType.cs" />
+    <Compile Include="Commands\UserInterface\ParameterValueComparer.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorView.xaml.cs">
+      <DependentUpon>ParameterEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Commands\UserInterface\ScriptParameter.cs" />
+    <Compile Include="Commands\UserInterface\ScriptParameterViewModel.cs" />
+    <Compile Include="Commands\UserInterface\ValidationResult.cs" />
     <Compile Include="CredentialUI\CredentialsDialog.cs" />
     <Compile Include="CredentialUI\NativeCredentialsUI.cs" />
     <Compile Include="CredentialUI\Resources.Designer.cs">
@@ -618,6 +638,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <CustomToolNamespace>PowerShellTools</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
@@ -626,6 +647,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Commands\UserInterface\Resources\StatusAnnotations_Invalid_color_16x.png" />
+    <Resource Include="Commands\UserInterface\Resources\Warning_yellow_7231_16x16.png" />
     <Content Include="DebugEngine\PowerShellTools.DebugEngine.csproj" />
     <Content Include="ItemTemplates\PowerShell Script.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -649,6 +672,8 @@
     <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
     <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
     <EmbeddedResource Include="Resources\PowerShellInteractiveWindow_16x.png" />
+    <None Include="Resources\WarningIcon.ico" />
+    <None Include="Resources\ErrorStatus.png" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
@@ -722,6 +747,10 @@
     <Resource Include="Resources\powershell_icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Commands\UserInterface\ParameterEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="CredentialUI\SecureStringDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
