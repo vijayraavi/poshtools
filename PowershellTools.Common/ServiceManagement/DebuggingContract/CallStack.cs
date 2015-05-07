@@ -20,14 +20,31 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         public string FrameString { get; set; }
 
         [DataMember]
-        public int Line { get; set; }
+        public int StartLine { get; set; }
 
-        public CallStack(string script, string function, int line)
+        [DataMember]
+        public int EndLine { get; set; }
+
+        [DataMember]
+        public int StartColumn { get; set; }
+
+        [DataMember]
+        public int EndColumn { get; set; }
+
+        public CallStack(string script, string function, int startLine)
+            : this(script, function, startLine, startLine, 1, 1) // Default column set to 1 (e.g remote session debugging)
+        {
+        }
+
+        public CallStack(string script, string function, int startLine, int endLine, int startColumn, int endColumn)
         {
             ScriptFullPath = script;
             FunctionName = function;
-            Line = line;
-            FrameString = string.Format("at {0}, {1}: line {2}", FunctionName, ScriptFullPath, Line);
+            StartLine = startLine;
+            EndLine = endLine;
+            StartColumn = startColumn;
+            EndColumn = endColumn;
+            FrameString = string.Format("at {0}, {1}: line {2}", FunctionName, ScriptFullPath, StartLine);
         }
     }
 }

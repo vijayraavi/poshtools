@@ -342,4 +342,22 @@ Would you like to download now?</value>
   <data name="HighlightMatchedBracesTagDisplayName" xml:space="preserve">
     <value>Highlighted Braces for PowerShell</value>
   </data>
+  <data name="GoToDefinitionFailureMessage" xml:space="preserve">
+    <value>Cannot navigate to the symbol under the caret.</value>
+  </data>
+  <data name="MessageBoxCaption" xml:space="preserve">
+    <value>Microsoft Visual Studio</value>
+  </data>
+  <data name="GoToDefinitionName" xml:space="preserve">
+    <value>Go to Definition</value>
+  </data>
+  <data name="GoToDefinitionAmbiguousMessage" xml:space="preserve">
+    <value>Function definition is ambiguous. Navigated to first possible definition.</value>
+  </data>
+  <data name="DropDownToolTip" xml:space="preserve">
+    <value>Use the dropdown to view and navigate to other items in this file.</value>
+  </data>
+  <data name="DropDownScriptName" xml:space="preserve">
+    <value>(script)</value>
+  </data>
 </root>
