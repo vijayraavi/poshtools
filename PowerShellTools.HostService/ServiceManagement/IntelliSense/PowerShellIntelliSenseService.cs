@@ -15,6 +15,7 @@ namespace PowerShellTools.HostService.ServiceManagement
     /// <summary>
     /// Represents a implementation of the service contract.
     /// </summary>
+    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     [PowerShellServiceHostBehavior]
     public sealed class PowerShellIntelliSenseService : IPowershellIntelliSenseService
     {

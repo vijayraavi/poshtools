@@ -20,7 +20,7 @@ namespace PowerShellTools.DebugEngine
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptStackFrame));
 
 
-        public ScriptStackFrame(ScriptProgramNode node, string scriptName, int line, string frame)
+        public ScriptStackFrame(ScriptProgramNode node, string scriptName, string frame, int startLine, int endLine, int startColumn, int endColumn)
         {
             if (node == null)
             {
@@ -29,7 +29,7 @@ namespace PowerShellTools.DebugEngine
             _node = node;
             _debugger = node.Debugger;
             // VS is zero based, PS is 1 based
-            _docContext = new ScriptDocumentContext(scriptName, line - 1, 0, frame);
+            _docContext = new ScriptDocumentContext(scriptName, frame, startLine - 1, endLine - 1, startColumn - 1, endColumn - 1);
         }
 
         #region Implementation of IDebugStackFrame2

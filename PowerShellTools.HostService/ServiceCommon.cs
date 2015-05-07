@@ -48,7 +48,7 @@ namespace PowerShellTools.HostService
         /// <param name="msg"></param>
         private static void Log(string msg)
         {
-            Console.WriteLine(string.Format(DebugEngineConstants.PowerShellHostProcessLogFormat, Program.EndpointGuid, msg));
+            Console.WriteLine(string.Format(DebugEngineConstants.PowerShellHostProcessLogFormat, App.EndpointGuid, msg));
         }
     }
 }

@@ -23,6 +23,8 @@ namespace PowerShellTools.Common
 
         public const string PowerShellHostExeNameForx86 = "PowerShellToolsProcessHostx86.exe";
 
+        public const string PowershellHostConsoleExeName = "PowerShellToolsProcessHostConsole.exe";
+
         // 10M in bytes
         public const int BindingMaxReceivedMessageSize = 10000000;
 
@@ -30,6 +32,9 @@ namespace PowerShellTools.Common
         public const string VsProcessIdArg = "/vsPid:";
         public const string UniqueEndpointArg = "/endpoint:";
         public const string ReadyEventUniqueNameArg = "/readyEventUniqueName:";
+
+        // Arguments for vspowershellhostconsole.exe
+        public const string ConsoleProcessIdArg = "/hpPid:";
 
         public const string SecureStringFullTypeName = "system.security.securestring";
         public const string PSCredentialFullTypeName = "system.management.automation.pscredential";

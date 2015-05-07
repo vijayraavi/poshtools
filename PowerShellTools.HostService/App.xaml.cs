@@ -1,62 +1,70 @@
-﻿using System;
-using System.Diagnostics;
-using System.Globalization;
-using System.Net.Security;
-using System.ServiceModel;
-using System.Threading;
-using PowerShellTools.Common;
+﻿using PowerShellTools.Common;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.HostService.ServiceManagement;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.HostService.ServiceManagement.Debugging;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Net.Security;
+using System.Runtime.InteropServices;
+using System.ServiceModel;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace PowerShellTools.HostService
 {
-    internal class Program
+    /// <summary>
+    /// Interaction logic for App.xaml
+    /// </summary>
+    public partial class App : Application
     {
         private static ServiceHost _powershellServiceHost;
         private static ServiceHost _powershellDebuggingServiceHost;
-        private static AutoResetEvent _processExitEvent;
 
         public static int VsProcessId { get; private set; }
 
         public static string EndpointGuid { get; private set; }
 
-        [LoaderOptimization(LoaderOptimization.SingleDomain)]
-        internal static int Main(string[] args)
+        void App_Startup(object sender, StartupEventArgs e)
         {
-            if (args.Length != 3 ||
-                !(args[0].StartsWith(Constants.UniqueEndpointArg, StringComparison.OrdinalIgnoreCase)
-                && args[1].StartsWith(Constants.VsProcessIdArg, StringComparison.OrdinalIgnoreCase)
-                && args[2].StartsWith(Constants.ReadyEventUniqueNameArg, StringComparison.OrdinalIgnoreCase)))
+            // Application is running
+            // Process command line e.Args
+            if (e.Args.Length != 3 ||
+                !(e.Args[0].StartsWith(Constants.UniqueEndpointArg, StringComparison.OrdinalIgnoreCase)
+                && e.Args[1].StartsWith(Constants.VsProcessIdArg, StringComparison.OrdinalIgnoreCase)
+                && e.Args[2].StartsWith(Constants.ReadyEventUniqueNameArg, StringComparison.OrdinalIgnoreCase)))
             {
-                return 1;
+                return;
             }
 
-            _processExitEvent = new AutoResetEvent(false);
-
-            EndpointGuid = args[0].Remove(0, Constants.UniqueEndpointArg.Length);
+            EndpointGuid = e.Args[0].Remove(0, Constants.UniqueEndpointArg.Length);
             if (EndpointGuid.Length != Guid.Empty.ToString().Length)
             {
-                return 1;
+                return;
             }
 
             int vsProcessId;
-            if (!Int32.TryParse(args[1].Remove(0, Constants.VsProcessIdArg.Length),
+            if (!int.TryParse(e.Args[1].Remove(0, Constants.VsProcessIdArg.Length),
                             NumberStyles.None,
                             CultureInfo.InvariantCulture,
                             out vsProcessId))
             {
-                return 1;
+                return;
             }
 
             VsProcessId = vsProcessId;
 
-            string readyEventName = args[2].Remove(0, Constants.ReadyEventUniqueNameArg.Length);
+            string readyEventName = e.Args[2].Remove(0, Constants.ReadyEventUniqueNameArg.Length);
             // the readyEventName should be VsPowershellToolProcess:TheGeneratedGuid
             if (readyEventName.Length != (Constants.ReadyEventPrefix.Length + Guid.Empty.ToString().Length))
             {
-                return 1;
+                return;
             }
 
             // Step 1: Create the NetNamedPipeBinding. 
@@ -87,7 +95,7 @@ namespace PowerShellTools.HostService
                     p.EnableRaisingEvents = true;
                     // Make sure the host process terminates when VS exits.
                     p.Exited += new EventHandler(
-                        (sender, eventArgs) =>
+                        (s, eventArgs) =>
                         {
                             if (_powershellServiceHost != null)
                             {
@@ -100,31 +108,11 @@ namespace PowerShellTools.HostService
                                 _powershellDebuggingServiceHost = null;
                             }
 
-                            _processExitEvent.Set();
+                            Environment.Exit(0);
                         });
                 }
-
-                _processExitEvent.WaitOne();
             }
-            catch (Exception)
-            {
-                // The process need to wait for the parent process to exit.  
-            }
-
-            if (_powershellServiceHost != null)
-            {
-                _powershellServiceHost.Close();
-                _powershellServiceHost = null;
-            }
-
-            if (_powershellDebuggingServiceHost != null)
-            {
-                _powershellDebuggingServiceHost.Close();
-                _powershellDebuggingServiceHost = null;
-            }
-
-            Environment.Exit(0);
-            return 0;
+            catch { }
         }
 
         private static void CreatePowershellIntelliSenseServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
@@ -148,5 +136,6 @@ namespace PowerShellTools.HostService
 
             _powershellDebuggingServiceHost.Open();
         }
+
     }
 }
