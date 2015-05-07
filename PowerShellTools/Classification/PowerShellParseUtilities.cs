@@ -57,6 +57,10 @@ namespace PowerShellTools.Classification
 
                 // Get parameter type
                 string type = p.StaticType.FullName;
+                if (type.EndsWith(DataTypeConstants.ArrayType, StringComparison.OrdinalIgnoreCase))
+                {
+                    type = DataTypeConstants.ArrayType;
+                }
 
                 // Get parameter name
                 string name = p.Name.VariablePath.UserPath;

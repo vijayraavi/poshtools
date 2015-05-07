@@ -44,9 +44,11 @@
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
             </Style>
 
-            <local:IntValueConverter x:Key="IntValueConverter" />
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <local:ErrorIconConverter x:Key="ErrorIconConverter"/>
+            <local:ByteValueConverter x:Key="ByteValueConverter" />
+            <local:IntValueConverter x:Key="IntValueConverter"/>
+            <local:LongValueConverter x:Key="LongValueConverter" />
 
 
             <Style x:Key="DataGridCellEditingStyle" TargetType="{x:Type DataGridCell}" >
@@ -97,10 +99,32 @@
                     common:Watermark.Text="{Binding Watermark}"
                     />
             </DataTemplate>
-            <DataTemplate x:Key="NumberParameterValueTemplate">
+            <DataTemplate x:Key="ByteParameterValueTemplate">
+                <TextBox 
+                    BorderThickness="0" 
+                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, Converter={StaticResource ResourceKey=ByteValueConverter}}"
+                    ToolTip="{Binding HelpText}"
+                    Validation.ErrorTemplate="{StaticResource ErrorTemplate}"
+                    AutomationProperties.HelpText="{Binding HelpText}"
+                    AutomationProperties.Name="{Binding Name}"
+                    common:Watermark.Text="{Binding Watermark}"
+                    />
+            </DataTemplate>
+            <DataTemplate x:Key="IntParameterValueTemplate">
                 <TextBox 
                     BorderThickness="0" 
                     Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, Converter={StaticResource ResourceKey=IntValueConverter}}"
+                    ToolTip="{Binding HelpText}"
+                    Validation.ErrorTemplate="{StaticResource ErrorTemplate}"
+                    AutomationProperties.HelpText="{Binding HelpText}"
+                    AutomationProperties.Name="{Binding Name}"
+                    common:Watermark.Text="{Binding Watermark}"
+                    />
+            </DataTemplate>
+            <DataTemplate x:Key="LongParameterValueTemplate">
+                <TextBox 
+                    BorderThickness="0" 
+                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, Converter={StaticResource ResourceKey=LongValueConverter}}"
                     ToolTip="{Binding HelpText}"
                     Validation.ErrorTemplate="{StaticResource ErrorTemplate}"
                     AutomationProperties.HelpText="{Binding HelpText}"
@@ -166,7 +190,9 @@
                         <local:ParameterEditorTemplateSelector
                             StringTemplate="{StaticResource StringParameterValueTemplate}"
                             ChoiceTemplate="{StaticResource ChoiceParameterValueTemplate}"
-                            NumberTemplate="{StaticResource NumberParameterValueTemplate}" />
+                            ByteTemplate="{StaticResource ByteParameterValueTemplate}"
+                            IntTemplate="{StaticResource IntParameterValueTemplate}"
+                            LongTemplate="{StaticResource LongParameterValueTemplate}"/>
                     </DataGridTemplateColumn.CellTemplateSelector>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>

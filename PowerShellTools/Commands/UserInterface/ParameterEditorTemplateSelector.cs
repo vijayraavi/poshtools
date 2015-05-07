@@ -26,10 +26,20 @@ namespace PowerShellTools.Commands.UserInterface
         public DataTemplate ChoiceTemplate { get; set; }
 
         /// <summary>
-        /// The DataTemplate to use for integer parameters
+        /// The DataTemplate to use for byte parameters
         /// </summary>
-        public DataTemplate NumberTemplate { get; set; }
+        public DataTemplate ByteTemplate { get; set; }
 
+        /// <summary>
+        /// The DataTemplate to use for int parameters
+        /// </summary>
+        public DataTemplate IntTemplate { get; set; }
+
+        /// <summary>
+        /// The DataTemplate to use for long parameters
+        /// </summary>
+        public DataTemplate LongTemplate { get; set; }
+        
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
             if (item != null && item is ScriptParameterViewModel)
@@ -47,11 +57,26 @@ namespace PowerShellTools.Commands.UserInterface
                         case ParameterType.Boolean:
                             Debug.Fail("Booleans should have allowed choices");
                             goto case ParameterType.Unknown;
+                        
+                        case ParameterType.Switch:
+                            Debug.Fail("Switches should have allowed choices");
+                            goto case ParameterType.Unknown;
 
-                        case ParameterType.Integer:
-                            return NumberTemplate;
+                        case ParameterType.Byte:
+                            return ByteTemplate;
 
+                        case ParameterType.Int32:
+                            return IntTemplate;
+
+                        case ParameterType.Int64:
+                            return LongTemplate;
+
+                        case ParameterType.Float:
+                        case ParameterType.Double:
+                        case ParameterType.Decimal:
+                        case ParameterType.Char:
                         case ParameterType.String:
+                        case ParameterType.Array:
                         case ParameterType.Unknown:
                             return StringTemplate;
 

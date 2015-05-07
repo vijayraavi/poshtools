@@ -5,7 +5,7 @@ using System.Windows.Data;
 namespace PowerShellTools.Commands.UserInterface
 {
     /// <summary>
-    /// Converts from string to integer and back
+    /// Converts from string to int and back
     /// </summary>
     public class IntValueConverter : IValueConverter
     {
@@ -18,7 +18,7 @@ namespace PowerShellTools.Commands.UserInterface
         {
             var stringValue = value as string;
 
-            if (string.IsNullOrWhiteSpace(stringValue))
+            if (String.IsNullOrWhiteSpace(stringValue))
             {
                 return null;
             }

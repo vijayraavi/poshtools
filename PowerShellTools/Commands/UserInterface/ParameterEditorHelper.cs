@@ -49,16 +49,28 @@ namespace PowerShellTools.Commands.UserInterface
                             scriptArgs += WrapParameterName(p.Name);
                             scriptArgs += " " + value;
                             break;
+
                         case ParameterType.Switch:
                             if (((bool)p.Value) == true)
                             {
                                 scriptArgs += WrapParameterName(p.Name);
                             }
                             break;
-                        case ParameterType.Integer:
+
+                        case ParameterType.Byte:
+                        case ParameterType.Int32:
+                        case ParameterType.Int64:
+
+                        case ParameterType.Float:
+                        case ParameterType.Double:
+                        case ParameterType.Decimal:
+
+                        case ParameterType.Array:
                             scriptArgs += WrapParameterName(p.Name);
                             scriptArgs += " " + p.Value;
                             break;
+
+                        case ParameterType.Char:
                         case ParameterType.String:
                         case ParameterType.Unknown:
                             scriptArgs += WrapParameterName(p.Name);

@@ -11,10 +11,14 @@ namespace PowerShellTools.Commands.UserInterface
         Unknown,
         Array,
         Float,
+        Double,
+        Decimal,
         Char,
         Boolean,
         Switch,
-        Integer,
+        Byte,
+        Int32,
+        Int64,
         String
     }
 }

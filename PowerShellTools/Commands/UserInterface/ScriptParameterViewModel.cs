@@ -32,14 +32,41 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 this.Type = ParameterType.Switch;
             }
-            else if (DoParameterTypeNamesMatch(ParameterDefinition.Type, DataTypeConstants.Int32Type) ||
-                DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.Int64Type))
+            else if (DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.ByteType))
             {
-                this.Type = ParameterType.Integer;
+                this.Type = ParameterType.Byte;
+            }
+            else if (DoParameterTypeNamesMatch(ParameterDefinition.Type, DataTypeConstants.Int32Type))
+            {
+                this.Type = ParameterType.Int32;
+            }
+            else if (DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.Int64Type))
+            {
+                this.Type = ParameterType.Int64;
+            }
+            else if (DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.SingleType))
+            {
+                this.Type = ParameterType.Float;
+            }
+            else if (DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.DoubleType))
+            {
+                this.Type = ParameterType.Double;
+            }
+            else if (DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.DecimalType))
+            {
+                this.Type = ParameterType.Decimal;
+            }
+            else if (DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.CharType))
+            {
+                this.Type = ParameterType.Char;
             }
             else if (DoParameterTypeNamesMatch(ParameterDefinition.Type, DataTypeConstants.StringType))
             {
                 this.Type = ParameterType.String;
+            }
+            else if (DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.ArrayType))
+            {
+                this.Type = ParameterType.Array;
             }
             else
             {
@@ -165,7 +192,7 @@ namespace PowerShellTools.Commands.UserInterface
         /// <returns>True if they match</returns>
         private bool DoParameterTypeNamesMatch(string typeName1, string typeName2)
         {
-            return string.Equals(typeName1, typeName2, StringComparison.OrdinalIgnoreCase);
+            return String.Equals(typeName1, typeName2, StringComparison.OrdinalIgnoreCase);
         }
 
         #region Validation
@@ -250,12 +277,34 @@ namespace PowerShellTools.Commands.UserInterface
                 case ParameterType.Switch:
                     return this.Value is bool;
 
-                case ParameterType.Integer:
+                case ParameterType.Byte:
+                    return this.Value is byte;
+
+                case ParameterType.Int32:
                     return this.Value is int;
+
+                case ParameterType.Int64:
+                    return this.Value is long;
+
+                case ParameterType.Float:
+                    float floatResult;
+                    return float.TryParse(((string)this.Value).Trim(), out floatResult);
+
+                case ParameterType.Double:
+                    double doubleResult;
+                    return double.TryParse(((string)this.Value).Trim(), out doubleResult);
+
+                case ParameterType.Decimal:
+                    decimal decimalResult;
+                    return decimal.TryParse(((string)this.Value).Trim(), out decimalResult);
 
                 case ParameterType.String:
                     return this.Value is string;
 
+                case ParameterType.Char:
+                    return (this.Value is string) && (((string)this.Value).Length == 1);
+
+                case ParameterType.Array:
                 case ParameterType.Unknown:
                     return true;
 

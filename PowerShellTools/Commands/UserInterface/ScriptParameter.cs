@@ -8,8 +8,6 @@ namespace PowerShellTools.Commands.UserInterface
     {
         private readonly HashSet<object> _allowedValues = new HashSet<object>();
         private object _defaultValue;
-        private int? _maxLength;
-        private int? _minLength;
         private string _type;
         private string _name;
 

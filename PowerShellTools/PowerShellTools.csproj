@@ -246,10 +246,12 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
+    <Compile Include="Commands\UserInterface\Converters\ByteValueConverter.cs" />
     <Compile Include="Commands\UserInterface\ConfigurableBoolToVisibilityConveter.cs" />
     <Compile Include="Commands\UserInterface\DataTypeConstants.cs" />
-    <Compile Include="Commands\UserInterface\ErrorIconConverter.cs" />
-    <Compile Include="Commands\UserInterface\IntValueConverter.cs" />
+    <Compile Include="Commands\UserInterface\Converters\ErrorIconConverter.cs" />
+    <Compile Include="Commands\UserInterface\Converters\IntValueConverter.cs" />
+    <Compile Include="Commands\UserInterface\Converters\LongValueConverter.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorTemplateSelector.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorViewModel.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorHelper.cs" />
