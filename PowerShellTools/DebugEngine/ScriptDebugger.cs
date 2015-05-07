@@ -443,11 +443,6 @@ namespace PowerShellTools.DebugEngine
             _stoppingCompleteEvent.Set();
         }
 
-        public bool IsAppRunningInPowerShellHost()
-        {
-            return DebuggingService.IsAppRunning();
-        }
-
         internal void OpenRemoteFile(string fullName)
         {
             var dte2 = (DTE80.DTE2)Package.GetGlobalService(typeof(DTE.DTE));

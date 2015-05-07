@@ -89,10 +89,6 @@ namespace PowerShellTools.ServiceManagement
             bool success = readyEvent.WaitOne();
             readyEvent.Close();
 
-            MakeTopMost(powerShellHostProcess.MainWindowHandle);
-
-            ShowWindow(powerShellHostProcess.MainWindowHandle, SW_HIDE);
-
             if (!success)
             {
                 int processId = powerShellHostProcess.Id;
@@ -186,14 +182,11 @@ namespace PowerShellTools.ServiceManagement
         /// <param name="content">User input string</param>
         public void WriteHostProcessStandardInputStream(string content)
         {
-            if (PowerShellToolsPackage.Debugger.IsAppRunningInPowerShellHost())
-            {
-                StreamWriter _inputStreamWriter = Process.StandardInput;
+            StreamWriter _inputStreamWriter = Process.StandardInput;
 
-                // Feed into stdin stream
-                _inputStreamWriter.WriteLine(content);
-                _inputStreamWriter.Flush();
-            }
+            // Feed into stdin stream
+            _inputStreamWriter.WriteLine(content);
+            _inputStreamWriter.Flush();
         }
     }
 }
