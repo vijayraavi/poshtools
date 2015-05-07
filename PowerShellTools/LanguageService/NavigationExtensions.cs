@@ -34,17 +34,18 @@ namespace PowerShellTools.LanguageService
                 else
                 {
                     definition = script.Find(node =>
+                    {
+                        if (node is FunctionDefinitionAst)
                         {
-                            if (node is FunctionDefinitionAst)
-                            {
-                                var functionNameSpan = GetFunctionNameSpan(currentSnapshot, node as FunctionDefinitionAst);
-                                return caretPosition >= functionNameSpan.Start &&
-                                       caretPosition <= functionNameSpan.End;
-                            }
+                            var functionNameSpan = GetFunctionNameSpan(node as FunctionDefinitionAst);
+                            return functionNameSpan.HasValue &&
+                                   caretPosition >= functionNameSpan.Value.Start &&
+                                   caretPosition <= functionNameSpan.Value.End;
+                        }
 
-                            return false;
-                        }, true) as FunctionDefinitionAst;
-                    
+                        return false;
+                    }, true) as FunctionDefinitionAst;
+
                     if (definition != null)
                     {
                         return new List<FunctionDefinitionAst>() { definition };
@@ -63,13 +64,14 @@ namespace PowerShellTools.LanguageService
         /// </summary>
         public static void NavigateToFunctionDefinition(ITextView textView, FunctionDefinitionAst definition)
         {
-            var functionNameSpan = GetFunctionNameSpan(textView.TextBuffer.CurrentSnapshot, definition);
+            var functionNameSpan = GetFunctionNameSpan(definition);
 
-            if (functionNameSpan.Start >= 0 &&  functionNameSpan.End <= textView.TextBuffer.CurrentSnapshot.Length)
+            if (functionNameSpan.HasValue && functionNameSpan.Value.Start >= 0 && functionNameSpan.Value.End <= textView.TextBuffer.CurrentSnapshot.Length)
             {
-                textView.Caret.MoveTo(new SnapshotPoint(textView.TextBuffer.CurrentSnapshot, functionNameSpan.End));
-                textView.Selection.Select(functionNameSpan, false);
-                textView.ViewScroller.EnsureSpanVisible(functionNameSpan, EnsureSpanVisibleOptions.AlwaysCenter);
+                var snapshotSpan = new SnapshotSpan(textView.TextBuffer.CurrentSnapshot, functionNameSpan.Value);
+                textView.Caret.MoveTo(new SnapshotPoint(textView.TextBuffer.CurrentSnapshot, snapshotSpan.End));
+                textView.Selection.Select(snapshotSpan, false);
+                textView.ViewScroller.EnsureSpanVisible(snapshotSpan, EnsureSpanVisibleOptions.AlwaysCenter);
                 ((Control)textView).Focus();
             }
         }
@@ -86,15 +88,23 @@ namespace PowerShellTools.LanguageService
             ((Control)textView).Focus();
         }
 
-        private static SnapshotSpan GetFunctionNameSpan(ITextSnapshot currentSnapshot, FunctionDefinitionAst definition)
+        /// <summary>
+        /// Returns the span containing the function definition name
+        /// </summary>
+        public static Span? GetFunctionNameSpan(FunctionDefinitionAst definition)
         {
-            // To find the start of the name, we look for the first occurence of the name after the first white space char
-            var firstWhiteSpaceChar = definition.Extent.Text.IndexOf(definition.Extent.Text.FirstOrDefault(c => char.IsWhiteSpace(c)));
+            if (definition != null)
+            {
+                // To find the function name, we look for the last instance of the name before the body or parameters are defined
+                var paramOrBodyStart = definition.Extent.Text.IndexOf(definition.Extent.Text.FirstOrDefault(c => c.Equals('(') || c.Equals('{')));
+                var nameStart = definition.Extent.Text.Substring(0, paramOrBodyStart).LastIndexOf(definition.Name);
+                if (nameStart >= 0)
+                {
+                    return new Span(definition.Extent.StartOffset + nameStart, definition.Name.Length);
+                }
+            }
 
-            Debug.Assert(firstWhiteSpaceChar >= 0, "Function definition does not have any whitespace - could not find function name.  This should never happen.");
-
-            var functionNameStart = definition.Extent.StartOffset + definition.Extent.Text.IndexOf(definition.Name, firstWhiteSpaceChar);
-            return new SnapshotSpan(currentSnapshot, functionNameStart, definition.Name.Length);
+            return null;
         }
 
         private static IEnumerable<FunctionDefinitionAst> FindDefinition(CommandAst reference)

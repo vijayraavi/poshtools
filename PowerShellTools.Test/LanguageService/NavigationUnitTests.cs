@@ -126,6 +126,31 @@ namespace PowerShellTools.Test.LanguageService
             ValidateDefinitions(script);
         }
 
+        [TestMethod]
+        public void GetFunctionNameSpan()
+        {
+            ValidateFunctionNameSpan("filter filt {}", new Span(7, 4));
+            ValidateFunctionNameSpan("function func ($funcVar) {}", new Span(9, 4));
+            ValidateFunctionNameSpan("class Animal { Animal() {} }", new Span(15, 6));
+        }
+
+        private void ValidateFunctionNameSpan(string mockedScript, Span expectedResult)
+        {
+            var generatedAst = GenerateAst(mockedScript);
+            var functionDefinition = generatedAst.Find(ast => ast is FunctionDefinitionAst, true) as FunctionDefinitionAst;
+            var functionNameSpan = NavigationExtensions.GetFunctionNameSpan(functionDefinition);
+
+            if (functionDefinition == null)
+            {
+                // If functionDefinition is null, that means the test is running with a version of PowerShell that doesn't support classes, so span should be null
+                Assert.IsNull(functionNameSpan);
+            }
+            else
+            {
+                Assert.AreEqual(expectedResult, functionNameSpan);
+            }
+        }
+
         private struct ScriptSectionMock
         {
             public string Code;
@@ -164,9 +189,7 @@ namespace PowerShellTools.Test.LanguageService
 
                 for (var i = start; i < previousCodeLength + scriptSection.Code.Length + includeEnd; i++)
                 {
-                    Token[] generatedTokens;
-                    ParseError[] errors;
-                    var generatedAst = Parser.ParseInput(mockedScript, out generatedTokens, out errors);
+                    var generatedAst = GenerateAst(mockedScript);
                     var actualVals = NavigationExtensions.FindFunctionDefinitions(generatedAst, textSnapshotMock, i);
 
                     if (scriptSection.ExpectedValues == null)
@@ -195,6 +218,13 @@ namespace PowerShellTools.Test.LanguageService
             var textSnapshotMock = new Mock<ITextSnapshot>();
             textSnapshotMock.Setup(t => t.Length).Returns(mockedScript.Length);
             return textSnapshotMock.Object;
+        }
+
+        private static Ast GenerateAst(string script)
+        {
+            Token[] generatedTokens;
+            ParseError[] errors;
+            return Parser.ParseInput(script, out generatedTokens, out errors);
         }
     }
 }
