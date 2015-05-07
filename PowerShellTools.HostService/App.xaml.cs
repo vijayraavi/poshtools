@@ -50,7 +50,7 @@ namespace PowerShellTools.HostService
             }
 
             int vsProcessId;
-            if (!Int32.TryParse(e.Args[1].Remove(0, Constants.VsProcessIdArg.Length),
+            if (!int.TryParse(e.Args[1].Remove(0, Constants.VsProcessIdArg.Length),
                             NumberStyles.None,
                             CultureInfo.InvariantCulture,
                             out vsProcessId))
@@ -112,10 +112,7 @@ namespace PowerShellTools.HostService
                         });
                 }
             }
-            catch (Exception)
-            {
-                // The process need to wait for the parent process to exit.  
-            }
+            catch { }
         }
 
         private static void CreatePowershellIntelliSenseServiceHost(Uri baseAddress, NetNamedPipeBinding binding)

@@ -28,13 +28,13 @@ namespace PowerShellTools.HostService
         private static extern IntPtr GetConsoleWindow();
 
         [DllImport(Kernel32_DllName)]
-        public static extern bool AttachConsole(uint dwProcessId);
+        private static extern bool AttachConsole(uint dwProcessId);
 
         /// <summary>
         /// Check if there is already a console attached.
         /// One application can only have one console attached.
         /// </summary>
-        public static bool HasConsole
+        internal static bool HasConsole
         {
             get { return GetConsoleWindow() != IntPtr.Zero; }
         }
@@ -42,7 +42,7 @@ namespace PowerShellTools.HostService
         /// <summary>
         /// Creates a new console instance if the process is not attached to a console already.
         /// </summary>
-        public static void AttachConsole()
+        internal static void AttachConsole()
         {
             if (!HasConsole)
             {
@@ -77,7 +77,7 @@ namespace PowerShellTools.HostService
         /// <returns>Console process created</returns>
         private static Process CreateConsole()
         {
-            Process p = new Process(); ;
+            Process p = new Process();
 
             try
             {

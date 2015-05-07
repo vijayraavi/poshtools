@@ -6,4 +6,4 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PowerShellTools Host Service Console")]
-[assembly: AssemblyDescription("Console of host Service for the PowerShell Tools in Visual Studio")]
+[assembly: AssemblyDescription("Host Service Console for the PowerShell Tools in Visual Studio")]

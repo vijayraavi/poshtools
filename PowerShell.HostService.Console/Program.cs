@@ -10,16 +10,22 @@ using System.Threading.Tasks;
 
 namespace PowerShell.HostService.Console
 {
-    class Program
+    internal sealed class Program
     {
         private static AutoResetEvent _processExitEvent = new AutoResetEvent(false);
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             try
             {
+                // Process command line args
+                if (args.Length != 1 || !(args[0].StartsWith(Constants.ConsoleProcessIdArg, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+
                 int _powerShellHostProcessId;
-                if (!Int32.TryParse(args[0].Remove(0, Constants.ConsoleProcessIdArg.Length),
+                if (!int.TryParse(args[0].Remove(0, Constants.ConsoleProcessIdArg.Length),
                                 NumberStyles.None,
                                 CultureInfo.InvariantCulture,
                                 out _powerShellHostProcessId))
@@ -44,9 +50,7 @@ namespace PowerShell.HostService.Console
 
                 _processExitEvent.WaitOne();
             }
-            catch (Exception)
-            {
-            }
+            catch { }
         }
     }
 }
