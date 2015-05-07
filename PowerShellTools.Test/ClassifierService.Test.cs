@@ -282,14 +282,16 @@ namespace PowerShellTools.Test
 
             var infos = _classifierService.ClassifyTokens(tokens, 0).ToArray();
 
-            Assert.AreEqual(expectedType, infos[targetToken].ClassificationType.Classification);
+            var actual = infos[targetToken].ClassificationType.Classification;
+
+            Assert.AreEqual(expectedType, actual, string.Format("{0} classifcation type expected, got {1}.", expectedType, actual));
         }
 
         private void TypeSetupHelper(out Mock<IClassificationType> type, string classificationType)
         {
             type = new Mock<IClassificationType>();
             type.Setup(m => m.Classification).Returns(classificationType);
-            _classificationRegistry.Setup(m => m.GetClassificationType(classificationType)).Returns(type.Object);            
+            _classificationRegistry.Setup(m => m.GetClassificationType(classificationType)).Returns(type.Object);
         }
     }
 }
