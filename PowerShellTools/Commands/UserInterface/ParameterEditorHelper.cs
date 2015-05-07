@@ -66,13 +66,13 @@ namespace PowerShellTools.Commands.UserInterface
                         case ParameterType.Decimal:
 
                         case ParameterType.Array:
+                        case ParameterType.Unknown:
                             scriptArgs += WrapParameterName(p.Name);
                             scriptArgs += " " + p.Value;
                             break;
 
                         case ParameterType.Char:
                         case ParameterType.String:
-                        case ParameterType.Unknown:
                             scriptArgs += WrapParameterName(p.Name);
                             scriptArgs += p.Value is string ? WrapStringValueWithQuotes(p.Value as string) : p.Value;
                             break;
