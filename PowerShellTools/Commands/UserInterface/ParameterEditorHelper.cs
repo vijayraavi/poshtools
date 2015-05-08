@@ -29,9 +29,12 @@ namespace PowerShellTools.Commands.UserInterface
         private static bool? ShowParameterEditor(ParamBlockAst paramBlockAst, out string scriptArgs)
         {
             scriptArgs = String.Empty;
-            var parameters = PowerShellParseUtilities.ParseParameters(paramBlockAst);
-            var commonParameters = GenerateCommonParameters();
-            var viewModel = new ParameterEditorViewModel(parameters, commonParameters);
+            ParameterEditorModel model = new ParameterEditorModel()
+            {
+                Parameters = PowerShellParseUtilities.ParseParameters(paramBlockAst),
+                CommonParameters = GenerateCommonParameters()
+            };
+            var viewModel = new ParameterEditorViewModel(model);
             var view = new ParameterEditorView(viewModel);
             bool? wasOkClicked = view.ShowModal();
             if (wasOkClicked != true)
@@ -39,7 +42,7 @@ namespace PowerShellTools.Commands.UserInterface
                 return wasOkClicked;
             }
             
-            foreach (var p in parameters)
+            foreach (var p in model.Parameters)
             {
                 if (p.Value != null)
                 {
@@ -79,7 +82,7 @@ namespace PowerShellTools.Commands.UserInterface
                 }
             }
 
-            foreach(var p in commonParameters)
+            foreach(var p in model.CommonParameters)
             {
                 if (p.Value != null)
                 {

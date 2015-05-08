@@ -16,25 +16,23 @@ namespace PowerShellTools.Commands.UserInterface
     /// </summary>
     internal sealed class ParameterEditorViewModel : ObservableObject, IDisposable
     {
-        private IList<ScriptParameterViewModel> _parameters;
-        private IList<ScriptParameterViewModel> _commonParameters;
+        private ParameterEditorModel _model;
 
         private bool _isSaveEnabled;
         private System.Windows.Input.ICommand _saveCommand;
         private readonly string _parameterEditorTip = Resources.ParameterEditorTipLabel;
 
-        public ParameterEditorViewModel(IList<ScriptParameterViewModel> parameters, IList<ScriptParameterViewModel> commonParameters)
+        public ParameterEditorViewModel(ParameterEditorModel model)
         {
-            _parameters = Arguments.ValidateNotNull(parameters, "parameters");
-            _commonParameters = Arguments.ValidateNotNull(commonParameters, "commonParameters");
+            _model = Arguments.ValidateNotNull(model, "model");
 
             //Hook up property change events to listen to changes in parameter files            
-            foreach (var p in parameters)
+            foreach (var p in _model.Parameters)
             {
                 p.PropertyChanged += OnParameterChanged;
             }
 
-            foreach (var p in commonParameters)
+            foreach (var p in _model.CommonParameters)
             {
                 p.PropertyChanged += OnParameterChanged;
             }
@@ -44,7 +42,7 @@ namespace PowerShellTools.Commands.UserInterface
         {
             get
             {
-                return _parameters;
+                return _model.Parameters;
             }
         }
 
@@ -52,7 +50,7 @@ namespace PowerShellTools.Commands.UserInterface
         {
             get
             {
-                return _commonParameters;
+                return _model.CommonParameters;
             }
         }
 
@@ -75,7 +73,7 @@ namespace PowerShellTools.Commands.UserInterface
         {
             get
             {
-                bool errorsExist = _parameters.Any(p => p.HasError);
+                bool errorsExist = _model.Parameters.Any(p => p.HasError) || _model.CommonParameters.Any(p => p.HasError);
 
                 _isSaveEnabled = !errorsExist;
                 return _isSaveEnabled;
@@ -131,12 +129,12 @@ namespace PowerShellTools.Commands.UserInterface
 
         public void Dispose()
         {
-            foreach (var p in _parameters)
+            foreach (var p in _model.Parameters)
             {
                 p.PropertyChanged -= OnParameterChanged;
             }
 
-            foreach (var p in _commonParameters)
+            foreach (var p in _model.CommonParameters)
             {
                 p.PropertyChanged -= OnParameterChanged;
             }
