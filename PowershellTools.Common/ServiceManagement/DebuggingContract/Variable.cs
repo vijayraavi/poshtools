@@ -27,13 +27,17 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         [DataMember]
         public bool IsPSObject { get; set; }
 
-        public Variable(string varName, string varVal, string type, bool isEnumerable, bool isPSObject)
+        [DataMember]
+        public bool IsEnum { get; set; }
+
+        public Variable(string varName, string varVal, string type, bool isEnumerable, bool isPSObject, bool isEnum)
         {
             VarName = varName;
             VarValue = varVal;
             Type = type;
             IsEnumerable = isEnumerable;
             IsPSObject = isPSObject;
+            IsEnum = isEnum;
         }
 
         public Variable(PSVariable var)
@@ -45,6 +49,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
                 Type = var.Value == null ? string.Empty : var.Value.GetType().ToString();
                 IsEnumerable = (var.Value is IEnumerable);
                 IsPSObject = (var.Value is PSObject);
+                IsEnum = (var.Value is Enum);
             }
         }
 
