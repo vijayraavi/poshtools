@@ -258,20 +258,13 @@ namespace PowerShellTools.Test
         [TestMethod]
         public void ShouldClassifyClass()
         {
-            var script = @"class A { }";
-
-            // "The 'class' token is a keyword in PowerShell.
-            ClassifyPowershellTokensTestHelper(script, 0, Classifications.PowerShellKeyword);
-        }
-
-        [TestMethod]
-        public void ShouldClassifyClassInheritanceToken()
-        {
             var script = @"class A { }
                            class B : A { }";
 
-            // The : token is currently an 'unknown' token in the PowerShell libraries.
-            ClassifyPowershellTokensTestHelper(script, 7, Classifications.PowerShellUnknown);
+            // "The 'class' token is a keyword in PowerShell.
+            ClassifyPowershellTokensTestHelper(script, 0, Classifications.PowerShellKeyword);
+            ClassifyPowershellTokensTestHelper(script, 6, Classifications.PowerShellType);
+            ClassifyPowershellTokensTestHelper(script, 8, Classifications.PowerShellType);
         }
 
         private void ClassifyPowershellTokensTestHelper(string script, int targetToken, string expectedType)
