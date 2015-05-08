@@ -131,20 +131,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static void PowerShellHostProcessOutput(string outputData)
         {
-            if (outputData.StartsWith(string.Format(DebugEngineConstants.PowerShellHostProcessLogTag, PowershellHostProcessHelper.EndPointGuid), StringComparison.OrdinalIgnoreCase))
-            {
-                // debug data
-                Log.Debug(outputData);
-            }
-            else
-            {
-                // app data
-                if (PowerShellToolsPackage.Debugger != null &&
-                    PowerShellToolsPackage.Debugger.HostUi != null)
-                {
-                    PowerShellToolsPackage.Debugger.HostUi.VsOutputString(outputData + Environment.NewLine);
-                }
-            }
+            Log.Debug(outputData);
         }
 
         private static void MakeTopMost(IntPtr hWnd)

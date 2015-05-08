@@ -386,13 +386,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                             _currentPowerShell.AddCommand("out-default");
                             _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                            
+
                             AppRunning = true;
-                            
+
                             _currentPowerShell.Invoke();
-                            
+
                             AppRunning = false;
-                            
+
                             error = _currentPowerShell.HadErrors;
                         }
                     }
@@ -477,7 +477,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                     if (dyVar.Value == null)
                     {
-                        variables.Add(new Variable(dyVar.Name, string.Empty, string.Empty, false, false));
+                        variables.Add(
+                            new Variable(
+                                dyVar.Name,
+                                string.Empty,
+                                string.Empty,
+                                false,  // isEnumerale
+                                false,  // isPSObject
+                                false));  // isEnum
                     }
                     else
                     {
@@ -511,7 +518,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 (string)dyVar.Name,
                                 dyVar.Value.ToString(),
                                 ScopedItemOptions.None);
-                            variables.Add(new Variable(psVar.Name, psVar.Value.ToString(), dyVar.Value.GetType().ToString(), false, false));
+                            variables.Add(
+                                new Variable(
+                                    psVar.Name,
+                                    psVar.Value.ToString(),
+                                    dyVar.Value.GetType().ToString(),
+                                    false,  // isEnumerale
+                                    false,  // isPSObject
+                                    false));  // isEnum
                         }
                     }
                 }
@@ -557,7 +571,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         obj = psObj.ImmediateBaseObject;
                     }
 
-                    expandedVariable.Add(new Variable(String.Format("[{0}]", i), obj.ToString(), obj.GetType().ToString(), obj is IEnumerable, obj is PSObject));
+                    expandedVariable.Add(
+                        new Variable(
+                            String.Format("[{0}]", i), 
+                            obj.ToString(), 
+                            obj.GetType().ToString(), 
+                            obj is IEnumerable, 
+                            obj is PSObject, 
+                            obj is Enum));
 
                     if (!obj.GetType().IsPrimitive)
                     {
@@ -596,7 +617,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         object val = propertyInfo.GetValue(psVariable, null);
                         if (val != null)
                         {
-                            expandedVariable.Add(new Variable(propertyInfo.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
+                            expandedVariable.Add(
+                                new Variable(
+                                    propertyInfo.Name, 
+                                    val.ToString(), 
+                                    val.GetType().ToString(), 
+                                    val is IEnumerable, 
+                                    val is PSObject, 
+                                    val is Enum));
 
                             if (!val.GetType().IsPrimitive)
                             {
@@ -652,7 +680,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         val = "Failed to evaluate value.";
                     }
 
-                    propsVariable.Add(new Variable(prop.Name, val.ToString(), val.GetType().ToString(), val is IEnumerable, val is PSObject));
+                    propsVariable.Add(
+                        new Variable(
+                            prop.Name, 
+                            val.ToString(), 
+                            val.GetType().ToString(), 
+                            val is IEnumerable, 
+                            val is PSObject, 
+                            val is Enum));
 
                     if (!val.GetType().IsPrimitive)
                     {
@@ -683,9 +718,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     {
                         callStackFrames.Add(
                             new CallStack(
-                                frame.ScriptName, 
-                                frame.FunctionName, 
-                                frame.Position.StartLineNumber, 
+                                frame.ScriptName,
+                                frame.FunctionName,
+                                frame.Position.StartLineNumber,
                                 frame.Position.EndLineNumber,
                                 frame.Position.StartColumnNumber,
                                 frame.Position.EndColumnNumber));
