@@ -251,6 +251,7 @@
     <Compile Include="Commands\UserInterface\Converters\ErrorIconConverter.cs" />
     <Compile Include="Commands\UserInterface\Converters\IntValueConverter.cs" />
     <Compile Include="Commands\UserInterface\Converters\LongValueConverter.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorModel.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorTemplateSelector.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorViewModel.cs" />
     <Compile Include="Commands\UserInterface\ParameterEditorHelper.cs" />

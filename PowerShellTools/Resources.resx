@@ -390,4 +390,7 @@ Would you like to download now?</value>
   <data name="DropDownScriptName" xml:space="preserve">
     <value>(script)</value>
   </data>
+  <data name="CommonParametersTipLabel" xml:space="preserve">
+    <value>Common Parameters</value>
+  </data>
 </root>

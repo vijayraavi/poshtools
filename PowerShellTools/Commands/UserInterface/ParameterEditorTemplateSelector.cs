@@ -26,6 +26,11 @@ namespace PowerShellTools.Commands.UserInterface
         public DataTemplate ChoiceTemplate { get; set; }
 
         /// <summary>
+        /// The DataTemplate to use for Switch parameters
+        /// </summary>
+        public DataTemplate SwitchTemplate { get; set; }
+
+        /// <summary>
         /// The DataTemplate to use for byte parameters
         /// </summary>
         public DataTemplate ByteTemplate { get; set; }
@@ -59,8 +64,7 @@ namespace PowerShellTools.Commands.UserInterface
                             goto case ParameterType.Unknown;
                         
                         case ParameterType.Switch:
-                            Debug.Fail("Switches should have allowed choices");
-                            goto case ParameterType.Unknown;
+                            return SwitchTemplate;
 
                         case ParameterType.Byte:
                             return ByteTemplate;

@@ -16,18 +16,23 @@ namespace PowerShellTools.Commands.UserInterface
     /// </summary>
     internal sealed class ParameterEditorViewModel : ObservableObject, IDisposable
     {
-        private IList<ScriptParameterViewModel> _parameters;
+        private ParameterEditorModel _model;
 
         private bool _isSaveEnabled;
         private System.Windows.Input.ICommand _saveCommand;
         private readonly string _parameterEditorTip = Resources.ParameterEditorTipLabel;
 
-        public ParameterEditorViewModel(IList<ScriptParameterViewModel> parameterList)
+        public ParameterEditorViewModel(ParameterEditorModel model)
         {
-            _parameters = Arguments.ValidateNotNull(parameterList, "parameterList");
+            _model = Arguments.ValidateNotNull(model, "model");
 
             //Hook up property change events to listen to changes in parameter files            
-            foreach (var p in parameterList)
+            foreach (var p in _model.Parameters)
+            {
+                p.PropertyChanged += OnParameterChanged;
+            }
+
+            foreach (var p in _model.CommonParameters)
             {
                 p.PropertyChanged += OnParameterChanged;
             }
@@ -37,7 +42,15 @@ namespace PowerShellTools.Commands.UserInterface
         {
             get
             {
-                return _parameters;
+                return _model.Parameters;
+            }
+        }
+
+        public IEnumerable<ScriptParameterViewModel> CommonParameters
+        {
+            get
+            {
+                return _model.CommonParameters;
             }
         }
 
@@ -60,7 +73,7 @@ namespace PowerShellTools.Commands.UserInterface
         {
             get
             {
-                bool errorsExist = _parameters.Any(p => p.HasError);
+                bool errorsExist = _model.Parameters.Any(p => p.HasError) || _model.CommonParameters.Any(p => p.HasError);
 
                 _isSaveEnabled = !errorsExist;
                 return _isSaveEnabled;
@@ -116,7 +129,12 @@ namespace PowerShellTools.Commands.UserInterface
 
         public void Dispose()
         {
-            foreach (var p in _parameters)
+            foreach (var p in _model.Parameters)
+            {
+                p.PropertyChanged -= OnParameterChanged;
+            }
+
+            foreach (var p in _model.CommonParameters)
             {
                 p.PropertyChanged -= OnParameterChanged;
             }
@@ -138,6 +156,77 @@ namespace PowerShellTools.Commands.UserInterface
 #if DEBUG
                     ParameterEditorTip = "This is the designer view model",
                     Parameters = new ScriptParameterViewModel[] {
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="EmptySwitch", Type=DataTypeConstants.SwitchType })
+                        { 
+                            Value=true
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="EmptySwitch", Type=DataTypeConstants.SwitchType })
+                        { 
+                            Value=false
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkEmpty", Type="string" })
+                        { 
+                            Value="",
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkNull", Type="string" })
+                        { 
+                            Value=null,
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkNonNull", Type="string" })
+                        { 
+                            Value="hi"
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="BoolWithWatermark", Type="bool" })
+                        { 
+                            Value=null
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="IntWithWatermark", Type="int" })
+                        { 
+                            Value=null
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="GoodString", Type="string" })
+                        { 
+                            Value="string value #1" 
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="NullString", Type="string" })
+                        { 
+                            Value=null
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="EmptyString", Type="string" })
+                        { 
+                            Value="" 
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="GoodInt", Type="int" })
+                        { 
+                            Value=314
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="BadInt1", Type="int" })
+                        { 
+                            Value="bad int"
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="NullInt", Type="int" })
+                        { 
+                            Value=null
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="TrueBoolean", Type="bool" })
+                        { 
+                            Value=true
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="BadBoolean1", Type="bool" })
+                        { 
+                            Value="bad bool" 
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="NullBoolean", Type="bool" })
+                        { 
+                            Value=null
+                        },
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="EmptyBoolean", Type="bool" })
+                        { 
+                            Value=null
+                        }
+                        
+                    },
+                    CommonParameters = new ScriptParameterViewModel[] {
                         new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkEmpty", Type="string" })
                         { 
                             Value="",

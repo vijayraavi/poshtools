@@ -19,6 +19,7 @@ namespace PowerShellTools.Commands.UserInterface
         public const string DecimalType = "System.Decimal";
         public const string CharType = "System.Char";
         public const string ByteType = "System.Byte";
+        public const string EnumType = "System.Enum";
 
         public const string ArrayType = "[]";
 
