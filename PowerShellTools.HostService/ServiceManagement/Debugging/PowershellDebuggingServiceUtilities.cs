@@ -219,7 +219,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     ServiceCommon.Log("Providing $dte variable to the local runspace.");
 
-                    DTE2 dte = DTEManager.GetDTE(Program.VsProcessId);
+                    DTE2 dte = DTEManager.GetDTE(App.VsProcessId);
 
                     if (dte != null)
                     {

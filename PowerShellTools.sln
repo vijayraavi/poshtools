@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools", "PowerShellTools\PowerShellTools.csproj", "{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}"
 EndProject
@@ -11,12 +11,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.TestAdapter
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Repl", "ReplWindow\PowerShellTools.Repl.csproj", "{6F6BDC5F-B24C-4AA7-8C81-C9C7F406E50A}"
 	ProjectSection(ProjectDependencies) = postProject
-		{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8} = {C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}
+		{E84FC12D-897F-4244-B44C-B42839D677A4} = {E84FC12D-897F-4244-B44C-B42839D677A4}
+		{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9} = {8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}
+		{528D75E0-71D8-408C-AEAE-485D84E08BD2} = {528D75E0-71D8-408C-AEAE-485D84E08BD2}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Common", "PowershellTools.Common\PowerShellTools.Common.csproj", "{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostService", "PowershellTools.HostService\PowerShellTools.HostService.csproj", "{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostService.UnitTest", "PowerShellTools.HostService.UnitTest\PowerShellTools.HostService.UnitTest.csproj", "{D5C4094D-04D7-4490-B506-22B9E9909EE4}"
 EndProject
@@ -40,7 +40,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostServicex86", "PowerShellTools.HostServicex86\PowerShellTools.HostServicex86.csproj", "{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostService", "PowerShellTools.HostService\PowerShellTools.HostService.csproj", "{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShell.HostService.Console", "PowerShell.HostService.Console\PowerShell.HostService.Console.csproj", "{E84FC12D-897F-4244-B44C-B42839D677A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostService.x86", "PowerShellTools.HostService.x86\PowerShellTools.HostService.x86.csproj", "{528D75E0-71D8-408C-AEAE-485D84E08BD2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,10 +72,6 @@ Global
 		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D5C4094D-04D7-4490-B506-22B9E9909EE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D5C4094D-04D7-4490-B506-22B9E9909EE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5C4094D-04D7-4490-B506-22B9E9909EE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -80,10 +80,18 @@ Global
 		{103C9AF2-F8A5-4BF0-A341-A43147C320AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{103C9AF2-F8A5-4BF0-A341-A43147C320AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{103C9AF2-F8A5-4BF0-A341-A43147C320AA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B4F4E6A1-7881-454B-8E3E-C22E589E52BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B0F3DB2-AD3D-4D3A-85C3-4850263054E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E84FC12D-897F-4244-B44C-B42839D677A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E84FC12D-897F-4244-B44C-B42839D677A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E84FC12D-897F-4244-B44C-B42839D677A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E84FC12D-897F-4244-B44C-B42839D677A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{528D75E0-71D8-408C-AEAE-485D84E08BD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{528D75E0-71D8-408C-AEAE-485D84E08BD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{528D75E0-71D8-408C-AEAE-485D84E08BD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{528D75E0-71D8-408C-AEAE-485D84E08BD2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

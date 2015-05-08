@@ -188,7 +188,7 @@ namespace PowerShellTools.Project
             return VSConstants.S_OK;
         }
 
-        public int LaunchFile(string file, bool debug)
+        public int LaunchFile(string file, bool debug, string args = null)
         {
             if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
 
@@ -208,6 +208,11 @@ namespace PowerShellTools.Project
             var shell = (IVsUIShell)Package.GetGlobalService(typeof(IVsUIShell));
 
             var info = new VsDebugTargetInfo();
+            if (args != null)
+            {
+                info.bstrArg = args;
+            }
+            
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
 

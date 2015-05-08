@@ -24,7 +24,7 @@ using PowerShellTools.Common;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
-    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
+    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     [PowerShellServiceHostBehavior]
     public partial class PowerShellDebuggingService : IPowershellDebuggingService
     {
@@ -386,8 +386,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                             _currentPowerShell.AddCommand("out-default");
                             _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-
+                            
+                            AppRunning = true;
+                            
                             _currentPowerShell.Invoke();
+                            
+                            AppRunning = false;
+                            
                             error = _currentPowerShell.HadErrors;
                         }
                     }
