@@ -30,7 +30,8 @@ namespace PowerShellTools.Commands.UserInterface
         {
             scriptArgs = String.Empty;
             var parameters = PowerShellParseUtilities.ParseParameters(paramBlockAst);
-            var viewModel = new ParameterEditorViewModel(parameters);
+            var commonParameters = GenerateCommonParameters();
+            var viewModel = new ParameterEditorViewModel(parameters, commonParameters);
             var view = new ParameterEditorView(viewModel);
             bool? wasOkClicked = view.ShowModal();
             if (wasOkClicked != true)
@@ -45,18 +46,15 @@ namespace PowerShellTools.Commands.UserInterface
                     switch(p.Type)
                     {
                         case ParameterType.Boolean:
-                            string value = "$" + p.Value.ToString();
                             scriptArgs += WrapParameterName(p.Name);
-                            scriptArgs += " " + value;
+                            scriptArgs += String.Format(" ${0}", p.Value.ToString());
                             break;
 
                         case ParameterType.Switch:
-                            if (((bool)p.Value) == true)
-                            {
-                                scriptArgs += WrapParameterName(p.Name);
-                            }
+                            scriptArgs += WrapParameterName(p.Name);
+                            scriptArgs += String.Format(":${0}", p.Value.ToString());                            
                             break;
-
+                        
                         case ParameterType.Byte:
                         case ParameterType.Int32:
                         case ParameterType.Int64:
@@ -68,13 +66,41 @@ namespace PowerShellTools.Commands.UserInterface
                         case ParameterType.Array:
                         case ParameterType.Unknown:
                             scriptArgs += WrapParameterName(p.Name);
-                            scriptArgs += " " + p.Value;
+                            scriptArgs += WrapValue(p.Value.ToString());
                             break;
 
+                        case ParameterType.Enum:
                         case ParameterType.Char:
                         case ParameterType.String:
                             scriptArgs += WrapParameterName(p.Name);
                             scriptArgs += p.Value is string ? WrapStringValueWithQuotes(p.Value as string) : p.Value;
+                            break;
+                    }
+                }
+            }
+
+            foreach(var p in commonParameters)
+            {
+                if (p.Value != null)
+                {
+                    switch (p.Type)
+                    {
+                        case ParameterType.Switch:
+                            scriptArgs += WrapParameterName(p.Name);
+                            scriptArgs += String.Format(":${0}", p.Value.ToString());
+                            break;
+
+                        case ParameterType.Enum:
+                            if (!String.IsNullOrEmpty(p.Value as string))
+                            {
+                                scriptArgs += WrapParameterName(p.Name);
+                                scriptArgs += WrapValue(p.Value as string);
+                            }                            
+                            break;
+
+                        default:
+                            scriptArgs += WrapParameterName(p.Name);
+                            scriptArgs += WrapValue(p.Value as string);
                             break;
                     }
                 }
@@ -127,6 +153,11 @@ namespace PowerShellTools.Commands.UserInterface
             return String.Format(" -{0}", name);
         }
 
+        private static string WrapValue(string value)
+        {
+            return String.Format(" {0}", value);
+        }
+
         private static string WrapStringValueWithQuotes(string value)
         {
             if (value.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && value.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
@@ -136,5 +167,57 @@ namespace PowerShellTools.Commands.UserInterface
             return String.Format(" \"{0}\"", value);
         }
 
+        private static IList<ScriptParameterViewModel> GenerateCommonParameters()
+        {
+            return new List<ScriptParameterViewModel>()
+            {
+                // Debug
+                new ScriptParameterViewModel(
+                    new ScriptParameter("Debug", DataTypeConstants.SwitchType, null, new HashSet<object>())
+                    ),
+
+                // ErrorAction
+                new ScriptParameterViewModel(
+                    new ScriptParameter("ErrorAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>
+                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
+                    ),
+
+                // ErrorVariable
+                new ScriptParameterViewModel(
+                    new ScriptParameter("ErrorVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ),
+
+                // OutBuffer
+                new ScriptParameterViewModel(
+                    new ScriptParameter("OutBuffer", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ),
+
+                // OutVariable
+                new ScriptParameterViewModel(
+                    new ScriptParameter("OutVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ),
+
+                // PipelineVariable
+                new ScriptParameterViewModel(
+                    new ScriptParameter("PipelineVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ),
+
+                //Verbose
+                new ScriptParameterViewModel(
+                    new ScriptParameter("Verbose", DataTypeConstants.SwitchType, null, new HashSet<object>())
+                    ),
+
+                // WarningAction
+                new ScriptParameterViewModel(
+                    new ScriptParameter("WarningAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>()
+                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
+                    ),
+
+                // WarningVariable
+                new ScriptParameterViewModel(
+                    new ScriptParameter("WarningVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    )
+            };
+        }
     }
 }

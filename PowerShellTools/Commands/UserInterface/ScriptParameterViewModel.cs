@@ -32,6 +32,10 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 this.Type = ParameterType.Switch;
             }
+            else if (DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.EnumType))
+            {
+                this.Type = ParameterType.Enum;
+            }
             else if (DoParameterTypeNamesMatch(parameterDefinition.Type, DataTypeConstants.ByteType))
             {
                 this.Type = ParameterType.Byte;
@@ -166,8 +170,7 @@ namespace PowerShellTools.Commands.UserInterface
                 {
                     _allowedValues.AddRange(ParameterDefinition.AllowedValues);
                 }
-                else if (this.Type == ParameterType.Boolean ||
-                    this.Type == ParameterType.Switch)
+                else if (this.Type == ParameterType.Boolean)
                 {
                     _allowedValues.Add(true);
                     _allowedValues.Add(false);
@@ -276,6 +279,9 @@ namespace PowerShellTools.Commands.UserInterface
                 case ParameterType.Boolean:
                 case ParameterType.Switch:
                     return this.Value is bool;
+
+                case ParameterType.Enum:
+                    return this.AllowedValues.Contains(this.Value);
 
                 case ParameterType.Byte:
                     return this.Value is byte;
