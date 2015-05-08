@@ -279,8 +279,8 @@ namespace PowerShellTools.DebugEngine
 
         public int Next(uint celt, DEBUG_PROPERTY_INFO[] rgelt, out uint pceltFetched)
         {
-            Log.Debug("Next");
-            for (var i = 0; i < celt; i++)
+            Log.Debug("Next, base at" + _count.ToString());
+            for (var i = 0; i < celt && (int)(i +_count) < this.Count; i++)
             {
                 rgelt[i].bstrName = this[(int)(i + _count)].Name;
                 rgelt[i].bstrFullName = this[(int)(i + _count)].Name;
