@@ -19,10 +19,23 @@ namespace PowerShellTools.HostService.ServiceManagement
     [PowerShellServiceHostBehavior]
     public sealed class PowerShellIntelliSenseService : IPowershellIntelliSenseService
     {
-        private readonly Runspace _runspace = PowerShellDebuggingService.Runspace;
+        private readonly Runspace _testRunspace;
         private long _requestTrigger;
         private IIntelliSenseServiceCallback _callback;
         private static object _syncLock = new object();
+
+        private Runspace _runspace
+        {
+            get
+            {
+                if (_testRunspace != null)
+                {
+                    return _testRunspace;
+                }
+                return PowerShellDebuggingService.Runspace;
+            }
+            set { }
+        }
 
         /// <summary>
         /// Default ctor
@@ -37,8 +50,8 @@ namespace PowerShellTools.HostService.ServiceManagement
             : this()
         {
             _callback = callback;
-            _runspace = RunspaceFactory.CreateRunspace();
-            _runspace.Open();
+            _testRunspace = RunspaceFactory.CreateRunspace();
+            _testRunspace.Open();
         }
 
         #region IAutoCompletionService Members
