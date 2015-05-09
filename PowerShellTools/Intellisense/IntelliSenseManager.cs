@@ -656,7 +656,8 @@ namespace PowerShellTools.Intellisense
         private int GetPreviousBufferPosition(out ITextBuffer currentActiveBuffer)
         {
             int currentBufferPosition = Utilities.GetCurrentBufferPosition(_textView, out currentActiveBuffer);
-            return currentBufferPosition - 1;
+            // e.g., $dte. currentPosition = 5, what we really want to see is if 'e' is part of variable.
+            return currentBufferPosition - 2;
         }
 
         private static bool SpanArgumentsAreValid(ITextSnapshot snapshot, int start, int length)

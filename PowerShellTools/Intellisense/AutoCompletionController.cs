@@ -84,11 +84,9 @@ namespace PowerShellTools.Intellisense
             var command = (VSConstants.VSStd2KCmdID)nCmdID;
 
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
-                pguidCmdGroup != VSConstants.VSStd2K ||
+                IsUnhandledCommand(pguidCmdGroup, command) ||
                 !_textView.Selection.IsEmpty ||
-                Utilities.IsCaretInCommentArea(_textView) ||
-                (!(command == VSConstants.VSStd2KCmdID.BACKSPACE && this.IsLastCmdAutoComplete) && 
-                 IsInStringArea()))
+                Utilities.IsCaretInCommentArea(_textView))
             {
                 // Auto completion shouldn't take effect when
                 // 1. In automation function
@@ -103,6 +101,14 @@ namespace PowerShellTools.Intellisense
             if (command == VSConstants.VSStd2KCmdID.TYPECHAR)
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
+            }
+
+            if (IsInStringArea() &&
+                command != VSConstants.VSStd2KCmdID.BACKSPACE &&
+                typedChar != '\"' &&
+                typedChar != '\'')
+            {
+                return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             }
 
             return ProcessKeystroke(command, typedChar) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
@@ -126,7 +132,7 @@ namespace PowerShellTools.Intellisense
                         if (this.IsLastCmdAutoComplete && IsTypedCharEqualsNextChar(typedChar))
                         {
                             ProcessTypedRightBraceOrQuotes(typedChar);
-                            SetAutoCompleteState(false);
+                            _autoCompleteCount--;
                             return VSConstants.S_OK;
                         }
                         else
@@ -350,6 +356,31 @@ namespace PowerShellTools.Intellisense
                 _editorOperations.AddAfterTextBufferChangePrimitive();
                 undo.Complete();
             }
+        }
+
+        /// <summary>
+        /// Determines whether a command is unhandled.
+        /// </summary>
+        /// <param name="pguidCmdGroup">The GUID of the command group.</param>
+        /// <param name="command">The command.</param>
+        /// <returns>True if it is an unrecognized command.</returns>
+        private static bool IsUnhandledCommand(Guid pguidCmdGroup, VSConstants.VSStd2KCmdID command)
+        {
+            return (pguidCmdGroup != VSConstants.VSStd2K ||
+                    (command != VSConstants.VSStd2KCmdID.TYPECHAR &&
+                     command != VSConstants.VSStd2KCmdID.RETURN &&
+                     command != VSConstants.VSStd2KCmdID.DELETE &&
+                     command != VSConstants.VSStd2KCmdID.BACKSPACE &&
+                     command != VSConstants.VSStd2KCmdID.UNDO &&
+                     command != VSConstants.VSStd2KCmdID.CUT &&
+                     command != VSConstants.VSStd2KCmdID.COMMENT_BLOCK &&
+                     command != VSConstants.VSStd2KCmdID.COMMENTBLOCK &&
+                     command != VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK &&
+                     command != VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK &&
+                     command != VSConstants.VSStd2KCmdID.LEFT &&
+                     command != VSConstants.VSStd2KCmdID.RIGHT &&
+                     command != VSConstants.VSStd2KCmdID.UP &&
+                     command != VSConstants.VSStd2KCmdID.DOWN));
         }
     }
 }

@@ -179,7 +179,7 @@ namespace PowerShellTools.Intellisense
 
                 foreach (var token in filteredTokens)
                 {
-                    if (token.Extent.StartOffset <= position && position <= token.Extent.EndOffset)
+                    if (token.Extent.StartOffset <= position && position < token.Extent.EndOffset)
                     {
                         return true;
                     }
