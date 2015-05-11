@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace PowerShellTools.Commands.UserInterface
 
         }
 
-        public IList<ScriptParameterViewModel> Parameters { get; set; }
+        public ObservableCollection<ScriptParameterViewModel> Parameters { get; set; }
 
         public IList<ScriptParameterViewModel> CommonParameters { get; set; }
 

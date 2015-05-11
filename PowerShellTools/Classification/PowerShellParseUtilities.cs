@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation.Language;
 using PowerShellTools.Commands.UserInterface;
@@ -34,7 +35,7 @@ namespace PowerShellTools.Classification
         /// <returns>A list of ScripParameterViewModels.</returns>
         public static ParameterEditorModel ParseParameters(ParamBlockAst paramBlockAst)
         {
-            List<ScriptParameterViewModel> scriptParameters = new List<ScriptParameterViewModel>();
+            ObservableCollection<ScriptParameterViewModel> scriptParameters = new ObservableCollection<ScriptParameterViewModel>();
             IDictionary<string, IList<ScriptParameterViewModel>> parameterSetToParametersDict = new Dictionary<string, IList<ScriptParameterViewModel>>();
             IList<string> parameterSetNames = new List<string>();
 

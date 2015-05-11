@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Security;
@@ -43,7 +44,7 @@ namespace PowerShellTools.Commands.UserInterface
             }
         }
 
-        public IEnumerable<ScriptParameterViewModel> Parameters
+        public ObservableCollection<ScriptParameterViewModel> Parameters
         {
             get
             {
@@ -88,8 +89,6 @@ namespace PowerShellTools.Commands.UserInterface
                     _model.SelectedParameterSetName = value;
                     ChangeParametersBasedOnSelectedSet();
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged("Parameters");
-                    
                 }
             }
         }
