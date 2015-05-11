@@ -172,7 +172,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MinHeight="50"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <TextBlock x:Name="ParameterFileLabel"

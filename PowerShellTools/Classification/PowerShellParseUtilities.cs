@@ -29,16 +29,17 @@ namespace PowerShellTools.Classification
         }
 
         /// <summary>
-        /// Try to parse a Param block and form them into a list of ScriptParameterViewModels.
+        /// Try to parse a Param block and form them into a model containing parameters related data.
         /// </summary>
         /// <param name="paramBlockAst">The targeting Param block.</param>
-        /// <returns>A list of ScripParameterViewModels.</returns>
+        /// <returns>A model containing parameters related data.</returns>
         public static ParameterEditorModel ParseParameters(ParamBlockAst paramBlockAst)
         {
             ObservableCollection<ScriptParameterViewModel> scriptParameters = new ObservableCollection<ScriptParameterViewModel>();
             IDictionary<string, IList<ScriptParameterViewModel>> parameterSetToParametersDict = new Dictionary<string, IList<ScriptParameterViewModel>>();
             IList<string> parameterSetNames = new List<string>();
 
+            // First, filter all parameter types not supported yet.
             var parametersList = paramBlockAst.Parameters.
                 Where(p => !DataTypeConstants.UnsupportedDataTypes.Contains(p.StaticType.FullName)).
                 ToList();
@@ -102,6 +103,7 @@ namespace PowerShellTools.Classification
                     }
                 }
 
+                // Construct a ScriptParameterViewModel based on whether a parameter set is found
                 ScriptParameterViewModel newViewModel = null;
                 if (isParameterSetDefined && parameterSetName != null)
                 {
@@ -124,6 +126,7 @@ namespace PowerShellTools.Classification
                 }
             }
 
+            // Construct the actual model
             ParameterEditorModel model = new ParameterEditorModel
             {
                 Parameters = scriptParameters,
