@@ -6,6 +6,7 @@ using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using PowerShellTools.Common;
 using PowerShellTools.Common.Controls;
 
@@ -17,6 +18,8 @@ namespace PowerShellTools.Commands.UserInterface
     internal sealed class ParameterEditorViewModel : ObservableObject, IDisposable
     {
         private ParameterEditorModel _model;
+        private IList<ScriptParameterViewModel> _parameters;
+        private IList<ScriptParameterViewModel> _selectedParameterSets;
 
         private bool _isSaveEnabled;
         private System.Windows.Input.ICommand _saveCommand;
@@ -31,6 +34,8 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 p.PropertyChanged += OnParameterChanged;
             }
+
+            UpdateParameterSets();
 
             foreach (var p in _model.CommonParameters)
             {
@@ -51,6 +56,66 @@ namespace PowerShellTools.Commands.UserInterface
             get
             {
                 return _model.CommonParameters;
+            }
+        }
+
+        public IList<string> ParameterSetNames
+        {
+            get
+            {
+                return _model.ParameterSetNames;
+            }
+        }
+
+        public Visibility HasParameterSets
+        {
+            get
+            {
+                return SelectedParameterSetName != null ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        public string SelectedParameterSetName
+        {
+            get
+            {
+                return _model.SelectedParameterSetName;
+            }
+            set
+            {
+                if (_model.SelectedParameterSetName != value)
+                {
+                    _model.SelectedParameterSetName = value;
+                    ChangeParametersBasedOnSelectedSet();
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged("Parameters");
+                }
+            }
+        }
+
+        private void ChangeParametersBasedOnSelectedSet()
+        {
+            foreach(var item in _selectedParameterSets)
+            {
+                item.PropertyChanged -= OnParameterChanged;
+                _model.Parameters.Remove(item);
+            }
+
+            UpdateParameterSets();
+        }
+
+        private void UpdateParameterSets()
+        {
+            if (_model.SelectedParameterSetName != null)
+            {
+                if (_model.ParameterSetToParametersDict.TryGetValue(_model.SelectedParameterSetName, out _selectedParameterSets))
+                {
+                    foreach (var item in _selectedParameterSets)
+                    {
+                        item.PropertyChanged += OnParameterChanged;
+                        _model.Parameters.Add(item);
+                    }
+                }
             }
         }
 
@@ -155,10 +220,13 @@ namespace PowerShellTools.Commands.UserInterface
                 {
 #if DEBUG
                     ParameterEditorTip = "This is the designer view model",
+                    ParameterSetNames = new List<string>() {"Set1", "Set2"},
+                    HasParameterSets = Visibility.Visible,
+                    SelectedParameterSetName = "Set1",
                     Parameters = new ScriptParameterViewModel[] {
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="EmptySwitch", Type=DataTypeConstants.SwitchType })
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="EmptySwitch", Type=DataTypeConstants.SwitchType, ParameterSetName = "Set1" })
                         { 
-                            Value=true
+                            Value=true,                           
                         },
                         new ScriptParameterViewModel(new ScriptParameter() { Name="EmptySwitch", Type=DataTypeConstants.SwitchType })
                         { 
@@ -172,7 +240,7 @@ namespace PowerShellTools.Commands.UserInterface
                         { 
                             Value=null,
                         },
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkNonNull", Type="string" })
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkNonNull", Type="string", ParameterSetName = "Set2" })
                         { 
                             Value="hi"
                         },

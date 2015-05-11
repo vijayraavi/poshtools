@@ -16,5 +16,11 @@ namespace PowerShellTools.Commands.UserInterface
         public IList<ScriptParameterViewModel> Parameters { get; set; }
 
         public IList<ScriptParameterViewModel> CommonParameters { get; set; }
+
+        public IDictionary<string, IList<ScriptParameterViewModel>> ParameterSetToParametersDict { get; set; }
+
+        public IList<string> ParameterSetNames { get; set; }
+
+        public string SelectedParameterSetName { get; set; }
     }
 }
