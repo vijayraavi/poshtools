@@ -89,6 +89,7 @@ namespace PowerShellTools.Commands.UserInterface
                     ChangeParametersBasedOnSelectedSet();
                     NotifyPropertyChanged();
                     NotifyPropertyChanged("Parameters");
+                    
                 }
             }
         }
