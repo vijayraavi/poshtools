@@ -16,6 +16,10 @@ namespace PowerShellTools.DebugEngine
     [Guid("08F3B557-C153-4F6C-8745-227439E55E79")]
     public class ScriptProgramProvider : IDebugProgramProvider2
     {
+        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
+
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptProgramProvider));
 
         #region Implementation of IDebugProgramProvider2
@@ -23,35 +27,41 @@ namespace PowerShellTools.DebugEngine
         public int GetProviderProcessData(enum_PROVIDER_FLAGS Flags, IDebugDefaultPort2 pPort, AD_PROCESS_ID ProcessId, CONST_GUID_ARRAY EngineFilter, PROVIDER_PROCESS_DATA[] pProcess)
         {
             Log.Debug("ProgramProvider: GetProviderProcessData");
-            return VSConstants.E_NOTIMPL;
+//            return VSConstants.E_NOTIMPL;
 
-#if FALSE
+//#if FALSE
 
             if (Flags.HasFlag(enum_PROVIDER_FLAGS.PFLAG_GET_PROGRAM_NODES))
             {
                 var process = Process.GetProcessById((int) ProcessId.dwProcessId);
-                foreach (ProcessModule module in process.Modules)
+                bool ret;
+                IsWow64Process(process.Handle, out ret);
+
+                if (!ret)
                 {
-                    if (module.ModuleName.StartsWith("System.Management.Automation", StringComparison.OrdinalIgnoreCase))
+                    foreach (ProcessModule module in process.Modules)
                     {
-                        var node = new ScriptProgramNode(new ScriptDebugProcess(pPort, ProcessId.dwProcessId));
+                        if (module.ModuleName.StartsWith("System.Management.Automation", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var node = new ScriptProgramNode(new ScriptDebugProcess(pPort, ProcessId.dwProcessId));
 
-                        var programNodes = new[] { Marshal.GetComInterfaceForObject(node, typeof(IDebugProgramNode2)) };
+                            var programNodes = new[] { Marshal.GetComInterfaceForObject(node, typeof(IDebugProgramNode2)) };
 
-                        var destinationArray = Marshal.AllocCoTaskMem(IntPtr.Size * programNodes.Length);
-                        Marshal.Copy(programNodes, 0, destinationArray, programNodes.Length);
+                            var destinationArray = Marshal.AllocCoTaskMem(IntPtr.Size * programNodes.Length);
+                            Marshal.Copy(programNodes, 0, destinationArray, programNodes.Length);
 
-                        pProcess[0].Fields = enum_PROVIDER_FIELDS.PFIELD_PROGRAM_NODES;
-                        pProcess[0].ProgramNodes.Members = destinationArray;
-                        pProcess[0].ProgramNodes.dwCount = (uint)programNodes.Length;
+                            pProcess[0].Fields = enum_PROVIDER_FIELDS.PFIELD_PROGRAM_NODES;
+                            pProcess[0].ProgramNodes.Members = destinationArray;
+                            pProcess[0].ProgramNodes.dwCount = (uint)programNodes.Length;
 
-                        return VSConstants.S_OK;
+                            return VSConstants.S_OK;
+                        }
                     }
                 }
             }
 
             return VSConstants.S_FALSE;
-#endif
+//#endif
         }
 
         public int GetProviderProgramNode(enum_PROVIDER_FLAGS Flags, IDebugDefaultPort2 pPort, AD_PROCESS_ID ProcessId, ref Guid guidEngine, ulong programId, out IDebugProgramNode2 ppProgramNode)
