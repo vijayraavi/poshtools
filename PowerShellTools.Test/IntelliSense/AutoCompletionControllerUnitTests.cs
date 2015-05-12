@@ -319,7 +319,58 @@ namespace PowerShellTools.Test.IntelliSense
             Assert.AreEqual<string>(@"MyFunc", _mockedScript);
             Assert.AreEqual<int>(6, _mockedCaret);
         }
-        
+
+        [TestMethod]
+        public void ShouldMoveToRightByTypeingSameQuotesAfterAutoCompleteQuotes()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc("""")";
+            _mockedCaret = 8;
+            int actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc("""")", _mockedScript);
+            Assert.AreEqual<int>(9, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldSupportNestedBracesByTypingQuotesAfterAutoCompleteQuotes()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc("""")";
+            _mockedCaret = 8;
+            int actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc("""")", _mockedScript);
+            Assert.AreEqual<int>(9, _mockedCaret);
+
+            actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.TYPECHAR, ')');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc("""")", _mockedScript);
+            Assert.AreEqual<int>(10, _mockedCaret);
+        }
+
+        [TestMethod]
+        public void ShouldOnlySupportNestedBracesByTypingQuotesAfterAutoCompleteQuotes()
+        {
+            var autoCompletionController = FakeAutoCompletionController();
+            autoCompletionController.SetAutoCompleteState(true);
+
+            _mockedScript = @"MyFunc("""")";
+            _mockedCaret = 8;
+            int actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.TYPECHAR, '\"');
+            Assert.AreEqual<int>(VSConstants.S_OK, actual);
+            Assert.AreEqual<string>(@"MyFunc("""")", _mockedScript);
+            Assert.AreEqual<int>(9, _mockedCaret);
+
+            actual = autoCompletionController.ProcessKeystroke(VSConstants.VSStd2KCmdID.TYPECHAR, ')');
+            Assert.AreEqual<int>(VSConstants.S_FALSE, actual);
+        }
+
         private AutoCompletionController FakeAutoCompletionController(string contentType = PowerShellConstants.LanguageName)
         {
             var textView = TextViewMock(contentType);
