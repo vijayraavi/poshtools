@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation.Language;
 using PowerShellTools.Commands.UserInterface;
@@ -11,7 +12,8 @@ namespace PowerShellTools.Classification
     /// </summary>
     internal static class PowerShellParseUtilities
     {
-        public const string ValidateSetConst = "ValidateSet";
+        private const string ValidateSetConst = "ValidateSet";
+        private const string ParameterSetNameConst = "ParameterSetName";
 
         /// <summary>
         /// Try to find a Param block on the top level of an AST.
@@ -27,33 +29,55 @@ namespace PowerShellTools.Classification
         }
 
         /// <summary>
-        /// Try to parse a Param block and form them into a list of ScriptParameterViewModels.
+        /// Try to parse a Param block and form them into a model containing parameters related data.
         /// </summary>
         /// <param name="paramBlockAst">The targeting Param block.</param>
-        /// <returns>A list of ScripParameterViewModels.</returns>
-        public static IList<ScriptParameterViewModel> ParseParameters(ParamBlockAst paramBlockAst)
+        /// <returns>A model containing parameters related data.</returns>
+        public static ParameterEditorModel ParseParameters(ParamBlockAst paramBlockAst)
         {
-            List<ScriptParameterViewModel> scriptParameters = new List<ScriptParameterViewModel>();
+            ObservableCollection<ScriptParameterViewModel> scriptParameters = new ObservableCollection<ScriptParameterViewModel>();
+            IDictionary<string, IList<ScriptParameterViewModel>> parameterSetToParametersDict = new Dictionary<string, IList<ScriptParameterViewModel>>();
+            IList<string> parameterSetNames = new List<string>();
+
+            // First, filter all parameter types not supported yet.
             var parametersList = paramBlockAst.Parameters.
                 Where(p => !DataTypeConstants.UnsupportedDataTypes.Contains(p.StaticType.FullName)).
                 ToList();
+
             foreach (var p in parametersList)
             {
                 HashSet<object> allowedValues = new HashSet<object>();
+                bool isParameterSetDefined = false;
+                string parameterSetName = null;
 
-                p.Attributes.Any(a =>
+                foreach (var a in p.Attributes)
+                {
+                    // Find if there defines attribute ValidateSet
+                    if (a.TypeName.FullName.Equals(ValidateSetConst, StringComparison.OrdinalIgnoreCase))
                     {
-                        var any = a.TypeName.FullName.Equals(ValidateSetConst, StringComparison.OrdinalIgnoreCase);
-                        if (!any)
-                        {
-                            return any;
-                        }
                         foreach (StringConstantExpressionAst pa in ((AttributeAst)a).PositionalArguments)
                         {
                             allowedValues.Add(pa.Value);
                         }
-                        return any;
-                    });
+                    }
+
+                    // Find if there defines attribute ParameterNameSet
+                    if (a is AttributeAst)
+                    {
+                        ((AttributeAst)a).NamedArguments.Any(
+                            n =>
+                            {
+                                isParameterSetDefined = n.ArgumentName.Equals(ParameterSetNameConst, StringComparison.OrdinalIgnoreCase);
+                                if (!isParameterSetDefined)
+                                {
+                                    return isParameterSetDefined;
+                                }
+
+                                parameterSetName = ((StringConstantExpressionAst)n.Argument).Value;
+                                return isParameterSetDefined;
+                            });
+                    }
+                }
 
                 // Get parameter type
                 string type = p.StaticType.FullName;
@@ -78,10 +102,91 @@ namespace PowerShellTools.Classification
                         defaultValue = ((VariableExpressionAst)p.DefaultValue).VariablePath.UserPath;
                     }
                 }
-                scriptParameters.Add(new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues)));
+
+                // Construct a ScriptParameterViewModel based on whether a parameter set is found
+                ScriptParameterViewModel newViewModel = null;
+                if (isParameterSetDefined && parameterSetName != null)
+                {
+                    newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues, parameterSetName));
+                    IList<ScriptParameterViewModel> existingSets;
+                    if (parameterSetToParametersDict.TryGetValue(parameterSetName, out existingSets))
+                    {
+                        existingSets.Add(newViewModel);
+                    }
+                    else
+                    {
+                        parameterSetNames.Add(parameterSetName);
+                        parameterSetToParametersDict.Add(parameterSetName, new List<ScriptParameterViewModel>() { newViewModel });
+                    }
+                }
+                else
+                {
+                    newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues));
+                    scriptParameters.Add(newViewModel);
+                }
             }
 
-            return scriptParameters;
+            // Construct the actual model
+            ParameterEditorModel model = new ParameterEditorModel(scriptParameters,
+                                                                  GenerateCommonParameters(),
+                                                                  parameterSetToParametersDict,
+                                                                  parameterSetNames,
+                                                                  parameterSetNames.FirstOrDefault());
+
+            return model;
+        }
+
+        private static IList<ScriptParameterViewModel> GenerateCommonParameters()
+        {
+            return new List<ScriptParameterViewModel>()
+            {
+                // Debug
+                new ScriptParameterViewModel(
+                    new ScriptParameter("Debug", DataTypeConstants.SwitchType, null, new HashSet<object>())
+                    ),
+
+                // ErrorAction
+                new ScriptParameterViewModel(
+                    new ScriptParameter("ErrorAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>
+                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
+                    ),
+
+                // ErrorVariable
+                new ScriptParameterViewModel(
+                    new ScriptParameter("ErrorVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ),
+
+                // OutBuffer
+                new ScriptParameterViewModel(
+                    new ScriptParameter("OutBuffer", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ),
+
+                // OutVariable
+                new ScriptParameterViewModel(
+                    new ScriptParameter("OutVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ),
+
+                // PipelineVariable
+                new ScriptParameterViewModel(
+                    new ScriptParameter("PipelineVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ),
+
+                //Verbose
+                new ScriptParameterViewModel(
+                    new ScriptParameter("Verbose", DataTypeConstants.SwitchType, null, new HashSet<object>())
+                    ),
+
+                // WarningAction
+                new ScriptParameterViewModel(
+                    new ScriptParameter("WarningAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>()
+                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
+                    ),
+
+                // WarningVariable
+                new ScriptParameterViewModel(
+                    new ScriptParameter("WarningVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    )
+            };
         }
     }
 }

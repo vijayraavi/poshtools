@@ -93,7 +93,10 @@ namespace PowerShellTools.Commands.UserInterface
 
         public string Name
         {
-            get { return ParameterDefinition.Name; }
+            get 
+            { 
+                return ParameterDefinition.Name; 
+            }
         }
 
         public ParameterType Type
@@ -127,6 +130,14 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 EnsureAllowedValues();
                 return _allowedValues;
+            }
+        }
+
+        public string ParameterSetName
+        {
+            get
+            {
+                return ParameterDefinition.ParameterSetName;
             }
         }
 

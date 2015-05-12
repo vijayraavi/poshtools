@@ -10,6 +10,7 @@ namespace PowerShellTools.Commands.UserInterface
         private object _defaultValue;
         private string _type;
         private string _name;
+        private string _parameterSetName;
 
         // Known parameter names
         // Known parameter object keys
@@ -25,6 +26,11 @@ namespace PowerShellTools.Commands.UserInterface
         }
 
         public ScriptParameter(string name, string type, object defaultValue, HashSet<object> allowedValues)
+            : this(name, type, defaultValue, allowedValues, null)
+        {
+        }
+
+        public ScriptParameter(string name, string type, object defaultValue, HashSet<object> allowedValues, string parameterSetName)
         {
             _name = name;
             _type = type;
@@ -43,6 +49,7 @@ namespace PowerShellTools.Commands.UserInterface
             }
             _defaultValue = defaultValue;
             _allowedValues = allowedValues;
+            _parameterSetName = parameterSetName;
         }
 
         /// <summary>
@@ -116,6 +123,28 @@ namespace PowerShellTools.Commands.UserInterface
             get
             {
                 return _allowedValues;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the parameter set name of this parameter
+        /// </summary>
+        /// <remarks>
+        /// if null, no parameter set name is associated.
+        /// </remarks>
+        public string ParameterSetName
+        {
+            get
+            {
+                return _parameterSetName;
+            }
+            set
+            {
+                if (_parameterSetName != value)
+                {
+                    _parameterSetName = value;
+                    NotifyPropertyChanged();
+                }
             }
         }
     }

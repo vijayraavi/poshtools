@@ -621,6 +621,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ParameterSetName:.
+        /// </summary>
+        public static string ParameterSetNameLabel {
+            get {
+                return ResourceManager.GetString("ParameterSetNameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Value.
         /// </summary>
         public static string ParameterValueHeaderLabel {
