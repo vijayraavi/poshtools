@@ -42,7 +42,7 @@ namespace PowerShellTools.Test.IntelliSense
             IsInCommentAreaTestHelper(script, 0, true);
             IsInCommentAreaTestHelper(script, 1, true);
             IsInCommentAreaTestHelper(script, 50, true);
-            IsInCommentAreaTestHelper(script, script.Length, true);
+            IsInCommentAreaTestHelper(script, script.Length - 1, true);
         }
 
         [TestMethod]
@@ -55,7 +55,7 @@ namespace PowerShellTools.Test.IntelliSense
                               #>";
             IsInCommentAreaTestHelper(script, 0, true);
             IsInCommentAreaTestHelper(script, 20, true);
-            IsInCommentAreaTestHelper(script, script.Length, true);
+            IsInCommentAreaTestHelper(script, script.Length - 1, true);
         }
 
         [TestMethod]
@@ -73,7 +73,7 @@ namespace PowerShellTools.Test.IntelliSense
             IsInCommentAreaTestHelper(script, 10, true);
             IsInCommentAreaTestHelper(script, 100, false);
             IsInCommentAreaTestHelper(script, 300, true);
-            IsInCommentAreaTestHelper(script, script.Length, true);
+            IsInCommentAreaTestHelper(script, script.Length - 1, true);
         }
 
         private void IsInCommentAreaTestHelper(string script, int caretPosition, bool expected)
