@@ -776,13 +776,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        /// <summary>
-        /// Check if there is an app running inside PSHost
-        /// </summary>
-        /// <returns>Boolean indicates if there is an app running</returns>
-        public bool IsAppRunning()
+        public void SetOption(PowerShellRawHostOptions option)
         {
-            return AppRunning;
+            PowerShellRawHostOptionManager.BufferHeight = option.BufferHeight;
+            PowerShellRawHostOptionManager.BufferWidth = option.BufferWidth;
         }
 
         #endregion

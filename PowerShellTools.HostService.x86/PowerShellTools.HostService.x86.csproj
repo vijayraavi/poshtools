@@ -113,6 +113,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\PowerShellRawHostOptions.cs">
+      <Link>ServiceManagement\PowerShellRawHostOptions.cs</Link>
+    </Compile>
     <Page Include="..\PowerShellTools.HostService\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -133,7 +136,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="..\PowerShellTools.HostService\ConsoleManager.cs" >
+    <Compile Include="..\PowerShellTools.HostService\ConsoleManager.cs">
       <Link>ConsoleManager.cs</Link>
     </Compile>
     <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\DTEManager.cs">
@@ -156,6 +159,9 @@
     </Compile>
     <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellHost.cs">
       <Link>ServiceManagement\Debugging\PowerShellHost.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellRawHost.cs">
+      <Link>ServiceManagement\Debugging\PowerShellRawHost.cs</Link>
     </Compile>
     <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellServiceHost.cs">
       <Link>ServiceManagement\Debugging\PowerShellServiceHost.cs</Link>

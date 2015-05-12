@@ -68,6 +68,6 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         int GetPSBreakpointId(PowershellBreakpoint bp);
 
         [OperationContract]
-        bool IsAppRunning();
+        void SetOption(PowerShellRawHostOptions option);
     }
 }

@@ -194,5 +194,13 @@ namespace PowerShellTools.DebugEngine
                 ConnectionManager.Instance.HostProcess.WriteHostProcessStandardInputStream(inputText);
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void ClearHostScreen()
+        {
+            Debugger.ReplWindow.ClearScreen();
+        }
     }
 }

@@ -570,6 +570,9 @@
     <Compile Include="Project\Utils\FileListTypeConverter.cs" />
     <Compile Include="Project\Utils\VersionConverter.cs" />
     <Compile Include="ProvideDiffSupportedContentTypeAttribute.cs" />
+    <Compile Include="RawHostOptions\RawHostPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="RegistrationAttributes.cs">
       <SubType>Code</SubType>
     </Compile>

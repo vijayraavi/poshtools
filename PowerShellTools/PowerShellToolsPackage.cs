@@ -34,6 +34,7 @@ using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 using Threading = System.Threading.Tasks;
+using PowerShellTools.Common;
 
 namespace PowerShellTools
 {
@@ -87,6 +88,7 @@ namespace PowerShellTools
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
     [ProvideOptionPage(typeof(GeneralDialogPage), PowerShellConstants.LanguageDisplayName, "General", 101, 106, true)]
     [ProvideOptionPage(typeof(DiagnosticsDialogPage), PowerShellConstants.LanguageDisplayName, "Diagnostics", 101, 106, true)]
+    [ProvideOptionPage(typeof(RawHostPage), PowerShellConstants.LanguageDisplayName, "RawHost", 101, 106, true)]
     [ProvideDiffSupportedContentType(".ps1;.psm1;.psd1", ";")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
@@ -348,6 +350,18 @@ namespace PowerShellTools
                 {
                     DiagnosticConfiguration.DisableDiagnostics();
                 }
+            }
+
+            if (e is RawHostPage)
+            {
+                var page = (RawHostPage)e;
+                PowerShellRawHostOptions option = new PowerShellRawHostOptions
+                {
+                    BufferHeight = page.BufferHeight,
+                    BufferWidth = page.BufferWidth
+                };
+
+                DebuggingService.SetOption(option);
             }
         }
 
