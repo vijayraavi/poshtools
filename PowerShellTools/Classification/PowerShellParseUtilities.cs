@@ -12,8 +12,8 @@ namespace PowerShellTools.Classification
     /// </summary>
     internal static class PowerShellParseUtilities
     {
-        public const string ValidateSetConst = "ValidateSet";
-        public const string ParameterSetNameConst = "ParameterSetName";
+        private const string ValidateSetConst = "ValidateSet";
+        private const string ParameterSetNameConst = "ParameterSetName";
 
         /// <summary>
         /// Try to find a Param block on the top level of an AST.
@@ -127,14 +127,11 @@ namespace PowerShellTools.Classification
             }
 
             // Construct the actual model
-            ParameterEditorModel model = new ParameterEditorModel
-            {
-                Parameters = scriptParameters,
-                CommonParameters = GenerateCommonParameters(),
-                ParameterSetToParametersDict = parameterSetToParametersDict,
-                ParameterSetNames = parameterSetNames,
-                SelectedParameterSetName = parameterSetNames.FirstOrDefault()
-            };
+            ParameterEditorModel model = new ParameterEditorModel(scriptParameters,
+                                                                  GenerateCommonParameters(),
+                                                                  parameterSetToParametersDict,
+                                                                  parameterSetNames,
+                                                                  parameterSetNames.FirstOrDefault());
 
             return model;
         }

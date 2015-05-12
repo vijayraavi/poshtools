@@ -19,7 +19,6 @@ namespace PowerShellTools.Commands.UserInterface
     internal sealed class ParameterEditorViewModel : ObservableObject, IDisposable
     {
         private ParameterEditorModel _model;
-        private IList<ScriptParameterViewModel> _parameters;
         private IList<ScriptParameterViewModel> _selectedParameterSets;
 
         private bool _isSaveEnabled;
