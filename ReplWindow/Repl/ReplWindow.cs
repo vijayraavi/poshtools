@@ -2617,9 +2617,6 @@ namespace PowerShellTools.Repl
         {
             try
             {
-                // raise the StartWaitingKey event on main thread
-                //RaiseEventSafe(StartWaitingKey);
-
                 // set/reset the cancellation token
                 _cancelWaitKeySource = new CancellationTokenSource();
                 _isExecutingReadKey = true;

@@ -150,10 +150,22 @@ namespace PowerShellTools.Repl {
         /// <returns>The entered input or null if cancelled.</returns>
         string ReadStandardInput();
 
+        /// <summary>
+        /// Wait next keystrock from VS
+        /// </summary>
+        /// <returns>VS key info</returns>
         VsKeyInfo WaitKey();
 
+        /// <summary>
+        /// Check whether the user has pressed a key. 
+        /// </summary>
+        /// <returns>Boolean indicating whether the user has pressed a key</returns>
         bool IsKeyAvailable();
 
+        /// <summary>
+        /// Get REPL window width so that buffer size can be coordinate
+        /// </summary>
+        /// <returns>REPL window size</returns>
         int GetRawHostBufferWidth();
 
         /// <summary>
