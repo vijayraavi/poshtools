@@ -89,7 +89,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Classification\PowerShellParseUtilitiesUnitTests.cs" />
+    <Compile Include="Classification\ScriptParameterViewModelEqualityComparer.cs" />
     <Compile Include="ClassifierService.Test.cs" />
+    <Compile Include="Commands\ParameterEditorViewModelUnitTests.cs" />
     <Compile Include="ErrorTaggerService.Test..cs" />
     <Compile Include="ExecutionEngineTest.cs" />
     <Compile Include="IntelliSense\CommentAreaUnitTests.cs" />

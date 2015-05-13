@@ -129,14 +129,14 @@ namespace PowerShellTools.Classification
             // Construct the actual model
             ParameterEditorModel model = new ParameterEditorModel(scriptParameters,
                                                                   GenerateCommonParameters(),
-                                                                  parameterSetToParametersDict,
-                                                                  parameterSetNames,
+                                                                  parameterSetToParametersDict.Count > 0 ? parameterSetToParametersDict : null,
+                                                                  parameterSetNames.Count > 0 ? parameterSetNames : null,
                                                                   parameterSetNames.FirstOrDefault());
 
             return model;
         }
 
-        private static IList<ScriptParameterViewModel> GenerateCommonParameters()
+        internal static IList<ScriptParameterViewModel> GenerateCommonParameters()
         {
             return new List<ScriptParameterViewModel>()
             {
