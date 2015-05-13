@@ -28,7 +28,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// Gets or sets the foreground color of the displayed text.
-        /// This maps to the corresponding Console.ForgroundColor property.
         /// </summary>
         public override ConsoleColor ForegroundColor
         {
@@ -41,7 +40,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// Gets or sets the background color of the displayed text.
-        /// This maps to the corresponding Console.Background property.
         /// </summary>
         public override ConsoleColor BackgroundColor
         {
@@ -53,9 +51,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Gets or sets the cursor position. In this example this 
-        /// functionality is not needed so the property throws a 
-        /// NotImplementException exception.
+        /// Gets or sets the cursor position. 
         /// </summary>
         public override Coordinates CursorPosition
         {
@@ -64,9 +60,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Gets or sets the size of the displayed cursor. In this example 
-        /// the cursor size is taken directly from the Console.CursorSize 
-        /// property.
+        /// Gets or sets the size of the displayed cursor. 
         /// </summary>
         public override int CursorSize
         {
@@ -78,8 +72,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Gets or sets the size of the host buffer. In this example the 
-        /// buffer size is adapted from the Console buffer size members.
+        /// Gets or sets the size of the host buffer.
         /// </summary>
         public override Size BufferSize
         {
@@ -91,9 +84,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Gets or sets the position of the displayed window. This example 
-        /// uses the Console window position APIs to determine the returned 
-        /// value of this property.
+        /// Gets or sets the position of the displayed window. 
         /// </summary>
         public override Coordinates WindowPosition
         {
@@ -105,9 +96,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Gets or sets the size of the displayed window. This example 
-        /// uses the corresponding Console window size APIs to determine the  
-        /// returned value of this property.
+        /// Gets or sets the size of the displayed window. 
         /// </summary>
         public override Size WindowSize
         {
@@ -119,10 +108,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Gets the dimentions of the largest window size that can be 
-        /// displayed. This example uses the Console.LargestWindowWidth and 
-        /// console.LargestWindowHeight properties to determine the returned 
-        /// value of this property.
+        /// Gets the dimentions of the largest window size that can be displayed.
         /// </summary>
         public override Size MaxWindowSize
         {
@@ -134,10 +120,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// Gets the dimensions of the largest window that could be 
-        /// rendered in the current display, if the buffer was at the least 
-        /// that large. This example uses the Console.LargestWindowWidth and 
-        /// Console.LargestWindowHeight properties to determine the returned 
-        /// value of this property.
+        /// rendered in the current display, if the buffer was at the least that large.
         /// </summary>
         public override Size MaxPhysicalWindowSize
         {
@@ -148,8 +131,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Gets a value indicating whether the user has pressed a key. This maps   
-        /// to the corresponding Console.KeyAvailable property.
+        /// Gets a value indicating whether the user has pressed a key. 
         /// </summary>
         public override bool KeyAvailable
         {
@@ -160,8 +142,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Gets or sets the title of the displayed window. The example 
-        /// maps the Console.Title property to the value of this property.
+        /// Gets or sets the title of the displayed window.
         /// </summary>
         public override string WindowTitle
         {
@@ -173,17 +154,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// This API resets the input buffer. In this example this 
-        /// functionality is not needed so the method returns nothing.
+        /// This API resets the input buffer. 
         /// </summary>
         public override void FlushInputBuffer()
         {
         }
 
         /// <summary>
-        /// This API returns a rectangular region of the screen buffer. In 
-        /// this example this functionality is not needed so the method throws 
-        /// a NotImplementException exception.
+        /// This API returns a rectangular region of the screen buffer.
         /// </summary>
         /// <param name="rectangle">Defines the size of the rectangle.</param>
         /// <returns>Throws a NotImplementedException exception.</returns>
@@ -196,9 +174,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         /// This API reads a pressed, released, or pressed and released keystroke 
         /// from the keyboard device, blocking processing until a keystroke is 
-        /// typed that matches the specified keystroke options. In this example 
-        /// this functionality is not needed so the method throws a
-        /// NotImplementException exception.
+        /// typed that matches the specified keystroke options. 
         /// </summary>
         /// <param name="options">Options, such as IncludeKeyDown,  used when reading the keyboard.</param>
         /// <returns>KeyInfo of the key pressed</returns>
@@ -223,9 +199,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// This API crops a region of the screen buffer. In this example 
-        /// this functionality is not needed so the method throws a
-        /// NotImplementException exception.
+        /// This API crops a region of the screen buffer.
         /// </summary>
         /// <param name="source">The region of the screen to be scrolled.</param>
         /// <param name="destination">The region of the screen to receive the 
@@ -240,8 +214,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// This method copies an array of buffer cells into the screen buffer 
-        /// at a specified location. In this example this functionality is 
-        /// not needed so the method throws a NotImplementedException exception.
+        /// at a specified location.
         /// </summary>
         /// <param name="origin">The parameter is not used.</param>
         /// <param name="contents">The parameter is not used.</param>

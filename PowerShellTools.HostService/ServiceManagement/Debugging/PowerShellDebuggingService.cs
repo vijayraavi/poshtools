@@ -86,6 +86,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Call back service used to talk to VS side
+        /// </summary>
         public IDebugEngineCallback CallbackService
         {
             get
@@ -98,7 +101,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-
+        /// <summary>
+        /// PowerShell raw host UI options 
+        /// </summary>
         public PowerShellRawHostOptions RawHostOptions
         {
             get
