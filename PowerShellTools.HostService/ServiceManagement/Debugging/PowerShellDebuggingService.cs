@@ -47,7 +47,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
-        private PowerShellRawHostOptions _rawHostOptions;
+
+        // Needs to be initilaized from its corresponding VS option page over the wcf channel.
+        // For now we dont have anything needed from option page, so we just initialize here.
+        private PowerShellRawHostOptions _rawHostOptions = new PowerShellRawHostOptions(); 
 
         /// <summary>
         /// Minimal powershell version required for remote session debugging

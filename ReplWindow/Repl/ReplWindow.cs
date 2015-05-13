@@ -60,6 +60,7 @@ namespace PowerShellTools.Repl
     using PowerShellTools.Repl.DialogWindows;
     using PowerShellTools.Common.ServiceManagement.DebuggingContract;
     using System.Collections.Concurrent;
+    using PowerShellTools.Common;
 #endif
 
     /// <summary>
@@ -2551,9 +2552,26 @@ namespace PowerShellTools.Repl
 
         #endregion
 
-        #region ReadKey
+        #region Raw host UI support
 
-        public event EventHandler StartWaitingKey;
+        public int GetRawHostBufferWidth()
+        {
+            ITextViewMargin leftMargin = _textViewHost.GetTextViewMargin(PredefinedMarginNames.Left);
+            ITextViewMargin rightMargin = _textViewHost.GetTextViewMargin(PredefinedMarginNames.Right);
+
+            double marginSize = 0.0;
+            if (leftMargin != null && leftMargin.Enabled)
+            {
+                marginSize += leftMargin.MarginSize;
+            }
+            if (rightMargin != null && rightMargin.Enabled)
+            {
+                marginSize += rightMargin.MarginSize;
+            }
+
+            var n = (int)((TextView.ViewportWidth - marginSize) / TextView.FormattedLineSource.ColumnWidth);
+            return Math.Max(80, n); // Larger of 80 or n
+        }
 
         private readonly BlockingCollection<VsKeyInfo> _keyBuffer = new BlockingCollection<VsKeyInfo>();
 

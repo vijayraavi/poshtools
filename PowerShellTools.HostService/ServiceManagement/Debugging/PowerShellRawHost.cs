@@ -85,7 +85,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             get
             {
-                return _debuggingService.RawHostOptions.BufferSize;
+                return new Size(_debuggingService.CallbackService.GetREPLWindowWidth(), 0);
             }
             set { }
         }
@@ -113,7 +113,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             get
             {
-                return _debuggingService.RawHostOptions.WindowSize;
+                return new Size(_debuggingService.CallbackService.GetREPLWindowWidth(), 0);
             }
             set { }
         }
@@ -128,7 +128,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             get
             {
-                return _debuggingService.RawHostOptions.MaxWindowSize;
+                return new Size(_debuggingService.CallbackService.GetREPLWindowWidth(), 0);
             }
         }
 
@@ -143,7 +143,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             get
             {
-                return _debuggingService.RawHostOptions.MaxPhysicalWindowSize;
+                return new Size(_debuggingService.CallbackService.GetREPLWindowWidth(), 0);
             }
         }
 

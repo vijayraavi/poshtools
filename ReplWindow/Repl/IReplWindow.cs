@@ -154,6 +154,8 @@ namespace PowerShellTools.Repl {
 
         bool IsKeyAvailable();
 
+        int GetRawHostBufferWidth();
+
         /// <summary>
         /// Sets the current value for the specified option.
         /// 

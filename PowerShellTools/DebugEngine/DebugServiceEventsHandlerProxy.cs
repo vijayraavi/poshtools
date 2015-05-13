@@ -214,5 +214,11 @@ namespace PowerShellTools.DebugEngine
         {
             return Debugger.ReplWindow.IsKeyAvailable();
         }
+
+
+        public int GetREPLWindowWidth()
+        {
+            return Debugger.ReplWindow.GetRawHostBufferWidth();
+        }
     }
 }

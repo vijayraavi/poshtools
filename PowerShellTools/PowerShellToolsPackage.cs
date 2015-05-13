@@ -88,7 +88,6 @@ namespace PowerShellTools
     [ProvideIncompatibleEngineInfo("{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}")]
     [ProvideOptionPage(typeof(GeneralDialogPage), PowerShellConstants.LanguageDisplayName, "General", 101, 106, true)]
     [ProvideOptionPage(typeof(DiagnosticsDialogPage), PowerShellConstants.LanguageDisplayName, "Diagnostics", 101, 106, true)]
-    [ProvideOptionPage(typeof(RawHostPage), PowerShellConstants.LanguageDisplayName, "RawHost", 101, 106, true)]
     [ProvideDiffSupportedContentType(".ps1;.psm1;.psd1", ";")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
@@ -350,23 +349,6 @@ namespace PowerShellTools
                 {
                     DiagnosticConfiguration.DisableDiagnostics();
                 }
-            }
-
-            if (e is RawHostPage)
-            {
-                var page = (RawHostPage)e;
-
-                PowerShellRawHostOptions option = new PowerShellRawHostOptions
-                {
-                    BufferSize = new System.Management.Automation.Host.Size(page.BufferWidth, page.BufferHeight),
-                    BackgroundColor = (ConsoleColor)(-1),
-                    ForegroundColor = (ConsoleColor)(-1),
-                    MaxPhysicalWindowSize = new System.Management.Automation.Host.Size(page.BufferWidth, page.BufferHeight),
-                    MaxWindowSize = new System.Management.Automation.Host.Size(page.BufferWidth, page.BufferHeight),
-                    WindowSize = new System.Management.Automation.Host.Size(page.BufferWidth, page.BufferHeight),
-                };
-
-                DebuggingService.SetOption(option);
             }
         }
 

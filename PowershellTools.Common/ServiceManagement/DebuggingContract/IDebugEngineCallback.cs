@@ -70,5 +70,8 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract(IsOneWay = false)]
         bool IsKeyAvailable();
+
+        [OperationContract(IsOneWay = false)]
+        int GetREPLWindowWidth();
     }
 }

@@ -12,31 +12,10 @@ namespace PowerShellTools.Common
     public class PowerShellRawHostOptions
     {
         [DataMember]
-        public int BufferWidth;
-
-        [DataMember]
-        public int BufferHeight;
-
-        [DataMember]
         public ConsoleColor ForegroundColor;
 
         [DataMember]
         public ConsoleColor BackgroundColor;
-
-        [DataMember]
-        public int CursorSize;
-
-        [DataMember]
-        public Size BufferSize;
-
-        [DataMember]
-        public Size WindowSize;
-
-        [DataMember]
-        public Size MaxWindowSize;
-
-        [DataMember]
-        public Size MaxPhysicalWindowSize;
 
         [DataMember]
         public Coordinates CursorPosition;
@@ -45,6 +24,9 @@ namespace PowerShellTools.Common
         public Coordinates WindowPosition;
 
         [DataMember]
-        public string WindowTitle;       
+        public int CursorSize;
+
+        [DataMember]
+        public string WindowTitle;
     }
 }
