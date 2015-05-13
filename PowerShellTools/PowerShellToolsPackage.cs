@@ -355,10 +355,15 @@ namespace PowerShellTools
             if (e is RawHostPage)
             {
                 var page = (RawHostPage)e;
+
                 PowerShellRawHostOptions option = new PowerShellRawHostOptions
                 {
-                    BufferHeight = page.BufferHeight,
-                    BufferWidth = page.BufferWidth
+                    BufferSize = new System.Management.Automation.Host.Size(page.BufferWidth, page.BufferHeight),
+                    BackgroundColor = (ConsoleColor)(-1),
+                    ForegroundColor = (ConsoleColor)(-1),
+                    MaxPhysicalWindowSize = new System.Management.Automation.Host.Size(page.BufferWidth, page.BufferHeight),
+                    MaxWindowSize = new System.Management.Automation.Host.Size(page.BufferWidth, page.BufferHeight),
+                    WindowSize = new System.Management.Automation.Host.Size(page.BufferWidth, page.BufferHeight),
                 };
 
                 DebuggingService.SetOption(option);

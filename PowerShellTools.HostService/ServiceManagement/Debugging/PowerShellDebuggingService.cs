@@ -47,6 +47,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
+        private PowerShellRawHostOptions _rawHostOptions;
 
         /// <summary>
         /// Minimal powershell version required for remote session debugging
@@ -91,6 +92,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             set
             {
                 _callback = value;
+            }
+        }
+
+
+        public PowerShellRawHostOptions RawHostOptions
+        {
+            get
+            {
+                return _rawHostOptions;
+            }
+            set
+            {
+                _rawHostOptions = value;
             }
         }
 
@@ -776,10 +790,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        public void SetOption(PowerShellRawHostOptions option)
+        /// <summary>
+        /// Apply the raw host options on powershell host
+        /// </summary>
+        /// <param name="options">PS raw UI host options</param>
+        public void SetOption(PowerShellRawHostOptions options)
         {
-            PowerShellRawHostOptionManager.BufferHeight = option.BufferHeight;
-            PowerShellRawHostOptionManager.BufferWidth = option.BufferWidth;
+            _rawHostOptions = options;
         }
 
         #endregion

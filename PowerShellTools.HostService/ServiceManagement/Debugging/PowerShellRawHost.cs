@@ -21,8 +21,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
     {
         private readonly PowerShellDebuggingService _debuggingService;
 
-        public const ConsoleColor NoColor = (ConsoleColor)(-1);
-
         public PowerShellRawHost(PowerShellDebuggingService debugger)
         {
             _debuggingService = debugger;
@@ -34,17 +32,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override ConsoleColor ForegroundColor
         {
-            get { return NoColor; }
+            get
+            {
+                return _debuggingService.RawHostOptions.ForegroundColor;
+            }
             set { }
         }
-        
+
         /// <summary>
         /// Gets or sets the background color of the displayed text.
         /// This maps to the corresponding Console.Background property.
         /// </summary>
         public override ConsoleColor BackgroundColor
         {
-            get { return NoColor; }
+            get
+            {
+                return _debuggingService.RawHostOptions.BackgroundColor;
+            }
             set { }
         }
 
@@ -66,8 +70,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override int CursorSize
         {
-            get;
-            set;
+            get
+            {
+                return _debuggingService.RawHostOptions.CursorSize;
+            }
+            set { }
         }
 
         /// <summary>
@@ -76,9 +83,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override Size BufferSize
         {
-            get 
-            { 
-                return new Size(PowerShellRawHostOptionManager.BufferWidth, PowerShellRawHostOptionManager.BufferHeight); 
+            get
+            {
+                return _debuggingService.RawHostOptions.BufferSize;
             }
             set { }
         }
@@ -90,8 +97,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override Coordinates WindowPosition
         {
-            get;
-            set;
+            get
+            {
+                return _debuggingService.RawHostOptions.WindowPosition;
+            }
+            set { }
         }
 
         /// <summary>
@@ -101,9 +111,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override Size WindowSize
         {
-            get 
-            { 
-                return new Size(PowerShellRawHostOptionManager.BufferWidth, PowerShellRawHostOptionManager.BufferHeight); 
+            get
+            {
+                return _debuggingService.RawHostOptions.WindowSize;
             }
             set { }
         }
@@ -116,9 +126,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override Size MaxWindowSize
         {
-            get 
+            get
             {
-                return new Size(PowerShellRawHostOptionManager.BufferWidth, PowerShellRawHostOptionManager.BufferHeight); 
+                return _debuggingService.RawHostOptions.MaxWindowSize;
             }
         }
 
@@ -133,7 +143,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             get
             {
-                return new Size(PowerShellRawHostOptionManager.BufferWidth, PowerShellRawHostOptionManager.BufferHeight); 
+                return _debuggingService.RawHostOptions.MaxPhysicalWindowSize;
             }
         }
 
@@ -143,9 +153,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override bool KeyAvailable
         {
-            get 
+            get
             {
-                return _debuggingService.CallbackService.IsKeyAvailable(); 
+                return _debuggingService.CallbackService.IsKeyAvailable();
             }
         }
 
@@ -155,8 +165,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override string WindowTitle
         {
-            get;
-            set;
+            get
+            {
+                return _debuggingService.RawHostOptions.WindowTitle;
+            }
+            set { }
         }
 
         /// <summary>

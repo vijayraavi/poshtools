@@ -133,7 +133,6 @@
     <Compile Include="ServiceManagement\Debugging\PowerShellRawHost.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellServiceHost.cs" />
     <Compile Include="ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs" />
-    <Compile Include="ServiceManagement\PowerShellRawHostOptions.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

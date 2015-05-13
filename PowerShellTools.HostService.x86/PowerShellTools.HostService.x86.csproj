@@ -113,9 +113,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\PowerShellRawHostOptions.cs">
-      <Link>ServiceManagement\PowerShellRawHostOptions.cs</Link>
-    </Compile>
     <Page Include="..\PowerShellTools.HostService\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
