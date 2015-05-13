@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Security;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using PowerShellTools.Common;
 using PowerShellTools.Common.Controls;
@@ -67,11 +64,11 @@ namespace PowerShellTools.Commands.UserInterface
             }
         }
 
-        public Visibility HasParameterSets
+        public bool HasParameterSets
         {
             get
             {
-                return SelectedParameterSetName != null ? Visibility.Visible : Visibility.Collapsed;
+                return SelectedParameterSetName != null;
             }
         }
 
@@ -94,7 +91,7 @@ namespace PowerShellTools.Commands.UserInterface
 
         private void ChangeParametersBasedOnSelectedSet()
         {
-            foreach(var item in _selectedParameterSets)
+            foreach (var item in _selectedParameterSets)
             {
                 item.PropertyChanged -= OnParameterChanged;
                 _model.Parameters.Remove(item);
@@ -143,7 +140,7 @@ namespace PowerShellTools.Commands.UserInterface
                 return _isSaveEnabled;
             }
         }
-        
+
         /// <summary>
         /// EventHandler for create succeeded event.
         /// </summary>
@@ -219,7 +216,7 @@ namespace PowerShellTools.Commands.UserInterface
                 {
 #if DEBUG
                     ParameterEditorTip = "This is the designer view model",
-                    ParameterSetNames = new List<string>() {"Set1", "Set2"},
+                    ParameterSetNames = new List<string>() { "Set1", "Set2" },
                     HasParameterSets = Visibility.Visible,
                     SelectedParameterSetName = "Set1",
                     Parameters = new ScriptParameterViewModel[] {

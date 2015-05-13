@@ -90,7 +90,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Classification\PowerShellParseUtilitiesUnitTests.cs" />
-    <Compile Include="Classification\ScriptParameterViewModelEqualityComparer.cs" />
+    <Compile Include="Commands\ParameterEditorHelperUnitTests.cs" />
+    <Compile Include="Common\ScriptParameterViewModelEqualityComparer.cs" />
     <Compile Include="ClassifierService.Test.cs" />
     <Compile Include="Commands\ParameterEditorViewModelUnitTests.cs" />
     <Compile Include="ErrorTaggerService.Test..cs" />

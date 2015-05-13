@@ -181,7 +181,7 @@
               TextWrapping="Wrap" />
         
         <Grid x:Name="ParameterSetGrid"
-              Visibility="{Binding Path=HasParameterSets}"
+              Visibility="{Binding Path=HasParameterSets, Converter={StaticResource ResourceKey=BooleanToVisibilityConverter}}"
               Margin="-5,0,0,10"
               Grid.IsSharedSizeScope="True"
               Grid.Row="1">

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PowerShellTools.Commands.UserInterface;
 
-namespace PowerShellTools.Test.Classification
+namespace PowerShellTools.Test
 {
     internal class ScriptParameterViewModelEqualityComparer : IEqualityComparer<ScriptParameterViewModel>
     {

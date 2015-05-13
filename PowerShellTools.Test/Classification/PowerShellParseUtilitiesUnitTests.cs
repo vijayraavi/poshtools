@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Management.Automation.Language;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Management.Automation.Language;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerShellTools.Classification;
 using PowerShellTools.Commands.UserInterface;
-using System.Collections.ObjectModel;
 
 namespace PowerShellTools.Test.Classification
 {

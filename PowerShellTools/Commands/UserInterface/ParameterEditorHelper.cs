@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation.Language;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.TextManager.Interop;
 using PowerShellTools.Classification;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Commands.UserInterface
 {
@@ -38,12 +35,20 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 return wasOkClicked;
             }
-            
+
+            scriptArgs = GenerateScripArgsFromModel(model);
+            return wasOkClicked;
+        }
+
+        internal static string GenerateScripArgsFromModel(ParameterEditorModel model)
+        {
+            Arguments.ValidateNotNull<ParameterEditorModel>(model, "model");
+            string scriptArgs = String.Empty;
             foreach (var p in model.Parameters)
             {
                 if (p.Value != null)
                 {
-                    switch(p.Type)
+                    switch (p.Type)
                     {
                         case ParameterType.Boolean:
                             scriptArgs += WrapParameterName(p.Name);
@@ -52,9 +57,9 @@ namespace PowerShellTools.Commands.UserInterface
 
                         case ParameterType.Switch:
                             scriptArgs += WrapParameterName(p.Name);
-                            scriptArgs += String.Format(":${0}", p.Value.ToString());                            
+                            scriptArgs += String.Format(":${0}", p.Value.ToString());
                             break;
-                        
+
                         case ParameterType.Byte:
                         case ParameterType.Int32:
                         case ParameterType.Int64:
@@ -79,7 +84,7 @@ namespace PowerShellTools.Commands.UserInterface
                 }
             }
 
-            foreach(var p in model.CommonParameters)
+            foreach (var p in model.CommonParameters)
             {
                 if (p.Value != null)
                 {
@@ -95,7 +100,7 @@ namespace PowerShellTools.Commands.UserInterface
                             {
                                 scriptArgs += WrapParameterName(p.Name);
                                 scriptArgs += WrapValue(p.Value as string);
-                            }                            
+                            }
                             break;
 
                         default:
@@ -105,7 +110,8 @@ namespace PowerShellTools.Commands.UserInterface
                     }
                 }
             }
-            return wasOkClicked;
+
+            return scriptArgs;
         }
 
         public static bool HasParameters(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextManager textManager, out ParamBlockAst paramBlock)
@@ -165,6 +171,6 @@ namespace PowerShellTools.Commands.UserInterface
                 return value;
             }
             return String.Format(" \"{0}\"", value);
-        }        
+        }
     }
 }
