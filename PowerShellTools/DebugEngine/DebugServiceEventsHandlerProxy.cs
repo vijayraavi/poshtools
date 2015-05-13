@@ -202,5 +202,17 @@ namespace PowerShellTools.DebugEngine
         {
             Debugger.ReplWindow.ClearScreen();
         }
+
+
+        public VsKeyInfo VsReadKey()
+        {
+            return Debugger.ReplWindow.WaitKey();
+        }
+
+
+        public bool IsKeyAvailable()
+        {
+            return Debugger.ReplWindow.IsKeyAvailable();
+        }
     }
 }

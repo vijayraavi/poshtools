@@ -25,6 +25,7 @@ namespace PowerShellTools.Repl {
 #elif POWERSHELL
     using IReplCommand = IPowerShellReplCommand;
     using IReplEvaluator = IPowerShellReplEvaluator;
+    using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 #endif
 
     /// <summary>
@@ -148,6 +149,10 @@ namespace PowerShellTools.Repl {
         /// </summary>
         /// <returns>The entered input or null if cancelled.</returns>
         string ReadStandardInput();
+
+        VsKeyInfo WaitKey();
+
+        bool IsKeyAvailable();
 
         /// <summary>
         /// Sets the current value for the specified option.

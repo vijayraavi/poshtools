@@ -5,6 +5,9 @@ using System.Management.Automation.Host;
 using System.Text;
 using System.Threading.Tasks;
 using PowerShellTools.HostService.ServiceManagement;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using System.Windows.Input;
+using System.Management.Automation;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -140,7 +143,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override bool KeyAvailable
         {
-            get { return true; }
+            get 
+            {
+                return _debuggingService.CallbackService.IsKeyAvailable(); 
+            }
         }
 
         /// <summary>
@@ -181,13 +187,26 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// this functionality is not needed so the method throws a
         /// NotImplementException exception.
         /// </summary>
-        /// <param name="options">Options, such as IncludeKeyDown,  used when 
-        /// reading the keyboard.</param>
-        /// <returns>Throws a NotImplementedException exception.</returns>
+        /// <param name="options">Options, such as IncludeKeyDown,  used when reading the keyboard.</param>
+        /// <returns>KeyInfo of the key pressed</returns>
         public override KeyInfo ReadKey(ReadKeyOptions options)
         {
-            throw new NotImplementedException(
-                     "The method or operation is not implemented.");
+            VsKeyInfo keyInfo = _debuggingService.CallbackService.VsReadKey();
+
+            if (keyInfo == null)
+            {
+                // abort current pipeline
+                throw new PipelineStoppedException();
+            }
+
+            ControlKeyStates states = default(ControlKeyStates);
+            states |= (keyInfo.CapsLockToggled ? ControlKeyStates.CapsLockOn : 0);
+            states |= (keyInfo.NumLockToggled ? ControlKeyStates.NumLockOn : 0);
+            states |= (keyInfo.ShiftPressed ? ControlKeyStates.ShiftPressed : 0);
+            states |= (keyInfo.AltPressed ? ControlKeyStates.LeftAltPressed : 0); // assume LEFT alt
+            states |= (keyInfo.ControlPressed ? ControlKeyStates.LeftCtrlPressed : 0); // assume LEFT ctrl
+
+            return new KeyInfo(keyInfo.VirtualKey, keyInfo.KeyChar, states, keyDown: (keyInfo.KeyStates == KeyStates.Down));
         }
 
         /// <summary>
