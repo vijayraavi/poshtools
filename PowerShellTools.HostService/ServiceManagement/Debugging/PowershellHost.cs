@@ -18,10 +18,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
     public class HostUi : PSHostUserInterface
     {
         private readonly PowerShellDebuggingService _debuggingService;
+        private PSHostRawUserInterface _rawUI;
 
         public HostUi(PowerShellDebuggingService debugger)
         {
             _debuggingService = debugger;
+            _rawUI = new PowerShellRawHost(_debuggingService);
         }
 
         public Action<long, ProgressRecord> OutputProgress { get; set; }
@@ -30,7 +32,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public override PSHostRawUserInterface RawUI
         {
-            get { return new PowerShellRawHost(_debuggingService); }
+            get
+            {
+                return _rawUI; 
+            }
         }
 
         public override string ReadLine()

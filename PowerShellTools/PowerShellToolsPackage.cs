@@ -34,7 +34,6 @@ using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 using Threading = System.Threading.Tasks;
-using PowerShellTools.Common;
 
 namespace PowerShellTools
 {

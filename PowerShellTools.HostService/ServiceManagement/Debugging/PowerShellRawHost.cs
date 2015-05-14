@@ -13,9 +13,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     /// <summary>
     /// Implementation of the PSHostRawUserInterface.
-    /// Members of this class that easily map to the .NET 
-    /// console class are implemented. More complex methods are not 
-    /// implemented and throw a NotImplementedException exception.
     /// </summary>
     internal sealed class PowerShellRawHost : PSHostRawUserInterface
     {
@@ -241,6 +238,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 fill.Character == ' ')
             {
                 _debuggingService.CallbackService.ClearHostScreen();
+            }
+            else
+            {
+                throw new NotImplementedException(
+                      "The method or operation is not implemented.");
             }
         }
     }
