@@ -2570,7 +2570,10 @@ namespace PowerShellTools.Repl
             }
 
             var n = (int)((TextView.ViewportWidth - marginSize) / TextView.FormattedLineSource.ColumnWidth);
-            return Math.Max(80, n); // Larger of 80 or n
+
+            // Larger of 80 or n
+            // Set minimal width as 80 to keep consistent experience with another PowerShell custom host in VS: Nuget Manager Console 
+            return Math.Max(80, n); 
         }
 
         private readonly BlockingCollection<VsKeyInfo> _keyBuffer = new BlockingCollection<VsKeyInfo>();

@@ -155,6 +155,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override void FlushInputBuffer()
         {
+            throw new NotImplementedException(
+                     "The method or operation is not implemented.");
         }
 
         /// <summary>
