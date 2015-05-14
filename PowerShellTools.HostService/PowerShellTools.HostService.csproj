@@ -66,7 +66,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
- <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
@@ -127,10 +127,11 @@
     <Compile Include="ServiceManagement\Debugging\PowershellBreakpointRecord.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingService.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowershellDebuggingServiceUtilities.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities40.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowershellHost.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowershellServiceHost.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellHost.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellRawHost.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellServiceHost.cs" />
     <Compile Include="ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
