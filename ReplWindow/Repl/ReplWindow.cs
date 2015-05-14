@@ -567,6 +567,7 @@ namespace PowerShellTools.Repl
 
                 _buffer.Dispose();
                 _inputEvent.Dispose();
+                _keyBuffer.Dispose();
 
                 _commands = null;
             }
