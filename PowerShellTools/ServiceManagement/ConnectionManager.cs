@@ -131,6 +131,7 @@ namespace PowerShellTools.ServiceManagement
                     {
                         // Connection has to be established...
                         Log.Error("Connection establish failed...");
+                        EnsureCloseProcess();
 
                         _powershellIntelliSenseService = null;
                         _powershellDebuggingService = null;
