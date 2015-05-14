@@ -456,10 +456,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ReleaseWaitHandler();
 
-            if (_currentPowerShell != null)
+            try
             {
-                _currentPowerShell.Stop();
+                if (_currentPowerShell != null)
+                {
+                    _currentPowerShell.Stop();
+                }
             }
+            catch { }
         }
 
         /// <summary>
