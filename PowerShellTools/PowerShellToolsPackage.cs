@@ -34,6 +34,7 @@ using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 using Threading = System.Threading.Tasks;
+using PowerShellTools.Repl;
 
 namespace PowerShellTools
 {
@@ -53,13 +54,18 @@ namespace PowerShellTools
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
     //[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-    [ProvideAutoLoad(UIContextGuids.NoSolution)]
+    //[ProvideAutoLoad(UIContextGuids.NoSolution)]
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
                             101,
                             ShowSmartIndent = true,
                             ShowDropDownOptions = true,
                             EnableCommenting = true)]
+
+    [ProvideKeyBindingTable(ReplWindow.TypeGuid, 200)]        // Resource ID: "Interactive Console"
+    [ProvideToolWindow(typeof(ReplWindow), Style = VsDockStyle.Linked, Orientation = ToolWindowOrientation.none, Window = ToolWindowGuids80.Outputwindow, MultiInstances = true)]
+    [ProvideToolWindowVisibility(typeof(ReplWindow), PowerShellTools.Common.Constants.PowerShellDebuggingUiContextString)]
+
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
@@ -92,11 +98,11 @@ namespace PowerShellTools
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
     [ProvideLanguageCodeExpansion(typeof(PowerShellLanguageInfo),
-                                  "PowerShell",        // Name of language used as registry key
-                                  0,                   // Resource ID of localized name of language service
-         "PowerShell",        // Name of Language attribute in snippet template
-         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
-         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
+        "PowerShell",        // Name of language used as registry key
+        0,                   // Resource ID of localized name of language service
+        "PowerShell",        // Name of Language attribute in snippet template
+        @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
+        SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
     [ProvideService(typeof(IPowerShellService))]
 
     public sealed class PowerShellToolsPackage : CommonPackage
