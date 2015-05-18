@@ -20,7 +20,8 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace PowerShellTools.Repl {
+namespace PowerShellTools.Repl
+{
 #if INTERACTIVE_WINDOW
     using IReplWindowProvider = IInteractiveWindowProvider;
 #elif POWERSHELL
@@ -47,9 +48,26 @@ namespace PowerShellTools.Repl {
     [ProvideToolWindowVisibility(typeof(ReplWindow), PowerShellTools.Common.Constants.PowerShellDebuggingUiContextString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(GuidList.guidReplWindowPkgString)]
-    internal sealed class ReplWindowPackage : Package, IVsToolWindowFactory {
-        int IVsToolWindowFactory.CreateToolWindow(ref Guid toolWindowType, uint id) {
-            if (toolWindowType == typeof(ReplWindow).GUID) {
+    internal sealed class ReplWindowPackage : Package, IVsToolWindowFactory
+    {
+        private IVsMonitorSelection _monitorSelectionService;
+        private uint _uiContextCookie;
+
+        int IVsToolWindowFactory.CreateToolWindow(ref Guid toolWindowType, uint id)
+        {
+            _monitorSelectionService = GetGlobalService(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
+
+            if (_monitorSelectionService != null)
+            {
+                Guid contextGuid = PowerShellTools.Common.Constants.PowerShellReplCreationUiContextGuid;
+
+                _monitorSelectionService.GetCmdUIContextCookie(contextGuid, out _uiContextCookie);
+
+                _monitorSelectionService.SetCmdUIContext(_uiContextCookie, 1);  // 1 for 'active'
+            }
+
+            if (toolWindowType == typeof(ReplWindow).GUID)
+            {
                 var model = (IComponentModel)GetService(typeof(SComponentModel));
                 var replProvider = (ReplWindowProvider)model.GetService<IReplWindowProvider>();
 

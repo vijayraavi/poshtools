@@ -68,12 +68,12 @@ namespace PowerShellTools.Common
         /// <summary>
         /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell debug mode.
         /// </summary>
-        public const string PowerShellServiceExecutionUiContextString = "310d9a74-0a72-4b83-8c5b-4e75f035214c";
+        public const string PowerShellReplCreationUiContextString = "310d9a74-0a72-4b83-8c5b-4e75f035214c";
 
         /// <summary>
         /// This is the GUID of the Visual Studio UI Context when in PowerShell debug mode.
         /// </summary>
-        public static readonly Guid PowerShellServiceExecutionUiContextGuid = new Guid(PowerShellServiceExecutionUiContextString);
+        public static readonly Guid PowerShellReplCreationUiContextGuid = new Guid(PowerShellReplCreationUiContextString);
 
 
         /// <summary>

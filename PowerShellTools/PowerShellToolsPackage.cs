@@ -55,7 +55,7 @@ namespace PowerShellTools
     // in the Help/About dialog of Visual Studio.
     //[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellProjectUiContextString)]
-    [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellServiceExecutionUiContextString)]
+    [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellReplCreationUiContextString)]
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
                             101,
