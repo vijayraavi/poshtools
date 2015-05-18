@@ -54,8 +54,17 @@ namespace PowerShellTools
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
     //[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
+
+    // There are a few user scenarios which requires package to be loaded
+    // 1. Open/Create any type of PowerShell project
+    // 2. Open/Create PowerShell file(.ps1, .psm1, .psd1) from file->open/create or solution explorer
+    // 3. Execute PowerShell script file from solution explorer
     [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellProjectUiContextString)]
+    // 4. PowerShell interactive window open
     [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellReplCreationUiContextString)]
+    // 5. PowerShell service execution
+    [ProvideService(typeof(IPowerShellService))]
+
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
                             101,
@@ -100,7 +109,6 @@ namespace PowerShellTools
         "PowerShell",        // Name of Language attribute in snippet template
         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
-    [ProvideService(typeof(IPowerShellService))]
 
     public sealed class PowerShellToolsPackage : CommonPackage
     {

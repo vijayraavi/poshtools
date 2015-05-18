@@ -66,23 +66,23 @@ namespace PowerShellTools.Common
         public const string PowerShellInstallFWLink = "http://go.microsoft.com/fwlink/?LinkID=524571";
 
         /// <summary>
-        /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell debug mode.
+        /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell REPL window is opened.
         /// </summary>
         public const string PowerShellReplCreationUiContextString = "310d9a74-0a72-4b83-8c5b-4e75f035214c";
 
         /// <summary>
-        /// This is the GUID of the Visual Studio UI Context when in PowerShell debug mode.
+        /// This is the GUID of the Visual Studio UI Context when in PowerShell REPL window is opened.
         /// </summary>
         public static readonly Guid PowerShellReplCreationUiContextGuid = new Guid(PowerShellReplCreationUiContextString);
 
 
         /// <summary>
-        /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell debug mode.
+        /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell project is opened/created.
         /// </summary>
         public const string PowerShellProjectUiContextString = "8b1141ab-519d-4c1e-a86c-510e5a56bf64";
 
         /// <summary>
-        /// This is the GUID of the Visual Studio UI Context when in PowerShell debug mode.
+        /// This is the GUID of the Visual Studio UI Context when in PowerShell project is opened/created.
         /// </summary>
         public static readonly Guid PowerShellProjectUiContextGuid = new Guid(PowerShellProjectUiContextString);
     }

@@ -1,11 +1,12 @@
-using System.ComponentModel.Composition;
-using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
-using Microsoft.VisualStudio.Shell.Interop;
+using PowerShellTools.Common;
 using System;
+using System.ComponentModel.Composition;
+using System.Runtime.InteropServices;
 
 namespace PowerShellTools.Project
 {
@@ -32,16 +33,7 @@ namespace PowerShellTools.Project
             var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
             _validator = (IDependencyValidator)componentModel.GetService<IDependencyValidator>();
 
-            _monitorSelectionService = PowerShellToolsPackage.GetGlobalService(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
-
-            if (_monitorSelectionService != null)
-            {
-                Guid contextGuid = PowerShellTools.Common.Constants.PowerShellProjectUiContextGuid;
-
-                _monitorSelectionService.GetCmdUIContextCookie(contextGuid, out _uiContextCookie);
-
-                _monitorSelectionService.SetCmdUIContext(_uiContextCookie, 1);  // 1 for 'active'
-            }
+            UiContextUtilities.ActivateUiContext(UiContextUtilities.CreateUiContext(PowerShellTools.Common.Constants.PowerShellProjectUiContextGuid));
         }
 
         public override ProjectFactory CreateProjectFactory()

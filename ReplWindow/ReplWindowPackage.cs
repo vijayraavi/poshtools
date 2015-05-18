@@ -26,6 +26,7 @@ namespace PowerShellTools.Repl
     using IReplWindowProvider = IInteractiveWindowProvider;
 #elif POWERSHELL
     using IReplWindowProvider = IPowerShellReplWindowProvider;
+    using PowerShellTools.Common;
 #endif
 
     /// <summary>
@@ -50,21 +51,9 @@ namespace PowerShellTools.Repl
     [Guid(GuidList.guidReplWindowPkgString)]
     internal sealed class ReplWindowPackage : Package, IVsToolWindowFactory
     {
-        private IVsMonitorSelection _monitorSelectionService;
-        private uint _uiContextCookie;
-
         int IVsToolWindowFactory.CreateToolWindow(ref Guid toolWindowType, uint id)
         {
-            _monitorSelectionService = GetGlobalService(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
-
-            if (_monitorSelectionService != null)
-            {
-                Guid contextGuid = PowerShellTools.Common.Constants.PowerShellReplCreationUiContextGuid;
-
-                _monitorSelectionService.GetCmdUIContextCookie(contextGuid, out _uiContextCookie);
-
-                _monitorSelectionService.SetCmdUIContext(_uiContextCookie, 1);  // 1 for 'active'
-            }
+            UiContextUtilities.ActivateUiContext(UiContextUtilities.CreateUiContext(Constants.PowerShellReplCreationUiContextGuid));
 
             if (toolWindowType == typeof(ReplWindow).GUID)
             {
