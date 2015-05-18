@@ -62,10 +62,6 @@ namespace PowerShellTools
                             ShowDropDownOptions = true,
                             EnableCommenting = true)]
 
-    [ProvideKeyBindingTable(ReplWindow.TypeGuid, 200)]        // Resource ID: "Interactive Console"
-    [ProvideToolWindow(typeof(ReplWindow), Style = VsDockStyle.Linked, Orientation = ToolWindowOrientation.none, Window = ToolWindowGuids80.Outputwindow, MultiInstances = true)]
-    [ProvideToolWindowVisibility(typeof(ReplWindow), PowerShellTools.Common.Constants.PowerShellDebuggingUiContextString)]
-
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
