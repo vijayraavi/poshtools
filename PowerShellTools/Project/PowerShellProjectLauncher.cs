@@ -79,12 +79,6 @@ namespace PowerShellTools.Project
             IntPtr pInfo = Marshal.AllocCoTaskMem((int)info.cbSize);
             Marshal.StructureToPtr(info, pInfo, false);
 
-            if (!PowerShellToolsPackage.PowerShellHostInitialized)
-            {
-                // TODO: UI Work required to give user inidcation that it is waiting for debugger to get alive.
-                PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
-            }
-
             var eventManager = new DebugEventManager(PowerShellToolsPackage.Debugger.Runspace);
 
             if (debugger.AdviseDebugEventCallback(eventManager) != VSConstants.S_OK)

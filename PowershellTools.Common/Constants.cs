@@ -64,5 +64,26 @@ namespace PowerShellTools.Common
         /// Latest PowerShell install link
         /// </summary>
         public const string PowerShellInstallFWLink = "http://go.microsoft.com/fwlink/?LinkID=524571";
+
+        /// <summary>
+        /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell debug mode.
+        /// </summary>
+        public const string PowerShellServiceExecutionUiContextString = "310d9a74-0a72-4b83-8c5b-4e75f035214c";
+
+        /// <summary>
+        /// This is the GUID of the Visual Studio UI Context when in PowerShell debug mode.
+        /// </summary>
+        public static readonly Guid PowerShellServiceExecutionUiContextGuid = new Guid(PowerShellServiceExecutionUiContextString);
+
+
+        /// <summary>
+        /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell debug mode.
+        /// </summary>
+        public const string PowerShellProjectUiContextString = "8b1141ab-519d-4c1e-a86c-510e5a56bf64";
+
+        /// <summary>
+        /// This is the GUID of the Visual Studio UI Context when in PowerShell debug mode.
+        /// </summary>
+        public static readonly Guid PowerShellProjectUiContextGuid = new Guid(PowerShellProjectUiContextString);
     }
 }

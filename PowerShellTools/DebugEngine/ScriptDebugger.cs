@@ -349,6 +349,7 @@ namespace PowerShellTools.DebugEngine
         public bool ExecuteInternal(string commandLine)
         {
             IsDebuggingCommandReady = false;
+
             return DebuggingService.Execute(commandLine);
         }
 

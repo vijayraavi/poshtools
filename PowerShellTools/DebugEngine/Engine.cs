@@ -93,6 +93,12 @@ namespace PowerShellTools.DebugEngine
         /// </remarks>
         public void Execute()
         {
+            if (!PowerShellToolsPackage.PowerShellHostInitialized)
+            {
+                // TODO: UI Work required to give user inidcation that it is waiting for debugger to get alive.
+                PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
+            }
+
             if (!_node.IsAttachedProgram)
             {
                 if (!_runspaceSet.WaitOne())
