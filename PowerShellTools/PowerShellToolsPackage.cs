@@ -55,7 +55,7 @@ namespace PowerShellTools
     // in the Help/About dialog of Visual Studio.
     //[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
 
-    // There are a few user scenarios which requires package to be loaded
+    // There are a few user scenarios which will trigger package to load
     // 1. Open/Create any type of PowerShell project
     // 2. Open/Create PowerShell file(.ps1, .psm1, .psd1) from file->open/create or solution explorer
     // 3. Execute PowerShell script file from solution explorer

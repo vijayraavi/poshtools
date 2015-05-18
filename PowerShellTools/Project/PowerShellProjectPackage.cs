@@ -25,9 +25,6 @@ namespace PowerShellTools.Project
     {
         private readonly IDependencyValidator _validator;
 
-        private IVsMonitorSelection _monitorSelectionService;
-        private uint _uiContextCookie;
-
         public PowerShellProjectPackage()
         {
             var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
