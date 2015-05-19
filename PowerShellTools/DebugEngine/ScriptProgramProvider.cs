@@ -27,37 +27,44 @@ namespace PowerShellTools.DebugEngine
         public int GetProviderProcessData(enum_PROVIDER_FLAGS Flags, IDebugDefaultPort2 pPort, AD_PROCESS_ID ProcessId, CONST_GUID_ARRAY EngineFilter, PROVIDER_PROCESS_DATA[] pProcess)
         {
             Log.Debug("ProgramProvider: GetProviderProcessData");
+            
 //            return VSConstants.E_NOTIMPL;
 
 //#if FALSE
-
-            if (Flags.HasFlag(enum_PROVIDER_FLAGS.PFLAG_GET_PROGRAM_NODES))
+            try
             {
-                var process = Process.GetProcessById((int) ProcessId.dwProcessId);
-                bool ret;
-                IsWow64Process(process.Handle, out ret);
-
-                if (!ret)
+                if (Flags.HasFlag(enum_PROVIDER_FLAGS.PFLAG_GET_PROGRAM_NODES))
                 {
-                    foreach (ProcessModule module in process.Modules)
-                    {
-                        if (module.ModuleName.StartsWith("System.Management.Automation", StringComparison.OrdinalIgnoreCase))
+                    var process = Process.GetProcessById((int)ProcessId.dwProcessId);
+                    string x = process.ProcessName;
+                    Log.Debug("programprovider:" +process.ProcessName + "; id:" + process.Id);
+                    
+                    if(x.Equals("powershell", StringComparison.OrdinalIgnoreCase))
+                    { 
+                        foreach (ProcessModule module in process.Modules)
                         {
-                            var node = new ScriptProgramNode(new ScriptDebugProcess(pPort, ProcessId.dwProcessId));
+                            if (module.ModuleName.StartsWith("System.Management.Automation", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var node = new ScriptProgramNode(new ScriptDebugProcess(pPort, ProcessId.dwProcessId));
 
-                            var programNodes = new[] { Marshal.GetComInterfaceForObject(node, typeof(IDebugProgramNode2)) };
+                                var programNodes = new[] { Marshal.GetComInterfaceForObject(node, typeof(IDebugProgramNode2)) };
 
-                            var destinationArray = Marshal.AllocCoTaskMem(IntPtr.Size * programNodes.Length);
-                            Marshal.Copy(programNodes, 0, destinationArray, programNodes.Length);
+                                var destinationArray = Marshal.AllocCoTaskMem(IntPtr.Size * programNodes.Length);
+                                Marshal.Copy(programNodes, 0, destinationArray, programNodes.Length);
 
-                            pProcess[0].Fields = enum_PROVIDER_FIELDS.PFIELD_PROGRAM_NODES;
-                            pProcess[0].ProgramNodes.Members = destinationArray;
-                            pProcess[0].ProgramNodes.dwCount = (uint)programNodes.Length;
+                                pProcess[0].Fields = enum_PROVIDER_FIELDS.PFIELD_PROGRAM_NODES;
+                                pProcess[0].ProgramNodes.Members = destinationArray;
+                                pProcess[0].ProgramNodes.dwCount = (uint)programNodes.Length;
 
-                            return VSConstants.S_OK;
+                                return VSConstants.S_OK;
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("programprovider:" + ex.Message);
             }
 
             return VSConstants.S_FALSE;
