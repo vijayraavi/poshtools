@@ -71,7 +71,7 @@ namespace PowerShellTools.Repl
     /// starts having problems w/ a large number of inputs.
     /// </summary>
     [Guid(ReplWindow.TypeGuid)]
-    class ReplWindow : ToolWindowPane, IOleCommandTarget, IReplWindow, IVsFindTarget
+    internal sealed class ReplWindow : ToolWindowPane, IOleCommandTarget, IReplWindow, IVsFindTarget
     {
         public const string TypeGuid = "2227C503-8DAF-44E6-BFF6-222088DE83E0";
 

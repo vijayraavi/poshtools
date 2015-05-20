@@ -19,6 +19,11 @@ namespace PowerShellTools.Service
 
         private ExecutionEngine()
         {
+            if (!PowerShellToolsPackage.PowerShellHostInitialized)
+            {
+                PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
+            }
+
             _debugger = PowerShellToolsPackage.Debugger;
             
             if (_debugger.HostUi != null)
