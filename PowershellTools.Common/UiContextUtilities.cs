@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.Common
 {
-    internal sealed static class UiContextUtilities
+    internal static class UiContextUtilities
     {
         private static IVsMonitorSelection _monitorSelectionService = Package.GetGlobalService(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
 
