@@ -48,6 +48,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
 
+        // Needs to be initilaized from its corresponding VS option page over the wcf channel.
+        // For now we dont have anything needed from option page, so we just initialize here.
+        private PowerShellRawHostOptions _rawHostOptions = new PowerShellRawHostOptions(); 
+
         /// <summary>
         /// Minimal powershell version required for remote session debugging
         /// </summary>
@@ -82,6 +86,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Call back service used to talk to VS side
+        /// </summary>
         public IDebugEngineCallback CallbackService
         {
             get
@@ -91,6 +98,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             set
             {
                 _callback = value;
+            }
+        }
+
+        /// <summary>
+        /// PowerShell raw host UI options 
+        /// </summary>
+        public PowerShellRawHostOptions RawHostOptions
+        {
+            get
+            {
+                return _rawHostOptions;
+            }
+            set
+            {
+                _rawHostOptions = value;
             }
         }
 
@@ -434,10 +456,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ReleaseWaitHandler();
 
-            if (_currentPowerShell != null)
+            try
             {
-                _currentPowerShell.Stop();
+                if (_currentPowerShell != null)
+                {
+                    _currentPowerShell.Stop();
+                }
             }
+            catch { }
         }
 
         /// <summary>
@@ -777,12 +803,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Check if there is an app running inside PSHost
+        /// Apply the raw host options on powershell host
         /// </summary>
-        /// <returns>Boolean indicates if there is an app running</returns>
-        public bool IsAppRunning()
+        /// <param name="options">PS raw UI host options</param>
+        public void SetOption(PowerShellRawHostOptions options)
         {
-            return AppRunning;
+            _rawHostOptions = options;
         }
 
         #endregion

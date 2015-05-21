@@ -393,4 +393,7 @@ Would you like to download now?</value>
   <data name="CommonParametersTipLabel" xml:space="preserve">
     <value>Common Parameters</value>
   </data>
+  <data name="ParameterSetNameLabel" xml:space="preserve">
+    <value>ParameterSetName:</value>
+  </data>
 </root>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
@@ -26,6 +27,23 @@ namespace PowerShellTools.Intellisense
         private readonly SVsServiceProvider _serviceProvider;        
         private int _autoCompleteCount;
         private static readonly ILog Log = LogManager.GetLogger(typeof(AutoCompletionController));
+        private static HashSet<VSConstants.VSStd2KCmdID> HandledCommands = new HashSet<VSConstants.VSStd2KCmdID>()
+        {
+            VSConstants.VSStd2KCmdID.TYPECHAR,
+            VSConstants.VSStd2KCmdID.RETURN,
+            VSConstants.VSStd2KCmdID.DELETE,
+            VSConstants.VSStd2KCmdID.BACKSPACE,
+            VSConstants.VSStd2KCmdID.UNDO,
+            VSConstants.VSStd2KCmdID.CUT,
+            VSConstants.VSStd2KCmdID.COMMENT_BLOCK,
+            VSConstants.VSStd2KCmdID.COMMENTBLOCK,
+            VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK,
+            VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK,
+            VSConstants.VSStd2KCmdID.LEFT,
+            VSConstants.VSStd2KCmdID.RIGHT,
+            VSConstants.VSStd2KCmdID.UP,
+            VSConstants.VSStd2KCmdID.DOWN
+        };
 
         public AutoCompletionController(ITextView textView,
                                          IEditorOperations editorOperations,
@@ -84,11 +102,9 @@ namespace PowerShellTools.Intellisense
             var command = (VSConstants.VSStd2KCmdID)nCmdID;
 
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
-                pguidCmdGroup != VSConstants.VSStd2K ||
+                IsUnhandledCommand(pguidCmdGroup, command) ||
                 !_textView.Selection.IsEmpty ||
-                Utilities.IsCaretInCommentArea(_textView) ||
-                (!(command == VSConstants.VSStd2KCmdID.BACKSPACE && this.IsLastCmdAutoComplete) && 
-                 IsInStringArea()))
+                Utilities.IsCaretInCommentArea(_textView))
             {
                 // Auto completion shouldn't take effect when
                 // 1. In automation function
@@ -103,6 +119,14 @@ namespace PowerShellTools.Intellisense
             if (command == VSConstants.VSStd2KCmdID.TYPECHAR)
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
+            }
+
+            if (IsInStringArea() &&
+                command != VSConstants.VSStd2KCmdID.BACKSPACE &&
+                typedChar != '\"' &&
+                typedChar != '\'')
+            {
+                return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             }
 
             return ProcessKeystroke(command, typedChar) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
@@ -126,7 +150,7 @@ namespace PowerShellTools.Intellisense
                         if (this.IsLastCmdAutoComplete && IsTypedCharEqualsNextChar(typedChar))
                         {
                             ProcessTypedRightBraceOrQuotes(typedChar);
-                            SetAutoCompleteState(false);
+                            _autoCompleteCount--;
                             return VSConstants.S_OK;
                         }
                         else
@@ -350,6 +374,17 @@ namespace PowerShellTools.Intellisense
                 _editorOperations.AddAfterTextBufferChangePrimitive();
                 undo.Complete();
             }
+        }
+
+        /// <summary>
+        /// Determines whether a command is unhandled.
+        /// </summary>
+        /// <param name="pguidCmdGroup">The GUID of the command group.</param>
+        /// <param name="command">The command.</param>
+        /// <returns>True if it is an unrecognized command.</returns>
+        private static bool IsUnhandledCommand(Guid pguidCmdGroup, VSConstants.VSStd2KCmdID command)
+        {
+            return !(pguidCmdGroup == VSConstants.VSStd2K && HandledCommands.Contains(command));
         }
     }
 }

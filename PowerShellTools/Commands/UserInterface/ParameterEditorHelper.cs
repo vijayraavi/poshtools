@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation.Language;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.TextManager.Interop;
 using PowerShellTools.Classification;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Commands.UserInterface
 {
@@ -29,24 +26,29 @@ namespace PowerShellTools.Commands.UserInterface
         private static bool? ShowParameterEditor(ParamBlockAst paramBlockAst, out string scriptArgs)
         {
             scriptArgs = String.Empty;
-            ParameterEditorModel model = new ParameterEditorModel()
-            {
-                Parameters = PowerShellParseUtilities.ParseParameters(paramBlockAst),
-                CommonParameters = GenerateCommonParameters()
-            };
+            var model = PowerShellParseUtilities.ParseParameters(paramBlockAst);
             var viewModel = new ParameterEditorViewModel(model);
             var view = new ParameterEditorView(viewModel);
+
             bool? wasOkClicked = view.ShowModal();
             if (wasOkClicked != true)
             {
                 return wasOkClicked;
             }
-            
+
+            scriptArgs = GenerateScripArgsFromModel(model);
+            return wasOkClicked;
+        }
+
+        internal static string GenerateScripArgsFromModel(ParameterEditorModel model)
+        {
+            Arguments.ValidateNotNull<ParameterEditorModel>(model, "model");
+            string scriptArgs = String.Empty;
             foreach (var p in model.Parameters)
             {
                 if (p.Value != null)
                 {
-                    switch(p.Type)
+                    switch (p.Type)
                     {
                         case ParameterType.Boolean:
                             scriptArgs += WrapParameterName(p.Name);
@@ -55,9 +57,9 @@ namespace PowerShellTools.Commands.UserInterface
 
                         case ParameterType.Switch:
                             scriptArgs += WrapParameterName(p.Name);
-                            scriptArgs += String.Format(":${0}", p.Value.ToString());                            
+                            scriptArgs += String.Format(":${0}", p.Value.ToString());
                             break;
-                        
+
                         case ParameterType.Byte:
                         case ParameterType.Int32:
                         case ParameterType.Int64:
@@ -82,7 +84,7 @@ namespace PowerShellTools.Commands.UserInterface
                 }
             }
 
-            foreach(var p in model.CommonParameters)
+            foreach (var p in model.CommonParameters)
             {
                 if (p.Value != null)
                 {
@@ -98,7 +100,7 @@ namespace PowerShellTools.Commands.UserInterface
                             {
                                 scriptArgs += WrapParameterName(p.Name);
                                 scriptArgs += WrapValue(p.Value as string);
-                            }                            
+                            }
                             break;
 
                         default:
@@ -108,7 +110,8 @@ namespace PowerShellTools.Commands.UserInterface
                     }
                 }
             }
-            return wasOkClicked;
+
+            return scriptArgs;
         }
 
         public static bool HasParameters(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextManager textManager, out ParamBlockAst paramBlock)
@@ -168,59 +171,6 @@ namespace PowerShellTools.Commands.UserInterface
                 return value;
             }
             return String.Format(" \"{0}\"", value);
-        }
-
-        private static IList<ScriptParameterViewModel> GenerateCommonParameters()
-        {
-            return new List<ScriptParameterViewModel>()
-            {
-                // Debug
-                new ScriptParameterViewModel(
-                    new ScriptParameter("Debug", DataTypeConstants.SwitchType, null, new HashSet<object>())
-                    ),
-
-                // ErrorAction
-                new ScriptParameterViewModel(
-                    new ScriptParameter("ErrorAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>
-                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
-                    ),
-
-                // ErrorVariable
-                new ScriptParameterViewModel(
-                    new ScriptParameter("ErrorVariable", DataTypeConstants.StringType, null, new HashSet<object>())
-                    ),
-
-                // OutBuffer
-                new ScriptParameterViewModel(
-                    new ScriptParameter("OutBuffer", DataTypeConstants.StringType, null, new HashSet<object>())
-                    ),
-
-                // OutVariable
-                new ScriptParameterViewModel(
-                    new ScriptParameter("OutVariable", DataTypeConstants.StringType, null, new HashSet<object>())
-                    ),
-
-                // PipelineVariable
-                new ScriptParameterViewModel(
-                    new ScriptParameter("PipelineVariable", DataTypeConstants.StringType, null, new HashSet<object>())
-                    ),
-
-                //Verbose
-                new ScriptParameterViewModel(
-                    new ScriptParameter("Verbose", DataTypeConstants.SwitchType, null, new HashSet<object>())
-                    ),
-
-                // WarningAction
-                new ScriptParameterViewModel(
-                    new ScriptParameter("WarningAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>()
-                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
-                    ),
-
-                // WarningVariable
-                new ScriptParameterViewModel(
-                    new ScriptParameter("WarningVariable", DataTypeConstants.StringType, null, new HashSet<object>())
-                    )
-            };
         }
     }
 }

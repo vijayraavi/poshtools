@@ -129,8 +129,6 @@
       <Button guid="guidPoshToolsCmdSet" id="cmdidReplWindow" priority="0x7f00" type="Button">
         <Icon guid="guidReplImage" id="1"/> 
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>TextChanges</CommandFlag>
         <Strings>
           <CommandName>cmdidReplWindow</CommandName>
