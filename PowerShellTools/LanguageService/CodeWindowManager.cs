@@ -13,16 +13,15 @@
  * ***************************************************************************/
 
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Management.Automation.Language;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools;
-using PowerShellTools.Classification;
 using PowerShellTools.Language;
+using PowerShellTools.LanguageService.DropDownBar;
 
 namespace PowerShellTools.LanguageService
 {
@@ -33,48 +32,27 @@ namespace PowerShellTools.LanguageService
         private readonly IWpfTextView _textView;
         private static readonly Dictionary<IWpfTextView, CodeWindowManager> _windows = new Dictionary<IWpfTextView, CodeWindowManager>();
         private DropDownBarClient _client;
-        private readonly IPowerShellTokenizationService _tokenizer;
 
         static CodeWindowManager()
         {
             PowerShellToolsPackage.Instance.OnIdle += OnIdle;
         }
 
-        public CodeWindowManager(IVsCodeWindow codeWindow, IWpfTextView textView)
+        public CodeWindowManager(IVsCodeWindow codeWindow, IWpfTextView textView, IVsStatusbar statusBar)
         {
             _window = codeWindow;
             _textView = textView;
-	    if (_textView.TextBuffer.ContentType.IsOfType(PowerShellConstants.LanguageName))
-	    {
-		_textView.TextBuffer.Properties.TryGetProperty<IPowerShellTokenizationService>(BufferProperties.PowerShellTokenizer, out _tokenizer);
-	    }
-	    else
-	    {
-		_tokenizer = new PowerShellTokenizationService(_textView.TextBuffer);
-	    }
-
-            Debug.Assert(_tokenizer != null, "PowerShell Tokenizer not found on textBuffer from CodeWindowManager");
 
             var model = CommonPackage.ComponentModel;
             var adaptersFactory = model.GetService<IVsEditorAdaptersFactoryService>();
             var factory = model.GetService<IEditorOperationsFactoryService>();
 
-            EditFilter editFilter = _filter = new EditFilter(textView, factory.GetEditorOperations(textView));
+            EditFilter editFilter = _filter = new EditFilter(textView, factory.GetEditorOperations(textView), statusBar);
             var textViewAdapter = adaptersFactory.GetViewAdapter(textView);
             editFilter.AttachKeyboardFilter(textViewAdapter);
 
             var viewFilter = new TextViewFilter();
             viewFilter.AttachFilter(textViewAdapter);
-
-            _tokenizer.TokenizationComplete += Tokenizer_TokenizationComplete;
-        }
-
-        private void Tokenizer_TokenizationComplete(object sender, Ast ast)
-        {
-            if (_client != null)
-                _client.UpdateAst(ast);
-
-            //TODO: A deeper refactoring to make the client handle the update from the tokenizer.
         }
 
         private static void OnIdle(object sender, ComponentManagerEventArgs e)
@@ -118,14 +96,9 @@ namespace PowerShellTools.LanguageService
 
         private int AddDropDownBar()
         {
-            var text = _textView.TextBuffer.CurrentSnapshot.GetText();
+            
 
-            Token[] tokens;
-            ParseError[] errors;
-
-            var ast = Parser.ParseInput(text, out tokens, out errors);
-
-            DropDownBarClient dropDown = _client = new DropDownBarClient(_textView, ast);
+            DropDownBarClient dropDown = _client = new DropDownBarClient(_textView);
 
             IVsDropdownBarManager manager = (IVsDropdownBarManager)_window;
 
@@ -153,7 +126,7 @@ namespace PowerShellTools.LanguageService
             if (_client != null)
             {
                 IVsDropdownBarManager manager = (IVsDropdownBarManager)_window;
-                _client.Unregister();
+                _client.Dispose();
                 _client = null;
                 _textView.TextBuffer.Properties.RemoveProperty(typeof(DropDownBarClient));
                 return manager.RemoveDropdownBar();

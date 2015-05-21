@@ -269,4 +269,18 @@ namespace PowerShellTools.Classification
             ForegroundColor = Color.FromArgb(255, 0, 0, 0);
         }
     }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = Classifications.PowerShellUnknown)]
+    [Name("PowerShell Unknown")]
+    [DisplayName("PowerShell Unknown")]
+    [UserVisible(true)]
+    [Order(After = Priority.Default, Before = Priority.High)]
+    internal sealed class PowerShellUnknownFormat : ClassificationFormatDefinition
+    {
+        public PowerShellUnknownFormat()
+        {
+            ForegroundColor = Color.FromArgb(255, 0, 0, 0);
+        }
+    }
 }

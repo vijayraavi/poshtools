@@ -44,6 +44,9 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\Build\FinalPublicKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>false</DelaySign>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -92,6 +95,7 @@
     <Compile Include="IntelliSense\CommentAreaUnitTests.cs" />
     <Compile Include="IntelliSense\AutoCompletionControllerUnitTests.cs" />
     <Compile Include="IntelliSense\TabCompleteUnitTests.cs" />
+    <Compile Include="LanguageService\NavigationUnitTests.cs" />
     <Compile Include="RegionAndBraceMatchingService.Test.cs" />
     <Compile Include="ScriptDebuggerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -108,11 +112,11 @@
       <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
       <Name>PowerShellTools.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PowershellTools.HostService\PowerShellTools.HostService.csproj">
-      <Project>{c9d4aac3-51d3-4ed9-ab9b-564d4d2d30e8}</Project>
+    <ProjectReference Include="..\PowerShellTools.HostService\PowerShellTools.HostService.csproj">
+      <Project>{8b0f3db2-ad3d-4d3a-85c3-4850263054e9}</Project>
       <Name>PowerShellTools.HostService</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PowerShellTools.PublicContract\PowerShellTools.Contracts.csproj">
+    <ProjectReference Include="..\PowerShellTools.Contracts\PowerShellTools.Contracts.csproj">
       <Project>{103c9af2-f8a5-4bf0-a341-a43147c320aa}</Project>
       <Name>PowerShellTools.Contracts</Name>
     </ProjectReference>

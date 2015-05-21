@@ -19,7 +19,11 @@ namespace PowerShellTools.Common
         // 20 minutes
         public const int HostProcessStartupTimeout = 20 * 60 * 1000; // wait for 20 minutes max for remote powershell host process to initialize
 
-        public const string PowershellHostExeName = "PowerShellToolsProcessHost.exe";
+        public const string PowerShellHostExeName = "PowerShellToolsProcessHost.exe";
+
+        public const string PowerShellHostExeNameForx86 = "PowerShellToolsProcessHostx86.exe";
+
+        public const string PowershellHostConsoleExeName = "PowerShellToolsProcessHostConsole.exe";
 
         // 10M in bytes
         public const int BindingMaxReceivedMessageSize = 10000000;
@@ -28,6 +32,9 @@ namespace PowerShellTools.Common
         public const string VsProcessIdArg = "/vsPid:";
         public const string UniqueEndpointArg = "/endpoint:";
         public const string ReadyEventUniqueNameArg = "/readyEventUniqueName:";
+
+        // Arguments for vspowershellhostconsole.exe
+        public const string ConsoleProcessIdArg = "/hpPid:";
 
         public const string SecureStringFullTypeName = "system.security.securestring";
         public const string PSCredentialFullTypeName = "system.management.automation.pscredential";
@@ -52,5 +59,10 @@ namespace PowerShellTools.Common
         /// PowerShell install version registry key name
         /// </summary>
         public const string PowerShellVersionRegKeyName = "PowerShellVersion";
+
+        /// <summary>
+        /// Latest PowerShell install link
+        /// </summary>
+        public const string PowerShellInstallFWLink = "http://go.microsoft.com/fwlink/?LinkID=524571";
     }
 }

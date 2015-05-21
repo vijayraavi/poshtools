@@ -9,10 +9,12 @@ using System.Windows;
 using log4net;
 using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
@@ -25,6 +27,7 @@ using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.Intellisense;
 using PowerShellTools.LanguageService;
+using PowerShellTools.Options;
 using PowerShellTools.Project.PropertyPages;
 using PowerShellTools.Service;
 using PowerShellTools.ServiceManagement;
@@ -103,11 +106,9 @@ namespace PowerShellTools
         private static ScriptDebugger _debugger;
         private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
-        private static GotoDefinitionCommand _gotoDefinitionCommand;
         private VisualStudioEvents VisualStudioEvents;
         private IContentType _contentType;
         private IntelliSenseEventsHandlerProxy _intelliSenseServiceContext;
-        private DteWindowsEventsHandlerProxy _dteWindowsEventsHandler;
 
         public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
 
@@ -146,14 +147,6 @@ namespace PowerShellTools
             get
             {
                 return _intelliSenseServiceContext;
-            }
-        }
-
-        public DteWindowsEventsHandlerProxy DteWindowsEventsHandler
-        {
-            get
-            {
-                return _dteWindowsEventsHandler;
             }
         }
 
@@ -254,7 +247,6 @@ namespace PowerShellTools
         private void InitializeInternal()
         {
             _intelliSenseServiceContext = new IntelliSenseEventsHandlerProxy();
-            _dteWindowsEventsHandler = new DteWindowsEventsHandlerProxy();
 
             var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
 
@@ -284,12 +276,14 @@ namespace PowerShellTools
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            _gotoDefinitionCommand = new GotoDefinitionCommand();
+            var textManager = (IVsTextManager)GetService(typeof(SVsTextManager));
+            var adaptersFactory = componentModel.GetService<IVsEditorAdaptersFactoryService>();
 
             RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
                             new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
+                            new ExecuteWithParametersAsScriptCommand(adaptersFactory, textManager, this.DependencyValidator),
                             new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
-                            _gotoDefinitionCommand,
+                            new ExecuteWithParametersAsScriptFromSolutionExplorerCommand(adaptersFactory, textManager, this.DependencyValidator),
                             new PrettyPrintCommand(),
                             new OpenDebugReplCommand());
 
@@ -381,7 +375,6 @@ namespace PowerShellTools
             {
                 IPowerShellTokenizationService psts = new PowerShellTokenizationService(buffer);
 
-                _gotoDefinitionCommand.AddTextBuffer(buffer);
                 buffer.PostChanged += (o, args) => psts.StartTokenization();
 
                 buffer.Properties.AddProperty(BufferProperties.PowerShellTokenizer, psts);
@@ -394,6 +387,7 @@ namespace PowerShellTools
         private void InitializePowerShellHost()
         {
             var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
+
             OverrideExecutionPolicyConfiguration = page.OverrideExecutionPolicyConfiguration;
 
             Log.Info("InitializePowerShellHost");
@@ -406,6 +400,11 @@ namespace PowerShellTools
             DebuggerReadyEvent.Set();
 
             PowerShellHostInitialized = true;
+        }
+
+        internal void BitnessSettingChanged(object sender, BitnessEventArgs e)
+        {
+            ConnectionManager.Instance.ProcessEventHandler(e.NewBitness);
         }
     }
 }

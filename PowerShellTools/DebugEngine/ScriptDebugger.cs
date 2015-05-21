@@ -233,7 +233,15 @@ namespace PowerShellTools.DebugEngine
 
                 foreach (var psobj in result)
                 {
-                    _callstack.Add(new ScriptStackFrame(CurrentExecutingNode, psobj.ScriptFullPath, psobj.Line, psobj.FrameString));
+                    _callstack.Add(
+                        new ScriptStackFrame(
+                            CurrentExecutingNode, 
+                            psobj.ScriptFullPath, 
+                            psobj.FrameString, 
+                            psobj.StartLine, 
+                            psobj.EndLine,
+                            psobj.StartColumn,
+                            psobj.EndColumn));
                 }
             }
             catch (Exception ex)

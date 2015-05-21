@@ -97,6 +97,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string CancelButtonLabel {
+            get {
+                return ResourceManager.GetString("CancelButtonLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The CLR version that this module requires..
         /// </summary>
         public static string ClrVersion_Description {
@@ -147,6 +156,15 @@ namespace PowerShellTools {
         public static string CodeCertSettingDesc {
             get {
                 return ResourceManager.GetString("CodeCertSettingDesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Common Parameters.
+        /// </summary>
+        public static string CommonParametersTipLabel {
+            get {
+                return ResourceManager.GetString("CommonParametersTipLabel", resourceCulture);
             }
         }
         
@@ -219,6 +237,42 @@ namespace PowerShellTools {
         public static string DotNetFrameworkVersion_DisplayName {
             get {
                 return ResourceManager.GetString("DotNetFrameworkVersion_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (script).
+        /// </summary>
+        public static string DropDownScriptName {
+            get {
+                return ResourceManager.GetString("DropDownScriptName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use the dropdown to view and navigate to other items in this file..
+        /// </summary>
+        public static string DropDownToolTip {
+            get {
+                return ResourceManager.GetString("DropDownToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This value is not one of the allowed values for parameter &apos;{0}&apos;..
+        /// </summary>
+        public static string Error_DisallowedValue_1arg {
+            get {
+                return ResourceManager.GetString("Error_DisallowedValue_1arg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; must be of type &apos;{1}&apos;..
+        /// </summary>
+        public static string Error_TypeMismatch_2args {
+            get {
+                return ResourceManager.GetString("Error_TypeMismatch_2args", resourceCulture);
             }
         }
         
@@ -313,6 +367,33 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Function definition is ambiguous. Navigated to first possible definition..
+        /// </summary>
+        public static string GoToDefinitionAmbiguousMessage {
+            get {
+                return ResourceManager.GetString("GoToDefinitionAmbiguousMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot navigate to the symbol under the caret..
+        /// </summary>
+        public static string GoToDefinitionFailureMessage {
+            get {
+                return ResourceManager.GetString("GoToDefinitionFailureMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Go to Definition.
+        /// </summary>
+        public static string GoToDefinitionName {
+            get {
+                return ResourceManager.GetString("GoToDefinitionName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The unique identifier of the module..
         /// </summary>
         public static string Guid_Description {
@@ -354,6 +435,15 @@ namespace PowerShellTools {
         public static string ManifestFileName_DisplayName {
             get {
                 return ResourceManager.GetString("ManifestFileName_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Microsoft Visual Studio.
+        /// </summary>
+        public static string MessageBoxCaption {
+            get {
+                return ResourceManager.GetString("MessageBoxCaption", resourceCulture);
             }
         }
         
@@ -450,6 +540,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to _Ok.
+        /// </summary>
+        public static string OkButtonLabel {
+            get {
+                return ResourceManager.GetString("OkButtonLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Output.
         /// </summary>
         public static string OutputCategory {
@@ -491,6 +590,42 @@ namespace PowerShellTools {
         public static string OutputTypeSettingDescription {
             get {
                 return ResourceManager.GetString("OutputTypeSettingDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following parameter values will be used for this execution.
+        /// </summary>
+        public static string ParameterEditorTipLabel {
+            get {
+                return ResourceManager.GetString("ParameterEditorTipLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit Parameters.
+        /// </summary>
+        public static string ParameterEditorTitle {
+            get {
+                return ResourceManager.GetString("ParameterEditorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter Name.
+        /// </summary>
+        public static string ParameterNameHeaderLabel {
+            get {
+                return ResourceManager.GetString("ParameterNameHeaderLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value.
+        /// </summary>
+        public static string ParameterValueHeaderLabel {
+            get {
+                return ResourceManager.GetString("ParameterValueHeaderLabel", resourceCulture);
             }
         }
         
@@ -725,6 +860,24 @@ namespace PowerShellTools {
         public static string Version_DisplayName {
             get {
                 return ResourceManager.GetString("Version_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;Auto-generated&gt;.
+        /// </summary>
+        public static string WatermarkAutoGenerated {
+            get {
+                return ResourceManager.GetString("WatermarkAutoGenerated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;Null&gt;.
+        /// </summary>
+        public static string WatermarkNull {
+            get {
+                return ResourceManager.GetString("WatermarkNull", resourceCulture);
             }
         }
     }

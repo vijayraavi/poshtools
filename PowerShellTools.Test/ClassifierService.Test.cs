@@ -31,6 +31,7 @@ namespace PowerShellTools.Test
         private Mock<IClassificationType> _newLineType;
         private Mock<IClassificationType> _positionType;
         private Mock<IClassificationType> _statementSeparatorType;
+        private Mock<IClassificationType> _unknownType;
 
         [TestInitialize]
         public void Init()
@@ -56,6 +57,7 @@ namespace PowerShellTools.Test
             TypeSetupHelper(out _newLineType, Classifications.PowerShellNewLine);
             TypeSetupHelper(out _positionType, Classifications.PowerShellPosition);
             TypeSetupHelper(out _statementSeparatorType, Classifications.PowerShellStatementSeparator);
+            TypeSetupHelper(out _unknownType, Classifications.PowerShellUnknown);
 
             EditorImports.ClassificationTypeRegistryService = _classificationRegistry.Object;
             _classifierService = new ClassifierService();
@@ -253,7 +255,21 @@ namespace PowerShellTools.Test
             ClassifyPowershellTokensTestHelper(script, 1, Classifications.PowerShellVariable);
         }
 
-        private void ClassifyPowershellTokensTestHelper(string script, int targetToken, string expectedTypes)
+        [TestMethod]
+        [Ignore]
+        public void ShouldClassifyClass()
+        {
+            var script = @"class A { }
+                           class B : A { }";
+
+            // The below tokens are different in PowerShell V3 and V5
+            ClassifyPowershellTokensTestHelper(script, 0, Classifications.PowerShellKeyword);
+            ClassifyPowershellTokensTestHelper(script, 6, Classifications.PowerShellType);
+            ClassifyPowershellTokensTestHelper(script, 7, Classifications.PowerShellUnknown);
+            ClassifyPowershellTokensTestHelper(script, 8, Classifications.PowerShellType);
+        }
+
+        private void ClassifyPowershellTokensTestHelper(string script, int targetToken, string expectedType)
         {
             Token[] tokens;
             ParseError[] errors;
@@ -261,14 +277,16 @@ namespace PowerShellTools.Test
 
             var infos = _classifierService.ClassifyTokens(tokens, 0).ToArray();
 
-            Assert.AreEqual(expectedTypes, infos[targetToken].ClassificationType.Classification);
+            var actual = infos[targetToken].ClassificationType.Classification;
+
+            Assert.AreEqual(expectedType, actual, string.Format("{0} classifcation type expected, got {1}.", expectedType, actual));
         }
 
         private void TypeSetupHelper(out Mock<IClassificationType> type, string classificationType)
         {
             type = new Mock<IClassificationType>();
             type.Setup(m => m.Classification).Returns(classificationType);
-            _classificationRegistry.Setup(m => m.GetClassificationType(classificationType)).Returns(type.Object);            
+            _classificationRegistry.Setup(m => m.GetClassificationType(classificationType)).Returns(type.Object);
         }
     }
 }

@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using System.Threading;
-using PowerShellTools.Common;
 using System.Runtime.InteropServices;
+using System.Threading;
 using log4net;
-using System.Threading.Tasks;
+using PowerShellTools.Common;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Options;
 
 namespace PowerShellTools.ServiceManagement
 {
@@ -21,7 +21,7 @@ namespace PowerShellTools.ServiceManagement
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int W, int H, uint uFlags);
 
         [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
         private const uint SWP_NOSIZE = 0x0001;
@@ -34,7 +34,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static Guid EndPointGuid { get; set; }
 
-        public static PowerShellHostProcess CreatePowershellHostProcess()
+        public static PowerShellHostProcess CreatePowershellHostProcess(BitnessOptions bitness)
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
@@ -42,7 +42,17 @@ namespace PowerShellTools.ServiceManagement
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
             EndPointGuid = Guid.NewGuid();
 
-            string exeName = Constants.PowershellHostExeName;
+            string exeName;
+            switch (bitness)
+            {
+                case BitnessOptions.x86:
+                    exeName = Constants.PowerShellHostExeNameForx86;
+                    break;
+                case BitnessOptions.DefaultToOperatingSystem:
+                default:
+                    exeName = Constants.PowerShellHostExeName;
+                    break;
+            }
             string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string path = Path.Combine(currentPath, exeName);
             string hostArgs = String.Format(CultureInfo.InvariantCulture,
@@ -78,10 +88,6 @@ namespace PowerShellTools.ServiceManagement
             // By then we will bring timeout back here.
             bool success = readyEvent.WaitOne();
             readyEvent.Close();
-
-            MakeTopMost(powerShellHostProcess.MainWindowHandle);
-
-            ShowWindow(powerShellHostProcess.MainWindowHandle, SW_HIDE);
 
             if (!success)
             {
@@ -125,20 +131,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static void PowerShellHostProcessOutput(string outputData)
         {
-            if (outputData.StartsWith(string.Format(DebugEngineConstants.PowerShellHostProcessLogTag, PowershellHostProcessHelper.EndPointGuid), StringComparison.OrdinalIgnoreCase))
-            {
-                // debug data
-                Log.Debug(outputData);
-            }
-            else
-            {
-                // app data
-                if (PowerShellToolsPackage.Debugger != null &&
-                    PowerShellToolsPackage.Debugger.HostUi != null)
-                {
-                    PowerShellToolsPackage.Debugger.HostUi.VsOutputString(outputData + Environment.NewLine);
-                }
-            }
+            Log.Debug(outputData);
         }
 
         private static void MakeTopMost(IntPtr hWnd)
@@ -152,42 +145,16 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     public class PowerShellHostProcess
     {
-        private bool _appRunning = false;
-
-        public Process Process 
+        public Process Process
         {
-            get; 
-            private set; 
+            get;
+            private set;
         }
 
-        public Guid EndpointGuid 
+        public Guid EndpointGuid
         {
-            get; 
-            private set; 
-        }
-
-        /// <summary>
-        /// App running flag indicating if there is app runing on PSHost
-        /// </summary>
-        public bool AppRunning
-        {
-            get
-            {
-                return _appRunning;
-            }
-            set
-            {
-                _appRunning = value;
-
-                // Start monitoring thread when app starts
-                if (value)
-                {
-                    Task.Run(() =>
-                    {
-                        MonitorUserInputRequest();
-                    });
-                }
-            }
+            get;
+            private set;
         }
 
         public PowerShellHostProcess(Process process, Guid guid)
@@ -197,41 +164,15 @@ namespace PowerShellTools.ServiceManagement
         }
 
         /// <summary>
-        /// Monitoring thread for user input request
+        /// Write user input into standard input pipe(redirected)
         /// </summary>
-        /// <remarks>
-        /// Will be started once app begins to run on remote PowerShell host service
-        /// Stopped once app exits
-        /// </remarks>
-        private void MonitorUserInputRequest()
+        /// <param name="content">User input string</param>
+        public void WriteHostProcessStandardInputStream(string content)
         {
             StreamWriter _inputStreamWriter = Process.StandardInput;
 
-            while (AppRunning)
-            {
-                foreach (ProcessThread thread in Process.Threads)
-                {
-                    if (thread.ThreadState == System.Diagnostics.ThreadState.Wait
-                        && thread.WaitReason == ThreadWaitReason.UserRequest)
-                    {
-                        if (PowerShellToolsPackage.Debugger != null &&
-                            PowerShellToolsPackage.Debugger.HostUi != null)
-                        {
-                            string inputText = PowerShellToolsPackage.Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage, string.Empty);
-
-                            if (AppRunning)
-                            {
-                                // Feed into stdin stream
-                                _inputStreamWriter.WriteLine(inputText);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                Thread.Sleep(50);
-            }
-
+            // Feed into stdin stream
+            _inputStreamWriter.WriteLine(content);
             _inputStreamWriter.Flush();
         }
     }

@@ -97,7 +97,16 @@ namespace PowerShellTools.HostService {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Warning: PowerShell v4.0 or later is needed to debug during remote script execution..
+        ///   Looks up a localized string similar to Warning: PowerShell v4.0 or later is needed on your remote computer to debug during remote script execution. You can install the latest PowerShell from: {0}.
+        /// </summary>
+        public static string Warning_HigherVersionOnTargetRequiredForDebugging {
+            get {
+                return ResourceManager.GetString("Warning_HigherVersionOnTargetRequiredForDebugging", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning: PowerShell v4.0 or later is needed to debug during remote script execution. You can install the latest PowerShell from: {0}.
         /// </summary>
         public static string Warning_HigherVersionRequiredForDebugging {
             get {

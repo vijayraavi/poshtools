@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
 
 namespace PowerShellTools.LanguageService
@@ -60,10 +61,12 @@ namespace PowerShellTools.LanguageService
 	    var model = _serviceContainer.GetService(typeof(SComponentModel)) as IComponentModel;
 	    var service = model.GetService<IVsEditorAdaptersFactoryService>();
 
+        var statusBar = _serviceContainer.GetService(typeof(SVsStatusbar)) as IVsStatusbar;
+
 	    IVsTextView textView;
 	    if (ErrorHandler.Succeeded(pCodeWin.GetPrimaryView(out textView)))
 	    {
-		ppCodeWinMgr = new CodeWindowManager(pCodeWin, service.GetWpfTextView(textView));
+		ppCodeWinMgr = new CodeWindowManager(pCodeWin, service.GetWpfTextView(textView), statusBar);
 		return VSConstants.S_OK;
 	    }
 
