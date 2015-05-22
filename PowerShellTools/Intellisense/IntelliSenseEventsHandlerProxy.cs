@@ -11,7 +11,11 @@ namespace PowerShellTools.Intellisense
     /// Proxy of intellisense service event handlers
     /// This works as InstanceContext for intellisense service channel
     /// </summary>
-    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
+    [CallbackBehavior(
+        ConcurrencyMode = ConcurrencyMode.Multiple, 
+        UseSynchronizationContext = false,
+        IncludeExceptionDetailInFaults = true)]
+    [DebugServiceEventHandlerBehavior]
     public class IntelliSenseEventsHandlerProxy : IIntelliSenseServiceCallback
     {
         // An event for receving completion list from remote service

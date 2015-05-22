@@ -152,6 +152,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
@@ -276,6 +277,7 @@
     <Compile Include="CredentialUI\SecureStringDialogViewModel.cs" />
     <Compile Include="DebugEngine\BreakpointManager.cs" />
     <Compile Include="DebugEngine\DebugEngineInternalException.cs" />
+    <Compile Include="DebugServiceEventHandlerBehaviorAttribute.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
     <Compile Include="DebugEngine\Definitions\Enums.cs" />
