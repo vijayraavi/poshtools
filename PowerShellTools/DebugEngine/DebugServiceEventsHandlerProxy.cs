@@ -247,7 +247,7 @@ namespace PowerShellTools.DebugEngine
         /// <returns>REPL window size</returns>
         public int GetREPLWindowWidth()
         {
-            int width = 0;
+            int width = PowerShellTools.Common.Constants.MinimalReplBufferWidth;
             if (Debugger.ReplWindow != null)
             {
                 width = Debugger.ReplWindow.GetRawHostBufferWidth();

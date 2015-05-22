@@ -2574,7 +2574,7 @@ namespace PowerShellTools.Repl
 
             // Larger of 80 or n
             // Set minimal width as 80 to keep consistent experience with another PowerShell custom host in VS: Nuget Manager Console 
-            return Math.Max(80, n); 
+            return Math.Max(Constants.MinimalReplBufferWidth, n); 
         }
 
         private readonly BlockingCollection<VsKeyInfo> _keyBuffer = new BlockingCollection<VsKeyInfo>();
