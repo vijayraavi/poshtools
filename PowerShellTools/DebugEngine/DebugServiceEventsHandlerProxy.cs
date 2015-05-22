@@ -15,7 +15,11 @@ namespace PowerShellTools.DebugEngine
     /// Proxy of debugger service event handlers
     /// This works as InstanceContext for debugger service channel
     /// </summary>
-    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
+    [CallbackBehavior(
+        ConcurrencyMode = ConcurrencyMode.Multiple, 
+        UseSynchronizationContext = false,
+        IncludeExceptionDetailInFaults = true)]
+    [DebugServiceEventHandlerBehavior]
     public class DebugServiceEventsHandlerProxy : IDebugEngineCallback
     {
         private ScriptDebugger _debugger;
@@ -200,7 +204,10 @@ namespace PowerShellTools.DebugEngine
         /// </summary>
         public void ClearHostScreen()
         {
-            Debugger.ReplWindow.ClearScreen();
+            if (Debugger.ReplWindow != null)
+            {
+                Debugger.ReplWindow.ClearScreen();
+            }
         }
 
         /// <summary>
@@ -209,7 +216,14 @@ namespace PowerShellTools.DebugEngine
         /// <returns></returns>
         public VsKeyInfo VsReadKey()
         {
-            return Debugger.ReplWindow.WaitKey();
+            if (Debugger.ReplWindow != null)
+            {
+                return Debugger.ReplWindow.WaitKey();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -218,7 +232,13 @@ namespace PowerShellTools.DebugEngine
         /// <returns>Boolean indicating whether the user has pressed a key</returns>
         public bool IsKeyAvailable()
         {
-            return Debugger.ReplWindow.IsKeyAvailable();
+            bool isAvailable = false;
+            if (Debugger.ReplWindow != null)
+            {
+                isAvailable = Debugger.ReplWindow.IsKeyAvailable();
+            }
+
+            return isAvailable;
         }
 
         /// <summary>
@@ -227,7 +247,13 @@ namespace PowerShellTools.DebugEngine
         /// <returns>REPL window size</returns>
         public int GetREPLWindowWidth()
         {
-            return Debugger.ReplWindow.GetRawHostBufferWidth();
+            int width = 0;
+            if (Debugger.ReplWindow != null)
+            {
+                width = Debugger.ReplWindow.GetRawHostBufferWidth();
+            }
+
+            return width;
         }
     }
 }
