@@ -34,7 +34,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static Guid EndPointGuid { get; set; }
 
-        public static PowerShellHostProcess CreatePowershellHostProcess(BitnessOptions bitness)
+        public static PowerShellHostProcess CreatePowerShellHostProcess(BitnessOptions bitness)
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
@@ -105,7 +105,7 @@ namespace PowerShellTools.ServiceManagement
                     powerShellHostProcess.Dispose();
                     powerShellHostProcess = null;
                 }
-                throw new PowershellHostProcessException(String.Format(CultureInfo.CurrentCulture,
+                throw new PowerShellHostProcessException(String.Format(CultureInfo.CurrentCulture,
                                                                         Resources.ErrorFailToCreateProcess,
                                                                         processId.ToString()));
             }

@@ -40,7 +40,7 @@ namespace PowerShellTools.Test
         [TestMethod]
         public void ShouldClearBreakpoints()
         {
-            _debuggingService.SetBreakpoint(new PowershellBreakpoint(".\\TestFile.ps1", 1, 0));
+            _debuggingService.SetBreakpoint(new PowerShellBreakpoint(".\\TestFile.ps1", 1, 0));
             _debugger.BreakpointManager.SetBreakpoints(new List<ScriptBreakpoint>());
 
             using (var pipe = PowerShellDebuggingService.Runspace.CreatePipeline())

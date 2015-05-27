@@ -5,7 +5,7 @@
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
                     xmlns:shell="clr-namespace:PowerShellTools.Common;assembly=PowerShellTools.Common"
-                    xmlns:common="clr-namespace:PowerShellTools.Common.Controls;assembly=PowershellTools.Common"
+                    xmlns:common="clr-namespace:PowerShellTools.Common.Controls;assembly=PowerShellTools.Common"
                     xmlns:package="clr-namespace:PowerShellTools"
                     xmlns:local="clr-namespace:PowerShellTools.Commands.UserInterface"
                     mc:Ignorable="d" 

@@ -46,9 +46,9 @@ namespace PowerShellTools
                 return;
 
             // Creates the exception we want to send back to the client
-            var exception = new FaultException<PowershellHostServiceExceptionDetails>(
-                PowershellHostServiceExceptionDetails.Default,
-                new FaultReason(PowershellHostServiceExceptionDetails.Default.Message));
+            var exception = new FaultException<PowerShellHostServiceExceptionDetails>(
+                PowerShellHostServiceExceptionDetails.Default,
+                new FaultReason(PowerShellHostServiceExceptionDetails.Default.Message));
 
             // Creates a message fault
             var messageFault = exception.CreateMessageFault();
