@@ -90,5 +90,10 @@ namespace PowerShellTools.Common
         /// Minimal width of REPL output buffer as 80 to keep consistent experience with another PowerShell custom host in VS: Nuget Manager Console
         /// </summary>
         public const int MinimalReplBufferWidth = 80;
+
+        /// <summary>
+        /// PowerShell host process window title format
+        /// </summary>
+        public const string HostProcessWindowTitleFormat = "{0} : {1}";
     }
 }
