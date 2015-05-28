@@ -6,7 +6,7 @@ namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
     /// Powershell service.
     /// </summary>
     [ServiceContract(CallbackContract = typeof(IIntelliSenseServiceCallback))]
-    public interface IPowershellIntelliSenseService
+    public interface IPowerShellIntelliSenseService
     {
         [OperationContract]
         void RequestCompletionResults(string scriptUpToCaret, int carePosition, int requestWindowId, long triggerTimeTicks);

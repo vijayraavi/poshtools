@@ -17,7 +17,7 @@ namespace PowerShellTools.HostService.ServiceManagement
     /// </summary>
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     [PowerShellServiceHostBehavior]
-    public sealed class PowerShellIntelliSenseService : IPowershellIntelliSenseService
+    public sealed class PowerShellIntelliSenseService : IPowerShellIntelliSenseService
     {
         private readonly Runspace _testRunspace;
         private long _requestTrigger;

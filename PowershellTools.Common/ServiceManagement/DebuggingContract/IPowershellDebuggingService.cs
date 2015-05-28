@@ -11,16 +11,16 @@ using System.Threading.Tasks;
 namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 {
     [ServiceContract(CallbackContract = typeof(IDebugEngineCallback))]
-    public interface IPowershellDebuggingService
+    public interface IPowerShellDebuggingService
     {
         [OperationContract]
-        void SetBreakpoint(PowershellBreakpoint bp);
+        void SetBreakpoint(PowerShellBreakpoint bp);
 
         [OperationContract]
-        void EnableBreakpoint(PowershellBreakpoint bp, bool enable);
+        void EnableBreakpoint(PowerShellBreakpoint bp, bool enable);
 
         [OperationContract]
-        void RemoveBreakpoint(PowershellBreakpoint bp);
+        void RemoveBreakpoint(PowerShellBreakpoint bp);
 
         [OperationContract]
         void ClearBreakpoints();
@@ -65,7 +65,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         RunspaceAvailability GetRunspaceAvailability();
 
         [OperationContract]
-        int GetPSBreakpointId(PowershellBreakpoint bp);
+        int GetPSBreakpointId(PowerShellBreakpoint bp);
 
         [OperationContract]
         void SetOption(PowerShellRawHostOptions option);

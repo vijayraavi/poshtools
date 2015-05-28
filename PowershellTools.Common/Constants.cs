@@ -21,9 +21,9 @@ namespace PowerShellTools.Common
 
         public const string PowerShellHostExeName = "PowerShellToolsProcessHost.exe";
 
-        public const string PowerShellHostExeNameForx86 = "PowerShellToolsProcessHostx86.exe";
+        public const string PowerShellHostExeNameForx86 = "PowerShellToolsProcessHost.x86.exe";
 
-        public const string PowershellHostConsoleExeName = "PowerShellToolsProcessHostConsole.exe";
+        public const string PowerShellHostConsoleExeName = "PowerShellToolsProcessHostConsole.exe";
 
         // 10M in bytes
         public const int BindingMaxReceivedMessageSize = 10000000;

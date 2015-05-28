@@ -24,8 +24,8 @@ namespace PowerShellTools.HostService
     /// </summary>
     public partial class App : Application
     {
-        private static ServiceHost _powershellServiceHost;
-        private static ServiceHost _powershellDebuggingServiceHost;
+        private static ServiceHost _powerShellServiceHost;
+        private static ServiceHost _powerShellDebuggingServiceHost;
 
         public static int VsProcessId { get; private set; }
 
@@ -77,8 +77,8 @@ namespace PowerShellTools.HostService
             binding.MaxReceivedMessageSize = Constants.BindingMaxReceivedMessageSize;
 
             // Step 2: Create the service host.
-            CreatePowershellIntelliSenseServiceHost(baseAddress, binding);
-            CreatePowershellDebuggingServiceHost(baseAddress, binding);
+            CreatePowerShellIntelliSenseServiceHost(baseAddress, binding);
+            CreatePowerShellDebuggingServiceHost(baseAddress, binding);
 
             // Step 3: Signal parent process that host is ready so that it can proceed.
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, readyEventName);
@@ -97,15 +97,15 @@ namespace PowerShellTools.HostService
                     p.Exited += new EventHandler(
                         (s, eventArgs) =>
                         {
-                            if (_powershellServiceHost != null)
+                            if (_powerShellServiceHost != null)
                             {
-                                _powershellServiceHost.Close();
-                                _powershellServiceHost = null;
+                                _powerShellServiceHost.Close();
+                                _powerShellServiceHost = null;
                             }
-                            if (_powershellDebuggingServiceHost != null)
+                            if (_powerShellDebuggingServiceHost != null)
                             {
-                                _powershellDebuggingServiceHost.Close();
-                                _powershellDebuggingServiceHost = null;
+                                _powerShellDebuggingServiceHost.Close();
+                                _powerShellDebuggingServiceHost = null;
                             }
 
                             Environment.Exit(0);
@@ -115,26 +115,26 @@ namespace PowerShellTools.HostService
             catch { }
         }
 
-        private static void CreatePowershellIntelliSenseServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
+        private static void CreatePowerShellIntelliSenseServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
-            _powershellServiceHost = new ServiceHost(typeof(PowerShellIntelliSenseService), baseAddress);
+            _powerShellServiceHost = new ServiceHost(typeof(PowerShellIntelliSenseService), baseAddress);
 
-            _powershellServiceHost.AddServiceEndpoint(typeof(IPowershellIntelliSenseService),
+            _powerShellServiceHost.AddServiceEndpoint(typeof(IPowerShellIntelliSenseService),
                                                       binding,
                                                       Constants.IntelliSenseHostRelativeUri);
 
-            _powershellServiceHost.Open();
+            _powerShellServiceHost.Open();
         }
 
-        private static void CreatePowershellDebuggingServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
+        private static void CreatePowerShellDebuggingServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
-            _powershellDebuggingServiceHost = new ServiceHost(typeof(PowerShellDebuggingService), baseAddress);
+            _powerShellDebuggingServiceHost = new ServiceHost(typeof(PowerShellDebuggingService), baseAddress);
 
-            _powershellDebuggingServiceHost.AddServiceEndpoint(typeof(IPowershellDebuggingService),
+            _powerShellDebuggingServiceHost.AddServiceEndpoint(typeof(IPowerShellDebuggingService),
                 binding,
                 Constants.DebuggingHostRelativeUri);
 
-            _powershellDebuggingServiceHost.Open();
+            _powerShellDebuggingServiceHost.Open();
         }
 
     }

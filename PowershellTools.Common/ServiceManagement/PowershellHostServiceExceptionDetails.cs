@@ -8,19 +8,19 @@ using System.Threading.Tasks;
 namespace PowerShellTools.Common.ServiceManagement
 {
     [DataContract]
-    public sealed class PowershellHostServiceExceptionDetails
+    public sealed class PowerShellHostServiceExceptionDetails
     {
-        public static readonly PowershellHostServiceExceptionDetails Default = new PowershellHostServiceExceptionDetails();
+        public static readonly PowerShellHostServiceExceptionDetails Default = new PowerShellHostServiceExceptionDetails();
 
         [DataMember]
         public String Message { get; private set; }
 
-        public PowershellHostServiceExceptionDetails()
+        public PowerShellHostServiceExceptionDetails()
         {
-            this.Message = "There is a problem in the powershell host service.";
+            this.Message = "There is a problem in the PowerShell host service.";
         }
 
-        public PowershellHostServiceExceptionDetails(String message)
+        public PowerShellHostServiceExceptionDetails(String message)
         {
             this.Message = message;
         }

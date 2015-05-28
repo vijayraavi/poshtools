@@ -14,10 +14,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
     /// </summary>
     internal sealed class PowerShellBreakpointRecord
     {
-        private PowershellBreakpoint _psBreakpoint;
+        private PowerShellBreakpoint _psBreakpoint;
         private int _id;
 
-        internal PowerShellBreakpointRecord(PowershellBreakpoint bp, int id)
+        internal PowerShellBreakpointRecord(PowerShellBreakpoint bp, int id)
         {
             _psBreakpoint = bp;
             _id = id;
@@ -26,7 +26,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <summary>
         /// Breakpoint
         /// </summary>
-        internal PowershellBreakpoint PSBreakpoint
+        internal PowerShellBreakpoint PSBreakpoint
         {
             get
             {

@@ -15,14 +15,14 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     internal sealed class ConnectionManager
     {
-        private IPowershellIntelliSenseService _powershellIntelliSenseService;
-        private IPowershellDebuggingService _powershellDebuggingService;
+        private IPowerShellIntelliSenseService _powerShellIntelliSenseService;
+        private IPowerShellDebuggingService _powerShellDebuggingService;
         private object _syncObject = new object();
         private static object _staticSyncObject = new object();
         private static ConnectionManager _instance;
         private Process _process;
-        private ChannelFactory<IPowershellIntelliSenseService> _intelliSenseServiceChannelFactory;
-        private ChannelFactory<IPowershellDebuggingService> _debuggingServiceChannelFactory;
+        private ChannelFactory<IPowerShellIntelliSenseService> _intelliSenseServiceChannelFactory;
+        private ChannelFactory<IPowerShellDebuggingService> _debuggingServiceChannelFactory;
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
         private PowerShellHostProcess _hostProcess;
 
@@ -57,31 +57,31 @@ namespace PowerShellTools.ServiceManagement
         /// <summary>
         /// The IntelliSense service channel.
         /// </summary>
-        public IPowershellIntelliSenseService PowershellIntelliSenseSerivce
+        public IPowerShellIntelliSenseService PowerShellIntelliSenseSerivce
         {
             get
             {
-                if (_powershellIntelliSenseService == null)
+                if (_powerShellIntelliSenseService == null)
                 {
                     OpenClientConnection();
                 }
 
-                return _powershellIntelliSenseService;
+                return _powerShellIntelliSenseService;
             }
         }
 
         /// <summary>
         /// The debugging service channel.
         /// </summary>
-        public IPowershellDebuggingService PowershellDebuggingService
+        public IPowerShellDebuggingService PowerShellDebuggingService
         {
             get
             {
-                if (_powershellDebuggingService == null)
+                if (_powerShellDebuggingService == null)
                 {
                     OpenClientConnection();
                 }
-                return _powershellDebuggingService;
+                return _powerShellDebuggingService;
             }
         }
 
@@ -100,11 +100,11 @@ namespace PowerShellTools.ServiceManagement
         {
             lock (_syncObject)
             {
-                if (_powershellIntelliSenseService == null || _powershellDebuggingService == null)
+                if (_powerShellIntelliSenseService == null || _powerShellDebuggingService == null)
                 {
                     EnsureCloseProcess();
                     var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
-                    _hostProcess = PowershellHostProcessHelper.CreatePowershellHostProcess(page.Bitness);
+                    _hostProcess = PowershellHostProcessHelper.CreatePowerShellHostProcess(page.Bitness);
                     _process = _hostProcess.Process;
                     _process.Exited += ConnectionExceptionHandler;
 
@@ -114,18 +114,18 @@ namespace PowerShellTools.ServiceManagement
 
                     try
                     {
-                        _intelliSenseServiceChannelFactory = ChannelFactoryHelper.CreateDuplexChannelFactory<IPowershellIntelliSenseService>(intelliSenseServiceEndPointAddress,  new InstanceContext(PowerShellToolsPackage.Instance.IntelliSenseServiceContext));
+                        _intelliSenseServiceChannelFactory = ChannelFactoryHelper.CreateDuplexChannelFactory<IPowerShellIntelliSenseService>(intelliSenseServiceEndPointAddress, new InstanceContext(PowerShellToolsPackage.Instance.IntelliSenseServiceContext));
                         _intelliSenseServiceChannelFactory.Faulted += ConnectionExceptionHandler;
                         _intelliSenseServiceChannelFactory.Closed += ConnectionExceptionHandler;
                         _intelliSenseServiceChannelFactory.Open();
-                        _powershellIntelliSenseService = _intelliSenseServiceChannelFactory.CreateChannel();
+                        _powerShellIntelliSenseService = _intelliSenseServiceChannelFactory.CreateChannel();
 
-                        _debuggingServiceChannelFactory = ChannelFactoryHelper.CreateDuplexChannelFactory<IPowershellDebuggingService>(deubggingServiceEndPointAddress, new InstanceContext(new DebugServiceEventsHandlerProxy()));
+                        _debuggingServiceChannelFactory = ChannelFactoryHelper.CreateDuplexChannelFactory<IPowerShellDebuggingService>(deubggingServiceEndPointAddress, new InstanceContext(new DebugServiceEventsHandlerProxy()));
                         _debuggingServiceChannelFactory.Faulted += ConnectionExceptionHandler;
                         _debuggingServiceChannelFactory.Closed += ConnectionExceptionHandler;
                         _debuggingServiceChannelFactory.Open();
-                        _powershellDebuggingService = _debuggingServiceChannelFactory.CreateChannel();
-                        _powershellDebuggingService.SetRunspace(PowerShellToolsPackage.OverrideExecutionPolicyConfiguration);
+                        _powerShellDebuggingService = _debuggingServiceChannelFactory.CreateChannel();
+                        _powerShellDebuggingService.SetRunspace(PowerShellToolsPackage.OverrideExecutionPolicyConfiguration);
                     }
                     catch
                     {
@@ -133,8 +133,8 @@ namespace PowerShellTools.ServiceManagement
                         Log.Error("Connection establish failed...");
                         EnsureCloseProcess();
 
-                        _powershellIntelliSenseService = null;
-                        _powershellDebuggingService = null;
+                        _powerShellIntelliSenseService = null;
+                        _powerShellDebuggingService = null;
                         throw;
                     }
                 }
@@ -156,9 +156,9 @@ namespace PowerShellTools.ServiceManagement
                     _process.Kill();
                     _process = null;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    //TODO: log exception info here
+                    Log.ErrorFormat("Error when closing process.  Message: {0}", ex.Message);
                 }
             }
         }
@@ -173,7 +173,7 @@ namespace PowerShellTools.ServiceManagement
             {
                 ConnectionException(this, EventArgs.Empty);
             }
-        }        
+        }
 
         private void EnsureClearServiceChannel()
         {
@@ -181,14 +181,14 @@ namespace PowerShellTools.ServiceManagement
             {
                 _intelliSenseServiceChannelFactory.Abort();
                 _intelliSenseServiceChannelFactory = null;
-                _powershellIntelliSenseService = null;
+                _powerShellIntelliSenseService = null;
             }
 
             if (_debuggingServiceChannelFactory != null)
             {
                 _debuggingServiceChannelFactory.Abort();
                 _debuggingServiceChannelFactory = null;
-                _powershellDebuggingService = null;
+                _powerShellDebuggingService = null;
             }
 
         }
