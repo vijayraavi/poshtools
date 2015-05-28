@@ -26,15 +26,16 @@ namespace PowerShellTools.HostService
         {
             InitializeComponent();
 
+            this.Visibility = System.Windows.Visibility.Hidden;
             this.Left = 28000;
             this.Top = 28000;
-            this.Visibility = System.Windows.Visibility.Visible;
             this.ShowInTaskbar = false;
             this.Title = string.Format(
                     PowerShellTools.Common.Constants.HostProcessWindowTitleFormat, 
                     App.VsProcessId, 
                     PowerShellTools.Common.Constants.PowerShellHostExeName);
-            
+            this.Visibility = System.Windows.Visibility.Visible;
+
             ConsoleManager.AttachConsole();
         }
     }
