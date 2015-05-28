@@ -35,12 +35,13 @@ namespace PowerShellTools.DebugEngine
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll")]
         static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         private List<ScriptStackFrame> _callstack;
         private readonly AutoResetEvent _stoppingCompleteEvent = new AutoResetEvent(false);
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
+        private IntPtr _hostProcessWindowHandle;
 
         /// <summary>
         /// Event is fired when a debugger is paused.
@@ -178,7 +179,7 @@ namespace PowerShellTools.DebugEngine
             {
                 DebuggingFinished(this, new EventArgs());
             }
-
+            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
             _stoppingCompleteEvent.Set();
         }
 
@@ -357,13 +358,13 @@ namespace PowerShellTools.DebugEngine
         public bool ExecuteInternal(string commandLine)
         {
             IsDebuggingCommandReady = false;
-            IntPtr hostProcessWindowHandle = FindWindow(
+            _hostProcessWindowHandle = FindWindow(
                 null, 
                 string.Format(
                     PowerShellTools.Common.Constants.HostProcessWindowTitleFormat, 
                     Process.GetCurrentProcess().Id, 
                     PowerShellTools.Common.Constants.PowerShellHostExeName));
-            SetForegroundWindow(hostProcessWindowHandle);
+            SetForegroundWindow(_hostProcessWindowHandle);
             return DebuggingService.Execute(commandLine);
         }
 
