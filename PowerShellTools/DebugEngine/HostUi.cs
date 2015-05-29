@@ -93,6 +93,8 @@ namespace PowerShellTools.DebugEngine
             HostUi = new HostUi();
 
             BreakpointManager = new BreakpointManager();
+
+            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
         }
 
         public HostUi HostUi { get; private set; }
