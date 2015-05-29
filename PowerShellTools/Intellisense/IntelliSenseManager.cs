@@ -200,7 +200,7 @@ namespace PowerShellTools.Intellisense
                         //don't add the character to the buffer
                         return VSConstants.S_OK;
                     }
-                    else if (!IsPrecedingTextInLineEmpty(_textView.Caret.Position.BufferPosition) && _textView.Selection.IsEmpty)
+                    else if (!Utilities.IsPrecedingTextInLineEmpty(_textView.Caret.Position.BufferPosition) && _textView.Selection.IsEmpty)
                     {
                         _startTabComplete = true;
                         TriggerCompletion();
@@ -707,19 +707,6 @@ namespace PowerShellTools.Intellisense
         {
             Log.DebugFormat("IsIntelliSenseTriggerInStringLiteral: [{0}]", ch);
             return ch == '-' || ch == '$' || ch == '.' || ch == ':';
-        }
-
-        /// <summary>
-        /// Determines if the preceding text in the current line is empty
-        /// </summary>
-        /// <param name="bufferPosition">The buffer position.</param>
-        /// <returns>True if the preceding text is empty.</returns>
-        private static bool IsPrecedingTextInLineEmpty(SnapshotPoint bufferPosition)
-        {
-            var line = bufferPosition.GetContainingLine();
-            var caretInLine = ((int)bufferPosition - line.Start);
-
-            return String.IsNullOrWhiteSpace(line.GetText().Substring(0, caretInLine));
         }
 
         /// <summary>

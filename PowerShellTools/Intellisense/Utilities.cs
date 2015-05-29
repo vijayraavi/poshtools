@@ -188,5 +188,26 @@ namespace PowerShellTools.Intellisense
 
             return false;
         }
+
+        /// <summary>
+        /// Determines if the preceding text in the current line is empty
+        /// </summary>
+        /// <param name="bufferPosition">The buffer position.</param>
+        /// <returns>True if the preceding text is empty.</returns>
+        public static bool IsPrecedingTextInLineEmpty(SnapshotPoint bufferPosition)
+        {
+            var line = bufferPosition.GetContainingLine();
+            var caretInLine = ((int)bufferPosition - line.Start);
+
+            return String.IsNullOrWhiteSpace(line.GetText().Substring(0, caretInLine));
+        }
+
+        public static bool IsSucceedingTextInLineEmpty(SnapshotPoint bufferPosition)
+        {
+            var line = bufferPosition.GetContainingLine();
+            var caretInLine = ((int)bufferPosition - line.Start);
+            string lineText = line.GetText();
+            return String.IsNullOrWhiteSpace(lineText.Substring(caretInLine, lineText.Length - caretInLine));
+        }
     }
 }
