@@ -24,7 +24,7 @@ namespace PowerShellTools.Intellisense
         private readonly ITextView _textView;
         private readonly IEditorOperations _editorOperations;
         private readonly ITextUndoHistory _undoHistory;
-        private readonly SVsServiceProvider _serviceProvider;        
+        private readonly SVsServiceProvider _serviceProvider;
         private int _autoCompleteCount;
         private static readonly ILog Log = LogManager.GetLogger(typeof(AutoCompletionController));
         private static HashSet<VSConstants.VSStd2KCmdID> HandledCommands = new HashSet<VSConstants.VSStd2KCmdID>()
@@ -121,15 +121,7 @@ namespace PowerShellTools.Intellisense
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
             }
 
-            if (IsInStringArea() &&
-                command != VSConstants.VSStd2KCmdID.BACKSPACE &&
-                typedChar != '\"' &&
-                typedChar != '\'')
-            {
-                return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
-            }
-
-            return ProcessKeystroke(command, typedChar) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+            return ProcessKeystroke(command, typedChar, IsInStringArea()) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
         }
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
@@ -137,9 +129,9 @@ namespace PowerShellTools.Intellisense
             return NextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
         }
 
-        #endregion       
+        #endregion 
 
-        internal int ProcessKeystroke(VSConstants.VSStd2KCmdID command, char typedChar = Char.MinValue)
+        internal int ProcessKeystroke(VSConstants.VSStd2KCmdID command, char typedChar = Char.MinValue, bool isInStringArea = false)
         {
             switch (command)
             {
@@ -155,13 +147,22 @@ namespace PowerShellTools.Intellisense
                         }
                         else
                         {
-                            CompleteBraceOrQuotes(typedChar);
-                            SetAutoCompleteState(true);
-                            return VSConstants.S_OK;
+                            if (this.IsLastCmdAutoComplete || Utilities.IsSucceedingTextInLineEmpty(_textView.Caret.Position.BufferPosition))
+                            {
+                                CompleteBraceOrQuotes(typedChar);
+                                SetAutoCompleteState(true);
+                                return VSConstants.S_OK;
+                            }
                         }
                     }
+                    
+                    if (isInStringArea)
+                    {
+                        SetAutoCompleteState(false);
+                        break;
+                    }
 
-                    if (Utilities.IsLeftBraceOrQuotes(typedChar))
+                    if (Utilities.IsLeftBrace(typedChar))
                     {
                         CompleteBraceOrQuotes(typedChar);
                         SetAutoCompleteState(true);
@@ -179,11 +180,13 @@ namespace PowerShellTools.Intellisense
 
                 case VSConstants.VSStd2KCmdID.RETURN:
                     // Return in Repl windows would execute the current command 
-                    if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
+                    if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal) ||
+                        isInStringArea)
                     {
                         SetAutoCompleteState(false);
                         break;
                     }
+
                     if (ProcessReturnKey())
                     {
                         SetAutoCompleteState(false);
@@ -194,10 +197,11 @@ namespace PowerShellTools.Intellisense
 
                 case VSConstants.VSStd2KCmdID.BACKSPACE:
                     // As there are no undo history preserved for REPL window, default action is applied to Backspace.
-                    if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal))
+                    if (_textView.TextBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.Ordinal) &&
+                        ProcessBackspaceKeyInRepl())
                     {
-                        SetAutoCompleteState(false);
-                        break;
+                        _autoCompleteCount--;
+                        return VSConstants.S_OK;
                     }
 
                     if (ProcessBackspaceKey())
@@ -306,6 +310,18 @@ namespace PowerShellTools.Intellisense
             if (isBackspaceKeyProcessed)
             {
                 _undoHistory.Undo(1);
+            }
+            return isBackspaceKeyProcessed;
+        }
+
+        private bool ProcessBackspaceKeyInRepl()
+        {
+            var isBackspaceKeyProcessed = this.IsLastCmdAutoComplete && IsCaretInMiddleOfPairedBraceOrQuotes();
+            if (isBackspaceKeyProcessed)
+            {
+                _editorOperations.Delete();
+                _editorOperations.MoveToPreviousCharacter(false);
+                _editorOperations.Delete();
             }
             return isBackspaceKeyProcessed;
         }
