@@ -26,7 +26,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     [PowerShellServiceHostBehavior]
-    public partial class PowerShellDebuggingService : IPowershellDebuggingService
+    public partial class PowerShellDebuggingService : IPowerShellDebuggingService
     {
         private static Runspace _runspace;
         private PowerShell _currentPowerShell;
@@ -155,7 +155,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Sets breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
-        public void SetBreakpoint(PowershellBreakpoint bp)
+        public void SetBreakpoint(PowerShellBreakpoint bp)
         {
             IEnumerable<PSObject> breakpoints;
 
@@ -207,7 +207,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Remove breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
-        public void RemoveBreakpoint(PowershellBreakpoint bp)
+        public void RemoveBreakpoint(PowerShellBreakpoint bp)
         {
             int id = GetPSBreakpointId(bp);
 
@@ -250,7 +250,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Enable/Disable breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
-        public void EnableBreakpoint(PowershellBreakpoint bp, bool enable)
+        public void EnableBreakpoint(PowerShellBreakpoint bp, bool enable)
         {
             int id = GetPSBreakpointId(bp);
 
@@ -330,7 +330,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         /// <param name="bp">Powershell breakpoint</param>
         /// <returns>Id of breakpoint if found, otherwise -1</returns>
-        public int GetPSBreakpointId(PowershellBreakpoint bp)
+        public int GetPSBreakpointId(PowerShellBreakpoint bp)
         {
             ServiceCommon.Log("Getting PSBreakpoint ...");
             var bpr = _psBreakpointTable.FirstOrDefault(b => b.PSBreakpoint.Equals(bp));

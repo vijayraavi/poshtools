@@ -113,7 +113,7 @@ namespace PowerShellTools
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
-        private Lazy<PowerShellService> _powershellService;
+        private Lazy<PowerShellService> _powerShellService;
         private static ScriptDebugger _debugger;
         private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
@@ -145,11 +145,11 @@ namespace PowerShellTools
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
 
-        public static IPowershellDebuggingService DebuggingService
+        public static IPowerShellDebuggingService DebuggingService
         {
             get
             {
-                return ConnectionManager.Instance.PowershellDebuggingService;
+                return ConnectionManager.Instance.PowerShellDebuggingService;
             }
         }
 
@@ -192,11 +192,11 @@ namespace PowerShellTools
         /// </summary>
         internal static bool OverrideExecutionPolicyConfiguration { get; private set; }
 
-        internal static IPowershellIntelliSenseService IntelliSenseService
+        internal static IPowerShellIntelliSenseService IntelliSenseService
         {
             get
             {
-                return ConnectionManager.Instance.PowershellIntelliSenseSerivce;
+                return ConnectionManager.Instance.PowerShellIntelliSenseSerivce;
             }
         }
 
@@ -241,7 +241,7 @@ namespace PowerShellTools
 
                 InitializeInternal();
 
-                _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
+                _powerShellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
 
                 RegisterServices();
             }
@@ -343,7 +343,7 @@ namespace PowerShellTools
             Debug.Assert(this is IServiceContainer, "The package is expected to be an IServiceContainer.");
 
             var serviceContainer = (IServiceContainer)this;
-            serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powershellService.Value, true);
+            serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powerShellService.Value, true);
         }
 
         private void VisualStudioEvents_SettingsChanged(object sender, DialogPage e)

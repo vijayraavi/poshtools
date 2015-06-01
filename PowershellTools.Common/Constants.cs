@@ -21,9 +21,9 @@ namespace PowerShellTools.Common
 
         public const string PowerShellHostExeName = "PowerShellToolsProcessHost.exe";
 
-        public const string PowerShellHostExeNameForx86 = "PowerShellToolsProcessHostx86.exe";
+        public const string PowerShellHostExeNameForx86 = "PowerShellToolsProcessHost.x86.exe";
 
-        public const string PowershellHostConsoleExeName = "PowerShellToolsProcessHostConsole.exe";
+        public const string PowerShellHostConsoleExeName = "PowerShellToolsProcessHostConsole.exe";
 
         // 10M in bytes
         public const int BindingMaxReceivedMessageSize = 10000000;
@@ -90,5 +90,10 @@ namespace PowerShellTools.Common
         /// Minimal width of REPL output buffer as 80 to keep consistent experience with another PowerShell custom host in VS: Nuget Manager Console
         /// </summary>
         public const int MinimalReplBufferWidth = 80;
+
+        /// <summary>
+        /// PowerShell host process window title format
+        /// </summary>
+        public const string HostProcessWindowTitleFormat = "{0} : {1}";
     }
 }

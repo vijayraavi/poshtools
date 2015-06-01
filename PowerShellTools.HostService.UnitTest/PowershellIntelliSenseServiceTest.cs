@@ -8,7 +8,7 @@ using System.Threading;
 namespace PowerShellTools.HostService.UnitTest
 {
     [TestClass]
-    public class PowershellIntelliSenseServiceTest
+    public class PowerShellIntelliSenseServiceTest
     {
         private PowerShellIntelliSenseService _service;
         private IIntelliSenseServiceCallback _context;

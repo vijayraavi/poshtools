@@ -44,9 +44,9 @@ namespace PowerShellTools.DebugEngine
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
         private Runspace _runspace;
-        private IPowershellDebuggingService _debuggingServiceTest;
+        private IPowerShellDebuggingService _debuggingServiceTest;
 
-        public IPowershellDebuggingService DebuggingService
+        public IPowerShellDebuggingService DebuggingService
         {
             get
             {
@@ -81,7 +81,7 @@ namespace PowerShellTools.DebugEngine
             ConnectionManager.Instance.ConnectionException += ConnectionExceptionHandler;
         }
 
-        internal ScriptDebugger(bool overrideExecutionPolicy, IPowershellDebuggingService debuggingServiceTestHook)
+        internal ScriptDebugger(bool overrideExecutionPolicy, IPowerShellDebuggingService debuggingServiceTestHook)
         {
             OverrideExecutionPolicy = overrideExecutionPolicy;
             _debuggingServiceTest = debuggingServiceTestHook;
@@ -93,6 +93,8 @@ namespace PowerShellTools.DebugEngine
             HostUi = new HostUi();
 
             BreakpointManager = new BreakpointManager();
+
+            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
         }
 
         public HostUi HostUi { get; private set; }
@@ -336,7 +338,7 @@ namespace PowerShellTools.DebugEngine
         {
             if (ReplWindow != null)
             {
-                if (output.StartsWith(PowerShellConstants.PowershellOutputErrorTag))
+                if (output.StartsWith(PowerShellConstants.PowerShellOutputErrorTag))
                 {
                     ReplWindow.WriteError(output);
                 }

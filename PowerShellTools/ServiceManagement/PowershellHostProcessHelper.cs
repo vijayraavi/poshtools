@@ -17,12 +17,6 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     internal static class PowershellHostProcessHelper
     {
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int W, int H, uint uFlags);
-
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOMOVE = 0x0002;
@@ -34,7 +28,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static Guid EndPointGuid { get; set; }
 
-        public static PowerShellHostProcess CreatePowershellHostProcess(BitnessOptions bitness)
+        public static PowerShellHostProcess CreatePowerShellHostProcess(BitnessOptions bitness)
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
@@ -105,7 +99,7 @@ namespace PowerShellTools.ServiceManagement
                     powerShellHostProcess.Dispose();
                     powerShellHostProcess = null;
                 }
-                throw new PowershellHostProcessException(String.Format(CultureInfo.CurrentCulture,
+                throw new PowerShellHostProcessException(String.Format(CultureInfo.CurrentCulture,
                                                                         Resources.ErrorFailToCreateProcess,
                                                                         processId.ToString()));
             }
@@ -132,11 +126,6 @@ namespace PowerShellTools.ServiceManagement
         private static void PowerShellHostProcessOutput(string outputData)
         {
             Log.Debug(outputData);
-        }
-
-        private static void MakeTopMost(IntPtr hWnd)
-        {
-            SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
         }
     }
 
