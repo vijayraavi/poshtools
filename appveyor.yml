@@ -2,6 +2,10 @@ version: 3.0.{build}
 # The above also controls the VSIX Version. For any dlls which are intended to be referenced from
 # 3rd parties, eg, any contract DLLs, those have their own AssemblyInfo/AssemblyVersioning.
 
+os:
+- Windows Server 2012 R2 # This has Dev 12.
+- Visual Studio 2015 RC # This has Dev 14.
+
 configuration: Release
 platform: Any CPU
 
@@ -11,6 +15,8 @@ build:
 
 artifacts:
 - path: bin\VS120\Release\PowerShellTools.vsix
+  name: PowerShellTools.vsix
+- path: Binaries\Release14.0\PowerShellTools.vsix
   name: PowerShellTools.vsix
 
 assembly_info:

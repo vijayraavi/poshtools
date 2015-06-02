@@ -154,8 +154,9 @@
 
 
   <Symbols>
-    <!-- This is the package guid. -->
-    <GuidSymbol name="guidPoshToolsPckg" value="{58dce676-42b0-4dd6-9ee4-afbc8e582b8a}" />
+    <!-- These are the the package guids. These need to be the same as the Guids in Guids.cs/Common.Build.Targets-->
+    <GuidSymbol name="guidPoshToolsPckg" value="{58dce676-42b0-4dd6-9ee4-afbc8e582b8a}" Condition="Defined(DEV12)"/>
+    <GuidSymbol name="guidPoshToolsPckg" value="{59875F69-67B7-4A5C-B33A-9E2C2B5D266D}" Condition="Defined(DEV14)"/>
 
     <!-- Substitute a unique GUID for the placeholder: -->
     <GuidSymbol name="guidPoshToolsCmdSet"

@@ -1,17 +1,21 @@
-﻿// Guids.cs
-// MUST match guids.h
-
-using System;
+﻿using System;
 
 namespace PowerShellTools
 {
-    static class GuidList
+    internal static class GuidList
     {
         public const string PowerShellLanguage = "1C4711F1-3766-4F84-9516-43FA4169CC36";
 
-        //Packages
+        //Package Guids; these need to be the same as the guids in PowerShellTools.vsct/Common.Build.Targets
+#if DEV14
+        public const string PowerShellToolsPackageGuid = "59875F69-67B7-4A5C-B33A-9E2C2B5D266D";
+        public const string PowerShellToolsProjectPackageGuid = "5520558A-236B-453B-8CFF-442671DB0BB5";
+#elif DEV12
         public const string PowerShellToolsPackageGuid = "58dce676-42b0-4dd6-9ee4-afbc8e582b8a";
         public const string PowerShellToolsProjectPackageGuid = "2F99237E-E34F-4A3D-A337-500E4B3167B8";
+#else 
+        #error "No Visual Studio Version Provided"
+#endif
 
         //Property Pages
         public const string GeneralPropertiesPageGuid = "C9619BDD-D1B3-4ACA-ADF3-2323EB62315E";

@@ -26,10 +26,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- If we are building on a local dev machine, pretend we're given this other version number. Dev builds will have this number.-->
-    <VsixGuid Condition=" '$(VSTarget)' == '11.0' ">58dce676-42b0-4dd6-9ee4-afbc8e582b8b</VsixGuid>
+    <!-- Pacakge Guids; These need to be the same as the GUIDs in Guids.cs/PowerShellTools.vsct-->
     <VsixGuid Condition=" '$(VSTarget)' == '12.0' ">58dce676-42b0-4dd6-9ee4-afbc8e582b8a</VsixGuid>
-    <VsixGuid Condition=" '$(VSTarget)' == '14.0' ">58dce676-42b0-4dd6-9ee4-afbc8e582b8a</VsixGuid> <!-- TODO: Change for VS RTM -->
+    <VsixGuid Condition=" '$(VSTarget)' == '14.0' ">59875F69-67B7-4A5C-B33A-9E2C2B5D266D</VsixGuid>
   </PropertyGroup>
 
 
