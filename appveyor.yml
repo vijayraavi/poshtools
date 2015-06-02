@@ -21,7 +21,7 @@ build:
 artifacts:
   - path: bin\VS120\Release\PowerShellTools.vsix
     name: PowerShellTools12.vsix
-  - path: Binaries\Release14.0\PowerShellTools.vsix
+  - path: bin\VS140\Release\PowerShellTools.vsix
     name: PowerShellTools14.vsix
 
 assembly_info:
