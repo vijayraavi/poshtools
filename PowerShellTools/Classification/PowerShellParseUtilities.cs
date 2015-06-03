@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation.Language;
 using PowerShellTools.Commands.UserInterface;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Classification
 {
@@ -138,7 +139,7 @@ namespace PowerShellTools.Classification
 
         internal static IList<ScriptParameterViewModel> GenerateCommonParameters()
         {
-            return new List<ScriptParameterViewModel>()
+            List<ScriptParameterViewModel> commonParameters = new List<ScriptParameterViewModel>()
             {
                 // Debug
                 new ScriptParameterViewModel(
@@ -154,17 +155,6 @@ namespace PowerShellTools.Classification
                 // ErrorVariable
                 new ScriptParameterViewModel(
                     new ScriptParameter("ErrorVariable", DataTypeConstants.StringType, null, new HashSet<object>())
-                    ),
-
-                // InformationAction
-                new ScriptParameterViewModel(
-                    new ScriptParameter("InformationAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>()
-                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
-                    ),
-
-                // InformationVariable 
-                new ScriptParameterViewModel(
-                    new ScriptParameter("InformationVariable", DataTypeConstants.StringType, null, new HashSet<object>())
                     ),
 
                 // OutBuffer
@@ -198,6 +188,22 @@ namespace PowerShellTools.Classification
                     new ScriptParameter("WarningVariable", DataTypeConstants.StringType, null, new HashSet<object>())
                     )
             };
+
+            if(DependencyUtilities.GetInstalledPowerShellVersion().Major >= 5)
+            {
+                // InformationAction
+                commonParameters.Insert(3, new ScriptParameterViewModel(
+                    new ScriptParameter("InformationVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ));
+
+                // InformationVariable
+                commonParameters.Insert(3, new ScriptParameterViewModel(
+                    new ScriptParameter("InformationAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>()
+                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
+                    ));
+            }
+
+            return commonParameters;
         }
     }
 }
