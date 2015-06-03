@@ -7,7 +7,7 @@ Param(
     [string]
     $StringType,
 
-	[parameter(Mandatory = $false)]
+    [parameter(Mandatory = $false)]
     [char]
     $CharType,
 
@@ -15,63 +15,63 @@ Param(
     [byte] 
     $ByteType,
 
-	[Parameter(Mandatory=$false)] 
+    [Parameter(Mandatory=$false)] 
     [int] 
-	[ValidateRange(21,65)] 
+    [ValidateRange(21,65)] 
     $IntType,
-	 
+     
     [Parameter(ParameterSetName="Set1")]
     [long]
-	$LongType,
-	 
-	[Parameter(ParameterSetName="Set1")]
+    $LongType,
+     
+    [Parameter(ParameterSetName="Set1")]
     [bool]
-	$BoolType,
-	
-	[Parameter(ParameterSetName="Set2")]  
+    $BoolType,
+    
+    [Parameter(ParameterSetName="Set2")]  
     [Switch]
-	$SwitchType,
+    $SwitchType,
 
-	[Parameter(ParameterSetName="Set2")]
+    [Parameter(ParameterSetName="Set2")]
     [decimal]
-	$DecimalType,
+    $DecimalType,
 
-	[Parameter()]
+    [Parameter()]
     [single]
-	$SingleType,
+    $SingleType,
 
-	[Parameter()]
+    [Parameter()]
     [double]
-	$DoubleType,
+    $DoubleType,
 
 
-	[Parameter()]
+    [Parameter()]
     [DateTime]
-	$DateTimeType,
+    $DateTimeType,
 
-	[Parameter()]
-	[xml]
-	$XmlType,
+    [Parameter()]
+    [xml]
+    $XmlType,
 
-	[Parameter()]
-	[int[]]
-	$ArrayIntType,
+    [Parameter()]
+    [int[]]
+    $ArrayIntType,
 
-	[Parameter()]
-	[string[]]
-	$ArrayStringType,
+    [Parameter()]
+    [string[]]
+    $ArrayStringType,
 
-	[Parameter()]
-	[hashtable]
-	$HashtableType,
+    [Parameter()]
+    [hashtable]
+    $HashtableType,
 
-	[Parameter()]
+    [Parameter()]
     [SecureString]
-	$Password,
+    $Password,
 
-	[Parameter()]
+    [Parameter()]
     [PSCredential]
-	$PSCredentialType
+    $PSCredentialType
 ) 
    
                       
