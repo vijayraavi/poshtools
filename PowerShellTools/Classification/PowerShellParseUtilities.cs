@@ -156,6 +156,17 @@ namespace PowerShellTools.Classification
                     new ScriptParameter("ErrorVariable", DataTypeConstants.StringType, null, new HashSet<object>())
                     ),
 
+                // InformationAction
+                new ScriptParameterViewModel(
+                    new ScriptParameter("InformationAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>()
+                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
+                    ),
+
+                // InformationVariable 
+                new ScriptParameterViewModel(
+                    new ScriptParameter("InformationVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ),
+
                 // OutBuffer
                 new ScriptParameterViewModel(
                     new ScriptParameter("OutBuffer", DataTypeConstants.StringType, null, new HashSet<object>())
