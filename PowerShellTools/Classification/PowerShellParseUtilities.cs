@@ -16,6 +16,7 @@ namespace PowerShellTools.Classification
         private const string ValidateSetConst = "ValidateSet";
         private const string ParameterSetNameConst = "ParameterSetName";
         private static readonly Version CurrentPowershellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
+        private static readonly Version RequiredVersionForInformationCommonParams = new Version(5, 0);
 
         /// <summary>
         /// Try to find a Param block on the top level of an AST.
@@ -190,7 +191,7 @@ namespace PowerShellTools.Classification
                     )
             };
 
-            if(CurrentPowershellVersion.Major >= 5)
+            if(CurrentPowershellVersion >= RequiredVersionForInformationCommonParams)
             {
                 // InformationAction
                 commonParameters.Add(new ScriptParameterViewModel(
