@@ -12,7 +12,7 @@ namespace PowerShellTools.Commands.UserInterface
     /// <summary>
     /// Data structure to provide template definitions and values from the parameter file
     /// </summary>
-    internal class ScriptParameterViewModel : ObservableObject, INotifyDataErrorInfo
+    internal class ScriptParameterViewModel : ObservableObject, INotifyDataErrorInfo, IComparable<ScriptParameterViewModel>
     {
         private const string ValuePropertyName = "Value";
 
@@ -385,6 +385,14 @@ namespace PowerShellTools.Commands.UserInterface
                     yield return this.ValidationResult;
                 }
             }
+        }
+
+        /// <summary>
+        /// Comparator for sorting script parameter view models
+        /// </summary>
+        public int CompareTo(ScriptParameterViewModel other)
+        {
+            return this.Name.CompareTo(other.Name);
         }
 
         bool INotifyDataErrorInfo.HasErrors

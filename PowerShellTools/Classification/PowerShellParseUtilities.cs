@@ -15,6 +15,7 @@ namespace PowerShellTools.Classification
     {
         private const string ValidateSetConst = "ValidateSet";
         private const string ParameterSetNameConst = "ParameterSetName";
+        private static readonly Version CurrentPowershellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
 
         /// <summary>
         /// Try to find a Param block on the top level of an AST.
@@ -189,19 +190,21 @@ namespace PowerShellTools.Classification
                     )
             };
 
-            if(DependencyUtilities.GetInstalledPowerShellVersion().Major >= 5)
+            if(CurrentPowershellVersion.Major >= 5)
             {
                 // InformationAction
-                commonParameters.Insert(3, new ScriptParameterViewModel(
+                commonParameters.Add(new ScriptParameterViewModel(
                     new ScriptParameter("InformationVariable", DataTypeConstants.StringType, null, new HashSet<object>())
                     ));
 
                 // InformationVariable
-                commonParameters.Insert(3, new ScriptParameterViewModel(
+                commonParameters.Add(new ScriptParameterViewModel(
                     new ScriptParameter("InformationAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>()
                         {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
                     ));
             }
+
+            commonParameters.Sort();
 
             return commonParameters;
         }
