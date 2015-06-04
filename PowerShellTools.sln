@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools", "PowerShellTools\PowerShellTools.csproj", "{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}"
 EndProject
@@ -45,6 +45,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShell.HostService.Console", "PowerShell.HostService.Console\PowerShell.HostService.Console.csproj", "{E84FC12D-897F-4244-B44C-B42839D677A4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.HostService.x86", "PowerShellTools.HostService.x86\PowerShellTools.HostService.x86.csproj", "{528D75E0-71D8-408C-AEAE-485D84E08BD2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestSuites", "TestSuites", "{DA7473B2-AB4A-44A1-B9AF-04C58BEA2B28}"
+	ProjectSection(SolutionItems) = preProject
+		TestSuites\ScriptParamAllTypes.ps1 = TestSuites\ScriptParamAllTypes.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,5 +100,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DA7473B2-AB4A-44A1-B9AF-04C58BEA2B28} = {F0ABCB13-D647-4D44-ACCD-C31A69EC979D}
 	EndGlobalSection
 EndGlobal

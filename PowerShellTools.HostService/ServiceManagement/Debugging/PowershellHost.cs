@@ -12,6 +12,7 @@ using Microsoft.VisualBasic;
 using PowerShellTools.Common.Debugging;
 using System.Runtime.InteropServices;
 using PowerShellTools.Common;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -158,10 +159,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 options);
         }
 
-        public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices,
-            int defaultChoice)
+        public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices, int defaultChoice)
         {
-            return 0;
+            return ReadChoiceFromUI(caption, message, choices, defaultChoice);
         }
 
         // System.Management.Automation.HostUtilities
@@ -229,6 +229,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             return string.Empty;
+        }
+
+        private int ReadChoiceFromUI(string caption, string message, Collection<ChoiceDescription> choices, int defaultChoice)
+        {
+            if (_debuggingService.CallbackService != null)
+            {
+                IList<ChoiceItem> items = choices.Select(c => new ChoiceItem(c)).ToList();
+
+                return _debuggingService.CallbackService.ReadHostPromptForChoices(caption, message, items, defaultChoice);
+            }
+
+            return -1;
         }
     }
 }

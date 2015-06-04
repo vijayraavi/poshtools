@@ -277,6 +277,10 @@
     <Compile Include="CredentialUI\SecureStringDialogViewModel.cs" />
     <Compile Include="DebugEngine\BreakpointManager.cs" />
     <Compile Include="DebugEngine\DebugEngineInternalException.cs" />
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesView.xaml.cs">
+      <DependentUpon>ReadHostPromptForChoicesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesViewModel.cs" />
     <Compile Include="DebugServiceEventHandlerBehaviorAttribute.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
@@ -759,6 +763,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="DebugEngine\PromptUI\ReadHostPromptDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DebugEngine\PromptUI\ReadHostPromptForChoicesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

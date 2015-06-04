@@ -264,6 +264,20 @@ namespace PowerShellTools.DebugEngine
             return input;
         }
 
+        public int ReadChoice(string caption, string message, IList<ChoiceItem> choices, int defaultChoice)
+        {
+            int choice = defaultChoice;
+            ThreadHelper.Generic.Invoke(() =>
+            {
+                ReadHostPromptForChoicesViewModel viewModel = new ReadHostPromptForChoicesViewModel(caption, message, choices, defaultChoice);
+                ReadHostPromptForChoicesView dialog = new ReadHostPromptForChoicesView(viewModel);
+
+                var ret = dialog.ShowModal();
+            });
+
+            return choice;
+        }
+
         /// <summary>
         /// Ask for securestring from user
         /// </summary>
