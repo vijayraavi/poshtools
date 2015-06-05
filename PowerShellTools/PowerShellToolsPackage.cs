@@ -71,7 +71,7 @@ namespace PowerShellTools
                             ShowSmartIndent = true,
                             ShowDropDownOptions = true,
                             EnableCommenting = true)]
-
+    [ProvideEditorFactory(typeof(PowerShellEditorFactory), 114, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
