@@ -5,6 +5,10 @@ using Microsoft.VisualStudio.Shell;
 
 namespace PowerShellTools.Diagnostics
 {
+    /// <summary>
+    /// This class contains the DialogPage for all dianostic related items.
+    /// Currently only has one item, the DiagnosticLoggingSetting
+    /// </summary>
     internal class DiagnosticsDialogPage : DialogPage
     {
         public DiagnosticsDialogPage()
