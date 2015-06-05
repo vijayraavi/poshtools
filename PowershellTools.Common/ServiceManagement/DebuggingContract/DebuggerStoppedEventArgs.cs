@@ -27,9 +27,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             this.BreakpointHit = false;
         }
 
-        public DebuggerStoppedEventArgs(string script, int line, int column)
+        public DebuggerStoppedEventArgs(bool bpHit, string script, int line, int column)
         {
-            this.BreakpointHit = true;
+            this.BreakpointHit = bpHit;
             this.ScriptFullPath = script;
             this.Line = line;
             this.Column = column;

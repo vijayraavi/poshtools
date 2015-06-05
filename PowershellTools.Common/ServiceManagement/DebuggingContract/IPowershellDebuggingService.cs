@@ -44,6 +44,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void SetRunspace(bool overrideExecutionPolicy);
 
         [OperationContract]
+        void AttachToRunspace(uint pid);
+
+        [OperationContract]
         Collection<Variable> GetScopedVariable();
 
         [OperationContract]

@@ -263,6 +263,12 @@ Also leaving the implementation here as a reference because that is going to be 
             }
 
             RegisterRemoteFileOpenEvent(runspace);
+
+            if(_attaching)
+            {
+                // wake up AttachToProcess method
+                _attachRequestEvent.Reset();
+            }
         }
 
         private void Runspace_StateChanged(object sender, RunspaceStateEventArgs e)

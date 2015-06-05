@@ -387,8 +387,9 @@ namespace PowerShellTools.DebugEngine
 
             if (node.IsAttachedProgram)
             {
-                Execute(String.Format("Enter-PSHostProcess -Id {0};", node.Process.ProcessId));
-                Execute("Debug-Runspace 1");
+                DebuggingService.AttachToRunspace(node.Process.ProcessId);
+                //Execute(String.Format("Enter-PSHostProcess -Id {0};", node.Process.ProcessId));
+                //Execute("Debug-Runspace 1");
             }
             else
             {
