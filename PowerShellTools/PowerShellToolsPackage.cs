@@ -397,13 +397,16 @@ namespace PowerShellTools
 
         internal void DiagnosticLoggingSettingChanged(object sender, bool enabled)
         {
-            if (sender is DiagnosticsDialogPage && enabled)
+            if (sender is DiagnosticsDialogPage)
             {
-                DiagnosticConfiguration.EnableDiagnostics();
-            }
-            else
-            {
-                DiagnosticConfiguration.DisableDiagnostics();
+                if (enabled)
+                {
+                    DiagnosticConfiguration.EnableDiagnostics();
+                }
+                else
+                {
+                    DiagnosticConfiguration.DisableDiagnostics();
+                }
             }
         }
     }
