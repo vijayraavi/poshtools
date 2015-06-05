@@ -147,25 +147,25 @@ namespace PowerShellTools.Intellisense
 
         internal static bool IsInCommentArea(int position, ITextBuffer buffer)
         {
-            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.Comment);
+            return IsInCertainPSTokenTypesArea(position, buffer, false, PSTokenType.Comment);
         }
 
         internal static bool IsInStringArea(int position, ITextBuffer buffer)
         {
-            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.String);
+            return IsInCertainPSTokenTypesArea(position, buffer, false, PSTokenType.String);
         }
 
         internal static bool IsInParameterArea(int position, ITextBuffer buffer)
         {
-            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.CommandParameter);
+            return IsInCertainPSTokenTypesArea(position, buffer, true, PSTokenType.CommandParameter);
         }
 
         internal static bool IsInVariableArea(int position, ITextBuffer buffer)
         {
-            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.Variable, PSTokenType.Member);
+            return IsInCertainPSTokenTypesArea(position, buffer, true, PSTokenType.Variable, PSTokenType.Member);
         }
 
-        private static bool IsInCertainPSTokenTypesArea(int position, ITextBuffer buffer, params PSTokenType[] selectedPSTokenTypes)
+        private static bool IsInCertainPSTokenTypesArea(int position, ITextBuffer buffer, bool edgeIncluded, params PSTokenType[] selectedPSTokenTypes )
         {
             if (position < 0 || position > buffer.CurrentSnapshot.Length)
             {
@@ -177,16 +177,59 @@ namespace PowerShellTools.Intellisense
             {
                 var filteredTokens = tokens.Where(t => selectedPSTokenTypes.Any(k => PSToken.GetPSTokenType(t) == k)).ToList();
 
-                foreach (var token in filteredTokens)
+                if (edgeIncluded)
                 {
-                    if (token.Extent.StartOffset <= position && position < token.Extent.EndOffset)
+                    foreach (var token in filteredTokens)
                     {
-                        return true;
+                        if (token.Extent.StartOffset <= position && position < token.Extent.EndOffset)
+                        {
+                            return true;
+                        }
+                        if (position < token.Extent.StartOffset)
+                        {
+                            return false;
+                        }
                     }
                 }
+                else
+                {
+                    foreach (var token in filteredTokens)
+                    {
+                        if (token.Extent.StartOffset < position && position < token.Extent.EndOffset)
+                        {
+                            return true;
+                        }
+                        if (position <= token.Extent.StartOffset)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Determines if the preceding text in the current line is empty
+        /// </summary>
+        /// <param name="bufferPosition">The buffer position.</param>
+        /// <returns>True if the preceding text is empty.</returns>
+        public static bool IsPrecedingTextInLineEmpty(SnapshotPoint bufferPosition)
+        {
+            var line = bufferPosition.GetContainingLine();
+            var caretInLine = ((int)bufferPosition - line.Start);
+
+            return String.IsNullOrWhiteSpace(line.GetText().Substring(0, caretInLine));
+        }
+
+        public static bool IsSucceedingTextInLineEmpty(SnapshotPoint bufferPosition)
+        {
+            var line = bufferPosition.GetContainingLine();
+            var caretInLine = ((int)bufferPosition - line.Start);
+            string lineText = line.GetText();
+            return String.IsNullOrWhiteSpace(lineText.Substring(caretInLine, lineText.Length - caretInLine));
         }
     }
 }
