@@ -728,10 +728,11 @@
     <None Include="Templates\Files\Script.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <VSCTCompile Include="PowerShellTools.vsct">
+    <VSCTCompile Include="PowerShellTools.$(VisualStudioVersion).vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
+    <Content Include="PowerShellTools.vsct" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Images.png" />

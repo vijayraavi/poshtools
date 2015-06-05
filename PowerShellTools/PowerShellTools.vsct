@@ -127,7 +127,7 @@
       </Button>
 
       <Button guid="guidPoshToolsCmdSet" id="cmdidReplWindow" priority="0x7f00" type="Button">
-        <Icon guid="guidReplImage" id="1"/> 
+        <Icon guid="guidReplImage" id="1"/>
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
         <CommandFlag>TextChanges</CommandFlag>
         <Strings>
@@ -136,7 +136,7 @@
         </Strings>
       </Button>
     </Buttons>
-   
+
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
     <Bitmaps>
       <!--  The bitmap id is defined in a way that is a little bit different from the others: 
@@ -145,24 +145,17 @@
             inside a button definition. An important aspect of this declaration is that the element id 
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
       <Bitmap guid="guidImages" href="Resources\Images.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows"/>
-      <Bitmap guid="guidReplImage" href="Resources\PowershellInteractiveWindow_16x.png"/>   
+      <Bitmap guid="guidReplImage" href="Resources\PowershellInteractiveWindow_16x.png"/>
     </Bitmaps>
- 
+
   </Commands>
 
 
-
-
   <Symbols>
-    <!-- These are the the package guids. These need to be the same as the Guids in Guids.cs/Common.Build.Targets-->
-    <GuidSymbol name="guidPoshToolsPckg" value="{58dce676-42b0-4dd6-9ee4-afbc8e582b8a}" Condition="true"/>
-    
-    <GuidSymbol name="guidPoshToolsPckg" value="{59875F69-67B7-4A5C-B33A-9E2C2B5D266D}" Condition="false"/>
-
     <!-- Substitute a unique GUID for the placeholder: -->
     <GuidSymbol name="guidPoshToolsCmdSet"
       value="{099073C0-B561-4BC1-A847-92657B89A00E}" >
-      
+
       <!--Buttons-->
       <IDSymbol name="cmdidExecuteAsScript"  value="0x0102"/>
       <IDSymbol name="cmdidExecuteSelection" value="0x0103"/>
@@ -177,7 +170,7 @@
       <IDSymbol name="grpidPoshToolsGroup" value="0x01001"/>
       <IDSymbol name="grpidPoshToolsSolutionExplorerGroup" value="0x01002"/>
     </GuidSymbol>
-    
+
     <GuidSymbol name="guidCmdSet" value="{D309F791-903F-11D0-9EFC-00A0C911004F}" >
       <IDSymbol name="menuidContext" value="0x0040D"/>
       <IDSymbol name="grpidContextMain" value="0x20000"/>
@@ -185,8 +178,8 @@
       <IDSymbol name="menuidExplorer" value="0x10001"/>
       <IDSymbol name="cmdidViewExplorer" value="0x0001"/>
     </GuidSymbol>
-    
-    
+
+
     <GuidSymbol name="guidImages" value="{229ed0f0-d653-4e8a-b880-28679056d810}" >
       <IDSymbol name="bmpPic1" value="1" />
       <IDSymbol name="bmpPic2" value="2" />
@@ -197,7 +190,7 @@
     </GuidSymbol>
 
     <GuidSymbol name="guidReplImage" value="{9F35C43F-D1AD-4A84-AB48-732DE8157697}"/>
-      
+
   </Symbols>
 
 </CommandTable>
