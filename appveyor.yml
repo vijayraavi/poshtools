@@ -20,10 +20,10 @@ build:
   verbosity: minimal
 
 artifacts:
-  - path: bin\VS120\Release\PowerShellTools.vsix
-    name: PowerShellTools12.vsix
-  - path: bin\VS140\Release\PowerShellTools.vsix
-    name: PowerShellTools14.vsix
+  - path: bin\VS120\Release\PowerShellTools.12.0.vsix
+    name: PowerShellTools.12.0.vsix
+  - path: bin\VS140\Release\PowerShellTools.14.0.vsix
+    name: PowerShellTools.14.0.vsix
 
 assembly_info:
   patch: true
