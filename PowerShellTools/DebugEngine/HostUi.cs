@@ -1,38 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
-using System.Threading;
-using EnvDTE80;
-using Microsoft.PowerShell;
-using Microsoft.VisualBasic;
 using PowerShellTools.Repl;
 using Thread = System.Threading.Thread;
-using Microsoft.VisualStudioTools.Project;
 
 namespace PowerShellTools.DebugEngine
 {
 #if POWERSHELL
-    using IReplWindow = IPowerShellReplWindow;
-    using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using PowerShellTools.ServiceManagement;
-    using PowerShellTools.Common.Debugging;
     using System.Diagnostics;
-    using PowerShellTools.CredentialUI;
+    using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
     using Microsoft.VisualStudio.Shell;
-    using System.Threading.Tasks;
+    using Microsoft.VisualStudio.Shell.Interop;
+    using PowerShellTools.Common.Debugging;
+    using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+    using PowerShellTools.CredentialUI;
     using PowerShellTools.DebugEngine.PromptUI;
+    using PowerShellTools.ServiceManagement;
+    using IReplWindow = IPowerShellReplWindow;
 #endif
 
     /// <summary>
@@ -157,6 +146,9 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public class HostUi
     {
+        [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
         public IReplWindow ReplWindow { get; set; }
 
         private static readonly object AnimationIconGeneralIndex = (short)STATUSBARCONSTS.SBAI_Gen; //General Status Bar Animation
@@ -266,13 +258,19 @@ namespace PowerShellTools.DebugEngine
 
         public int ReadChoice(string caption, string message, IList<ChoiceItem> choices, int defaultChoice)
         {
-            int choice = defaultChoice;
+            int choice = -1;
             ThreadHelper.Generic.Invoke(() =>
             {
                 ReadHostPromptForChoicesViewModel viewModel = new ReadHostPromptForChoicesViewModel(caption, message, choices, defaultChoice);
                 ReadHostPromptForChoicesView dialog = new ReadHostPromptForChoicesView(viewModel);
 
+                SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
                 var ret = dialog.ShowModal();
+                if (ret == true)
+                {
+                    choice = viewModel.UserChoice;
+
+                }
             });
 
             return choice;

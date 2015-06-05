@@ -14,16 +14,14 @@ namespace PowerShellTools.DebugEngine.PromptUI
 {
     internal sealed class ReadHostPromptForChoicesViewModel
     {
-        private int _defaultChoice;
-        private readonly ObservableCollection<ChoiceItem> _choices;
+        private readonly ObservableCollection<ChoiceButtonItem> _choices;
         private ICommand _chooseCommand;
 
         public ReadHostPromptForChoicesViewModel(string caption, string message, IList<ChoiceItem> choices, int defaultChoice)
         {
             this.Caption = caption;
             this.Message = message;
-            _choices = new ObservableCollection<ChoiceItem>(choices);
-            _defaultChoice = defaultChoice;
+            _choices = new ObservableCollection<ChoiceButtonItem>(choices.Select(c => new ChoiceButtonItem(c, choices[defaultChoice] == c)));
         }
 
         public string Caption
@@ -38,7 +36,7 @@ namespace PowerShellTools.DebugEngine.PromptUI
             private set;
         }
 
-        public ObservableCollection<ChoiceItem> Choices
+        public ObservableCollection<ChoiceButtonItem> Choices
         {
             get
             {
@@ -56,15 +54,14 @@ namespace PowerShellTools.DebugEngine.PromptUI
 
         private void Choose(object o)
         {
-            throw new NotImplementedException();
+            string label = o as string;
+            this.UserChoice = Choices.IndexOf(Choices.FirstOrDefault(c => c.Choice.Label.Equals(label, StringComparison.OrdinalIgnoreCase)));
         }
-
-
 
         public int UserChoice
         {
             get;
-            set;
+            private set;
         }
 
         #region Design-time
@@ -81,13 +78,13 @@ namespace PowerShellTools.DebugEngine.PromptUI
 #if DEBUG
                     Caption = "Confirm",
                     Message = "Are sure you want to perform this action?" + Environment.NewLine + "Performing the operation \"Remove Directory\" on target \"C:\\Users\\USERNAME\\foo\"",
-                    Choices = new ChoiceItem[] 
+                    Choices = new ChoiceButtonItem[] 
                     {
-                        new ChoiceItem("label1", "message1"),
-                        new ChoiceItem("label2", "message2"),
-                        new ChoiceItem("label3", "message3"),
-                        new ChoiceItem("label4", "message4"),
-                        new ChoiceItem("label5", "message5")
+                        new ChoiceButtonItem(new ChoiceItem("_label1", "message1"), true),
+                        new ChoiceButtonItem(new ChoiceItem("l_abel2", "message2"), false),
+                        new ChoiceButtonItem(new ChoiceItem("la_bel3", "message3"), false),
+                        new ChoiceButtonItem(new ChoiceItem("lab_el4", "message4"), false),
+                        new ChoiceButtonItem(new ChoiceItem("labe_l5", "message5"), false)
                     }, 
                     UserChoice = 0
 #endif

@@ -161,7 +161,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices, int defaultChoice)
         {
-            return ReadChoiceFromUI(caption, message, choices, defaultChoice);
+            var result = ReadChoiceFromUI(caption, message, choices, defaultChoice);
+            return result;
         }
 
         // System.Management.Automation.HostUtilities

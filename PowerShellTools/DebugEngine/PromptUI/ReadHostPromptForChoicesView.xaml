@@ -23,6 +23,7 @@
             <Setter Property="Margin" Value="5,5,5,0" />
         </Style>
     </shell:VsShellDialogWindow.Resources>
+        
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -36,24 +37,26 @@
             <TextBlock Text="{Binding Path=Message}" TextWrapping="Wrap" TextAlignment="Left"/>
         </Grid>
         
-        <StackPanel Grid.Row="1"
+        <StackPanel Grid.Row="1" 
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Stretch"
+                    VerticalAlignment="Stretch"                    
                     Margin="5,5,10,10">
-            <ItemsControl ItemsSource="{Binding Path=Choices}">
+            <ItemsControl ItemsSource="{Binding Path=Choices}" BorderThickness="0" IsTabStop="False">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <!-- Here is the panel that will contain the items -->
                         <StackPanel Orientation="Horizontal" Margin="0"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Button Content="{Binding Path=Label}"
-                                ToolTip="{Binding Path=HelpMessage}"
-                                AutomationProperties.Name="{Binding Path=Label}"
-                                Click="OnOkButtonClick"/>
-                                <!--="{Binding Command, RelativeSource={RelativeSource FindAncestor, AncestorType=local:ReadHostPromptForChoicesViewModel}}"-->                                
+                        <Button Content="{Binding Path=Choice.Label}"
+                                ToolTip="{Binding Path=Choice.HelpMessage}"
+                                IsDefault="{Binding Path=Choice.IsDefault}"
+                                IsTabStop="True"
+                                AutomationProperties.Name="{Binding Path=Choice.Label}"
+                                Click="OnButtonClick"
+                                CommandParameter="{Binding Path=Choice.Label}"
+                                Command ="{Binding DataContext.Command, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type StackPanel}}}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Forms;
+using System.Windows.Controls;
+using System.Windows.Input;
 using PowerShellTools.Common;
 
 namespace PowerShellTools.DebugEngine.PromptUI
@@ -18,17 +19,24 @@ namespace PowerShellTools.DebugEngine.PromptUI
                 throw new ArgumentNullException("viewModel");
             }
 
+            Loaded += (sender, e) => MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             InitializeComponent();
-
             this.DataContext = viewModel;
         }
+        
+        //protected override void OnLostFocus(RoutedEventArgs e)
+        //{
+        //    base.OnLostFocus(e);
+
+        //    this.Focus();
+        //}
 
         /// <summary>
-        /// OK button clicked
+        /// Button clicked
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnOkButtonClick(object sender, RoutedEventArgs e)
+        /// <param name="sender">The source</param>
+        /// <param name="e">Event argument</param>
+        private void OnButtonClick(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
         }

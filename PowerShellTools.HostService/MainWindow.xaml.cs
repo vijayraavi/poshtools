@@ -26,8 +26,8 @@ namespace PowerShellTools.HostService
         {
             InitializeComponent();
 
-            this.Left = 28000;
-            this.Top = 28000;
+            //this.Left = 28000;
+            //this.Top = 28000;
             this.ShowInTaskbar = false;
             this.Title = string.Format(
                     PowerShellTools.Common.Constants.HostProcessWindowTitleFormat, 
@@ -36,7 +36,7 @@ namespace PowerShellTools.HostService
 
             // We have to visible the window first before hidding it so that we can find the window handle later
             this.Visibility = System.Windows.Visibility.Visible;
-            this.Visibility = System.Windows.Visibility.Hidden;
+            //this.Visibility = System.Windows.Visibility.Hidden;
 
             ConsoleManager.AttachConsole();
         }
