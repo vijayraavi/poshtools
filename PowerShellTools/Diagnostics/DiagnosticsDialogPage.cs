@@ -29,7 +29,10 @@ namespace PowerShellTools.Diagnostics
         {
             base.OnApply(e);
 
-            DiagnosticLoggingSettingChanged(this, EnableDiagnosticLogging);
+            if (DiagnosticLoggingSettingChanged != null)
+            {
+                DiagnosticLoggingSettingChanged(this, EnableDiagnosticLogging);
+            }
         }
     }
 }
