@@ -1,31 +1,35 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 
 namespace PowerShellTools.Diagnostics
 {
-    class DiagnosticsDialogPage : DialogPage
+    internal class DiagnosticsDialogPage : DialogPage
     {
-        private bool _enableDiagLogging;
-
         public DiagnosticsDialogPage()
         {
-            var cm = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
-            _events = cm.GetService<VisualStudioEvents>();
+            InitializeSettings();
         }
 
-        private readonly VisualStudioEvents _events;
+        private event EventHandler<bool> DiagnosticLoggingSettingChanged;
 
         [DisplayName(@"Enable Diagnostic Logging")]
-        [Description("Log messages will be written to the output pane.")]
-        public bool EnableDiagnosticLogging
+        [Description("Diagnostic logging messages will be written to the output pane.")]
+        public bool EnableDiagnosticLogging { get; set; }
+
+        private void InitializeSettings()
         {
-            get { return _enableDiagLogging; }
-            set
-            {
-                _enableDiagLogging = value;
-                _events.OnSettingsChanged(this);
-            }
+            EnableDiagnosticLogging = false;
+
+            DiagnosticLoggingSettingChanged += PowerShellToolsPackage.Instance.DiagnosticLoggingSettingChanged;
+        }
+
+        protected override void OnApply(DialogPage.PageApplyEventArgs e)
+        {
+            base.OnApply(e);
+
+            DiagnosticLoggingSettingChanged(this, EnableDiagnosticLogging);
         }
     }
 }

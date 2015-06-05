@@ -594,7 +594,6 @@
     <Compile Include="Service\ExecutionEngine.cs" />
     <Compile Include="Service\IExecutionEngine.cs" />
     <Compile Include="Service\PowerShellService.cs" />
-    <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CredentialUI\Resources.resx">
