@@ -49,7 +49,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
-
+        private static readonly Regex validStackLine = new Regex(DebugEngineConstants.ValidCallStackLine, RegexOptions.Compiled);
         /// <summary>
         /// Minimal powershell version required for remote session debugging
         /// </summary>
@@ -124,7 +124,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             // Enter into to-attach process which will swap out the current runspace
-            _attaching = true;
+            _attaching = true; // maybe have a function somewhere to set this, could be better code?
             PowerShell ps = PowerShell.Create();
             ps.Runspace = _runspace;
             ps.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
@@ -759,6 +759,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndLineNumber,
                                 frame.Position.StartColumnNumber,
                                 frame.Position.EndColumnNumber));
+                    }
+                }
+                else if (_runspace.ConnectionInfo.GetType() == typeof(NamedPipeConnectionInfo))
+                {
+                    String currentCall = psobj.ToString();
+                    Match match = validStackLine.Match(currentCall);
+                    if (match.Success)
+                    {
+                        String funcall = match.Groups[1].Value;
+                        String script = match.Groups[3].Value;
+                        int lineNum = int.Parse(match.Groups[4].Value);
+
+                        callStackFrames.Add(new CallStack(script, funcall, lineNum));
                     }
                 }
                 else

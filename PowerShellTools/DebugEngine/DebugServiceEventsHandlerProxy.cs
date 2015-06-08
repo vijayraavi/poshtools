@@ -142,7 +142,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="fullName">Full name of remote file(mapped into local)</param>
         public void OpenRemoteFile(string fullName)
         {
-            Debugger.OpenRemoteFile(fullName);
+            Debugger.OpenFileInVS(fullName, true);
         }
 
         /// <summary>

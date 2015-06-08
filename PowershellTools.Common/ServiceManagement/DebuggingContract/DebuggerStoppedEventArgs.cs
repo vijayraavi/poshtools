@@ -22,17 +22,21 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         [DataMember]
         public int Column { get; set; }
 
+        [DataMember]
+        public bool OpenScript { get; set; }
+
         public DebuggerStoppedEventArgs()
         {
             this.BreakpointHit = false;
         }
 
-        public DebuggerStoppedEventArgs(bool bpHit, string script, int line, int column)
+        public DebuggerStoppedEventArgs(bool bpHit, string script, int line, int column, bool openScript)
         {
             this.BreakpointHit = bpHit;
             this.ScriptFullPath = script;
             this.Line = line;
             this.Column = column;
+            this.OpenScript = openScript;
         }
     }
 }

@@ -116,7 +116,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         file = _mapRemoteToLocal[bp.Script];
                     }
 
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(true, file, bp.Line, bp.Column));
+                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(true, file, bp.Line, bp.Column, false));
                 }
             }
             else
@@ -127,7 +127,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     int lineNum = e.InvocationInfo.ScriptLineNumber;
                     int column = e.InvocationInfo.OffsetInLine;
 
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(false, file, lineNum, column));
+                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(false, file, lineNum, column, true));
                 }
                 else if (_callback != null)
                 {
