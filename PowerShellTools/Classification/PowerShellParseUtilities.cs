@@ -205,8 +205,6 @@ namespace PowerShellTools.Classification
                     ));
             }
 
-            commonParameters.Sort();
-
             return commonParameters;
         }
     }

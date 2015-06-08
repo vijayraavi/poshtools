@@ -11,7 +11,7 @@
                     mc:Ignorable="d" 
                     Height="Auto"
                     MinHeight="300"
-                    MaxHeight="600"
+                    MaxHeight="700"
                     Width="400"
                     SizeToContent="Height"
                     ShowInTaskbar="False"
