@@ -46,8 +46,23 @@ namespace PowerShellTools.TestAdapter
 
         private static void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
         {
+            ExecutionPolicy currentPolicy = ExecutionPolicy.Undefined;
+
             using (var ps = PowerShell.Create())
             {
+                ps.AddCommand("Get-ExecutionPolicy");
+
+                foreach (var result in ps.Invoke())
+                {
+                    currentPolicy = ((ExecutionPolicy)result.BaseObject);
+                    break;
+                }
+
+                if (currentPolicy == ExecutionPolicy.Unrestricted || currentPolicy == policy)
+                    return;
+
+                ps.Commands.Clear();
+
                 ps.AddCommand("Set-ExecutionPolicy").AddParameter("ExecutionPolicy", policy).AddParameter("Scope", scope).AddParameter("Force");
                 ps.Invoke();
             }
