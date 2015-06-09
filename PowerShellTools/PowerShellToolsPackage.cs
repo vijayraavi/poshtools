@@ -34,7 +34,6 @@ using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 using Threading = System.Threading.Tasks;
-using PowerShellTools.Repl;
 
 namespace PowerShellTools
 {
@@ -71,7 +70,7 @@ namespace PowerShellTools
                             ShowSmartIndent = true,
                             ShowDropDownOptions = true,
                             EnableCommenting = true)]
-
+    [ProvideEditorFactory(typeof(PowerShellEditorFactory), 114, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
@@ -117,7 +116,6 @@ namespace PowerShellTools
         private static ScriptDebugger _debugger;
         private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
-        private VisualStudioEvents VisualStudioEvents;
         private IContentType _contentType;
         private IntelliSenseEventsHandlerProxy _intelliSenseServiceContext;
 
@@ -275,12 +273,6 @@ namespace PowerShellTools
             _textBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
             EditorImports.ClassificationTypeRegistryService = componentModel.GetService<IClassificationTypeRegistryService>();
             EditorImports.ClassificationFormatMap = componentModel.GetService<IClassificationFormatMapService>();
-            VisualStudioEvents = componentModel.GetService<VisualStudioEvents>();
-
-            if (VisualStudioEvents != null)
-            {
-                VisualStudioEvents.SettingsChanged += VisualStudioEvents_SettingsChanged;
-            }
 
             if (_textBufferFactoryService != null)
             {
@@ -346,22 +338,6 @@ namespace PowerShellTools
             serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powerShellService.Value, true);
         }
 
-        private void VisualStudioEvents_SettingsChanged(object sender, DialogPage e)
-        {
-            if (e is DiagnosticsDialogPage)
-            {
-                var page = (DiagnosticsDialogPage)e;
-                if (page.EnableDiagnosticLogging)
-                {
-                    DiagnosticConfiguration.EnableDiagnostics();
-                }
-                else
-                {
-                    DiagnosticConfiguration.DisableDiagnostics();
-                }
-            }
-        }
-
         private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
         {
             ITextBuffer buffer = e.TextBuffer;
@@ -405,7 +381,9 @@ namespace PowerShellTools
 
             _debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
 
-            // Warm up intellisense service due to the reason that first intellisense request sometime slow than usual
+            // Warm up the intellisense service due to the reason that the 
+            // first intellisense request is often times slower than usual
+            // TODO: Should we move this into the HostService's initializiation?
             IntelliSenseService.GetDummyCompletionList();
 
             DebuggerReadyEvent.Set();
@@ -416,6 +394,21 @@ namespace PowerShellTools
         internal void BitnessSettingChanged(object sender, BitnessEventArgs e)
         {
             ConnectionManager.Instance.ProcessEventHandler(e.NewBitness);
+        }
+
+        internal void DiagnosticLoggingSettingChanged(object sender, bool enabled)
+        {
+            if (sender is DiagnosticsDialogPage)
+            {
+                if (enabled)
+                {
+                    DiagnosticConfiguration.EnableDiagnostics();
+                }
+                else
+                {
+                    DiagnosticConfiguration.DisableDiagnostics();
+                }
+            }
         }
     }
 }
