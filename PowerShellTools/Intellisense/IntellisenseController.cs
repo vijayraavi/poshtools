@@ -43,7 +43,6 @@ namespace PowerShellTools.Intellisense
 
             IEditorOperations editorOperations = provider.EditOperationsFactory.GetEditorOperations(textView);
             ITextUndoHistory undoHistory = provider.UndoHistoryRegistry.GetHistory(textView.TextBuffer);
-
             _intelliSenseManager = new IntelliSenseManager(provider.CompletionBroker, provider.ServiceProvider, null, textView, callbackContext);
             _autoCompletionController = new AutoCompletionController(textView, editorOperations, undoHistory, provider.ServiceProvider);
 

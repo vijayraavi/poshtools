@@ -12,11 +12,25 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Diagnostics;
 using PowerShellTools.Common;
+using System.Runtime.InteropServices;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     public partial class PowerShellDebuggingService : PSHost, IHostSupportsInteractiveSession
     {
+        const int STD_INPUT_HANDLE = -10;
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr GetStdHandle(int handle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+
+        /// <summary>
+        /// App running flag indicating if there is app runing on PSHost
+        /// </summary>
+        private bool _appRunning = false;
+
         /// <summary>
         /// The identifier of this PSHost implementation.
         /// </summary>
@@ -26,6 +40,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// A reference to the runspace used to start an interactive session.
         /// </summary>
         private Runspace _pushedRunspace = null;
+
+        /// <summary>
+        /// Thread lock
+        /// </summary>
+        private object _synLock = new object();
 
         /// <summary>
         /// Gets a string that contains the name of this host implementation. 
@@ -66,6 +85,33 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// App running flag indicating if there is app runing on PSHost
+        /// </summary>
+        public bool AppRunning
+        {
+            get
+            {
+                return _appRunning;
+            }
+            set
+            {
+                lock (_synLock)
+                {
+                    _appRunning = value;
+
+                    // Start monitoring thread
+                    if (value)
+                    {
+                        Task.Run(() =>
+                        {
+                            MonitorUserInputRequest();
+                        });
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// This API Instructs the host to interrupt the currently running 
         /// pipeline and start a new nested input loop. In this example this 
         /// functionality is not needed so the method throws a 
@@ -97,10 +143,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override void NotifyBeginApplication()
         {
-            if (_callback != null)
-            {
-                _callback.StartMonitorUserInputRequest();
-            }
+            AppRunning = true;
         }
 
         /// <summary>
@@ -111,10 +154,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public override void NotifyEndApplication()
         {
-            if (_callback != null)
-            {
-                _callback.StopMonitorUserInputRequest();
-            }
+            AppRunning = false;
         }
 
         /// <summary>
@@ -172,10 +212,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public void PopRunspace()
         {
-            UnregisterRemoteFileOpenEvent(Runspace);
-            Runspace = _pushedRunspace;
-            _pushedRunspace = null;
-            _callback.SetRemoteRunspace(false);
+            if (_pushedRunspace != null)
+            {
+                Runspace.StateChanged -= Runspace_StateChanged;
+                UnregisterRemoteFileOpenEvent(Runspace);
+                Runspace = _pushedRunspace;
+                _pushedRunspace = null;
+            }
+
+            if (_callback != null)
+            {
+                _callback.SetRemoteRunspace(false);
+            }
         }
 
 
@@ -184,18 +232,45 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _pushedRunspace = Runspace;
             Runspace = runspace;
 
-            if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
+            Runspace.StateChanged += Runspace_StateChanged;
+
+            if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging
+                && _callback != null)
             {
-                _callback.OutputStringLine(Resources.Warning_HigherVersionRequiredForDebugging);
+                _callback.OutputStringLine(string.Format(Resources.Warning_HigherVersionRequiredForDebugging, Constants.PowerShellInstallFWLink));
             }
             else
             {
-                SetRemoteScriptDebugMode40(Runspace);
+                if (Runspace.Debugger != null)
+                {
+                    SetRemoteScriptDebugMode40(Runspace);
+                }
+                else
+                {
+                    _callback.OutputStringLine(string.Format(Resources.Warning_HigherVersionOnTargetRequiredForDebugging, Constants.PowerShellInstallFWLink));
+                }
             }
 
-            _callback.SetRemoteRunspace(true);
+            if (_callback != null)
+            {
+                _callback.SetRemoteRunspace(true);
+            }
 
             RegisterRemoteFileOpenEvent(runspace);
+        }
+
+        private void Runspace_StateChanged(object sender, RunspaceStateEventArgs e)
+        {
+            ServiceCommon.Log("Remote runspace State Changed: {0}", e.RunspaceStateInfo.State);
+
+            switch (e.RunspaceStateInfo.State)
+            {
+                case RunspaceState.Broken:
+                case RunspaceState.Closed:
+                case RunspaceState.Disconnected:
+                    PopRunspace();
+                    break;
+            }
         }
 
         Runspace IHostSupportsInteractiveSession.Runspace
@@ -256,6 +331,45 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 catch (RemoteException)
                 {
                 }
+            }
+        }
+
+        /// <summary>
+        /// Monitoring thread for user input request
+        /// Get a handle of the console console input file object,
+        /// and check whether it's signalled by calling WaiForSingleobject with zero timeout. 
+        /// If it's not signalled, the process issued a pending Read on the handle
+        /// </summary>
+        /// <remarks>
+        /// Will be started once app begins to run on remote PowerShell host service
+        /// Stopped once app exits
+        /// </remarks>
+        private void MonitorUserInputRequest()
+        {
+            while (_appRunning)
+            {
+                IntPtr handle = GetStdHandle(STD_INPUT_HANDLE);
+                UInt32 ret = WaitForSingleObject(handle, 0);
+
+                if (ret != 0 && _callback != null)
+                {
+                    // Tactic Fix (TODO: github issue https://github.com/Microsoft/poshtools/issues/479)
+                    // Give a bit of time for case where app crashed on readline/readkey
+                    // We dont want to put any dirty content into stdin stream buffer
+                    // Which can only be flushed out till the next readline/readkey
+                    System.Threading.Thread.Sleep(50);
+
+                    if (_appRunning)
+                    {
+                        _callback.RequestUserInputOnStdIn();
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                System.Threading.Thread.Sleep(50);
             }
         }
 
