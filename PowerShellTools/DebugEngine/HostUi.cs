@@ -258,6 +258,39 @@ namespace PowerShellTools.DebugEngine
 
         public int ReadChoice(string caption, string message, IList<ChoiceItem> choices, int defaultChoice)
         {
+            if (String.IsNullOrEmpty(caption))
+            {
+                caption = ResourceStrings.PromptForChoice_DefaultCaption;
+            }
+
+            if (message == null)
+            {
+                message = String.Empty;
+            }
+
+            if (choices == null)
+            {
+                throw new ArgumentNullException("choices");
+            }
+
+            if (choices.Count == 0)
+            {
+                throw new ArgumentException(String.Format(ResourceStrings.ChoicesCollectionShouldNotBeEmpty, "choices"), "choices");
+            }
+
+            foreach (var c in choices)
+            {
+                if (c == null)
+                {
+                    throw new ArgumentNullException("choices");
+                }
+            }
+
+            if (defaultChoice < -1 || defaultChoice >= choices.Count)
+            {
+                throw new ArgumentOutOfRangeException("defaultChoice");
+            }
+
             int choice = -1;
             ThreadHelper.Generic.Invoke(() =>
             {
@@ -269,7 +302,6 @@ namespace PowerShellTools.DebugEngine
                 if (ret == true)
                 {
                     choice = viewModel.UserChoice;
-
                 }
             });
 

@@ -162,6 +162,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public override int PromptForChoice(string caption, string message, Collection<ChoiceDescription> choices, int defaultChoice)
         {
             var result = ReadChoiceFromUI(caption, message, choices, defaultChoice);
+            
+            if (result == -1)
+            {
+                throw new PipelineStoppedException();
+            }
             return result;
         }
 
