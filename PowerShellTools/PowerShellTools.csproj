@@ -33,14 +33,6 @@
     </When>
   </Choose>
   <Import Project="..\Build\ProjectBefore.settings" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <Prefer32Bit>false</Prefer32Bit>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DefineConstants>TRACE;DEBUG;POWERSHELL;DEV12;DEV12_OR_LATER;DEV11_OR_LATER</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
   <PropertyGroup>
     <DelaySign>false</DelaySign>
   </PropertyGroup>
@@ -54,7 +46,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PowerShellTools</RootNamespace>
-    <AssemblyName>PowerShellTools</AssemblyName>
+    <AssemblyName>PowerShellTools.$(VSTarget)</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
@@ -63,7 +55,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;POWERSHELL;DEV11</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;POWERSHELL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -79,7 +71,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;POWERSHELL;DEV11</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;POWERSHELL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -656,7 +648,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="Manifest\$(VisualStudioVersion)\source.extension.vsixmanifest" />
+    <None Include="Manifest\source.extension.vsixmanifest" />
     <Content Include="poshtools.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -735,10 +727,11 @@
     <None Include="Templates\Files\Script.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <VSCTCompile Include="PowerShellTools.vsct">
+    <VSCTCompile Include="PowerShellTools.$(VSTarget).vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
+    <Content Include="PowerShellTools.vsct" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Images.png" />
