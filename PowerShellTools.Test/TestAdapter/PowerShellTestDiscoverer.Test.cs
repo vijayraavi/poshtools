@@ -81,10 +81,10 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new []{tempFile}, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("When there are changes It Builds next version", testCases[0].DisplayName);
+            Assert.AreEqual("BuildIfChanged", testCases[0].DisplayName);
             Assert.AreEqual(PowerShellTestExecutor.ExecutorUri, testCases[0].ExecutorUri);
             Assert.AreEqual(tempFile, testCases[0].CodeFilePath);
-            Assert.AreEqual(4, testCases[0].LineNumber);
+            Assert.AreEqual(2, testCases[0].LineNumber);
         }
 
         [TestMethod]
@@ -106,7 +106,7 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("ThisIsATest It Something", testCases[0].DisplayName);
+            Assert.AreEqual("BuildIfChanged", testCases[0].DisplayName);
         }
 
         [TestMethod]
@@ -128,15 +128,15 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("Pester||BuildIfChanged||ThisIsATest||Something", testCases[0].FullyQualifiedName);
+            Assert.AreEqual("BuildIfChanged", testCases[0].FullyQualifiedName);
         }
 
         [TestMethod]
-        public void ShouldDiscoverPSateTestCases()
+        public void ShouldFindTestWithoutContext()
         {
-            const string testScript = @"#psate
-            TestFixture 'BuildIfChanged' {
-                TestCase 'ThisIsATest' {
+            const string testScript = @"
+            Describe -Name 'BuildIfChanged' {
+                It -Name 'Something' {
                 }
             }";
 
@@ -148,19 +148,15 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("ThisIsATest", testCases[0].DisplayName);
-            Assert.AreEqual(PowerShellTestExecutor.ExecutorUri, testCases[0].ExecutorUri);
-            Assert.AreEqual(tempFile, testCases[0].CodeFilePath);
-            Assert.AreEqual(3, testCases[0].LineNumber);
-            Assert.AreEqual("PSate||BuildIfChanged||ThisIsATest", testCases[0].FullyQualifiedName);
+            Assert.AreEqual("BuildIfChanged", testCases[0].FullyQualifiedName);
         }
 
         [TestMethod]
-        public void ShouldSupportNameOnTestFixtureAndTestCase()
+        public void ShouldFindSingleTag()
         {
-            const string testScript = @"#psate
-            TestFixture -Name 'BuildIfChanged' {
-                TestCase -Name 'ThisIsATest' {
+            const string testScript = @"
+            Describe -Name 'BuildIfChanged' -Tags MyTag {
+                It -Name 'Something' {
                 }
             }";
 
@@ -172,8 +168,48 @@ namespace PowerShellTools.Test.TestAdapter
             _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
 
             Assert.IsTrue(testCases.Any(), "No test cases found.");
-            Assert.AreEqual("ThisIsATest", testCases[0].DisplayName);
-            Assert.AreEqual("PSate||BuildIfChanged||ThisIsATest", testCases[0].FullyQualifiedName);
+            Assert.AreEqual("MyTag", testCases[0].Traits.FirstOrDefault().Name);
+        }
+
+        [TestMethod]
+        public void ShouldFindArrayOfTags()
+        {
+            const string testScript = @"
+            Describe -Name 'BuildIfChanged' -Tags @('MyTag','MyTag2') {
+                It -Name 'Something' {
+                }
+            }";
+
+            var tempFile = WriteTestFile(testScript);
+
+            var testCases = new List<TestCase>();
+            _sink.Setup(m => m.SendTestCase(It.IsAny<TestCase>())).Callback<TestCase>(testCases.Add);
+
+            _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
+
+            Assert.IsTrue(testCases.Any(), "No test cases found.");
+            Assert.AreEqual("MyTag", testCases[0].Traits.FirstOrDefault().Name);
+            Assert.AreEqual("MyTag2", testCases[0].Traits.LastOrDefault().Name);
+        }
+
+        [TestMethod]
+        public void ShouldFindPartialTagsParameter()
+        {
+            const string testScript = @"
+            Describe -Name 'BuildIfChanged' -Tag MyTag {
+                It -Name 'Something' {
+                }
+            }";
+
+            var tempFile = WriteTestFile(testScript);
+
+            var testCases = new List<TestCase>();
+            _sink.Setup(m => m.SendTestCase(It.IsAny<TestCase>())).Callback<TestCase>(testCases.Add);
+
+            _discoverer.DiscoverTests(new[] { tempFile }, _discoveryContext.Object, _messageLogger.Object, _sink.Object);
+
+            Assert.IsTrue(testCases.Any(), "No test cases found.");
+            Assert.AreEqual("MyTag", testCases[0].Traits.FirstOrDefault().Name);
         }
     }
 }
