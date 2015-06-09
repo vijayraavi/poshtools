@@ -21,7 +21,7 @@
         <OldToolsVersion>4.0</OldToolsVersion>
       </PropertyGroup>
     </When>
-	<When Condition=" '$(VisualStudioVersion)'=='14.0'  Or '$(TargetVisualStudioVersion)'=='VS140' ">
+    <When Condition=" '$(VisualStudioVersion)'=='14.0'  Or '$(TargetVisualStudioVersion)'=='VS140' ">
       <PropertyGroup>
         <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
         <FileUpgradeFlags>
@@ -117,11 +117,19 @@
     <Compile Include="PowerShellTestContainer.cs" />
     <Compile Include="PowerShellTestContainerDiscoverer.cs" />
     <Compile Include="PowerShellTestDiscoverer.cs" />
-    <Compile Include="PesterTestExecutor.cs" />
     <Compile Include="PowerShellTestResult.cs" />
-    <Compile Include="PsateTestExecutor.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="TestAdapterHost.cs" />
-    <Compile Include="TestType.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Build\ProjectAfter.settings" />
 </Project>
