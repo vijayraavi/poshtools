@@ -41,10 +41,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private List<PowerShellBreakpointRecord> _psBreakpointTable;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private readonly AutoResetEvent _debugCommandEvent = new AutoResetEvent(false);
+        private readonly AutoResetEvent _attachRequestEvent = new AutoResetEvent(false);
         private object _executeDebugCommandLock = new object();
         private string _debugCommandOutput;
         private bool _debugOutput;
+        private bool _attaching;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
+        private static readonly Regex validStackLine = new Regex(DebugEngineConstants.ValidCallStackLine, RegexOptions.Compiled);
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
 
@@ -67,6 +70,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _mapRemoteToLocal = new Dictionary<string, string>();
             _psBreakpointTable = new List<PowerShellBreakpointRecord>();
             _debugOutput = true;
+            _attaching = false;
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             InitializeRunspace(this);
         }
@@ -130,6 +134,39 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             SetRunspace(_runspace);
         }
+
+        /// <summary>
+        /// Attaches the HostService to a local runspace already in execution
+        /// </summary>
+        public void AttachToRunspace(uint pid)
+        {
+            // _callback should be null (check with Eric/Andre about this, should just be b/c we bypassed Execute)
+            if (_callback == null)
+            {
+                _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
+            }
+
+            // Enter into to-attach process which will swap out the current runspace
+            _attaching = true;
+            PowerShell ps = PowerShell.Create();
+            ps.Runspace = _runspace;
+            ps.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
+            ps.Invoke();
+
+            // wait for invoke to finish swapping the runspaces
+            _attachRequestEvent.WaitOne(5000);
+
+            // rehook up the event handling
+            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+
+            // debug the runspace
+            ps.Runspace = _runspace;
+            ps.Commands.Clear();
+            ps.AddCommand("Debug-Runspace").AddParameter("Id", "1");
+            ps.Invoke();
+        }
+
 
         /// <summary>
         /// Client respond with resume action to service
@@ -752,6 +789,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
+                else if (_runspace.ConnectionInfo.GetType() == typeof(NamedPipeConnectionInfo))
+                {
+                    String currentCall = psobj.ToString();
+                    Match match = validStackLine.Match(currentCall);
+                    if (match.Success)
+                    {
+                        String funcall = match.Groups[1].Value;
+                        String script = match.Groups[3].Value;
+                        int lineNum = int.Parse(match.Groups[4].Value);
+
+                        callStackFrames.Add(new CallStack(script, funcall, lineNum));
+                    }
+                }
                 else
                 {
                     dynamic psFrame = (dynamic)psobj;
@@ -762,6 +812,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
                 }
+
             }
 
             return callStackFrames;
