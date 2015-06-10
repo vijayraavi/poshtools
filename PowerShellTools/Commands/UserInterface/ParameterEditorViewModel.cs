@@ -25,7 +25,6 @@ namespace PowerShellTools.Commands.UserInterface
         public ParameterEditorViewModel(ParameterEditorModel model)
         {
             _model = Arguments.ValidateNotNull(model, "model");
-            _model.CommonParameters = _model.CommonParameters.OrderBy(param => param.Name).ToList();
 
             //Hook up property change events to listen to changes in parameter files            
             foreach (var p in _model.Parameters)

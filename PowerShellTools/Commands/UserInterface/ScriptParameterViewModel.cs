@@ -392,7 +392,7 @@ namespace PowerShellTools.Commands.UserInterface
         /// </summary>
         public int CompareTo(ScriptParameterViewModel other)
         {
-            return String.Compare(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            return string.Compare(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
         }
 
         bool INotifyDataErrorInfo.HasErrors
