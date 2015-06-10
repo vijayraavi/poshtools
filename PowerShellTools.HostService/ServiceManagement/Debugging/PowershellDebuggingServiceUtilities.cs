@@ -203,7 +203,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     break;
                 }
 
-                if (currentPolicy == ExecutionPolicy.Unrestricted || currentPolicy == policy)
+                if ((policy <= currentPolicy || currentPolicy == ExecutionPolicy.Bypass) && currentPolicy != ExecutionPolicy.Undefined) //Bypass is the absolute least restrictive, but as added in PS 2.0, and thus has a value of '4' instead of a value that corresponds to it's relative restrictiveness
                     return;
 
                 ps.Commands.Clear();

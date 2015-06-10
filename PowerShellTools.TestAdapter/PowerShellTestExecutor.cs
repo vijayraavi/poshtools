@@ -41,7 +41,7 @@ namespace PowerShellTools.TestAdapter
 
         private static void SetupExecutionPolicy()
         {
-            SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);   
+            SetExecutionPolicy(ExecutionPolicy.RemoteSigned, ExecutionPolicyScope.Process);
         }
 
         private static void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
@@ -58,7 +58,7 @@ namespace PowerShellTools.TestAdapter
                     break;
                 }
 
-                if (currentPolicy == ExecutionPolicy.Unrestricted || currentPolicy == policy)
+                if ((policy <= currentPolicy || currentPolicy == ExecutionPolicy.Bypass) && currentPolicy != ExecutionPolicy.Undefined) //Bypass is the absolute least restrictive, but as added in PS 2.0, and thus has a value of '4' instead of a value that corresponds to it's relative restrictiveness
                     return;
 
                 ps.Commands.Clear();
@@ -126,9 +126,9 @@ namespace PowerShellTools.TestAdapter
 
                 if (testOutput.Length > 0)
                 {
-                    frameworkHandle.SendMessage(TestMessageLevel.Informational, testOutput.ToString());    
+                    frameworkHandle.SendMessage(TestMessageLevel.Informational, testOutput.ToString());
                 }
-                
+
                 frameworkHandle.RecordResult(testResult);
             }
 
