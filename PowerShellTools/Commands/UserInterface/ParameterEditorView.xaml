@@ -8,10 +8,11 @@
                     xmlns:common="clr-namespace:PowerShellTools.Common.Controls;assembly=PowerShellTools.Common"
                     xmlns:package="clr-namespace:PowerShellTools"
                     xmlns:local="clr-namespace:PowerShellTools.Commands.UserInterface"
+                    xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
                     mc:Ignorable="d" 
                     Height="Auto"
                     MinHeight="300"
-                    MaxHeight="600"
+                    MaxHeight="700"
                     Width="400"
                     SizeToContent="Height"
                     ShowInTaskbar="False"
@@ -159,9 +160,15 @@
                     Validation.ErrorTemplate="{StaticResource ErrorTemplate}"
                     />
             </DataTemplate>
-
+            
+            <CollectionViewSource x:Key="CommonParametersSorted" Source="{Binding Path=CommonParameters}">
+                <CollectionViewSource.SortDescriptions>
+                    <scm:SortDescription PropertyName="Name"/>
+                </CollectionViewSource.SortDescriptions>
+            </CollectionViewSource>
+            
         </ResourceDictionary>
-
+        
     </shell:VsShellDialogWindow.Resources>
 
     <Grid x:Name="ParameterPanel" Margin="12">
@@ -252,7 +259,7 @@
                   SelectionMode="Single"
                   AutomationProperties.Name="{x:Static package:Resources.CommonParametersTipLabel}"
                   Style="{StaticResource DialogDataGridStyle}"
-                  ItemsSource="{Binding Path=CommonParameters}">
+                  ItemsSource="{Binding Source={StaticResource CommonParametersSorted}}">
             <DataGrid.Columns>
                 <DataGridTextColumn 
                         IsReadOnly="True" 

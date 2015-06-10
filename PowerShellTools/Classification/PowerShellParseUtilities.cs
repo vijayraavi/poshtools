@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation.Language;
 using PowerShellTools.Commands.UserInterface;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Classification
 {
@@ -14,6 +15,8 @@ namespace PowerShellTools.Classification
     {
         private const string ValidateSetConst = "ValidateSet";
         private const string ParameterSetNameConst = "ParameterSetName";
+        private static readonly Version CurrentPowershellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
+        private static readonly Version RequiredVersionForInformationCommonParams = new Version(5, 0);
 
         /// <summary>
         /// Try to find a Param block on the top level of an AST.
@@ -138,7 +141,7 @@ namespace PowerShellTools.Classification
 
         internal static IList<ScriptParameterViewModel> GenerateCommonParameters()
         {
-            return new List<ScriptParameterViewModel>()
+            List<ScriptParameterViewModel> commonParameters = new List<ScriptParameterViewModel>()
             {
                 // Debug
                 new ScriptParameterViewModel(
@@ -187,6 +190,22 @@ namespace PowerShellTools.Classification
                     new ScriptParameter("WarningVariable", DataTypeConstants.StringType, null, new HashSet<object>())
                     )
             };
+
+            if(CurrentPowershellVersion >= RequiredVersionForInformationCommonParams)
+            {
+                // InformationAction
+                commonParameters.Add(new ScriptParameterViewModel(
+                    new ScriptParameter("InformationVariable", DataTypeConstants.StringType, null, new HashSet<object>())
+                    ));
+
+                // InformationVariable
+                commonParameters.Add(new ScriptParameterViewModel(
+                    new ScriptParameter("InformationAction", DataTypeConstants.EnumType, String.Empty, new HashSet<object>()
+                        {String.Empty, "SilentlyContinue", "Stop", "Continue", "Inquire", "Ignore", "Suspend"})
+                    ));
+            }
+
+            return commonParameters;
         }
     }
 }
