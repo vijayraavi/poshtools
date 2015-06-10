@@ -188,10 +188,26 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
         {
+            ExecutionPolicy currentPolicy = ExecutionPolicy.Undefined;
+
             ServiceCommon.Log("Setting execution policy");
             using (PowerShell ps = PowerShell.Create())
             {
                 ps.Runspace = _runspace;
+
+                ps.AddCommand("Get-ExecutionPolicy");
+
+                foreach (var result in ps.Invoke())
+                {
+                    currentPolicy = ((ExecutionPolicy)result.BaseObject);
+                    break;
+                }
+
+                if ((policy <= currentPolicy || currentPolicy == ExecutionPolicy.Bypass) && currentPolicy != ExecutionPolicy.Undefined) //Bypass is the absolute least restrictive, but as added in PS 2.0, and thus has a value of '4' instead of a value that corresponds to it's relative restrictiveness
+                    return;
+
+                ps.Commands.Clear();
+
                 ps.AddCommand("Set-ExecutionPolicy")
                     .AddParameter("ExecutionPolicy", policy)
                     .AddParameter("Scope", scope)
