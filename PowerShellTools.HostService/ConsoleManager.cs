@@ -81,7 +81,7 @@ namespace PowerShellTools.HostService
 
             try
             {
-                string exeName = Constants.PowershellHostConsoleExeName;
+                string exeName = Constants.PowerShellHostConsoleExeName;
                 string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 string exeFullPath = Path.Combine(currentPath, exeName);
 

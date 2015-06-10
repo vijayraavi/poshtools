@@ -10,7 +10,7 @@ using System.ServiceModel.Dispatcher;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PowerShellTools.HostService
+namespace PowerShellTools
 {
     /// <summary>
     /// In WCF, unhandled exception crashes the service, leaving the channel into fault state, which is basically requiring client to re-instantiate proxy in order to continue using the service.
@@ -18,7 +18,7 @@ namespace PowerShellTools.HostService
     /// This is implemetaion of the generic error handler for entire powershell wcf services, by exposing it as a service behavior attribute, so that it is developer friendly
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    class PowerShellServiceHostBehaviorAttribute : Attribute, IErrorHandler, IServiceBehavior
+    class DebugServiceEventHandlerBehaviorAttribute : Attribute, IErrorHandler, IEndpointBehavior
     {
         #region IErrorHandler Members
 
@@ -29,9 +29,6 @@ namespace PowerShellTools.HostService
         /// <returns></returns>
         public bool HandleError(Exception error)
         {
-            // Log the error details on server side
-            ServiceCommon.Log("PowershellHostService: {0}", error.Message.ToString());
-
             // Let the other ErrorHandler do their jobs
             return true;
         }
@@ -62,27 +59,25 @@ namespace PowerShellTools.HostService
 
         #endregion
 
-        #region IServiceBehavior Members
+        #region IEndpointBehavior Members
+        
+        public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters) { }
 
         /// <summary>
-        /// Hook up the service behavior into service host channel properly
+        /// Hook up the callback behavior into host channel properly
         /// </summary>
         /// <param name="serviceDescription"></param>
         /// <param name="serviceHostBase"></param>
-        public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
+        public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime)
         {
-            // Adds a PowershellServiceHostBehavior to each ChannelDispatcher
-            foreach (var channelDispatcherBase in serviceHostBase.ChannelDispatchers)
-            {
-                var channelDispatcher = channelDispatcherBase as ChannelDispatcher;
-                channelDispatcher.ErrorHandlers.Add(new PowerShellServiceHostBehaviorAttribute());
-            }
+            // Adds a DebugServiceEventHandlerBehaviorAttribute to each ChannelDispatcher
+            clientRuntime.CallbackDispatchRuntime.ChannelDispatcher.ErrorHandlers.Add(new DebugServiceEventHandlerBehaviorAttribute());
         }
 
-        public void AddBindingParameters(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase, Collection<ServiceEndpoint> endpoints, BindingParameterCollection bindingParameters) { }
-        
-        public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase) { }
-        
+        public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher) { }
+
+        public void Validate(ServiceEndpoint endpoint) { }
+
         #endregion
     }
 }

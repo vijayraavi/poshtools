@@ -1,9 +1,12 @@
-using System.ComponentModel.Composition;
-using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
+using PowerShellTools.Common;
+using System;
+using System.ComponentModel.Composition;
+using System.Runtime.InteropServices;
 
 namespace PowerShellTools.Project
 {
@@ -26,6 +29,8 @@ namespace PowerShellTools.Project
         {
             var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
             _validator = (IDependencyValidator)componentModel.GetService<IDependencyValidator>();
+
+            UiContextUtilities.ActivateUiContext(UiContextUtilities.CreateUiContext(PowerShellTools.Common.Constants.PowerShellProjectUiContextGuid));
         }
 
         public override ProjectFactory CreateProjectFactory()

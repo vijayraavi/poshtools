@@ -15,7 +15,11 @@ namespace PowerShellTools.DebugEngine
     /// Proxy of debugger service event handlers
     /// This works as InstanceContext for debugger service channel
     /// </summary>
-    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
+    [CallbackBehavior(
+        ConcurrencyMode = ConcurrencyMode.Multiple, 
+        UseSynchronizationContext = false,
+        IncludeExceptionDetailInFaults = true)]
+    [DebugServiceEventHandlerBehavior]
     public class DebugServiceEventsHandlerProxy : IDebugEngineCallback
     {
         private ScriptDebugger _debugger;
@@ -193,6 +197,63 @@ namespace PowerShellTools.DebugEngine
             {
                 ConnectionManager.Instance.HostProcess.WriteHostProcessStandardInputStream(inputText);
             }
+        }
+
+        /// <summary>
+        /// Clear REPL window
+        /// </summary>
+        public void ClearHostScreen()
+        {
+            if (Debugger.ReplWindow != null)
+            {
+                Debugger.ReplWindow.ClearScreen();
+            }
+        }
+
+        /// <summary>
+        /// Wait next keystrock from VS
+        /// </summary>
+        /// <returns></returns>
+        public VsKeyInfo VsReadKey()
+        {
+            if (Debugger.ReplWindow != null)
+            {
+                return Debugger.ReplWindow.WaitKey();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Check whether the user has pressed a key. 
+        /// </summary>
+        /// <returns>Boolean indicating whether the user has pressed a key</returns>
+        public bool IsKeyAvailable()
+        {
+            bool isAvailable = false;
+            if (Debugger.ReplWindow != null)
+            {
+                isAvailable = Debugger.ReplWindow.IsKeyAvailable();
+            }
+
+            return isAvailable;
+        }
+
+        /// <summary>
+        /// Get REPL window width so that buffer size can be coordinate
+        /// </summary>
+        /// <returns>REPL window size</returns>
+        public int GetREPLWindowWidth()
+        {
+            int width = PowerShellTools.Common.Constants.MinimalReplBufferWidth;
+            if (Debugger.ReplWindow != null)
+            {
+                width = Debugger.ReplWindow.GetRawHostBufferWidth();
+            }
+
+            return width;
         }
     }
 }

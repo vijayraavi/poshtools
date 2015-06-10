@@ -61,5 +61,17 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract(IsOneWay = false)]
         void SetRemoteRunspace(bool enabled);
+
+        [OperationContract(IsOneWay = false)]
+        void ClearHostScreen();
+
+        [OperationContract(IsOneWay = false)]
+        VsKeyInfo VsReadKey();
+
+        [OperationContract(IsOneWay = false)]
+        bool IsKeyAvailable();
+
+        [OperationContract(IsOneWay = false)]
+        int GetREPLWindowWidth();
     }
 }

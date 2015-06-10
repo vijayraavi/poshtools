@@ -26,7 +26,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
     [PowerShellServiceHostBehavior]
-    public partial class PowerShellDebuggingService : IPowershellDebuggingService
+    public partial class PowerShellDebuggingService : IPowerShellDebuggingService
     {
         private static Runspace _runspace;
         private PowerShell _currentPowerShell;
@@ -41,15 +41,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private List<PowerShellBreakpointRecord> _psBreakpointTable;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private readonly AutoResetEvent _debugCommandEvent = new AutoResetEvent(false);
-        private readonly AutoResetEvent _attachRequestEvent = new AutoResetEvent(false);
         private object _executeDebugCommandLock = new object();
         private string _debugCommandOutput;
         private bool _debugOutput;
-        private bool _attaching;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
-        private static readonly Regex validStackLine = new Regex(DebugEngineConstants.ValidCallStackLine, RegexOptions.Compiled);
+
+        // Needs to be initilaized from its corresponding VS option page over the wcf channel.
+        // For now we dont have anything needed from option page, so we just initialize here.
+        private PowerShellRawHostOptions _rawHostOptions = new PowerShellRawHostOptions(); 
+
         /// <summary>
         /// Minimal powershell version required for remote session debugging
         /// </summary>
@@ -65,7 +67,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _mapRemoteToLocal = new Dictionary<string, string>();
             _psBreakpointTable = new List<PowerShellBreakpointRecord>();
             _debugOutput = true;
-            _attaching = false;
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             InitializeRunspace(this);
         }
@@ -85,6 +86,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Call back service used to talk to VS side
+        /// </summary>
         public IDebugEngineCallback CallbackService
         {
             get
@@ -94,6 +98,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             set
             {
                 _callback = value;
+            }
+        }
+
+        /// <summary>
+        /// PowerShell raw host UI options 
+        /// </summary>
+        public PowerShellRawHostOptions RawHostOptions
+        {
+            get
+            {
+                return _rawHostOptions;
+            }
+            set
+            {
+                _rawHostOptions = value;
             }
         }
 
@@ -110,38 +129,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             SetRunspace(_runspace);
-        }
-
-        /// <summary>
-        /// Attaches the HostService to a local runspace already in execution
-        /// </summary>
-        public void AttachToRunspace(uint pid)
-        {
-            // _callback should be null (check with Eric/Andre about this, should just be b/c we bypassed Execute)
-            if (_callback == null)
-            {
-                _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
-            }
-
-            // Enter into to-attach process which will swap out the current runspace
-            _attaching = true; // maybe have a function somewhere to set this, could be better code?
-            PowerShell ps = PowerShell.Create();
-            ps.Runspace = _runspace;
-            ps.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
-            ps.Invoke();
-
-            // wait for invoke to finish swapping the runspaces
-            _attachRequestEvent.WaitOne(5000);
-
-            // rehook up the event handling
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-
-            // debug the runspace
-            ps.Runspace = _runspace;
-            ps.Commands.Clear();
-            ps.AddCommand("Debug-Runspace").AddParameter("Id", "1");
-            ps.Invoke();
         }
 
         /// <summary>
@@ -168,7 +155,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Sets breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
-        public void SetBreakpoint(PowershellBreakpoint bp)
+        public void SetBreakpoint(PowerShellBreakpoint bp)
         {
             IEnumerable<PSObject> breakpoints;
 
@@ -220,7 +207,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Remove breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
-        public void RemoveBreakpoint(PowershellBreakpoint bp)
+        public void RemoveBreakpoint(PowerShellBreakpoint bp)
         {
             int id = GetPSBreakpointId(bp);
 
@@ -263,7 +250,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Enable/Disable breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
-        public void EnableBreakpoint(PowershellBreakpoint bp, bool enable)
+        public void EnableBreakpoint(PowerShellBreakpoint bp, bool enable)
         {
             int id = GetPSBreakpointId(bp);
 
@@ -343,7 +330,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         /// <param name="bp">Powershell breakpoint</param>
         /// <returns>Id of breakpoint if found, otherwise -1</returns>
-        public int GetPSBreakpointId(PowershellBreakpoint bp)
+        public int GetPSBreakpointId(PowerShellBreakpoint bp)
         {
             ServiceCommon.Log("Getting PSBreakpoint ...");
             var bpr = _psBreakpointTable.FirstOrDefault(b => b.PSBreakpoint.Equals(bp));
@@ -469,10 +456,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ReleaseWaitHandler();
 
-            if (_currentPowerShell != null)
+            try
             {
-                _currentPowerShell.Stop();
+                if (_currentPowerShell != null)
+                {
+                    _currentPowerShell.Stop();
+                }
             }
+            catch { }
         }
 
         /// <summary>
@@ -761,19 +752,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                else if (_runspace.ConnectionInfo.GetType() == typeof(NamedPipeConnectionInfo))
-                {
-                    String currentCall = psobj.ToString();
-                    Match match = validStackLine.Match(currentCall);
-                    if (match.Success)
-                    {
-                        String funcall = match.Groups[1].Value;
-                        String script = match.Groups[3].Value;
-                        int lineNum = int.Parse(match.Groups[4].Value);
-
-                        callStackFrames.Add(new CallStack(script, funcall, lineNum));
-                    }
-                }
                 else
                 {
                     dynamic psFrame = (dynamic)psobj;
@@ -825,12 +803,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Check if there is an app running inside PSHost
+        /// Apply the raw host options on powershell host
         /// </summary>
-        /// <returns>Boolean indicates if there is an app running</returns>
-        public bool IsAppRunning()
+        /// <param name="options">PS raw UI host options</param>
+        public void SetOption(PowerShellRawHostOptions options)
         {
-            return AppRunning;
+            _rawHostOptions = options;
         }
 
         #endregion

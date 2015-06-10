@@ -16,6 +16,7 @@ namespace PowerShellTools.Commands.UserInterface
         Char,
         Boolean,
         Switch,
+        Enum,
         Byte,
         Int32,
         Int64,

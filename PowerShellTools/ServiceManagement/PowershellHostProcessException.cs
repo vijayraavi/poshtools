@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace PowerShellTools.ServiceManagement
 {
     [Serializable]
-    public class PowershellHostProcessException : Exception
+    public class PowerShellHostProcessException : Exception
     {
-        public PowershellHostProcessException() { }
+        public PowerShellHostProcessException() { }
 
-        public PowershellHostProcessException(string message) : base(message) { }
+        public PowerShellHostProcessException(string message) : base(message) { }
     }
 }

@@ -12,12 +12,12 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
     public class DebuggerBreakpointUpdatedEventArgs
     {
         [DataMember]
-        public PowershellBreakpoint Breakpoint;
+        public PowerShellBreakpoint Breakpoint;
 
         [DataMember]
         public BreakpointUpdateType UpdateType;
 
-        public DebuggerBreakpointUpdatedEventArgs(PowershellBreakpoint breakpoint, BreakpointUpdateType updateType)
+        public DebuggerBreakpointUpdatedEventArgs(PowerShellBreakpoint breakpoint, BreakpointUpdateType updateType)
         {
             Breakpoint = breakpoint;
             UpdateType = updateType;

@@ -12,6 +12,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using DTE = EnvDTE;
 using DTE80 = EnvDTE80;
 using PowerShellTools.Common.Debugging;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -30,6 +32,12 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public partial class ScriptDebugger
     {
+        [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
         private List<ScriptStackFrame> _callstack;
         private readonly AutoResetEvent _stoppingCompleteEvent = new AutoResetEvent(false);
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
@@ -175,7 +183,7 @@ namespace PowerShellTools.DebugEngine
             {
                 DebuggingFinished(this, new EventArgs());
             }
-
+            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
             _stoppingCompleteEvent.Set();
         }
 
@@ -354,6 +362,13 @@ namespace PowerShellTools.DebugEngine
         public bool ExecuteInternal(string commandLine)
         {
             IsDebuggingCommandReady = false;
+            IntPtr hostProcessWindowHandle = FindWindow(
+                null, 
+                string.Format(
+                    PowerShellTools.Common.Constants.HostProcessWindowTitleFormat, 
+                    Process.GetCurrentProcess().Id, 
+                    PowerShellTools.Common.Constants.PowerShellHostExeName));
+            SetForegroundWindow(hostProcessWindowHandle);
             return DebuggingService.Execute(commandLine);
         }
 

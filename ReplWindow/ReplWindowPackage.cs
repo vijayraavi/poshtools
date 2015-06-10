@@ -20,11 +20,13 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace PowerShellTools.Repl {
+namespace PowerShellTools.Repl
+{
 #if INTERACTIVE_WINDOW
     using IReplWindowProvider = IInteractiveWindowProvider;
 #elif POWERSHELL
     using IReplWindowProvider = IPowerShellReplWindowProvider;
+    using PowerShellTools.Common;
 #endif
 
     /// <summary>
@@ -46,12 +48,15 @@ namespace PowerShellTools.Repl {
     [ProvideToolWindow(typeof(ReplWindow), Style = VsDockStyle.Linked, Orientation = ToolWindowOrientation.none, Window = ToolWindowGuids80.Outputwindow, MultiInstances = true)]
     [ProvideToolWindowVisibility(typeof(ReplWindow), PowerShellTools.Common.Constants.PowerShellDebuggingUiContextString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideAutoLoad(Microsoft.VisualStudio.Shell.Interop.UIContextGuids.NoSolution)]
-    [ProvideAutoLoad(Microsoft.VisualStudio.Shell.Interop.UIContextGuids.SolutionExists)]
     [Guid(GuidList.guidReplWindowPkgString)]
-    internal sealed class ReplWindowPackage : Package, IVsToolWindowFactory {
-        int IVsToolWindowFactory.CreateToolWindow(ref Guid toolWindowType, uint id) {
-            if (toolWindowType == typeof(ReplWindow).GUID) {
+    internal sealed class ReplWindowPackage : Package, IVsToolWindowFactory
+    {
+        int IVsToolWindowFactory.CreateToolWindow(ref Guid toolWindowType, uint id)
+        {
+            UiContextUtilities.ActivateUiContext(UiContextUtilities.CreateUiContext(Constants.PowerShellReplCreationUiContextGuid));
+
+            if (toolWindowType == typeof(ReplWindow).GUID)
+            {
                 var model = (IComponentModel)GetService(typeof(SComponentModel));
                 var replProvider = (ReplWindowProvider)model.GetService<IReplWindowProvider>();
 

@@ -5,7 +5,7 @@
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
                     xmlns:shell="clr-namespace:PowerShellTools.Common;assembly=PowerShellTools.Common"
-                    xmlns:common="clr-namespace:PowerShellTools.Common.Controls;assembly=PowershellTools.Common"
+                    xmlns:common="clr-namespace:PowerShellTools.Common.Controls;assembly=PowerShellTools.Common"
                     xmlns:package="clr-namespace:PowerShellTools"
                     xmlns:local="clr-namespace:PowerShellTools.Commands.UserInterface"
                     mc:Ignorable="d" 
@@ -147,6 +147,18 @@
                     Validation.ErrorTemplate="{StaticResource ErrorTemplate}"
                     />
             </DataTemplate>
+            <DataTemplate x:Key="SwitchParameterValueTemplate">
+                <CheckBox 
+                    BorderThickness="1"
+                    Padding="2,0,2,0"
+                    IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                    HorizontalAlignment="Left"
+                    ToolTip="{Binding HelpText}"
+                    AutomationProperties.HelpText="{Binding HelpText}"
+                    AutomationProperties.Name="{Binding Name}"
+                    Validation.ErrorTemplate="{StaticResource ErrorTemplate}"
+                    />
+            </DataTemplate>
 
         </ResourceDictionary>
 
@@ -155,9 +167,11 @@
     <Grid x:Name="ParameterPanel" Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="50"/>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MinHeight="50"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <TextBlock x:Name="ParameterFileLabel"
@@ -165,8 +179,33 @@
               Grid.Row="0"
               Text="{Binding ParameterEditorTip}" 
               TextWrapping="Wrap" />
-
-        <DataGrid Grid.Row="1"
+        
+        <Grid x:Name="ParameterSetGrid"
+              Visibility="{Binding Path=HasParameterSets, Converter={StaticResource ResourceKey=BooleanToVisibilityConverter}}"
+              Margin="-5,0,0,10"
+              Grid.IsSharedSizeScope="True"
+              Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120" MaxWidth="200"/>
+                <ColumnDefinition Width="*" 
+                                  MinWidth="100"/>
+            </Grid.ColumnDefinitions>
+            <Label x:Name="ParameterSetLabel"
+                   Visibility="{Binding Path=HasParameterSets}"
+                   Target="{Binding ElementName=ParameterSetComboBox}"
+                   Grid.Row="0"
+                   Grid.Column="0"
+                   Content="{x:Static package:Resources.ParameterSetNameLabel}" />
+            <ComboBox x:Name="ParameterSetComboBox"
+                      Grid.Row="0"
+                      Grid.Column="1"
+                      Visibility="{Binding Path=HasParameterSets}"
+                      AutomationProperties.Name="{x:Static package:Resources.ParameterSetNameLabel}"
+                      SelectedItem="{Binding SelectedParameterSetName}"
+                      ItemsSource="{Binding ParameterSetNames}" />
+        </Grid>
+        
+        <DataGrid Grid.Row="2"
                   Margin="0,0,0,10"
                   AutoGenerateColumns="False"
                   HeadersVisibility="Column"
@@ -174,7 +213,7 @@
                   SelectionMode="Single"
                   AutomationProperties.Name="{Binding ParameterEditorTip}"
                   Style="{StaticResource DialogDataGridStyle}"
-                  ItemsSource="{Binding Path=Parameters}">
+                  ItemsSource="{Binding Path=Parameters, UpdateSourceTrigger=PropertyChanged}">
             <DataGrid.Columns>
                 <DataGridTextColumn 
                         IsReadOnly="True" 
@@ -192,14 +231,55 @@
                             ChoiceTemplate="{StaticResource ChoiceParameterValueTemplate}"
                             ByteTemplate="{StaticResource ByteParameterValueTemplate}"
                             IntTemplate="{StaticResource IntParameterValueTemplate}"
-                            LongTemplate="{StaticResource LongParameterValueTemplate}"/>
+                            LongTemplate="{StaticResource LongParameterValueTemplate}"
+                            SwitchTemplate="{StaticResource SwitchParameterValueTemplate}"/>
                     </DataGridTemplateColumn.CellTemplateSelector>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
 
+        <TextBlock x:Name="CommonParameterLabel"
+              Margin="0,0,0,10"
+              Grid.Row="3"
+              Text="{x:Static package:Resources.CommonParametersTipLabel}" 
+              TextWrapping="Wrap" />
+
+        <DataGrid Grid.Row="4"
+                  Margin="0,0,0,10"
+                  AutoGenerateColumns="False"
+                  HeadersVisibility="Column"
+                  SelectionUnit="Cell"
+                  SelectionMode="Single"
+                  AutomationProperties.Name="{x:Static package:Resources.CommonParametersTipLabel}"
+                  Style="{StaticResource DialogDataGridStyle}"
+                  ItemsSource="{Binding Path=CommonParameters}">
+            <DataGrid.Columns>
+                <DataGridTextColumn 
+                        IsReadOnly="True" 
+                        Binding="{Binding Path=Name}" 
+                        Header="{x:Static package:Resources.ParameterNameHeaderLabel}"
+                        MinWidth="150"
+                        CellStyle="{StaticResource DataGridCellEditingStyle}"/>
+                <DataGridTemplateColumn 
+                        Width="*"
+                        Header="{x:Static package:Resources.ParameterValueHeaderLabel}"
+                        CellStyle="{StaticResource DataGridCellEditingStyle}">
+                    <DataGridTemplateColumn.CellTemplateSelector>
+                        <local:ParameterEditorTemplateSelector
+                            StringTemplate="{StaticResource StringParameterValueTemplate}"
+                            ChoiceTemplate="{StaticResource ChoiceParameterValueTemplate}"
+                            ByteTemplate="{StaticResource ByteParameterValueTemplate}"
+                            IntTemplate="{StaticResource IntParameterValueTemplate}"
+                            LongTemplate="{StaticResource LongParameterValueTemplate}"
+                            SwitchTemplate="{StaticResource SwitchParameterValueTemplate}"/>
+                    </DataGridTemplateColumn.CellTemplateSelector>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+
         <StackPanel x:Name="ButtonsPanel"
-                   Grid.Row="3"
+                   Grid.Row="5"
                    Margin="0 10 0 0">
             <StackPanel 
                     Orientation="Horizontal" 

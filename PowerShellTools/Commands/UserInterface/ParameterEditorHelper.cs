@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation.Language;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.TextManager.Interop;
 using PowerShellTools.Classification;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Commands.UserInterface
 {
@@ -29,32 +26,38 @@ namespace PowerShellTools.Commands.UserInterface
         private static bool? ShowParameterEditor(ParamBlockAst paramBlockAst, out string scriptArgs)
         {
             scriptArgs = String.Empty;
-            var parameters = PowerShellParseUtilities.ParseParameters(paramBlockAst);
-            var viewModel = new ParameterEditorViewModel(parameters);
+            var model = PowerShellParseUtilities.ParseParameters(paramBlockAst);
+            var viewModel = new ParameterEditorViewModel(model);
             var view = new ParameterEditorView(viewModel);
+
             bool? wasOkClicked = view.ShowModal();
             if (wasOkClicked != true)
             {
                 return wasOkClicked;
             }
-            
-            foreach (var p in parameters)
+
+            scriptArgs = GenerateScripArgsFromModel(model);
+            return wasOkClicked;
+        }
+
+        internal static string GenerateScripArgsFromModel(ParameterEditorModel model)
+        {
+            Arguments.ValidateNotNull<ParameterEditorModel>(model, "model");
+            string scriptArgs = String.Empty;
+            foreach (var p in model.Parameters)
             {
                 if (p.Value != null)
                 {
-                    switch(p.Type)
+                    switch (p.Type)
                     {
                         case ParameterType.Boolean:
-                            string value = "$" + p.Value.ToString();
                             scriptArgs += WrapParameterName(p.Name);
-                            scriptArgs += " " + value;
+                            scriptArgs += String.Format(" ${0}", p.Value.ToString());
                             break;
 
                         case ParameterType.Switch:
-                            if (((bool)p.Value) == true)
-                            {
-                                scriptArgs += WrapParameterName(p.Name);
-                            }
+                            scriptArgs += WrapParameterName(p.Name);
+                            scriptArgs += String.Format(":${0}", p.Value.ToString());
                             break;
 
                         case ParameterType.Byte:
@@ -68,9 +71,10 @@ namespace PowerShellTools.Commands.UserInterface
                         case ParameterType.Array:
                         case ParameterType.Unknown:
                             scriptArgs += WrapParameterName(p.Name);
-                            scriptArgs += " " + p.Value;
+                            scriptArgs += WrapValue(p.Value.ToString());
                             break;
 
+                        case ParameterType.Enum:
                         case ParameterType.Char:
                         case ParameterType.String:
                             scriptArgs += WrapParameterName(p.Name);
@@ -79,7 +83,35 @@ namespace PowerShellTools.Commands.UserInterface
                     }
                 }
             }
-            return wasOkClicked;
+
+            foreach (var p in model.CommonParameters)
+            {
+                if (p.Value != null)
+                {
+                    switch (p.Type)
+                    {
+                        case ParameterType.Switch:
+                            scriptArgs += WrapParameterName(p.Name);
+                            scriptArgs += String.Format(":${0}", p.Value.ToString());
+                            break;
+
+                        case ParameterType.Enum:
+                            if (!String.IsNullOrEmpty(p.Value as string))
+                            {
+                                scriptArgs += WrapParameterName(p.Name);
+                                scriptArgs += WrapValue(p.Value as string);
+                            }
+                            break;
+
+                        default:
+                            scriptArgs += WrapParameterName(p.Name);
+                            scriptArgs += WrapValue(p.Value as string);
+                            break;
+                    }
+                }
+            }
+
+            return scriptArgs;
         }
 
         public static bool HasParameters(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextManager textManager, out ParamBlockAst paramBlock)
@@ -127,6 +159,11 @@ namespace PowerShellTools.Commands.UserInterface
             return String.Format(" -{0}", name);
         }
 
+        private static string WrapValue(string value)
+        {
+            return String.Format(" {0}", value);
+        }
+
         private static string WrapStringValueWithQuotes(string value)
         {
             if (value.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && value.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
@@ -135,6 +172,5 @@ namespace PowerShellTools.Commands.UserInterface
             }
             return String.Format(" \"{0}\"", value);
         }
-
     }
 }

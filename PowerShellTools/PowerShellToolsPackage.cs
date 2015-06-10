@@ -34,6 +34,7 @@ using PowerShellTools.ServiceManagement;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 using Threading = System.Threading.Tasks;
+using PowerShellTools.Repl;
 
 namespace PowerShellTools
 {
@@ -53,13 +54,24 @@ namespace PowerShellTools
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
     //[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-    [ProvideAutoLoad(UIContextGuids.NoSolution)]
+
+    // There are a few user scenarios which will trigger package to load
+    // 1. Open/Create any type of PowerShell project
+    // 2. Open/Create PowerShell file(.ps1, .psm1, .psd1) from file->open/create or solution explorer
+    // 3. Execute PowerShell script file from solution explorer
+    [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellProjectUiContextString)]
+    // 4. PowerShell interactive window open
+    [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellReplCreationUiContextString)]
+    // 5. PowerShell service execution
+    [ProvideService(typeof(IPowerShellService))]
+
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
                             101,
                             ShowSmartIndent = true,
                             ShowDropDownOptions = true,
                             EnableCommenting = true)]
+
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
@@ -92,17 +104,16 @@ namespace PowerShellTools
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
     [ProvideLanguageCodeExpansion(typeof(PowerShellLanguageInfo),
-                                  "PowerShell",        // Name of language used as registry key
-                                  0,                   // Resource ID of localized name of language service
-         "PowerShell",        // Name of Language attribute in snippet template
-         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
-         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
-    [ProvideService(typeof(IPowerShellService))]
+        "PowerShell",        // Name of language used as registry key
+        0,                   // Resource ID of localized name of language service
+        "PowerShell",        // Name of Language attribute in snippet template
+        @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
+        SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
 
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
-        private Lazy<PowerShellService> _powershellService;
+        private Lazy<PowerShellService> _powerShellService;
         private static ScriptDebugger _debugger;
         private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
@@ -134,11 +145,11 @@ namespace PowerShellTools
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
 
-        public static IPowershellDebuggingService DebuggingService
+        public static IPowerShellDebuggingService DebuggingService
         {
             get
             {
-                return ConnectionManager.Instance.PowershellDebuggingService;
+                return ConnectionManager.Instance.PowerShellDebuggingService;
             }
         }
 
@@ -181,11 +192,11 @@ namespace PowerShellTools
         /// </summary>
         internal static bool OverrideExecutionPolicyConfiguration { get; private set; }
 
-        internal static IPowershellIntelliSenseService IntelliSenseService
+        internal static IPowerShellIntelliSenseService IntelliSenseService
         {
             get
             {
-                return ConnectionManager.Instance.PowershellIntelliSenseSerivce;
+                return ConnectionManager.Instance.PowerShellIntelliSenseSerivce;
             }
         }
 
@@ -230,7 +241,7 @@ namespace PowerShellTools
 
                 InitializeInternal();
 
-                _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
+                _powerShellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
 
                 RegisterServices();
             }
@@ -332,7 +343,7 @@ namespace PowerShellTools
             Debug.Assert(this is IServiceContainer, "The package is expected to be an IServiceContainer.");
 
             var serviceContainer = (IServiceContainer)this;
-            serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powershellService.Value, true);
+            serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powerShellService.Value, true);
         }
 
         private void VisualStudioEvents_SettingsChanged(object sender, DialogPage e)

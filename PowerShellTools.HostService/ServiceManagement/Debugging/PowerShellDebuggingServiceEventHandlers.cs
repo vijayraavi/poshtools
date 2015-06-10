@@ -221,7 +221,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     {
                         _psBreakpointTable.Add(
                             new PowerShellBreakpointRecord(
-                                new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
+                                new PowerShellBreakpoint(bp.Script, bp.Line, bp.Column),
                                 bp.Id));
                     }
                 }
@@ -243,7 +243,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     _psBreakpointTable.Add(
                         new PowerShellBreakpointRecord(
-                            new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
+                            new PowerShellBreakpoint(bp.Script, bp.Line, bp.Column),
                             bp.Id));
                 }
             }

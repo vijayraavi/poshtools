@@ -143,21 +143,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _runspace = RunspaceFactory.CreateRunspace(psHost, iss);
             _runspace.Open();
 
-            ImportPoshToolsModule();
             LoadProfile();
             ServiceCommon.Log("Done initializing runspace");
-        }
-
-        private void ImportPoshToolsModule()
-        {
-            ServiceCommon.Log("Importing posh tools module");
-            using (PowerShell ps = PowerShell.Create())
-            {
-                var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-                ps.Runspace = _runspace;
-                ps.AddScript("Import-Module '" + assemblyLocation + "'");
-                ps.Invoke();
-            }
         }
 
         private void LoadProfile()
