@@ -41,10 +41,10 @@ namespace PowerShellTools.DebugEngine
                     
                     if(x.Equals("powershell", StringComparison.OrdinalIgnoreCase))
                     { 
-                        foreach (ProcessModule module in process.Modules)
-                        {
-                            if (module.ModuleName.StartsWith("System.Management.Automation", StringComparison.OrdinalIgnoreCase))
-                            {
+                        //foreach (ProcessModule module in process.Modules)
+                        //{
+                            //if (module.ModuleName.StartsWith("System.Management.Automation", StringComparison.OrdinalIgnoreCase))
+                            //{
                                 var node = new ScriptProgramNode(new ScriptDebugProcess(pPort, ProcessId.dwProcessId));
 
                                 var programNodes = new[] { Marshal.GetComInterfaceForObject(node, typeof(IDebugProgramNode2)) };
@@ -57,8 +57,8 @@ namespace PowerShellTools.DebugEngine
                                 pProcess[0].ProgramNodes.dwCount = (uint)programNodes.Length;
 
                                 return VSConstants.S_OK;
-                            }
-                        }
+                            //}
+                        //}
                     }
                 }
             }

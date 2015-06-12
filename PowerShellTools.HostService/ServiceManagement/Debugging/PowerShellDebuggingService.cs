@@ -46,6 +46,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private string _debugCommandOutput;
         private bool _debugOutput;
         private bool _attaching;
+        private bool _needToOpen;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
         private static readonly Regex validStackLine = new Regex(DebugEngineConstants.ValidCallStackLine, RegexOptions.Compiled);
         private DebuggerResumeAction _resumeAction;
@@ -71,6 +72,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _psBreakpointTable = new List<PowerShellBreakpointRecord>();
             _debugOutput = true;
             _attaching = false;
+            _needToOpen = false;
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             InitializeRunspace(this);
         }
@@ -148,6 +150,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             // Enter into to-attach process which will swap out the current runspace
             _attaching = true;
+            _needToOpen = true;
             PowerShell ps = PowerShell.Create();
             ps.Runspace = _runspace;
             ps.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
@@ -789,7 +792,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                else if (_runspace.ConnectionInfo.GetType() == typeof(NamedPipeConnectionInfo))
+                else if (_runspace.ConnectionInfo is NamedPipeConnectionInfo)
                 {
                     String currentCall = psobj.ToString();
                     Match match = validStackLine.Match(currentCall);

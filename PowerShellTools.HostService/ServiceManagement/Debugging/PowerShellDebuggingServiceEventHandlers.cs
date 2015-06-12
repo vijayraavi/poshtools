@@ -127,7 +127,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     int lineNum = e.InvocationInfo.ScriptLineNumber;
                     int column = e.InvocationInfo.OffsetInLine;
 
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(false, file, lineNum, column, true));
+                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(false, file, lineNum, column, _needToOpen));
+
+                    // only open the file one time!
+                    if(_needToOpen == true)
+                    {
+                        _needToOpen = false;
+                    }
                 }
                 else if (_callback != null)
                 {

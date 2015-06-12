@@ -277,6 +277,13 @@
     <Compile Include="CredentialUI\SecureStringDialogViewModel.cs" />
     <Compile Include="DebugEngine\BreakpointManager.cs" />
     <Compile Include="DebugEngine\DebugEngineInternalException.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteDebugPort.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteDebugPortSupplier.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteEnumDebug.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteEnumDebugProcess.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteEnumDebugPrograms.cs" />
+    <Compile Include="DebugEngine\Remote\RemotePortPicker.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteScriptDebugProcess.cs" />
     <Compile Include="DebugServiceEventHandlerBehaviorAttribute.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
@@ -532,6 +539,7 @@
     <Compile Include="Project\SharedProject\ProvideDebugEngineAttribute.cs" />
     <Compile Include="Project\SharedProject\ProvideDebugExceptionAttribute.cs" />
     <Compile Include="Project\SharedProject\ProvideDebugLanguageAttribute.cs" />
+    <Compile Include="Project\SharedProject\ProvideDebugPortPickerAttribute.cs" />
     <Compile Include="Project\SharedProject\ProvideDebugPortSupplierAttribute.cs" />
     <Compile Include="Project\SharedProject\PublishFailedException.cs" />
     <Compile Include="Project\SharedProject\PublishFile.cs" />
