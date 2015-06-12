@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Management.Automation.Host;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using PowerShellTools.Common.Controls;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
@@ -55,7 +52,7 @@ namespace PowerShellTools.DebugEngine.PromptUI
         private void Choose(object o)
         {
             string label = o as string;
-            this.UserChoice = Choices.IndexOf(Choices.FirstOrDefault(c => c.Choice.Label.Equals(label, StringComparison.OrdinalIgnoreCase)));
+            this.UserChoice = this.Choices.IndexOf(this.Choices.FirstOrDefault(c => c.Choice.Label.Equals(label, StringComparison.OrdinalIgnoreCase)));
         }
 
         public int UserChoice
@@ -82,7 +79,7 @@ namespace PowerShellTools.DebugEngine.PromptUI
                     {
                         new ChoiceButtonItem(new ChoiceItem("_label1", "message1"), true),
                         new ChoiceButtonItem(new ChoiceItem("l_abel2", "message2"), false),
-                        new ChoiceButtonItem(new ChoiceItem("la_bel3", "message3"), false),
+                        new ChoiceButtonItem(new ChoiceItem("longlable is  here la_bel3", "message3"), false),
                         new ChoiceButtonItem(new ChoiceItem("lab_el4", "message4"), false),
                         new ChoiceButtonItem(new ChoiceItem("labe_l5", "message5"), false)
                     }, 

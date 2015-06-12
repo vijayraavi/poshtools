@@ -61,11 +61,11 @@ namespace PowerShellTools.DebugEngine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} should not be empty...
+        ///   Looks up a localized string similar to {0} should have at least one element..
         /// </summary>
-        internal static string ChoicesCollectionShouldNotBeEmpty {
+        internal static string ChoicesCollectionShouldHaveAtLeastOneElement {
             get {
-                return ResourceManager.GetString("ChoicesCollectionShouldNotBeEmpty", resourceCulture);
+                return ResourceManager.GetString("ChoicesCollectionShouldHaveAtLeastOneElement", resourceCulture);
             }
         }
         

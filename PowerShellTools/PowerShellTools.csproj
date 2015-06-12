@@ -269,6 +269,8 @@
     <Compile Include="CredentialUI\SecureStringDialogViewModel.cs" />
     <Compile Include="DebugEngine\BreakpointManager.cs" />
     <Compile Include="DebugEngine\DebugEngineInternalException.cs" />
+    <Compile Include="DebugEngine\NativeMethods.cs" />
+    <Compile Include="DebugEngine\PromptUI\ChoiceButtonItem.cs" />
     <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesView.xaml.cs">
       <DependentUpon>ReadHostPromptForChoicesView.xaml</DependentUpon>
     </Compile>

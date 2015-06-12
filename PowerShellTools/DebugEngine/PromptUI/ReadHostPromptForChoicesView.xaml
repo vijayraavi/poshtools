@@ -8,7 +8,7 @@
             xmlns:local="clr-namespace:PowerShellTools.DebugEngine.PromptUI"
             mc:Ignorable="d" 
             MinWidth="360"
-            Width="450"
+            Width="Auto"
             ResizeMode="NoResize"
             ShowInTaskbar="False"
             Title="{Binding Path=Caption}"
@@ -18,8 +18,10 @@
             d:DataContext="{x:Static local:ReadHostPromptForChoicesViewModel.DesignerViewModel}">
     <shell:VsShellDialogWindow.Resources>
         <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Height" Value="23" />
-            <Setter Property="Width" Value="75" />
+            <Setter Property="MinHeight" Value="23" />
+            <Setter Property="MinWidth" Value="75" />
+            <Setter Property="Height" Value="Auto" />
+            <Setter Property="Width" Value="Auto" />
             <Setter Property="Margin" Value="5,5,5,0" />
         </Style>
     </shell:VsShellDialogWindow.Resources>
@@ -39,19 +41,19 @@
         
         <StackPanel Grid.Row="1" 
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Stretch"                    
+                    VerticalAlignment="Stretch"
                     Margin="5,5,10,10">
             <ItemsControl ItemsSource="{Binding Path=Choices}" BorderThickness="0" IsTabStop="False">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Button Content="{Binding Path=Choice.Label}"
                                 ToolTip="{Binding Path=Choice.HelpMessage}"
-                                IsDefault="{Binding Path=Choice.IsDefault}"
+                                IsDefault="{Binding Path=IsDefault}"
                                 IsTabStop="True"
                                 AutomationProperties.Name="{Binding Path=Choice.Label}"
                                 Click="OnButtonClick"

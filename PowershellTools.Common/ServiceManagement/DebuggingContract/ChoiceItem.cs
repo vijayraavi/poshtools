@@ -42,32 +42,5 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             get;
             private set;
         }
-                
-        public bool IsDefault
-        {
-            get;
-            set;
-        }
-    }
-
-    public sealed class ChoiceButtonItem
-    {
-        public ChoiceButtonItem(ChoiceItem choice, bool isDefault)
-        {
-            this.Choice = choice;
-            this.IsDefault = IsDefault;
-        }
-
-        public ChoiceItem Choice
-        {
-            get;
-            private set;
-        }
-
-        public bool IsDefault
-        {
-            get;
-            private set;
-        }
     }
 }

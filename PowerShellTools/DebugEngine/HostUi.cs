@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Security;
@@ -83,7 +84,7 @@ namespace PowerShellTools.DebugEngine
 
             BreakpointManager = new BreakpointManager();
 
-            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+            NativeMethods.SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
         }
 
         public HostUi HostUi { get; private set; }
@@ -146,9 +147,6 @@ namespace PowerShellTools.DebugEngine
     /// </summary>
     public class HostUi
     {
-        [DllImport("user32.dll")]
-        static extern bool SetForegroundWindow(IntPtr hWnd);
-
         public IReplWindow ReplWindow { get; set; }
 
         private static readonly object AnimationIconGeneralIndex = (short)STATUSBARCONSTS.SBAI_Gen; //General Status Bar Animation
@@ -258,14 +256,14 @@ namespace PowerShellTools.DebugEngine
 
         public int ReadChoice(string caption, string message, IList<ChoiceItem> choices, int defaultChoice)
         {
-            if (String.IsNullOrEmpty(caption))
+            if (string.IsNullOrEmpty(caption))
             {
                 caption = ResourceStrings.PromptForChoice_DefaultCaption;
             }
 
             if (message == null)
             {
-                message = String.Empty;
+                message = string.Empty;
             }
 
             if (choices == null)
@@ -273,9 +271,9 @@ namespace PowerShellTools.DebugEngine
                 throw new ArgumentNullException("choices");
             }
 
-            if (choices.Count == 0)
+            if (!choices.Any())
             {
-                throw new ArgumentException(String.Format(ResourceStrings.ChoicesCollectionShouldNotBeEmpty, "choices"), "choices");
+                throw new ArgumentException(string.Format(ResourceStrings.ChoicesCollectionShouldHaveAtLeastOneElement, "choices"), "choices");
             }
 
             foreach (var c in choices)
@@ -297,7 +295,7 @@ namespace PowerShellTools.DebugEngine
                 ReadHostPromptForChoicesViewModel viewModel = new ReadHostPromptForChoicesViewModel(caption, message, choices, defaultChoice);
                 ReadHostPromptForChoicesView dialog = new ReadHostPromptForChoicesView(viewModel);
 
-                SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+                NativeMethods.SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
                 var ret = dialog.ShowModal();
                 if (ret == true)
                 {
