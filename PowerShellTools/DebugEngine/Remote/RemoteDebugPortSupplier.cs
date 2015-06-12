@@ -21,15 +21,7 @@ namespace PowerShellTools.DebugEngine.Remote
 
             string pName;
             pRequest.GetPortName(out pName);
-
-            // this needs to be more robust
-            if (!pName.StartsWith("http://"))
-                pName = "http://" + pName;
-            if (!pName.EndsWith(":5985/WSMAN"))
-                pName += ":5985/WSMAN";
-
-            var uri = new Uri(pName);
-            ppPort = new RemoteDebugPort(this, pRequest, uri);
+            ppPort = new RemoteDebugPort(this, pRequest, pName);
 
             return VSConstants.S_OK;
         }

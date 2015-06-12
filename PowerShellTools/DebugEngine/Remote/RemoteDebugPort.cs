@@ -13,23 +13,26 @@ namespace PowerShellTools.DebugEngine.Remote
         private readonly RemoteDebugPortSupplier _supplier;
         private readonly IDebugPortRequest2 _request;
         private readonly Guid _guid = Guid.NewGuid();
-        private readonly Uri _uri;
+        private readonly string _computerName;
 
-        public RemoteDebugPort(RemoteDebugPortSupplier supplier, IDebugPortRequest2 request, Uri uri)
+        public RemoteDebugPort(RemoteDebugPortSupplier supplier, IDebugPortRequest2 request, string computerName)
         {
             _supplier = supplier;
             _request = request;
-            _uri = uri;
+            _computerName = computerName;
         }
 
-        public Uri Uri
+        public string ComputerName
         {
-            get { return _uri; }
+            get { return _computerName; }
         }
 
         public int EnumProcesses(out IEnumDebugProcesses2 ppEnum)
         {
             ppEnum = null;
+            RemoteEnumDebugProcess processList = new RemoteEnumDebugProcess(_computerName);
+            processList.connect(this);
+            processList.Clone(out ppEnum);
             return VSConstants.S_OK;
         }
 
@@ -41,7 +44,7 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public int GetPortName(out string pbstrName)
         {
-            pbstrName = _uri.ToString();
+            pbstrName = _computerName.ToString();
             return VSConstants.S_OK;
         }
 
