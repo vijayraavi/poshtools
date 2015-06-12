@@ -792,7 +792,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                else if (_runspace.ConnectionInfo is NamedPipeConnectionInfo)
+                else if (_runspace.ConnectionInfo is WSManConnectionInfo)
+                {
+                    dynamic psFrame = (dynamic)psobj;
+
+                    callStackFrames.Add(
+                        new CallStack(
+                            psFrame.ScriptName == null ? string.Empty : _mapRemoteToLocal[(string)psFrame.ScriptName.ToString()],
+                            (string)psFrame.FunctionName.ToString(),
+                            (int)psFrame.ScriptLineNumber));
+                }
+                else
                 {
                     String currentCall = psobj.ToString();
                     Match match = validStackLine.Match(currentCall);
@@ -804,16 +814,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                         callStackFrames.Add(new CallStack(script, funcall, lineNum));
                     }
-                }
-                else
-                {
-                    dynamic psFrame = (dynamic)psobj;
-
-                    callStackFrames.Add(
-                        new CallStack(
-                            psFrame.ScriptName == null ? string.Empty : _mapRemoteToLocal[(string)psFrame.ScriptName.ToString()],
-                            (string)psFrame.FunctionName.ToString(),
-                            (int)psFrame.ScriptLineNumber));
                 }
 
             }

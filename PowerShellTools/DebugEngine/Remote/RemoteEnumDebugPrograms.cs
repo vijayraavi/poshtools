@@ -8,11 +8,30 @@ using Microsoft.VisualStudio.Debugger.Interop;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
-    internal class RemoteEnumDebugPrograms : RemoteEnumDebug<IDebugProgram2>, IEnumDebugPrograms2
+    internal class RemoteEnumDebugPrograms : IEnumDebugPrograms2
     {
         public int Clone(out IEnumDebugPrograms2 ppEnum)
         {
-            // http://ak-hdl.buzzfed.com/static/2014-10/26/6/enhanced/webdr08/enhanced-14836-1414320930-8.jpg
+            throw new NotImplementedException();
+        }
+
+        public int GetCount(out uint pcelt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int Next(uint celt, IDebugProgram2[] rgelt, ref uint pceltFetched)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int Skip(uint celt)
+        {
             throw new NotImplementedException();
         }
     }

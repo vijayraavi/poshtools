@@ -279,7 +279,6 @@
     <Compile Include="DebugEngine\DebugEngineInternalException.cs" />
     <Compile Include="DebugEngine\Remote\RemoteDebugPort.cs" />
     <Compile Include="DebugEngine\Remote\RemoteDebugPortSupplier.cs" />
-    <Compile Include="DebugEngine\Remote\RemoteEnumDebug.cs" />
     <Compile Include="DebugEngine\Remote\RemoteEnumDebugProcess.cs" />
     <Compile Include="DebugEngine\Remote\RemoteEnumDebugPrograms.cs" />
     <Compile Include="DebugEngine\Remote\RemotePortPicker.cs" />
