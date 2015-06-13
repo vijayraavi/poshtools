@@ -306,6 +306,7 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="Intellisense\EdgeTrackingMode.cs" />
     <Compile Include="Options\BitnessEventArgs.cs" />
     <Compile Include="Options\BitnessOption.cs" />
     <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
