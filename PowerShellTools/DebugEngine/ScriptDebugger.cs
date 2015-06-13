@@ -172,7 +172,7 @@ namespace PowerShellTools.DebugEngine
             {
                 DebuggingFinished(this, new EventArgs());
             }
-            NativeMethods.SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+            NativeMethods.SetForegroundWindow();
             _stoppingCompleteEvent.Set();
         }
 

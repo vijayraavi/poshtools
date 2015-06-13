@@ -84,7 +84,7 @@ namespace PowerShellTools.DebugEngine
 
             BreakpointManager = new BreakpointManager();
 
-            NativeMethods.SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+            NativeMethods.SetForegroundWindow();
         }
 
         public HostUi HostUi { get; private set; }
@@ -295,7 +295,7 @@ namespace PowerShellTools.DebugEngine
                 ReadHostPromptForChoicesViewModel viewModel = new ReadHostPromptForChoicesViewModel(caption, message, choices, defaultChoice);
                 ReadHostPromptForChoicesView dialog = new ReadHostPromptForChoicesView(viewModel);
 
-                NativeMethods.SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+                NativeMethods.SetForegroundWindow();
                 var ret = dialog.ShowModal();
                 if (ret == true)
                 {
