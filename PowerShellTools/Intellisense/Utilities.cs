@@ -179,7 +179,7 @@ namespace PowerShellTools.Intellisense
         {
             return IsInCertainPSTokenTypesArea(position, buffer, EdgeTrackingMode.LeftEdgeIncluded, PSTokenType.Variable, PSTokenType.Member);
         }
-        
+
         /// <summary>
         /// Determines if the preceding text in the current line is empty
         /// </summary>
@@ -216,17 +216,17 @@ namespace PowerShellTools.Intellisense
                 switch (edgeTrackingMode)
                 {
                     case EdgeTrackingMode.NoneEdgeIncluded:
-                        foreach (var token in filteredTokens)
-                        {
+                    foreach (var token in filteredTokens)
+                    {
                             if (token.Extent.StartOffset < position && position < token.Extent.EndOffset)
-                            {
-                                return true;
-                            }
-                            if (position <= token.Extent.StartOffset)
-                            {
-                                return false;
-                            }
+                        {
+                            return true;
                         }
+                            if (position <= token.Extent.StartOffset)
+                        {
+                            return false;
+                        }
+                    }
                         break;
 
                     case EdgeTrackingMode.LeftEdgeIncluded:
@@ -235,46 +235,46 @@ namespace PowerShellTools.Intellisense
                             if (token.Extent.StartOffset <= position && position < token.Extent.EndOffset)
                             {
                                 return true;
-                            }
+                }
                             if (position < token.Extent.StartOffset)
-                            {
+                {
                                 return false;
                             }
                         }
                         break;
 
                     case EdgeTrackingMode.RightEdgeIncluded:
-                        foreach (var token in filteredTokens)
-                        {
+                    foreach (var token in filteredTokens)
+                    {
                             if (token.Extent.StartOffset < position && position <= token.Extent.EndOffset)
-                            {
-                                return true;
-                            }
-                            if (position < token.Extent.StartOffset)
-                            {
-                                return false;
-                            }
+                        {
+                            return true;
                         }
+                            if (position < token.Extent.StartOffset)
+                        {
+                            return false;
+                        }
+                    }
                         break;
-
+                
                     case EdgeTrackingMode.BothEdgesIncluded:
                         foreach (var token in filteredTokens)
                         {
                             if (token.Extent.StartOffset <= position && position <= token.Extent.EndOffset)
                             {
                                 return true;
-                            }
+            }
                             if (position < token.Extent.StartOffset)
                             {
-                                return false;
-                            }
+            return false;
+        }
                         }
                         break;
 
                     default:
                         break;
                 }
-            }
+        }
 
             return false;
         }

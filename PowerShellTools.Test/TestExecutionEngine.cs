@@ -27,7 +27,6 @@ namespace PowerShellTools.Test
             return Task.Run(() => ExecutePowerShellCommand(command));
         }
 
-
         public bool ExecutePowerShellCommand(string command, Action<string> output)
         {
             _debugger.HostUi.OutputString = output;
