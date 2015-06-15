@@ -103,9 +103,9 @@ namespace PowerShellTools.Intellisense
         }
 
         /// <summary>
-        /// Determins if caretis in string area.
+        /// Determines if caret is in a string.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True if caret is in a string. Otherwise, false.</returns>
         public static bool IsInStringArea(ITextView textView)
         {
             ITextBuffer currentActiveBuffer;
