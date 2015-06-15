@@ -10,29 +10,61 @@ namespace PowerShellTools.DebugEngine.Remote
 {
     internal class RemoteEnumDebugPrograms : IEnumDebugPrograms2
     {
+        // assume one program per process
+        private ScriptProgramNode _program;
+
+        public RemoteEnumDebugPrograms(ScriptDebugProcess process)
+        {
+            _program = process.Node;
+        }
+
         public int Clone(out IEnumDebugPrograms2 ppEnum)
         {
-            throw new NotImplementedException();
+            ppEnum = new RemoteEnumDebugPrograms(_program.Process);
+            return VSConstants.S_OK;
         }
 
         public int GetCount(out uint pcelt)
         {
-            throw new NotImplementedException();
+            pcelt = (_program == null) ? 0u : 1u;
+            return VSConstants.S_OK;
         }
 
         public int Next(uint celt, IDebugProgram2[] rgelt, ref uint pceltFetched)
         {
-            throw new NotImplementedException();
+            if (_program == null)
+            {
+                pceltFetched = 0;
+                if (celt > 0)
+                {
+                    return VSConstants.S_FALSE;
+                }
+                return VSConstants.S_OK;
+            }
+            else
+            {
+                pceltFetched = 1;
+                rgelt[0] = _program;
+                if (celt > 1)
+                {
+                    return VSConstants.S_FALSE;
+                }
+                return VSConstants.S_OK;
+            }
         }
 
         public int Reset()
         {
-            throw new NotImplementedException();
+            return VSConstants.S_OK;
         }
 
         public int Skip(uint celt)
         {
-            throw new NotImplementedException();
+            if (celt > 1)
+            {
+                return VSConstants.S_FALSE;
+            }
+            return VSConstants.S_OK;
         }
     }
 }

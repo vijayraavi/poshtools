@@ -37,7 +37,7 @@ namespace PowerShellTools.DebugEngine.Remote
                 * Should really be using Enter-PSSession here. Could not get it 
                 * to work though. I think it is something about how the remoting
                 * actually works with the runspace not changing. Need to figure 
-                * this out.
+                * this out. Till then, this method works fine.
                 */
                 ps.Runspace = rs;
                 ps.AddCommand("Get-Process").AddParameter("ComputerName", _remoteComputer).AddParameter("Name", "*powershell*");
@@ -72,14 +72,16 @@ namespace PowerShellTools.DebugEngine.Remote
         public int Next(uint celt, IDebugProcess2[] rgelt, ref uint pceltFetched)
         {
             int index = 0;
-            while (celt > 0)
+            pceltFetched = 0;
+            while (pceltFetched < celt)
             {
-                if (index == _runningProcesses.Count())
+                if (_currIndex == _runningProcesses.Count())
                 {
                     return VSConstants.S_FALSE;
                 }
                 rgelt[index++] = _runningProcesses.ElementAt((int)_currIndex++);
                 celt--;
+                pceltFetched++;
             }
             return VSConstants.S_OK;
         }
@@ -93,6 +95,11 @@ namespace PowerShellTools.DebugEngine.Remote
         public int Skip(uint celt)
         {
             _currIndex += celt;
+            if(_currIndex >= _runningProcesses.Count())
+            {
+                _currIndex = (uint)_runningProcesses.Count() - 1;
+                return VSConstants.S_FALSE;
+            }
             return VSConstants.S_OK;
         }
     }

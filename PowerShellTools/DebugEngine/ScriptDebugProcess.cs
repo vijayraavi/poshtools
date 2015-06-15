@@ -2,6 +2,7 @@
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.DebugEngine.Remote;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -47,7 +48,7 @@ namespace PowerShellTools.DebugEngine
         public int EnumPrograms(out IEnumDebugPrograms2 ppEnum)
         {
             Log.Debug("Process: EnumPrograms");
-            ppEnum = null;
+            ppEnum = new RemoteEnumDebugPrograms(this);
             return VSConstants.S_OK;
         }
 

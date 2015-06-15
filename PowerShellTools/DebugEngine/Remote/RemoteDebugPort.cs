@@ -29,10 +29,9 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public int EnumProcesses(out IEnumDebugProcesses2 ppEnum)
         {
-            ppEnum = null;
             RemoteEnumDebugProcess processList = new RemoteEnumDebugProcess(_computerName);
             processList.connect(this);
-            processList.Clone(out ppEnum);
+            ppEnum = processList;
             return VSConstants.S_OK;
         }
 
