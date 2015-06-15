@@ -12,6 +12,11 @@ using System.Diagnostics;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
+    /// <summary>
+    /// Enumerates all of the processes on a remote machine via
+    /// the PowerShell Get-Process cmdlet. Stores all PowerShell related
+    /// processes in a list structure.
+    /// </summary>
     internal class RemoteEnumDebugProcess : IEnumDebugProcesses2
     {
         private List<ScriptDebugProcess> _runningProcesses;
@@ -80,7 +85,6 @@ namespace PowerShellTools.DebugEngine.Remote
                     return VSConstants.S_FALSE;
                 }
                 rgelt[index++] = _runningProcesses.ElementAt((int)_currIndex++);
-                celt--;
                 pceltFetched++;
             }
             return VSConstants.S_OK;

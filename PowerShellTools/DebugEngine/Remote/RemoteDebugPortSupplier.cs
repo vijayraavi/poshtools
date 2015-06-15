@@ -9,9 +9,13 @@ using Microsoft.VisualStudio.Debugger.Interop;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
+    /// <summary>
+    /// Part of the process to add a PowerShell Tools remote debugging transport to the
+    /// attach to process dialog.
+    /// </summary>
     internal class RemoteDebugPortSupplier : IDebugPortSupplier2, IDebugPortSupplierDescription2
     {
-        // I should figure out more about this, PTVS doesn't ref it anywhere else
+        // Guid taken from PTVS, need to generate our own
         public const string PortSupplierId = "{FEB76325-D127-4E02-B59D-B16D93D46CF5}";
         public static readonly Guid PortSupplierGuid = new Guid(PortSupplierId);
 

@@ -8,6 +8,10 @@ using Microsoft.VisualStudio.Debugger.Interop;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
+    /// <summary>
+    /// Implementation of IDebugPort 2 interface. Contacts a remote machine and uses the IEnumDebugProcess2
+    /// interface to grab all powershell processes off of that machine. 
+    /// </summary>
     class RemoteDebugPort : IDebugPort2
     {
         private readonly RemoteDebugPortSupplier _supplier;
@@ -38,7 +42,7 @@ namespace PowerShellTools.DebugEngine.Remote
         public int GetPortId(out Guid pguidPort)
         {
             pguidPort = _guid;
-            return 0;
+            return VSConstants.S_OK;
         }
 
         public int GetPortName(out string pbstrName)
