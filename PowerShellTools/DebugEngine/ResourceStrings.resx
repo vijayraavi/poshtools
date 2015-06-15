@@ -158,4 +158,10 @@
     <comment>{0} is the Progress Activity [Overall intent, eg, Removing item xyz]
 {1} is the description of the status [eg, 35 of 50 items removed]</comment>
   </data>
+  <data name="ChoicesCollectionShouldHaveAtLeastOneElement" xml:space="preserve">
+    <value>{0} should have at least one element.</value>
+  </data>
+  <data name="PromptForChoice_DefaultCaption" xml:space="preserve">
+    <value>PowerShell</value>
+  </data>
 </root>

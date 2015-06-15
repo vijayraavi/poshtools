@@ -121,7 +121,7 @@ namespace PowerShellTools.Intellisense
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
             }
 
-            return ProcessKeystroke(command, typedChar, IsInStringArea()) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+            return ProcessKeystroke(command, typedChar, Utilities.IsInStringArea(_textView)) == VSConstants.S_OK ? VSConstants.S_OK : NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
         }
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
@@ -235,18 +235,7 @@ namespace PowerShellTools.Intellisense
         {
             this.IsLastCmdAutoComplete = isAutoComplete;
         }
-        
-        private bool IsInStringArea()
-        {
-            ITextBuffer currentActiveBuffer;
-            int currentPosition = Utilities.GetCurrentBufferPosition(_textView, out currentActiveBuffer);
-            if (currentPosition < 0 || currentPosition > currentActiveBuffer.CurrentSnapshot.Length)
-            {
-                return false;
-            }
-            return Utilities.IsInStringArea(currentPosition, currentActiveBuffer);
-        }
-        
+
         /// <summary>
         /// Complete the left brace/quotes with matched brace/quotes
         /// </summary>

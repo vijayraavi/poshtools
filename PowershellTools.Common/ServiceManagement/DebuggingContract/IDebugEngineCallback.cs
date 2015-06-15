@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.ServiceModel;
 using System.Text;
@@ -38,6 +40,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract(IsOneWay = false)]
         string ReadHostPrompt(string message, string name);
+
+        [OperationContract(IsOneWay = false)]
+        int ReadHostPromptForChoices(string caption, string message, IList<ChoiceItem> choices, int defaultChoice);
 
         [OperationContract(IsOneWay = false)]
         PSCredential ReadSecureStringPrompt(
