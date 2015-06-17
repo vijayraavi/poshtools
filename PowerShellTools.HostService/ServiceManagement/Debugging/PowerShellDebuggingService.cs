@@ -226,7 +226,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     var pobj = breakpoints.FirstOrDefault();
                     if (pobj != null)
                     {
-                        _psBreakpointTable.Add(
+                        addToBpTable(
                             new PowerShellBreakpointRecord(
                                 bp,
                                 ((LineBreakpoint)pobj.BaseObject).Id));

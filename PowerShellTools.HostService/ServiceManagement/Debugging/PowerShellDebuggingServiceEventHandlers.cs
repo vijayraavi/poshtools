@@ -120,24 +120,27 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
             }
             else
-            {
-                if (_attaching)
+            {                
+                if (_callback != null)
                 {
-                    string file = e.InvocationInfo.ScriptName;
-                    int lineNum = e.InvocationInfo.ScriptLineNumber;
-                    int column = e.InvocationInfo.OffsetInLine;
-
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(false, file, lineNum, column, _needToOpen));
-
-                    // only open the file one time!
-                    if(_needToOpen == true)
+                    if (_attaching)
                     {
-                        _needToOpen = false;
+                        string file = e.InvocationInfo.ScriptName;
+                        int lineNum = e.InvocationInfo.ScriptLineNumber;
+                        int column = e.InvocationInfo.OffsetInLine;
+
+                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(true, file, lineNum, column, _needToOpen));
+
+                        // only open the file one time
+                        if (_needToOpen == true)
+                        {
+                            _needToOpen = false;
+                        }
                     }
-                }
-                else if (_callback != null)
-                {
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
+                    else
+                    {
+                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
+                    }
                 }
             }
 
@@ -225,7 +228,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
                     if (bp != null)
                     {
-                        _psBreakpointTable.Add(
+                        addToBpTable(
                             new PowerShellBreakpointRecord(
                                 new PowerShellBreakpoint(bp.Script, bp.Line, bp.Column),
                                 bp.Id));
@@ -247,7 +250,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
                 if (bp != null)
                 {
-                    _psBreakpointTable.Add(
+                    addToBpTable(
                         new PowerShellBreakpointRecord(
                             new PowerShellBreakpoint(bp.Script, bp.Line, bp.Column),
                             bp.Id));
