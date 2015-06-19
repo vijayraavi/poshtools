@@ -285,9 +285,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Checks for the existence of a breakpoint with a certain id in the _psBreakpointTable. Needed
-        /// because some commands over remote debugging such as get-psbreakpoint return a collection of
-        /// PSObjects which are also breakpoints. Thus, they must not be added twice. 
+        /// Checks for the existence of a breakpoint with a certain id in the _psBreakpointTable.
         /// </summary>
         /// <param name="bpId"></param>
         /// <returns>True if a breakpoint with bpId is in the _psBreakpointTable, false otherwise.</returns>

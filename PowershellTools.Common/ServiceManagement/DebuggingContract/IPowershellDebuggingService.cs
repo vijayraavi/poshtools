@@ -47,6 +47,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void AttachToRunspace(uint pid);
 
         [OperationContract]
+        bool IsAttachable(uint pid);
+
+        [OperationContract]
         Collection<Variable> GetScopedVariable();
 
         [OperationContract]

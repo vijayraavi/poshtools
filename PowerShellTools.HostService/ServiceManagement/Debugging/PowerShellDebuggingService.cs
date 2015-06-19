@@ -170,6 +170,34 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             ps.Invoke();
         }
 
+        /// <summary>
+        /// Examines a process' modules for powershell.exe which indicates the process should
+        /// be attachable. Will generate an exception if the host process is x86 and the process
+        /// is x64.
+        /// </summary>
+        /// <param name="pid"></param>
+        /// <returns>True if powershell.exe is a module of the process, false otherwise.</returns>
+        public bool IsAttachable(uint pid)
+        {
+            try
+            {
+                var process = Process.GetProcessById((int)pid);
+                ServiceCommon.Log("IsAttachable:" + process.ProcessName + "; id:" + process.Id);
+                foreach (ProcessModule module in process.Modules)
+                {
+                    if (module.ModuleName.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log(string.Format("{0} , cannot examine modules of process; id: {1}", ex.Message, pid));
+            }
+            return false;
+        }
+
 
         /// <summary>
         /// Client respond with resume action to service
