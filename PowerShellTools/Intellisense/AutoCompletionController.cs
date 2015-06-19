@@ -99,6 +99,7 @@ namespace PowerShellTools.Intellisense
 
         public int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             var command = (VSConstants.VSStd2KCmdID)nCmdID;
 
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
