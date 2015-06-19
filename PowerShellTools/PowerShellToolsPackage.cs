@@ -8,7 +8,6 @@ using System.Threading;
 using System.Windows;
 using log4net;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -269,10 +268,9 @@ namespace PowerShellTools
             var langService = new PowerShellLanguageInfo(this);
             ((IServiceContainer)this).AddService(langService.GetType(), langService, true);
 
-            var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
-            _textBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
-            EditorImports.ClassificationTypeRegistryService = componentModel.GetService<IClassificationTypeRegistryService>();
-            EditorImports.ClassificationFormatMap = componentModel.GetService<IClassificationFormatMapService>();
+            _textBufferFactoryService = ComponentModel.GetService<ITextBufferFactoryService>();
+            EditorImports.ClassificationTypeRegistryService = ComponentModel.GetService<IClassificationTypeRegistryService>();
+            EditorImports.ClassificationFormatMap = ComponentModel.GetService<IClassificationFormatMapService>();
 
             if (_textBufferFactoryService != null)
             {
@@ -280,7 +278,7 @@ namespace PowerShellTools
             }
 
             var textManager = (IVsTextManager)GetService(typeof(SVsTextManager));
-            var adaptersFactory = componentModel.GetService<IVsEditorAdaptersFactoryService>();
+            var adaptersFactory = ComponentModel.GetService<IVsEditorAdaptersFactoryService>();
 
             RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
                             new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
