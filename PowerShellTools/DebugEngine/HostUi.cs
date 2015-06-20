@@ -1,38 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
-using System.Threading;
-using EnvDTE80;
-using Microsoft.PowerShell;
-using Microsoft.VisualBasic;
 using PowerShellTools.Repl;
 using Thread = System.Threading.Thread;
-using Microsoft.VisualStudioTools.Project;
 
 namespace PowerShellTools.DebugEngine
 {
 #if POWERSHELL
-    using IReplWindow = IPowerShellReplWindow;
-    using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using PowerShellTools.ServiceManagement;
-    using PowerShellTools.Common.Debugging;
     using System.Diagnostics;
-    using PowerShellTools.CredentialUI;
+    using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
     using Microsoft.VisualStudio.Shell;
-    using System.Threading.Tasks;
+    using Microsoft.VisualStudio.Shell.Interop;
+    using PowerShellTools.Common.Debugging;
+    using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+    using PowerShellTools.CredentialUI;
     using PowerShellTools.DebugEngine.PromptUI;
+    using PowerShellTools.ServiceManagement;
+    using IReplWindow = IPowerShellReplWindow;
 #endif
 
     /// <summary>
@@ -44,9 +34,9 @@ namespace PowerShellTools.DebugEngine
         private readonly CultureInfo _originalCultureInfo = Thread.CurrentThread.CurrentCulture;
         private readonly CultureInfo _originalUiCultureInfo = Thread.CurrentThread.CurrentUICulture;
         private Runspace _runspace;
-        private IPowershellDebuggingService _debuggingServiceTest;
+        private IPowerShellDebuggingService _debuggingServiceTest;
 
-        public IPowershellDebuggingService DebuggingService
+        public IPowerShellDebuggingService DebuggingService
         {
             get
             {
@@ -81,7 +71,7 @@ namespace PowerShellTools.DebugEngine
             ConnectionManager.Instance.ConnectionException += ConnectionExceptionHandler;
         }
 
-        internal ScriptDebugger(bool overrideExecutionPolicy, IPowershellDebuggingService debuggingServiceTestHook)
+        internal ScriptDebugger(bool overrideExecutionPolicy, IPowerShellDebuggingService debuggingServiceTestHook)
         {
             OverrideExecutionPolicy = overrideExecutionPolicy;
             _debuggingServiceTest = debuggingServiceTestHook;
@@ -93,6 +83,8 @@ namespace PowerShellTools.DebugEngine
             HostUi = new HostUi();
 
             BreakpointManager = new BreakpointManager();
+
+            NativeMethods.SetForegroundWindow();
         }
 
         public HostUi HostUi { get; private set; }
@@ -262,6 +254,58 @@ namespace PowerShellTools.DebugEngine
             return input;
         }
 
+        public int ReadChoice(string caption, string message, IList<ChoiceItem> choices, int defaultChoice)
+        {
+            if (string.IsNullOrEmpty(caption))
+            {
+                caption = ResourceStrings.PromptForChoice_DefaultCaption;
+            }
+
+            if (message == null)
+            {
+                message = string.Empty;
+            }
+
+            if (choices == null)
+            {
+                throw new ArgumentNullException("choices");
+            }
+
+            if (!choices.Any())
+            {
+                throw new ArgumentException(string.Format(ResourceStrings.ChoicesCollectionShouldHaveAtLeastOneElement, "choices"), "choices");
+            }
+
+            foreach (var c in choices)
+            {
+                if (c == null)
+                {
+                    throw new ArgumentNullException("choices");
+                }
+            }
+
+            if (defaultChoice < -1 || defaultChoice >= choices.Count)
+            {
+                throw new ArgumentOutOfRangeException("defaultChoice");
+            }
+
+            int choice = -1;
+            ThreadHelper.Generic.Invoke(() =>
+            {
+                ReadHostPromptForChoicesViewModel viewModel = new ReadHostPromptForChoicesViewModel(caption, message, choices, defaultChoice);
+                ReadHostPromptForChoicesView dialog = new ReadHostPromptForChoicesView(viewModel);
+
+                NativeMethods.SetForegroundWindow();
+                var ret = dialog.ShowModal();
+                if (ret == true)
+                {
+                    choice = viewModel.UserChoice;
+                }
+            });
+
+            return choice;
+        }
+
         /// <summary>
         /// Ask for securestring from user
         /// </summary>
@@ -336,7 +380,7 @@ namespace PowerShellTools.DebugEngine
         {
             if (ReplWindow != null)
             {
-                if (output.StartsWith(PowerShellConstants.PowershellOutputErrorTag))
+                if (output.StartsWith(PowerShellConstants.PowerShellOutputErrorTag))
                 {
                     ReplWindow.WriteError(output);
                 }

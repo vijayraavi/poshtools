@@ -79,12 +79,6 @@ namespace PowerShellTools.Project
             IntPtr pInfo = Marshal.AllocCoTaskMem((int)info.cbSize);
             Marshal.StructureToPtr(info, pInfo, false);
 
-            if (!PowerShellToolsPackage.PowerShellHostInitialized)
-            {
-                // TODO: UI Work required to give user inidcation that it is waiting for debugger to get alive.
-                PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
-            }
-
             var eventManager = new DebugEventManager(PowerShellToolsPackage.Debugger.Runspace);
 
             if (debugger.AdviseDebugEventCallback(eventManager) != VSConstants.S_OK)
@@ -188,7 +182,7 @@ namespace PowerShellTools.Project
             return VSConstants.S_OK;
         }
 
-        public int LaunchFile(string file, bool debug)
+        public int LaunchFile(string file, bool debug, string args = null)
         {
             if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
 
@@ -208,6 +202,11 @@ namespace PowerShellTools.Project
             var shell = (IVsUIShell)Package.GetGlobalService(typeof(IVsUIShell));
 
             var info = new VsDebugTargetInfo();
+            if (args != null)
+            {
+                info.bstrArg = args;
+            }
+            
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
 

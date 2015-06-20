@@ -12,6 +12,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using DTE = EnvDTE;
 using DTE80 = EnvDTE80;
 using PowerShellTools.Common.Debugging;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -170,7 +172,7 @@ namespace PowerShellTools.DebugEngine
             {
                 DebuggingFinished(this, new EventArgs());
             }
-
+            NativeMethods.SetForegroundWindow();
             _stoppingCompleteEvent.Set();
         }
 
@@ -233,7 +235,15 @@ namespace PowerShellTools.DebugEngine
 
                 foreach (var psobj in result)
                 {
-                    _callstack.Add(new ScriptStackFrame(CurrentExecutingNode, psobj.ScriptFullPath, psobj.Line, psobj.FrameString));
+                    _callstack.Add(
+                        new ScriptStackFrame(
+                            CurrentExecutingNode, 
+                            psobj.ScriptFullPath, 
+                            psobj.FrameString, 
+                            psobj.StartLine, 
+                            psobj.EndLine,
+                            psobj.StartColumn,
+                            psobj.EndColumn));
                 }
             }
             catch (Exception ex)
@@ -341,6 +351,13 @@ namespace PowerShellTools.DebugEngine
         public bool ExecuteInternal(string commandLine)
         {
             IsDebuggingCommandReady = false;
+            IntPtr hostProcessWindowHandle = NativeMethods.FindWindow(
+                    null, 
+                    string.Format(
+                    PowerShellTools.Common.Constants.HostProcessWindowTitleFormat, 
+                    Process.GetCurrentProcess().Id, 
+                    PowerShellTools.Common.Constants.PowerShellHostExeName));
+            NativeMethods.SetForegroundWindow(hostProcessWindowHandle);
             return DebuggingService.Execute(commandLine);
         }
 
@@ -433,11 +450,6 @@ namespace PowerShellTools.DebugEngine
         public void SignalStoppingComplete()
         {
             _stoppingCompleteEvent.Set();
-        }
-
-        public bool IsAppRunningInPowerShellHost()
-        {
-            return DebuggingService.IsAppRunning();
         }
 
         internal void OpenRemoteFile(string fullName)

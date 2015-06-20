@@ -45,6 +45,16 @@ namespace PowerShellTools.Intellisense
         private bool _startTabComplete;
         private IntelliSenseEventsHandlerProxy _callbackContext;
         private int _currentActiveWindowId;
+        private static HashSet<VSConstants.VSStd2KCmdID> HandledCommands = new HashSet<VSConstants.VSStd2KCmdID>()
+        {
+            VSConstants.VSStd2KCmdID.TYPECHAR,
+            VSConstants.VSStd2KCmdID.RETURN,
+            VSConstants.VSStd2KCmdID.TAB,
+            VSConstants.VSStd2KCmdID.BACKTAB,
+            VSConstants.VSStd2KCmdID.COMPLETEWORD,
+            VSConstants.VSStd2KCmdID.DELETE,
+            VSConstants.VSStd2KCmdID.BACKSPACE
+        };
 
         public IntelliSenseManager(ICompletionBroker broker,
             SVsServiceProvider provider,
@@ -94,16 +104,17 @@ namespace PowerShellTools.Intellisense
         /// <returns></returns>
         public int Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            bool? isInStringArea = null;
+            var command = (VSConstants.VSStd2KCmdID)nCmdId;
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
-                Utilities.IsCaretInCommentArea(_textView) ||
-                IsUnhandledCommand(pguidCmdGroup, nCmdId))
+                IsUnhandledCommand(pguidCmdGroup, command) ||
+                Utilities.IsCaretInCommentArea(_textView))
             {
                 Log.DebugFormat("Non-VSStd2K command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
                 return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             }
 
             //make a copy of this so we can look at it after forwarding some commands 
-            var command = (VSConstants.VSStd2KCmdID)nCmdId;
             var typedChar = char.MinValue;
 
             // Exit tab complete session if command is any recognized command other than tab
@@ -120,10 +131,13 @@ namespace PowerShellTools.Intellisense
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
 
                 if (_activeSession == null &&
-                    IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar) &&
-                    Utilities.IsInStringArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
+                    IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar))
                 {
-                    return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                    isInStringArea = this.IsInStringArea(isInStringArea);
+                    if (isInStringArea == true)
+                    {
+                        return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                    }
                 }
             }
             else
@@ -190,7 +204,7 @@ namespace PowerShellTools.Intellisense
                         //don't add the character to the buffer
                         return VSConstants.S_OK;
                     }
-                    else if (!IsPrecedingTextInLineEmpty(_textView.Caret.Position.BufferPosition) && _textView.Selection.IsEmpty)
+                    else if (!Utilities.IsPrecedingTextInLineEmpty(_textView.Caret.Position.BufferPosition) && _textView.Selection.IsEmpty)
                     {
                         _startTabComplete = true;
                         TriggerCompletion();
@@ -201,7 +215,12 @@ namespace PowerShellTools.Intellisense
                     break;
 
                 case VSConstants.VSStd2KCmdID.COMPLETEWORD:
-
+                    isInStringArea = this.IsInStringArea(isInStringArea);
+                    if (isInStringArea == true)
+                    {
+                        return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                    }
+                    
                     TriggerCompletion();
                     return VSConstants.S_OK;
 
@@ -304,7 +323,11 @@ namespace PowerShellTools.Intellisense
                 (justCommitIntelliSense || (IsIntelliSenseTriggerDot(typedChar) && IsPreviousTokenVariable())) || // If dot just commit a session or previous token before a dot was a variable, trigger intellisense
                 (char.IsWhiteSpace(typedChar) && IsPreviousTokenParameter())) // If the previous token before a space was a parameter, trigger intellisense
             {
-                TriggerCompletion();
+                isInStringArea = this.IsInStringArea(isInStringArea);
+                if (isInStringArea == false)
+                {
+                    TriggerCompletion();
+                }                
             }
             if (!typedChar.Equals(char.MinValue) && IsFilterTrigger(typedChar))
             {
@@ -631,6 +654,15 @@ namespace PowerShellTools.Intellisense
             _activeSession = null;
         }
 
+        private bool? IsInStringArea(bool? isInStringArea)
+        {
+            if (isInStringArea == null)
+            {
+                isInStringArea = Utilities.IsInStringArea(_textView);
+            }
+            return isInStringArea;
+        }
+
         private bool IsPreviousTokenParameter()
         {
             ITextBuffer currentActiveBuffer;
@@ -656,7 +688,8 @@ namespace PowerShellTools.Intellisense
         private int GetPreviousBufferPosition(out ITextBuffer currentActiveBuffer)
         {
             int currentBufferPosition = Utilities.GetCurrentBufferPosition(_textView, out currentActiveBuffer);
-            return currentBufferPosition - 1;
+            // e.g., $dte. currentPosition = 5, what we really want to see is if 'e' is part of variable.
+            return currentBufferPosition - 2;
         }
 
         private static bool SpanArgumentsAreValid(ITextSnapshot snapshot, int start, int length)
@@ -699,35 +732,14 @@ namespace PowerShellTools.Intellisense
         }
 
         /// <summary>
-        /// Determines if the preceding text in the current line is empty
-        /// </summary>
-        /// <param name="bufferPosition">The buffer position.</param>
-        /// <returns>True if the preceding text is empty.</returns>
-        private static bool IsPrecedingTextInLineEmpty(SnapshotPoint bufferPosition)
-        {
-            var line = bufferPosition.GetContainingLine();
-            var caretInLine = ((int)bufferPosition - line.Start);
-
-            return String.IsNullOrWhiteSpace(line.GetText().Substring(0, caretInLine));
-        }
-
-        /// <summary>
         /// Determines whether a command is unhandled.
         /// </summary>
         /// <param name="pguidCmdGroup">The GUID of the command group.</param>
         /// <param name="nCmdId">The command ID.</param>
         /// <returns>True if it is an unrecognized command.</returns>
-        private static bool IsUnhandledCommand(Guid pguidCmdGroup, uint nCmdId)
+        private static bool IsUnhandledCommand(Guid pguidCmdGroup, VSConstants.VSStd2KCmdID command)
         {
-            var command = (VSConstants.VSStd2KCmdID)nCmdId;
-            return (pguidCmdGroup != VSConstants.VSStd2K ||
-                    (command != VSConstants.VSStd2KCmdID.TYPECHAR &&
-                     command != VSConstants.VSStd2KCmdID.RETURN &&
-                     command != VSConstants.VSStd2KCmdID.TAB &&
-                     command != VSConstants.VSStd2KCmdID.BACKTAB &&
-                     command != VSConstants.VSStd2KCmdID.COMPLETEWORD &&
-                     command != VSConstants.VSStd2KCmdID.DELETE &&
-                     command != VSConstants.VSStd2KCmdID.BACKSPACE));
+            return !(pguidCmdGroup == VSConstants.VSStd2K && HandledCommands.Contains(command));
         }
     }
 

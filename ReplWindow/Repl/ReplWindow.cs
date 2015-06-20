@@ -58,6 +58,9 @@ namespace PowerShellTools.Repl
     using ReplRoleAttribute = PowerShellReplRoleAttribute;
     using IReplCommand2 = IPowerShellReplCommand2;
     using PowerShellTools.Repl.DialogWindows;
+    using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+    using System.Collections.Concurrent;
+    using PowerShellTools.Common;
 #endif
 
     /// <summary>
@@ -68,7 +71,7 @@ namespace PowerShellTools.Repl
     /// starts having problems w/ a large number of inputs.
     /// </summary>
     [Guid(ReplWindow.TypeGuid)]
-    class ReplWindow : ToolWindowPane, IOleCommandTarget, IReplWindow, IVsFindTarget
+    internal sealed class ReplWindow : ToolWindowPane, IOleCommandTarget, IReplWindow, IVsFindTarget
     {
         public const string TypeGuid = "2227C503-8DAF-44E6-BFF6-222088DE83E0";
 
@@ -564,6 +567,7 @@ namespace PowerShellTools.Repl
 
                 _buffer.Dispose();
                 _inputEvent.Dispose();
+                _keyBuffer.Dispose();
 
                 _commands = null;
             }
@@ -1543,6 +1547,12 @@ namespace PowerShellTools.Repl
             private readonly ReplWindow _replWindow;
             private readonly CommandFilterLayer _layer;
 
+            [DllImport("user32.dll")]
+            public static extern short VkKeyScanEx(char ch, IntPtr dwhkl);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+            public static extern IntPtr GetKeyboardLayout(int dwLayout);
+
             public CommandFilter(ReplWindow vsReplWindow, CommandFilterLayer layer)
             {
                 _replWindow = vsReplWindow;
@@ -1568,6 +1578,26 @@ namespace PowerShellTools.Repl
 
             public int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
             {
+                var commandID = (VSConstants.VSStd2KCmdID)nCmdID;
+
+                if (_replWindow.IsExecutingReadKey)
+                {
+                    switch (commandID)
+                    {
+                        case VSConstants.VSStd2KCmdID.TYPECHAR:
+                        case VSConstants.VSStd2KCmdID.BACKSPACE:
+                        case VSConstants.VSStd2KCmdID.RETURN:
+                            var keyInfo = GetVsKeyInfo(pvaIn, commandID);
+                            _replWindow.PostKey(keyInfo);
+                            break;
+
+                        case VSConstants.VSStd2KCmdID.CANCEL: // Handle ESC
+                            _replWindow.CancelWaitKey();
+                            break;
+                    }
+                    return VSConstants.S_OK; // eat everything
+                }
+
                 switch (_layer)
                 {
                     case CommandFilterLayer.PreLanguage:
@@ -1581,6 +1611,57 @@ namespace PowerShellTools.Repl
                 }
 
                 throw new InvalidOperationException();
+            }
+
+            private VsKeyInfo GetVsKeyInfo(IntPtr pvaIn, VSConstants.VSStd2KCmdID commandID)
+            {
+                // catch current modifiers as early as possible
+                bool capsLockToggled = Keyboard.IsKeyToggled(Key.CapsLock);
+                bool numLockToggled = Keyboard.IsKeyToggled(Key.NumLock);
+
+                char keyChar;
+                if ((commandID == VSConstants.VSStd2KCmdID.RETURN) && pvaIn == IntPtr.Zero)
+                {
+                    // <enter> pressed
+                    keyChar = Environment.NewLine[0]; // [CR]LF
+                }
+                else if ((commandID == VSConstants.VSStd2KCmdID.BACKSPACE) && pvaIn == IntPtr.Zero)
+                {
+                    keyChar = '\b'; // backspace control character
+                }
+                else
+                {
+                    Debug.Assert(pvaIn != IntPtr.Zero, "pvaIn != IntPtr.Zero");
+
+                    // 1) deref pointer to char
+                    keyChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
+                }
+
+                // 2) convert from char to virtual key, using current thread's input locale
+                Lazy<IntPtr> _pKeybLayout = new Lazy<IntPtr>(() => GetKeyboardLayout(0));
+                short keyScan = VkKeyScanEx(keyChar, _pKeybLayout.Value);
+
+                // 3) virtual key is in LSB, shiftstate in MSB.
+                byte virtualKey = (byte)(keyScan & 0x00ff);
+                keyScan = (short)(keyScan >> 8);
+                byte shiftState = (byte)(keyScan & 0x00ff);
+
+                // 4) convert from virtual key to wpf key.
+                Key key = KeyInterop.KeyFromVirtualKey(virtualKey);
+
+                // 5) create VsKeyInfo to marshal info to 
+                var keyInfo = VsKeyInfo.Create(
+                    key,
+                    keyChar,
+                    virtualKey,
+                    keyStates: KeyStates.Down,
+                    capsLockToggled: capsLockToggled,
+                    numLockToggled: numLockToggled,
+                    shiftPressed: ((shiftState & 1) == 1),
+                    controlPressed: ((shiftState & 2) == 4),
+                    altPressed: ((shiftState & 4) == 2));
+
+                return keyInfo;
             }
         }
 
@@ -2468,6 +2549,103 @@ namespace PowerShellTools.Repl
             AppendLineNoPromptInjection(_stdInputBuffer);
             _inputValue = _stdInputBuffer.CurrentSnapshot.GetText(_stdInputStart.Value, _stdInputBuffer.CurrentSnapshot.Length - _stdInputStart.Value);
             _inputEvent.Set();
+        }
+
+        #endregion
+
+        #region Raw host UI support
+
+        public int GetRawHostBufferWidth()
+        {
+            ITextViewMargin leftMargin = _textViewHost.GetTextViewMargin(PredefinedMarginNames.Left);
+            ITextViewMargin rightMargin = _textViewHost.GetTextViewMargin(PredefinedMarginNames.Right);
+
+            double marginSize = 0.0;
+            if (leftMargin != null && leftMargin.Enabled)
+            {
+                marginSize += leftMargin.MarginSize;
+            }
+            if (rightMargin != null && rightMargin.Enabled)
+            {
+                marginSize += rightMargin.MarginSize;
+            }
+
+            var n = (int)((TextView.ViewportWidth - marginSize) / TextView.FormattedLineSource.ColumnWidth);
+
+            // Larger of 80 or n
+            // Set minimal width as 80 to keep consistent experience with another PowerShell custom host in VS: Nuget Manager Console 
+            return Math.Max(Constants.MinimalReplBufferWidth, n); 
+        }
+
+        private readonly BlockingCollection<VsKeyInfo> _keyBuffer = new BlockingCollection<VsKeyInfo>();
+
+        private bool _isExecutingReadKey = false;
+
+        private CancellationTokenSource _cancelWaitKeySource;
+
+        public bool IsExecutingReadKey
+        {
+            get
+            {
+                return _isExecutingReadKey;
+            }
+        }
+
+        // place a key into buffer
+        public void PostKey(VsKeyInfo key)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException("key");
+            }
+            _keyBuffer.Add(key);
+        }
+
+        // signal thread waiting on a key to exit Take
+        public void CancelWaitKey()
+        {
+            if (_isExecutingReadKey && !_cancelWaitKeySource.IsCancellationRequested)
+            {
+                _cancelWaitKeySource.Cancel();
+            }
+        }
+
+        public bool IsKeyAvailable()
+        {
+            // In our BlockingCollection<T> producer/consumer this is
+            // not critical so no need for locking. 
+            return _keyBuffer.Count > 0;
+        }
+
+        public VsKeyInfo WaitKey()
+        {
+            try
+            {
+                // set/reset the cancellation token
+                _cancelWaitKeySource = new CancellationTokenSource();
+                _isExecutingReadKey = true;
+
+                // blocking call
+                VsKeyInfo key = _keyBuffer.Take(_cancelWaitKeySource.Token);
+
+                return key;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+            finally
+            {
+                _isExecutingReadKey = false;
+            }
+        }
+
+        private void RaiseEventSafe(EventHandler handler)
+        {
+            if (handler != null)
+            {
+                Microsoft.VisualStudio.Shell.ThreadHelper.Generic.Invoke(() => handler(this, EventArgs.Empty));
+            }
         }
 
         #endregion

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 {
     [DataContract]
-    public class PowershellBreakpoint : IEquatable<PowershellBreakpoint>
+    public class PowerShellBreakpoint : IEquatable<PowerShellBreakpoint>
     {
         [DataMember]
         public string ScriptFullPath { get; set; }
@@ -19,14 +19,14 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         [DataMember]
         public int Column { get; set; }
 
-        public PowershellBreakpoint(string file, int line, int column)
+        public PowerShellBreakpoint(string file, int line, int column)
         {
             ScriptFullPath = file;
             Line = line;
             Column = column;
         }
 
-        public bool Equals(PowershellBreakpoint other)
+        public bool Equals(PowerShellBreakpoint other)
         {
             return this.Line == other.Line
                 && this.ScriptFullPath == other.ScriptFullPath
@@ -38,7 +38,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             if (obj == null)
                 return false;
 
-            PowershellBreakpoint breakpointObj = obj as PowershellBreakpoint;
+            PowerShellBreakpoint breakpointObj = obj as PowerShellBreakpoint;
             if (breakpointObj == null)
                 return false;
             else
@@ -50,7 +50,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             return this.ScriptFullPath.GetHashCode();
         }
 
-        public static bool operator ==(PowershellBreakpoint bp1, PowershellBreakpoint bp2)
+        public static bool operator ==(PowerShellBreakpoint bp1, PowerShellBreakpoint bp2)
         {
             if ((object)bp1 == null || ((object)bp2) == null)
                 return Object.Equals(bp1, bp2);
@@ -58,7 +58,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             return bp1.Equals(bp1);
         }
 
-        public static bool operator !=(PowershellBreakpoint bp1, PowershellBreakpoint bp2)
+        public static bool operator !=(PowerShellBreakpoint bp1, PowerShellBreakpoint bp2)
         {
             if (bp1 == null || bp2 == null)
                 return !Object.Equals(bp1, bp2);

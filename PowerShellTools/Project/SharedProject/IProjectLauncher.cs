@@ -29,6 +29,6 @@ namespace Microsoft.VisualStudioTools.Project {
         /// 
         /// Returns an HRESULT indicating success or failure.
         /// </summary>
-        int LaunchFile(string file, bool debug);
+        int LaunchFile(string file, bool debug, string args);
     }
 }

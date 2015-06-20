@@ -31,6 +31,7 @@ namespace PowerShellTools.Test
         private Mock<IClassificationType> _newLineType;
         private Mock<IClassificationType> _positionType;
         private Mock<IClassificationType> _statementSeparatorType;
+        private Mock<IClassificationType> _unknownType;
 
         [TestInitialize]
         public void Init()
@@ -56,6 +57,7 @@ namespace PowerShellTools.Test
             TypeSetupHelper(out _newLineType, Classifications.PowerShellNewLine);
             TypeSetupHelper(out _positionType, Classifications.PowerShellPosition);
             TypeSetupHelper(out _statementSeparatorType, Classifications.PowerShellStatementSeparator);
+            TypeSetupHelper(out _unknownType, Classifications.PowerShellUnknown);
 
             EditorImports.ClassificationTypeRegistryService = _classificationRegistry.Object;
             _classifierService = new ClassifierService();
@@ -69,7 +71,7 @@ namespace PowerShellTools.Test
 [parameter(Mandatory=$true)]
 [string]$someStr
 )";
-            ClassifyPowershellTokensTestHelper(script, 4, Classifications.PowerShellAttribute);
+            ClassifyPowerShellTokensTestHelper(script, 4, Classifications.PowerShellAttribute);
         }
 
         [TestMethod]
@@ -77,7 +79,7 @@ namespace PowerShellTools.Test
         {
             var script = "Write-Host \"Command here\"";
 
-            ClassifyPowershellTokensTestHelper(script, 0, Classifications.PowerShellCommand);
+            ClassifyPowerShellTokensTestHelper(script, 0, Classifications.PowerShellCommand);
         }
 
         [TestMethod]
@@ -85,7 +87,7 @@ namespace PowerShellTools.Test
         {
             var script = "Invoke-Command -Computername \"MyComputer\"";
 
-            ClassifyPowershellTokensTestHelper(script, 1, Classifications.PowerShellCommandParameter);
+            ClassifyPowerShellTokensTestHelper(script, 1, Classifications.PowerShellCommandParameter);
         }
 
         [TestMethod]
@@ -93,7 +95,7 @@ namespace PowerShellTools.Test
         {
             var script = @"New-Item -Path $myPath -ItemType File";
 
-            ClassifyPowershellTokensTestHelper(script, 4, Classifications.PowerShellCommandArgument);
+            ClassifyPowerShellTokensTestHelper(script, 4, Classifications.PowerShellCommandArgument);
         }
 
         [TestMethod]
@@ -113,8 +115,8 @@ namespace PowerShellTools.Test
                             }";
 
 
-            ClassifyPowershellTokensTestHelper(script, 0, Classifications.PowerShellComment);
-            ClassifyPowershellTokensTestHelper(script, 21, Classifications.PowerShellComment);
+            ClassifyPowerShellTokensTestHelper(script, 0, Classifications.PowerShellComment);
+            ClassifyPowerShellTokensTestHelper(script, 21, Classifications.PowerShellComment);
         }
 
         [TestMethod]
@@ -126,8 +128,8 @@ namespace PowerShellTools.Test
                             )";
 
 
-            ClassifyPowershellTokensTestHelper(script, 1, Classifications.PowerShellGroupStart);
-            ClassifyPowershellTokensTestHelper(script, 17, Classifications.PowerShellGroupEnd);
+            ClassifyPowerShellTokensTestHelper(script, 1, Classifications.PowerShellGroupStart);
+            ClassifyPowerShellTokensTestHelper(script, 17, Classifications.PowerShellGroupEnd);
         }
 
         [TestMethod]
@@ -139,8 +141,8 @@ namespace PowerShellTools.Test
                                 return $dirPath
                             }";
 
-            ClassifyPowershellTokensTestHelper(script, 0, Classifications.PowerShellKeyword);
-            ClassifyPowershellTokensTestHelper(script, 8, Classifications.PowerShellKeyword);
+            ClassifyPowerShellTokensTestHelper(script, 0, Classifications.PowerShellKeyword);
+            ClassifyPowerShellTokensTestHelper(script, 8, Classifications.PowerShellKeyword);
         }
 
         [TestMethod]
@@ -149,7 +151,7 @@ namespace PowerShellTools.Test
             var script = @"New-Item -Path $myPath `
                             -ItemType File";
 
-            ClassifyPowershellTokensTestHelper(script, 3, Classifications.PowerShellLineContinuation);
+            ClassifyPowerShellTokensTestHelper(script, 3, Classifications.PowerShellLineContinuation);
         }
 
         [TestMethod]
@@ -163,7 +165,7 @@ namespace PowerShellTools.Test
                               }
                             }";
 
-            ClassifyPowershellTokensTestHelper(script, 0, Classifications.PowerShellLoopLabel);
+            ClassifyPowerShellTokensTestHelper(script, 0, Classifications.PowerShellLoopLabel);
         }
 
         [TestMethod]
@@ -174,7 +176,7 @@ namespace PowerShellTools.Test
                             [string]$someStr
                             )";
 
-            ClassifyPowershellTokensTestHelper(script, 6, Classifications.PowerShellMember);
+            ClassifyPowerShellTokensTestHelper(script, 6, Classifications.PowerShellMember);
         }
 
         [TestMethod]
@@ -185,8 +187,8 @@ namespace PowerShellTools.Test
                             [string]$someStr
                             )";
 
-            ClassifyPowershellTokensTestHelper(script, 2, Classifications.PowerShellNewLine);
-            ClassifyPowershellTokensTestHelper(script, 11, Classifications.PowerShellNewLine);
+            ClassifyPowerShellTokensTestHelper(script, 2, Classifications.PowerShellNewLine);
+            ClassifyPowerShellTokensTestHelper(script, 11, Classifications.PowerShellNewLine);
         }
 
         [TestMethod]
@@ -194,7 +196,7 @@ namespace PowerShellTools.Test
         {
             var script = "$number=2";
 
-            ClassifyPowershellTokensTestHelper(script, 2, Classifications.PowerShellNumber);
+            ClassifyPowerShellTokensTestHelper(script, 2, Classifications.PowerShellNumber);
         }
 
         [TestMethod]
@@ -205,8 +207,8 @@ namespace PowerShellTools.Test
                             [string]$someStr
                             )";
 
-            ClassifyPowershellTokensTestHelper(script, 3, Classifications.PowerShellOperator);
-            ClassifyPowershellTokensTestHelper(script, 7, Classifications.PowerShellOperator);
+            ClassifyPowerShellTokensTestHelper(script, 3, Classifications.PowerShellOperator);
+            ClassifyPowerShellTokensTestHelper(script, 7, Classifications.PowerShellOperator);
         }
 
         [TestMethod]
@@ -214,8 +216,8 @@ namespace PowerShellTools.Test
         {
             var script = @"Invoke-Command -Computername 'MyComputer';$number=2;";
 
-            ClassifyPowershellTokensTestHelper(script, 3, Classifications.PowerShellStatementSeparator);
-            ClassifyPowershellTokensTestHelper(script, 7, Classifications.PowerShellStatementSeparator);
+            ClassifyPowerShellTokensTestHelper(script, 3, Classifications.PowerShellStatementSeparator);
+            ClassifyPowerShellTokensTestHelper(script, 7, Classifications.PowerShellStatementSeparator);
         }
 
         [TestMethod]
@@ -226,9 +228,9 @@ namespace PowerShellTools.Test
                                 return $newStr
                             }";
 
-            ClassifyPowershellTokensTestHelper(script, 4, Classifications.PowerShellType);
-            ClassifyPowershellTokensTestHelper(script, 9, Classifications.PowerShellType);
-            ClassifyPowershellTokensTestHelper(script, 18, Classifications.PowerShellType);
+            ClassifyPowerShellTokensTestHelper(script, 4, Classifications.PowerShellType);
+            ClassifyPowerShellTokensTestHelper(script, 9, Classifications.PowerShellType);
+            ClassifyPowerShellTokensTestHelper(script, 18, Classifications.PowerShellType);
         }
 
         [TestMethod]
@@ -239,8 +241,8 @@ namespace PowerShellTools.Test
                                 return $newStr
                             }";
 
-            ClassifyPowershellTokensTestHelper(script, 6, Classifications.PowerShellVariable);
-            ClassifyPowershellTokensTestHelper(script, 11, Classifications.PowerShellVariable);
+            ClassifyPowerShellTokensTestHelper(script, 6, Classifications.PowerShellVariable);
+            ClassifyPowerShellTokensTestHelper(script, 11, Classifications.PowerShellVariable);
         }
 
         [TestMethod]
@@ -248,12 +250,26 @@ namespace PowerShellTools.Test
         {
             var script = "\"$variable in a string\"";
 
-            ClassifyPowershellTokensTestHelper(script, 0, Classifications.PowerShellString);
+            ClassifyPowerShellTokensTestHelper(script, 0, Classifications.PowerShellString);
 
-            ClassifyPowershellTokensTestHelper(script, 1, Classifications.PowerShellVariable);
+            ClassifyPowerShellTokensTestHelper(script, 1, Classifications.PowerShellVariable);
         }
 
-        private void ClassifyPowershellTokensTestHelper(string script, int targetToken, string expectedTypes)
+        [TestMethod]
+        [Ignore]
+        public void ShouldClassifyClass()
+        {
+            var script = @"class A { }
+                           class B : A { }";
+
+            // The below tokens are different in PowerShell V3 and V5
+            ClassifyPowerShellTokensTestHelper(script, 0, Classifications.PowerShellKeyword);
+            ClassifyPowerShellTokensTestHelper(script, 6, Classifications.PowerShellType);
+            ClassifyPowerShellTokensTestHelper(script, 7, Classifications.PowerShellUnknown);
+            ClassifyPowerShellTokensTestHelper(script, 8, Classifications.PowerShellType);
+        }
+
+        private void ClassifyPowerShellTokensTestHelper(string script, int targetToken, string expectedType)
         {
             Token[] tokens;
             ParseError[] errors;
@@ -261,14 +277,16 @@ namespace PowerShellTools.Test
 
             var infos = _classifierService.ClassifyTokens(tokens, 0).ToArray();
 
-            Assert.AreEqual(expectedTypes, infos[targetToken].ClassificationType.Classification);
+            var actual = infos[targetToken].ClassificationType.Classification;
+
+            Assert.AreEqual(expectedType, actual, string.Format("{0} classifcation type expected, got {1}.", expectedType, actual));
         }
 
         private void TypeSetupHelper(out Mock<IClassificationType> type, string classificationType)
         {
             type = new Mock<IClassificationType>();
             type.Setup(m => m.Classification).Returns(classificationType);
-            _classificationRegistry.Setup(m => m.GetClassificationType(classificationType)).Returns(type.Object);            
+            _classificationRegistry.Setup(m => m.GetClassificationType(classificationType)).Returns(type.Object);
         }
     }
 }

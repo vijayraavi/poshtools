@@ -76,7 +76,7 @@ namespace PowerShellTools.Commands
                     return;
                 }
 
-                using (var ps = PowerShell.Create())
+                using (var ps = System.Management.Automation.PowerShell.Create())
                 {
                     ps.Runspace = PowerShellToolsPackage.Debugger.Runspace;
 

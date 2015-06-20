@@ -34,7 +34,7 @@ namespace PowerShellTools.DebugEngine
                 return new PSObjectScriptProperty(debugger, var, parentPath);
             }
 
-            return new ScriptProperty(debugger, var.VarName, var.VarValue, var.Type, parentPath);
+            return new ScriptProperty(debugger, var.VarName, var.VarValue, var.IsEnum, var.Type, parentPath);
         }
     }
 
@@ -104,17 +104,20 @@ namespace PowerShellTools.DebugEngine
 
         public string Value { get; set; }
 
+        public bool IsEnum { get; set; }
+
         public virtual String TypeName { get; set; }
 
         protected readonly ScriptDebugger _debugger;
 
         protected string _path { get; private set; }
 
-        public ScriptProperty(ScriptDebugger debugger, string name, string value, string type, string path)
+        public ScriptProperty(ScriptDebugger debugger, string name, string value, bool isEnum, string type, string path)
         {
             Log.DebugFormat("{0} {1}", name, value);
             Name = name;
             Value = value;
+            IsEnum = isEnum;
             _debugger = debugger;
             TypeName = (type == null ? string.Empty : type);
             _path = path;
@@ -125,6 +128,7 @@ namespace PowerShellTools.DebugEngine
             Log.DebugFormat("{0} {1}", var.VarName, var.VarValue);
             Name = var.VarName;
             Value = var.VarValue;
+            IsEnum = var.IsEnum;
             _debugger = debugger;
             TypeName = (var.Type == null ? string.Empty : var.Type);
             _path = path;
@@ -254,7 +258,7 @@ namespace PowerShellTools.DebugEngine
     {
         private uint _count;
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptPropertyCollection));
-        public static List<string> PsBaseTypes = new List<string>() { "System.String", "System.Char", "System.Byte", "System.Int32", "System.Int64", "System.Boolean", "System.Decimal", "System.Single", "System.Double" };
+        public static List<string> PsBaseTypes = new List<string>() { "System.String", "System.Char", "System.Byte", "System.Int32", "System.Int64", "System.Boolean", "System.Decimal", "System.Single", "System.Double", "System.IntPtr" };
 
         public ScriptPropertyCollection(ScriptDebugger debugger)
         {
@@ -279,15 +283,16 @@ namespace PowerShellTools.DebugEngine
 
         public int Next(uint celt, DEBUG_PROPERTY_INFO[] rgelt, out uint pceltFetched)
         {
-            Log.Debug("Next");
-            for (var i = 0; i < celt; i++)
+            Log.Debug("Next, base at" + _count.ToString());
+            for (var i = 0; i < celt && (int)(i +_count) < this.Count; i++)
             {
                 rgelt[i].bstrName = this[(int)(i + _count)].Name;
                 rgelt[i].bstrFullName = this[(int)(i + _count)].Name;
                 rgelt[i].bstrValue = this[(int)(i + _count)].Value != null ? this[(int)(i + _count)].Value.ToString() : "$null";
                 rgelt[i].bstrType = this[(int)(i + _count)].TypeName != null ? this[(int)(i + _count)].TypeName : String.Empty;
                 rgelt[i].pProperty = this[(int)(i + _count)];
-                rgelt[i].dwAttrib = GetAttributes(this[(int)(i + _count)].TypeName);
+                rgelt[i].dwAttrib = GetExpandableAttributesOverride(this[(int)(i + _count)]) 
+                    & GetExpandableAttributes(this[(int)(i + _count)].TypeName);
                 rgelt[i].dwFields = enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_NAME |
                                     enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_VALUE |
                                     enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_TYPE |
@@ -300,7 +305,12 @@ namespace PowerShellTools.DebugEngine
 
         }
 
-        private enum_DBG_ATTRIB_FLAGS GetAttributes(string typeName)
+        private enum_DBG_ATTRIB_FLAGS GetExpandableAttributesOverride(ScriptProperty prop)
+        {
+            return prop.IsEnum ? 0 : enum_DBG_ATTRIB_FLAGS.DBG_ATTRIB_OBJ_IS_EXPANDABLE;
+        }
+
+        private enum_DBG_ATTRIB_FLAGS GetExpandableAttributes(string typeName)
         {
             if (string.IsNullOrEmpty(typeName))
             {

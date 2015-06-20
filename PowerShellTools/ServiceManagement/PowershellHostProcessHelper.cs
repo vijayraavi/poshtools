@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using System.Threading;
-using PowerShellTools.Common;
 using System.Runtime.InteropServices;
+using System.Threading;
 using log4net;
-using System.Threading.Tasks;
+using PowerShellTools.Common;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Options;
 
 namespace PowerShellTools.ServiceManagement
 {
@@ -17,12 +17,6 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     internal static class PowershellHostProcessHelper
     {
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int W, int H, uint uFlags);
-
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); 
-
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOMOVE = 0x0002;
@@ -34,7 +28,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static Guid EndPointGuid { get; set; }
 
-        public static PowerShellHostProcess CreatePowershellHostProcess()
+        public static PowerShellHostProcess CreatePowerShellHostProcess(BitnessOptions bitness)
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
@@ -42,7 +36,17 @@ namespace PowerShellTools.ServiceManagement
             string hostProcessReadyEventName = Constants.ReadyEventPrefix + Guid.NewGuid();
             EndPointGuid = Guid.NewGuid();
 
-            string exeName = Constants.PowershellHostExeName;
+            string exeName;
+            switch (bitness)
+            {
+                case BitnessOptions.x86:
+                    exeName = Constants.PowerShellHostExeNameForx86;
+                    break;
+                case BitnessOptions.DefaultToOperatingSystem:
+                default:
+                    exeName = Constants.PowerShellHostExeName;
+                    break;
+            }
             string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string path = Path.Combine(currentPath, exeName);
             string hostArgs = String.Format(CultureInfo.InvariantCulture,
@@ -79,10 +83,6 @@ namespace PowerShellTools.ServiceManagement
             bool success = readyEvent.WaitOne();
             readyEvent.Close();
 
-            MakeTopMost(powerShellHostProcess.MainWindowHandle);
-
-            ShowWindow(powerShellHostProcess.MainWindowHandle, SW_HIDE);
-
             if (!success)
             {
                 int processId = powerShellHostProcess.Id;
@@ -99,7 +99,7 @@ namespace PowerShellTools.ServiceManagement
                     powerShellHostProcess.Dispose();
                     powerShellHostProcess = null;
                 }
-                throw new PowershellHostProcessException(String.Format(CultureInfo.CurrentCulture,
+                throw new PowerShellHostProcessException(String.Format(CultureInfo.CurrentCulture,
                                                                         Resources.ErrorFailToCreateProcess,
                                                                         processId.ToString()));
             }
@@ -125,25 +125,7 @@ namespace PowerShellTools.ServiceManagement
 
         private static void PowerShellHostProcessOutput(string outputData)
         {
-            if (outputData.StartsWith(string.Format(DebugEngineConstants.PowerShellHostProcessLogTag, PowershellHostProcessHelper.EndPointGuid), StringComparison.OrdinalIgnoreCase))
-            {
-                // debug data
-                Log.Debug(outputData);
-            }
-            else
-            {
-                // app data
-                if (PowerShellToolsPackage.Debugger != null &&
-                    PowerShellToolsPackage.Debugger.HostUi != null)
-                {
-                    PowerShellToolsPackage.Debugger.HostUi.VsOutputString(outputData + Environment.NewLine);
-                }
-            }
-        }
-
-        private static void MakeTopMost(IntPtr hWnd)
-        {
-            SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
+            Log.Debug(outputData);
         }
     }
 
@@ -152,16 +134,16 @@ namespace PowerShellTools.ServiceManagement
     /// </summary>
     public class PowerShellHostProcess
     {
-        public Process Process 
+        public Process Process
         {
-            get; 
-            private set; 
+            get;
+            private set;
         }
 
-        public Guid EndpointGuid 
+        public Guid EndpointGuid
         {
-            get; 
-            private set; 
+            get;
+            private set;
         }
 
         public PowerShellHostProcess(Process process, Guid guid)
@@ -176,14 +158,11 @@ namespace PowerShellTools.ServiceManagement
         /// <param name="content">User input string</param>
         public void WriteHostProcessStandardInputStream(string content)
         {
-            if (PowerShellToolsPackage.Debugger.IsAppRunningInPowerShellHost())
-            {
-                StreamWriter _inputStreamWriter = Process.StandardInput;
+            StreamWriter _inputStreamWriter = Process.StandardInput;
 
-                // Feed into stdin stream
-                _inputStreamWriter.WriteLine(content);
-                _inputStreamWriter.Flush();
-            }
+            // Feed into stdin stream
+            _inputStreamWriter.WriteLine(content);
+            _inputStreamWriter.Flush();
         }
     }
 }

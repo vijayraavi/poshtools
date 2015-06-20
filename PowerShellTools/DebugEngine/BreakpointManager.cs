@@ -147,7 +147,7 @@ namespace PowerShellTools.DebugEngine
             {
                 if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
                 {
-                    Debugger.DebuggingService.SetBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                    Debugger.DebuggingService.SetBreakpoint(new PowerShellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                 }
                 else if (Debugger.IsDebuggingCommandReady)
                 {
@@ -175,11 +175,11 @@ namespace PowerShellTools.DebugEngine
             {
                 if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
                 {
-                    Debugger.DebuggingService.EnableBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column), fEnable == 0 ? false : true);
+                    Debugger.DebuggingService.EnableBreakpoint(new PowerShellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column), fEnable == 0 ? false : true);
                 }
                 else if (Debugger.IsDebuggingCommandReady)
                 {
-                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowerShellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                     if (id >= 0)
                     {
                         Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(
@@ -207,11 +207,11 @@ namespace PowerShellTools.DebugEngine
             {
                 if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
                 {
-                    Debugger.DebuggingService.RemoveBreakpoint(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                    Debugger.DebuggingService.RemoveBreakpoint(new PowerShellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                 }
                 else if (Debugger.IsDebuggingCommandReady)
                 {
-                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowershellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                    int id = Debugger.DebuggingService.GetPSBreakpointId(new PowerShellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
                     if (id >= 0)
                     {
                         Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, id));

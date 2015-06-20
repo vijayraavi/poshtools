@@ -14,52 +14,52 @@ namespace PowerShellTools.Intellisense
 {
     internal static class Utilities
     {
-        internal static bool IsGroupStart(char ch)
+        public static bool IsGroupStart(char ch)
         {
             return ch == '{' || ch == '(';
         }
 
-        internal static bool IsGroupEnd(char ch)
+        public static bool IsGroupEnd(char ch)
         {
             return ch == '}' || ch == ')';
         }
 
-        internal static bool IsLeftBrace(char ch)
+        public static bool IsLeftBrace(char ch)
         {
             return ch == '{' || ch == '[' || ch == '(';
         }
 
-        internal static bool IsRightBrace(char ch)
+        public static bool IsRightBrace(char ch)
         {
             return ch == '}' || ch == ']' || ch == ')';
         }
 
-        internal static bool IsLeftBraceOrQuotes(char ch)
+        public static bool IsLeftBraceOrQuotes(char ch)
         {
             return IsLeftBrace(ch) || IsQuotes(ch);
         }
 
-        internal static bool IsRightBraceOrQuotes(char ch)
+        public static bool IsRightBraceOrQuotes(char ch)
         {
             return IsRightBrace(ch) || IsQuotes(ch);
         }
 
-        internal static bool IsQuotes(char ch)
+        public static bool IsQuotes(char ch)
         {
             return ch == '\'' || ch == '\"';
         }
 
-        internal static bool IsLeftCurlyBrace(char ch)
+        public static bool IsLeftCurlyBrace(char ch)
         {
             return ch == '{';
         }
 
-        internal static bool IsRightCurlyBrace(char ch)
+        public static bool IsRightCurlyBrace(char ch)
         {
             return ch == '}';
         }
 
-        internal static char GetCloseBraceOrQuotes(char ch)
+        public static char GetCloseBraceOrQuotes(char ch)
         {
             switch (ch)
             {
@@ -72,7 +72,7 @@ namespace PowerShellTools.Intellisense
             }
         }
 
-        internal static char GetPairedBrace(char ch)
+        public static char GetPairedBrace(char ch)
         {
             switch (ch)
             {
@@ -91,7 +91,7 @@ namespace PowerShellTools.Intellisense
         /// </summary>
         /// <param name="textView">Current text view.</param>
         /// <returns>True if caret is in comment area. Otherwise, false.</returns>
-        internal static bool IsCaretInCommentArea(ITextView textView)
+        public static bool IsCaretInCommentArea(ITextView textView)
         {
             ITextBuffer currentActiveBuffer;
             int currentPosition = Utilities.GetCurrentBufferPosition(textView, out currentActiveBuffer);
@@ -103,6 +103,21 @@ namespace PowerShellTools.Intellisense
         }
 
         /// <summary>
+        /// Determines if caret is in a string.
+        /// </summary>
+        /// <returns>True if caret is in a string. Otherwise, false.</returns>
+        public static bool IsInStringArea(ITextView textView)
+        {
+            ITextBuffer currentActiveBuffer;
+            int currentPosition = Utilities.GetCurrentBufferPosition(textView, out currentActiveBuffer);
+            if (currentPosition < 0 || currentPosition > currentActiveBuffer.CurrentSnapshot.Length)
+            {
+                return false;
+            }
+            return Utilities.IsInStringArea(currentPosition, currentActiveBuffer);
+        }
+
+        /// <summary>
         /// Get current caret position on a PowerShell textbuffer. If current top text buffer is of type PowerShell, then directly return caret postion.
         /// If current top text buffer is of type REPL, we need to map caret position from REPL text buffer to last PowerShell text buffer and return it. 
         /// If such a mapping doesn't exist, then return -1.
@@ -111,7 +126,7 @@ namespace PowerShellTools.Intellisense
         /// <param name="textView">The current text view</param>
         /// <param name="currentActiveBuffer">Get the active buffer the caret is on.</param>
         /// <returns>Return the right caret position in a PowerShell text buffer or -1 if none is found.</returns>
-        internal static int GetCurrentBufferPosition(ITextView textView, out ITextBuffer currentActiveBuffer)
+        public static int GetCurrentBufferPosition(ITextView textView, out ITextBuffer currentActiveBuffer)
         {
             int currentBufferPosition;
             if (textView.TextBuffer.ContentType.TypeName.Equals(PowerShellConstants.LanguageName, StringComparison.Ordinal))
@@ -145,27 +160,48 @@ namespace PowerShellTools.Intellisense
             return currentBufferPosition;
         }
 
-        internal static bool IsInCommentArea(int position, ITextBuffer buffer)
+        public static bool IsInCommentArea(int position, ITextBuffer buffer)
         {
-            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.Comment);
+            return IsInCertainPSTokenTypesArea(position, buffer, EdgeTrackingMode.RightEdgeIncluded, PSTokenType.Comment);
         }
 
-        internal static bool IsInStringArea(int position, ITextBuffer buffer)
+        public static bool IsInStringArea(int position, ITextBuffer buffer)
         {
-            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.String);
+            return IsInCertainPSTokenTypesArea(position, buffer, EdgeTrackingMode.NoneEdgeIncluded, PSTokenType.String);
         }
 
-        internal static bool IsInParameterArea(int position, ITextBuffer buffer)
+        public static bool IsInParameterArea(int position, ITextBuffer buffer)
         {
-            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.CommandParameter);
+            return IsInCertainPSTokenTypesArea(position, buffer, EdgeTrackingMode.LeftEdgeIncluded, PSTokenType.CommandParameter);
         }
 
-        internal static bool IsInVariableArea(int position, ITextBuffer buffer)
+        public static bool IsInVariableArea(int position, ITextBuffer buffer)
         {
-            return IsInCertainPSTokenTypesArea(position, buffer, PSTokenType.Variable, PSTokenType.Member);
+            return IsInCertainPSTokenTypesArea(position, buffer, EdgeTrackingMode.LeftEdgeIncluded, PSTokenType.Variable, PSTokenType.Member);
         }
 
-        private static bool IsInCertainPSTokenTypesArea(int position, ITextBuffer buffer, params PSTokenType[] selectedPSTokenTypes)
+        /// <summary>
+        /// Determines if the preceding text in the current line is empty
+        /// </summary>
+        /// <param name="bufferPosition">The buffer position.</param>
+        /// <returns>True if the preceding text is empty.</returns>
+        public static bool IsPrecedingTextInLineEmpty(SnapshotPoint bufferPosition)
+        {
+            var line = bufferPosition.GetContainingLine();
+            var caretInLine = ((int)bufferPosition - line.Start);
+
+            return String.IsNullOrWhiteSpace(line.GetText().Substring(0, caretInLine));
+        }
+
+        public static bool IsSucceedingTextInLineEmpty(SnapshotPoint bufferPosition)
+        {
+            var line = bufferPosition.GetContainingLine();
+            var caretInLine = ((int)bufferPosition - line.Start);
+            string lineText = line.GetText();
+            return String.IsNullOrWhiteSpace(lineText.Substring(caretInLine, lineText.Length - caretInLine));
+        }
+
+        private static bool IsInCertainPSTokenTypesArea(int position, ITextBuffer buffer, EdgeTrackingMode edgeTrackingMode, params PSTokenType[] selectedPSTokenTypes )
         {
             if (position < 0 || position > buffer.CurrentSnapshot.Length)
             {
@@ -177,14 +213,68 @@ namespace PowerShellTools.Intellisense
             {
                 var filteredTokens = tokens.Where(t => selectedPSTokenTypes.Any(k => PSToken.GetPSTokenType(t) == k)).ToList();
 
-                foreach (var token in filteredTokens)
+                switch (edgeTrackingMode)
                 {
-                    if (token.Extent.StartOffset <= position && position <= token.Extent.EndOffset)
+                    case EdgeTrackingMode.NoneEdgeIncluded:
+                    foreach (var token in filteredTokens)
                     {
-                        return true;
+                            if (token.Extent.StartOffset < position && position < token.Extent.EndOffset)
+                        {
+                            return true;
+                        }
+                            if (position <= token.Extent.StartOffset)
+                        {
+                            return false;
+                        }
                     }
+                        break;
+
+                    case EdgeTrackingMode.LeftEdgeIncluded:
+                        foreach (var token in filteredTokens)
+                        {
+                            if (token.Extent.StartOffset <= position && position < token.Extent.EndOffset)
+                            {
+                                return true;
                 }
+                            if (position < token.Extent.StartOffset)
+                {
+                                return false;
+                            }
+                        }
+                        break;
+
+                    case EdgeTrackingMode.RightEdgeIncluded:
+                    foreach (var token in filteredTokens)
+                    {
+                            if (token.Extent.StartOffset < position && position <= token.Extent.EndOffset)
+                        {
+                            return true;
+                        }
+                            if (position < token.Extent.StartOffset)
+                        {
+                            return false;
+                        }
+                    }
+                        break;
+                
+                    case EdgeTrackingMode.BothEdgesIncluded:
+                        foreach (var token in filteredTokens)
+                        {
+                            if (token.Extent.StartOffset <= position && position <= token.Extent.EndOffset)
+                            {
+                                return true;
             }
+                            if (position < token.Extent.StartOffset)
+                            {
+            return false;
+        }
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+        }
 
             return false;
         }

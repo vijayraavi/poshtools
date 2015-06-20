@@ -33,14 +33,6 @@
     </When>
   </Choose>
   <Import Project="..\Build\ProjectBefore.settings" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <Prefer32Bit>false</Prefer32Bit>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DefineConstants>TRACE;DEBUG;POWERSHELL;DEV12;DEV12_OR_LATER;DEV11_OR_LATER</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
   <PropertyGroup>
     <DelaySign>false</DelaySign>
   </PropertyGroup>
@@ -54,7 +46,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PowerShellTools</RootNamespace>
-    <AssemblyName>PowerShellTools</AssemblyName>
+    <AssemblyName>PowerShellTools.$(VSTarget)</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
@@ -63,7 +55,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;POWERSHELL;DEV11</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;POWERSHELL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -79,7 +71,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;POWERSHELL;DEV11</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;POWERSHELL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -152,6 +144,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
@@ -235,14 +228,34 @@
     <Compile Include="Classification\PowerShellErrorTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellOutliningTagger.cs" />
     <Compile Include="Classification\PowerShellOutliningTaggerProvider.cs" />
+    <Compile Include="Classification\PowerShellParseUtilities.cs" />
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
     <Compile Include="Cmdlets\GetVisualStudioServiceCommand.cs" />
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
-    <Compile Include="Commands\GotoDefinitionCommand.cs" />
+    <Compile Include="Commands\ExecuteWithParametersAsScriptCommand.cs" />
+    <Compile Include="Commands\ExecuteWithParametersAsScriptFromSolutionExplorerCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
+    <Compile Include="Commands\UserInterface\Converters\ByteValueConverter.cs" />
+    <Compile Include="Commands\UserInterface\ConfigurableBoolToVisibilityConveter.cs" />
+    <Compile Include="Commands\UserInterface\DataTypeConstants.cs" />
+    <Compile Include="Commands\UserInterface\Converters\ErrorIconConverter.cs" />
+    <Compile Include="Commands\UserInterface\Converters\IntValueConverter.cs" />
+    <Compile Include="Commands\UserInterface\Converters\LongValueConverter.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorModel.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorTemplateSelector.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorViewModel.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorHelper.cs" />
+    <Compile Include="Commands\UserInterface\ParameterType.cs" />
+    <Compile Include="Commands\UserInterface\ParameterValueComparer.cs" />
+    <Compile Include="Commands\UserInterface\ParameterEditorView.xaml.cs">
+      <DependentUpon>ParameterEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Commands\UserInterface\ScriptParameter.cs" />
+    <Compile Include="Commands\UserInterface\ScriptParameterViewModel.cs" />
+    <Compile Include="Commands\UserInterface\ValidationResult.cs" />
     <Compile Include="CredentialUI\CredentialsDialog.cs" />
     <Compile Include="CredentialUI\NativeCredentialsUI.cs" />
     <Compile Include="CredentialUI\Resources.Designer.cs">
@@ -256,6 +269,13 @@
     <Compile Include="CredentialUI\SecureStringDialogViewModel.cs" />
     <Compile Include="DebugEngine\BreakpointManager.cs" />
     <Compile Include="DebugEngine\DebugEngineInternalException.cs" />
+    <Compile Include="DebugEngine\NativeMethods.cs" />
+    <Compile Include="DebugEngine\PromptUI\ChoiceButtonItem.cs" />
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesView.xaml.cs">
+      <DependentUpon>ReadHostPromptForChoicesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesViewModel.cs" />
+    <Compile Include="DebugServiceEventHandlerBehaviorAttribute.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
     <Compile Include="DebugEngine\Definitions\Enums.cs" />
@@ -292,6 +312,14 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="Intellisense\EdgeTrackingMode.cs" />
+    <Compile Include="Options\BitnessEventArgs.cs" />
+    <Compile Include="Options\BitnessOption.cs" />
+    <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
+    <Compile Include="LanguageService\DropDownBar\ScriptEntryInfo.cs" />
+    <Compile Include="LanguageService\DropDownBar\FunctionDefinitionEntryInfo.cs" />
+    <Compile Include="LanguageService\DropDownBar\IDropDownEntryInfo.cs" />
+    <Compile Include="LanguageService\NavigationExtensions.cs" />
     <Compile Include="Project\DeveloperActivityAttribute.cs" />
     <Compile Include="Diagnostics\DiagnosticConfiguration.cs" />
     <Compile Include="Diagnostics\DiagnosticsDialogPage.cs">
@@ -299,7 +327,7 @@
     </Compile>
     <Compile Include="Diagnostics\OutputPaneAppender.cs" />
     <Compile Include="EditorImports.cs" />
-    <Compile Include="GeneralDialogPage.cs">
+    <Compile Include="Options\GeneralDialogPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="IDependencyValidator.cs" />
@@ -313,7 +341,7 @@
     <Compile Include="Intellisense\TabCompleteSession.cs" />
     <Compile Include="Intellisense\Utilities.cs" />
     <Compile Include="LanguageService\CodeWindowManager.cs" />
-    <Compile Include="LanguageService\DropDownBarClient.cs" />
+    <Compile Include="LanguageService\DropDownBar\DropDownBarClient.cs" />
     <Compile Include="LanguageService\EditorExtensions.cs" />
     <Compile Include="LanguageService\IndentUtilities.cs" />
     <Compile Include="LanguageService\PowerShellLanaguagePreferences.cs" />
@@ -565,7 +593,6 @@
     <Compile Include="Service\ExecutionEngine.cs" />
     <Compile Include="Service\IExecutionEngine.cs" />
     <Compile Include="Service\PowerShellService.cs" />
-    <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CredentialUI\Resources.resx">
@@ -612,6 +639,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <CustomToolNamespace>PowerShellTools</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
@@ -620,12 +648,14 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Commands\UserInterface\Resources\StatusAnnotations_Invalid_color_16x.png" />
+    <Resource Include="Commands\UserInterface\Resources\Warning_yellow_7231_16x16.png" />
     <Content Include="DebugEngine\PowerShellTools.DebugEngine.csproj" />
     <Content Include="ItemTemplates\PowerShell Script.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="Manifest\$(VisualStudioVersion)\source.extension.vsixmanifest" />
+    <None Include="Manifest\source.extension.vsixmanifest" />
     <Content Include="poshtools.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -643,6 +673,8 @@
     <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
     <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
     <EmbeddedResource Include="Resources\PowerShellInteractiveWindow_16x.png" />
+    <None Include="Resources\WarningIcon.ico" />
+    <None Include="Resources\ErrorStatus.png" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
@@ -666,6 +698,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <None Include="PowerShellToolsProcessHostConsole.exe.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
@@ -699,10 +734,11 @@
     <None Include="Templates\Files\Script.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <VSCTCompile Include="PowerShellTools.vsct">
+    <VSCTCompile Include="PowerShellTools.$(VSTarget).vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
+    <Content Include="PowerShellTools.vsct" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Images.png" />
@@ -713,11 +749,19 @@
     <Resource Include="Resources\powershell_icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Commands\UserInterface\ParameterEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="CredentialUI\SecureStringDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="DebugEngine\PromptUI\ReadHostPromptDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DebugEngine\PromptUI\ReadHostPromptForChoicesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -738,19 +782,31 @@
     <Folder Include="Project\SharedProject\Debugger\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PowerShell.HostService.Console\PowerShell.HostService.Console.csproj">
+      <Project>{e84fc12d-897f-4244-b44c-b42839d677a4}</Project>
+      <Name>PowerShell.HostService.Console</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.Common\PowerShellTools.Common.csproj">
       <Project>{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}</Project>
       <Name>PowerShellTools.Common</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.HostService.x86\PowerShellTools.HostService.x86.csproj">
+      <Project>{528d75e0-71d8-408c-aeae-485d84e08bd2}</Project>
+      <Name>PowerShellTools.HostService.x86</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.HostService\PowerShellTools.HostService.csproj">
-      <Project>{C9D4AAC3-51D3-4ED9-AB9B-564D4D2D30E8}</Project>
+      <Project>{8b0f3db2-ad3d-4d3a-85c3-4850263054e9}</Project>
       <Name>PowerShellTools.HostService</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\PowerShellTools.PublicContract\PowerShellTools.Contracts.csproj">
+    <ProjectReference Include="..\PowerShellTools.Contracts\PowerShellTools.Contracts.csproj">
       <Project>{103c9af2-f8a5-4bf0-a341-a43147c320aa}</Project>
       <Name>PowerShellTools.Contracts</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -762,7 +818,7 @@
     <ProjectReference Include="..\ReplWindow\PowerShellTools.Repl.csproj">
       <Project>{20bb6fac-44d2-4d76-abfe-0c1e163a1a4f}</Project>
       <Name>PowerShellTools.Repl</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3bVSIXContainerProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
   </ItemGroup>

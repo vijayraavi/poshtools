@@ -8,11 +8,12 @@ using System.Threading;
 using System.Windows;
 using log4net;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
 using Microsoft.VisualStudioTools.Navigation;
@@ -25,6 +26,7 @@ using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.Intellisense;
 using PowerShellTools.LanguageService;
+using PowerShellTools.Options;
 using PowerShellTools.Project.PropertyPages;
 using PowerShellTools.Service;
 using PowerShellTools.ServiceManagement;
@@ -50,13 +52,24 @@ namespace PowerShellTools
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
     //[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-    [ProvideAutoLoad(UIContextGuids.NoSolution)]
+
+    // There are a few user scenarios which will trigger package to load
+    // 1. Open/Create any type of PowerShell project
+    // 2. Open/Create PowerShell file(.ps1, .psm1, .psd1) from file->open/create or solution explorer
+    // 3. Execute PowerShell script file from solution explorer
+    [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellProjectUiContextString)]
+    // 4. PowerShell interactive window open
+    [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellReplCreationUiContextString)]
+    // 5. PowerShell service execution
+    [ProvideService(typeof(IPowerShellService))]
+
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
                             101,
                             ShowSmartIndent = true,
                             ShowDropDownOptions = true,
                             EnableCommenting = true)]
+    [ProvideEditorFactory(typeof(PowerShellEditorFactory), 114, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
@@ -89,22 +102,19 @@ namespace PowerShellTools
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
     [ProvideLanguageCodeExpansion(typeof(PowerShellLanguageInfo),
-                                  "PowerShell",        // Name of language used as registry key
-                                  0,                   // Resource ID of localized name of language service
-         "PowerShell",        // Name of Language attribute in snippet template
-         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
-         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
-    [ProvideService(typeof(IPowerShellService))]
+        "PowerShell",        // Name of language used as registry key
+        0,                   // Resource ID of localized name of language service
+        "PowerShell",        // Name of Language attribute in snippet template
+        @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
+        SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
 
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
-        private Lazy<PowerShellService> _powershellService;
+        private Lazy<PowerShellService> _powerShellService;
         private static ScriptDebugger _debugger;
         private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
-        private static GotoDefinitionCommand _gotoDefinitionCommand;
-        private VisualStudioEvents VisualStudioEvents;
         private IContentType _contentType;
         private IntelliSenseEventsHandlerProxy _intelliSenseServiceContext;
 
@@ -132,11 +142,11 @@ namespace PowerShellTools
         /// </summary>
         public static PowerShellToolsPackage Instance { get; private set; }
 
-        public static IPowershellDebuggingService DebuggingService
+        public static IPowerShellDebuggingService DebuggingService
         {
             get
             {
-                return ConnectionManager.Instance.PowershellDebuggingService;
+                return ConnectionManager.Instance.PowerShellDebuggingService;
             }
         }
 
@@ -179,11 +189,11 @@ namespace PowerShellTools
         /// </summary>
         internal static bool OverrideExecutionPolicyConfiguration { get; private set; }
 
-        internal static IPowershellIntelliSenseService IntelliSenseService
+        internal static IPowerShellIntelliSenseService IntelliSenseService
         {
             get
             {
-                return ConnectionManager.Instance.PowershellIntelliSenseSerivce;
+                return ConnectionManager.Instance.PowerShellIntelliSenseSerivce;
             }
         }
 
@@ -228,7 +238,7 @@ namespace PowerShellTools
 
                 InitializeInternal();
 
-                _powershellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
+                _powerShellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
 
                 RegisterServices();
             }
@@ -258,28 +268,23 @@ namespace PowerShellTools
             var langService = new PowerShellLanguageInfo(this);
             ((IServiceContainer)this).AddService(langService.GetType(), langService, true);
 
-            var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
-            _textBufferFactoryService = componentModel.GetService<ITextBufferFactoryService>();
-            EditorImports.ClassificationTypeRegistryService = componentModel.GetService<IClassificationTypeRegistryService>();
-            EditorImports.ClassificationFormatMap = componentModel.GetService<IClassificationFormatMapService>();
-            VisualStudioEvents = componentModel.GetService<VisualStudioEvents>();
-
-            if (VisualStudioEvents != null)
-            {
-                VisualStudioEvents.SettingsChanged += VisualStudioEvents_SettingsChanged;
-            }
+            _textBufferFactoryService = ComponentModel.GetService<ITextBufferFactoryService>();
+            EditorImports.ClassificationTypeRegistryService = ComponentModel.GetService<IClassificationTypeRegistryService>();
+            EditorImports.ClassificationFormatMap = ComponentModel.GetService<IClassificationFormatMapService>();
 
             if (_textBufferFactoryService != null)
             {
                 _textBufferFactoryService.TextBufferCreated += TextBufferFactoryService_TextBufferCreated;
             }
 
-            _gotoDefinitionCommand = new GotoDefinitionCommand();
+            var textManager = (IVsTextManager)GetService(typeof(SVsTextManager));
+            var adaptersFactory = ComponentModel.GetService<IVsEditorAdaptersFactoryService>();
 
             RefreshCommands(new ExecuteSelectionCommand(this.DependencyValidator),
                             new ExecuteFromEditorContextMenuCommand(this.DependencyValidator),
+                            new ExecuteWithParametersAsScriptCommand(adaptersFactory, textManager, this.DependencyValidator),
                             new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
-                            _gotoDefinitionCommand,
+                            new ExecuteWithParametersAsScriptFromSolutionExplorerCommand(adaptersFactory, textManager, this.DependencyValidator),
                             new PrettyPrintCommand(),
                             new OpenDebugReplCommand());
 
@@ -328,23 +333,7 @@ namespace PowerShellTools
             Debug.Assert(this is IServiceContainer, "The package is expected to be an IServiceContainer.");
 
             var serviceContainer = (IServiceContainer)this;
-            serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powershellService.Value, true);
-        }
-
-        private void VisualStudioEvents_SettingsChanged(object sender, DialogPage e)
-        {
-            if (e is DiagnosticsDialogPage)
-            {
-                var page = (DiagnosticsDialogPage)e;
-                if (page.EnableDiagnosticLogging)
-                {
-                    DiagnosticConfiguration.EnableDiagnostics();
-                }
-                else
-                {
-                    DiagnosticConfiguration.DisableDiagnostics();
-                }
-            }
+            serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powerShellService.Value, true);
         }
 
         private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
@@ -371,7 +360,6 @@ namespace PowerShellTools
             {
                 IPowerShellTokenizationService psts = new PowerShellTokenizationService(buffer);
 
-                _gotoDefinitionCommand.AddTextBuffer(buffer);
                 buffer.PostChanged += (o, args) => psts.StartTokenization();
 
                 buffer.Properties.AddProperty(BufferProperties.PowerShellTokenizer, psts);
@@ -384,18 +372,41 @@ namespace PowerShellTools
         private void InitializePowerShellHost()
         {
             var page = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
+
             OverrideExecutionPolicyConfiguration = page.OverrideExecutionPolicyConfiguration;
 
             Log.Info("InitializePowerShellHost");
 
             _debugger = new ScriptDebugger(page.OverrideExecutionPolicyConfiguration);
 
-            // Warm up intellisense service due to the reason that first intellisense request sometime slow than usual
+            // Warm up the intellisense service due to the reason that the 
+            // first intellisense request is often times slower than usual
+            // TODO: Should we move this into the HostService's initializiation?
             IntelliSenseService.GetDummyCompletionList();
 
             DebuggerReadyEvent.Set();
 
             PowerShellHostInitialized = true;
+        }
+
+        internal void BitnessSettingChanged(object sender, BitnessEventArgs e)
+        {
+            ConnectionManager.Instance.ProcessEventHandler(e.NewBitness);
+        }
+
+        internal void DiagnosticLoggingSettingChanged(object sender, bool enabled)
+        {
+            if (sender is DiagnosticsDialogPage)
+            {
+                if (enabled)
+                {
+                    DiagnosticConfiguration.EnableDiagnostics();
+                }
+                else
+                {
+                    DiagnosticConfiguration.DisableDiagnostics();
+                }
+            }
         }
     }
 }
