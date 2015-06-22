@@ -23,13 +23,24 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Editor.OptionsExtensionMethods;
 using Microsoft.VisualStudioTools;
 using PowerShellTools.LanguageService;
+using PowerShellTools.Repl;
+using Microsoft.VisualStudio.Text.Operations;
 
 namespace PowerShellTools.LanguageService.BraceCompletion
 {
     [Export(typeof(IBraceCompletionContext))]
     internal class BraceCompletionContext : IBraceCompletionContext
     {
-        public bool AllowOverType(IBraceCompletionSession session)
+	private readonly IEditorOperations _editorOperations;
+	private readonly ITextUndoHistory _undoHistory;
+
+	public BraceCompletionContext(IEditorOperations editorOperations, ITextUndoHistory undoHistory)
+	{
+	    _editorOperations = editorOperations;
+	    _undoHistory = undoHistory;
+	}
+
+	public bool AllowOverType(IBraceCompletionSession session)
         {
             return true;
         }
@@ -40,15 +51,21 @@ namespace PowerShellTools.LanguageService.BraceCompletion
 
         public void OnReturn(IBraceCompletionSession session)
         {
-                // reshape code from
-                // {
-                // |}
-                // 
-                // to
-                // {
-                //     |
-                // }
-                // where | indicates caret position.
+	    // Return in Repl window would just execute the current command
+	    if (session.SubjectBuffer.ContentType.TypeName.Equals(ReplConstants.ReplContentTypeName, StringComparison.OrdinalIgnoreCase))
+	    {
+		return;
+	    }
+
+            // reshape code from
+            // {
+            // |}
+            // 
+            // to
+            // {
+            //     |
+            // }
+            // where | indicates caret position.
 
             var closingPointPosition = session.ClosingPoint.GetPosition(session.SubjectBuffer.CurrentSnapshot);
 
@@ -58,92 +75,17 @@ namespace PowerShellTools.LanguageService.BraceCompletion
                 detailMessage: "The closing point position should always be greater than zero, " +
                                 "since there is also an opening point for this brace completion session");
 
-            // Insert an extra newline and indent the closing brace manually.           
-            session.SubjectBuffer.Insert(
-                closingPointPosition - 1,
-                VsExtensions.GetNewLineText(session.TextView.TextSnapshot));
+	    using (var undo = _undoHistory.CreateTransaction("Insert new line."))
+	    {
+		//_editorOperations.AddBeforeTextBufferChangePrimitive();
+		
+		_editorOperations.MoveLineUp(false);
+		_editorOperations.MoveToEndOfLine(false);
+		_editorOperations.InsertNewLine();
 
-
-            // After editing, set caret to the correct position.
-            SetCaretPosition(session);
-        }
-
-        private static void SetCaretPosition(IBraceCompletionSession session)
-        {
-            // Find next line from brace.
-            var snapshot = session.SubjectBuffer.CurrentSnapshot;
-            var openCurlyLine = session.OpeningPoint.GetPoint(snapshot).GetContainingLine();
-            var nextLineNumber = openCurlyLine.LineNumber + 1;
-
-            bool nextLineExists = nextLineNumber < snapshot.LineCount;
-            Debug.Assert(nextLineExists, "There are no lines after this brace completion's opening brace, no place to seek caret to.");
-            if (!nextLineExists)
-            {
-                // Don't move the caret as we have somehow ended up without a line following our opening brace.
-                return;
-            }
-
-            // Get indent for this line.
-            ITextSnapshotLine nextLine = snapshot.GetLineFromLineNumber(nextLineNumber);
-            var indentation = GetIndentationLevelForLine(session, nextLine);
-            if (indentation > 0)
-            {
-                // before deleting, make sure this line is only whitespace.
-                bool lineIsWhitepace = string.IsNullOrWhiteSpace(nextLine.GetText());
-                Debug.Assert(lineIsWhitepace, "The line after the brace should be empty.");
-                if (lineIsWhitepace)
-                {
-                    session.SubjectBuffer.Delete(nextLine.Extent);
-                    MoveCaretTo(session.TextView, nextLine.End, indentation);
-                }
-            }
-            else
-            {
-                MoveCaretTo(session.TextView, nextLine.End);
-            }
-        }
-
-        private static int GetIndentationLevelForLine(IBraceCompletionSession session, ITextSnapshotLine line)
-        {
-            ISmartIndent smartIndenter;
-            if (session.TextView.Properties.TryGetProperty<ISmartIndent>(typeof(SmartIndent), out smartIndenter))
-            {
-                int? preferableIndentation = smartIndenter.GetDesiredIndentation(line);
-                if (preferableIndentation.HasValue)
-                {
-                    return preferableIndentation.Value;
-                }
-            }
-
-            return 0;
-        }
-
-        private static void MoveCaretTo(ITextView textView, SnapshotPoint point, int virtualSpaces = 0)
-        {
-            var pointOnViewBuffer =
-                textView.BufferGraph.MapUpToBuffer(
-                    point,
-                    trackingMode: PointTrackingMode.Negative,
-                    affinity: PositionAffinity.Successor,
-                    targetBuffer: textView.TextBuffer);
-
-            if (!pointOnViewBuffer.HasValue)
-            {
-                Debug.Fail(@"Point in view buffer should always be mappable from brace completion buffer?");
-                return;
-            }
-
-            if (virtualSpaces <= 0)
-            {
-                textView.Caret.MoveTo(pointOnViewBuffer.Value);
-            }
-            else
-            {
-                var virtualPointOnView = new VirtualSnapshotPoint(pointOnViewBuffer.Value, virtualSpaces);
-                textView.Caret.MoveTo(virtualPointOnView);
-            }
-
-            textView.Caret.EnsureVisible();
-        }
+		//editorOperations.AddAfterTextBufferChangePrimitive();
+		undo.Complete();
+	    }
+	}
     }
 }

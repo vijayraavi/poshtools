@@ -98,7 +98,6 @@
     <Compile Include="ErrorTaggerService.Test..cs" />
     <Compile Include="ExecutionEngineTest.cs" />
     <Compile Include="IntelliSense\UtilitiesUnitTests.cs" />
-    <Compile Include="IntelliSense\AutoCompletionControllerUnitTests.cs" />
     <Compile Include="IntelliSense\TabCompleteUnitTests.cs" />
     <Compile Include="LanguageService\NavigationUnitTests.cs" />
     <Compile Include="RegionAndBraceMatchingService.Test.cs" />

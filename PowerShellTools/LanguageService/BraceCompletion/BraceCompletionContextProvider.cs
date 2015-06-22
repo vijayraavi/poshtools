@@ -18,27 +18,35 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.BraceCompletion;
-using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
+using PowerShellTools.Intellisense;
 
 namespace PowerShellTools.LanguageService.BraceCompletion
 {
-    [Export(typeof(IBraceCompletionContextProvider))]
+    [Export(typeof(IBraceCompletionContextProvider)), ContentType(PowerShellConstants.LanguageName)]
     [BracePair(BraceKind.CurlyBrackets.Open, BraceKind.CurlyBrackets.Close)]
     [BracePair(BraceKind.SquareBrackets.Open, BraceKind.SquareBrackets.Close)]
     [BracePair(BraceKind.Parentheses.Open, BraceKind.Parentheses.Close)]
     [BracePair(BraceKind.SingleQuotes.Open, BraceKind.SingleQuotes.Close)]
     [BracePair(BraceKind.DoubleQuotes.Open, BraceKind.DoubleQuotes.Close)]
-    [ContentType(PowerShellConstants.LanguageName)]
     internal sealed class BraceCompletionContextProvider : IBraceCompletionContextProvider
     {
-        public bool TryCreateContext(ITextView textView, SnapshotPoint openingPoint, char openingBrace, char closingBrace, out IBraceCompletionContext context)
+	[Import]
+	private IEditorOperationsFactoryService EditOperationsFactory = null;
+
+	[Import]
+	private ITextUndoHistoryRegistry UndoHistoryRegistry = null;
+
+	public bool TryCreateContext(ITextView textView, SnapshotPoint openingPoint, char openingBrace, char closingBrace, out IBraceCompletionContext context)
         {
-            // if we are in a comment or string literal we cannot begin a completion session.
-            if (IsValidBraceCompletionContext(openingPoint))
+	    var editorOperations = this.EditOperationsFactory.GetEditorOperations(textView);
+	    var undoHistory = this.UndoHistoryRegistry.GetHistory(textView.TextBuffer);
+	    // if we are in a comment or string literal we cannot begin a completion session.
+	    if (IsValidBraceCompletionContext(textView, openingPoint))
             {
-                context = new BraceCompletionContext();
+                context = new BraceCompletionContext(editorOperations, undoHistory);
                 return true;
             }
             else
@@ -48,12 +56,11 @@ namespace PowerShellTools.LanguageService.BraceCompletion
             }
         }
 
-        private bool IsValidBraceCompletionContext(SnapshotPoint openingPoint)
-        {            
-            // If we haven't stopped this, go ahead and start the completion session.
-            // Either we were at position 0 (a safe place to be placing a brace completion)
-            // or we were in a classification that is safe for brace completion.
-            return true;
+        private bool IsValidBraceCompletionContext(ITextView textView, SnapshotPoint openingPoint)
+        {
+	    Debug.Assert(openingPoint.Position >= 0, "SnapshotPoint.Position should always be zero or positive.");
+
+	    return !Utilities.IsCaretInCommentArea(textView) && !Utilities.IsInStringArea(textView);
         }
     }
 }

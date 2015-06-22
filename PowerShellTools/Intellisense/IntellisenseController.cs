@@ -30,7 +30,6 @@ namespace PowerShellTools.Intellisense
         private readonly ITextView _textView;
         private readonly IntellisenseControllerProvider _provider;
         private readonly IntelliSenseManager _intelliSenseManager;
-        private readonly AutoCompletionController _autoCompletionController;
 
         /// <summary>
         /// Attaches events for invoking Statement completion 
@@ -44,8 +43,6 @@ namespace PowerShellTools.Intellisense
             IEditorOperations editorOperations = provider.EditOperationsFactory.GetEditorOperations(textView);
             ITextUndoHistory undoHistory = provider.UndoHistoryRegistry.GetHistory(textView.TextBuffer);
             _intelliSenseManager = new IntelliSenseManager(provider.CompletionBroker, provider.ServiceProvider, null, textView, callbackContext);
-            _autoCompletionController = new AutoCompletionController(textView, editorOperations, undoHistory, provider.ServiceProvider);
-
         }
 
         public ICompletionBroker CompletionBroker
@@ -85,9 +82,6 @@ namespace PowerShellTools.Intellisense
 
                     ErrorHandler.ThrowOnFailure(viewAdapter.AddCommandFilter(this, out next));
                     _intelliSenseManager.NextCommandHandler = next;
-
-                    ErrorHandler.ThrowOnFailure(viewAdapter.AddCommandFilter(_autoCompletionController, out next));
-                    _autoCompletionController.NextCommandHandler = next;
                 }
             }
         }
@@ -153,11 +147,6 @@ namespace PowerShellTools.Intellisense
         private void DetachKeyboardFilter()
         {
             var viewAdapter = AdaptersFactory.GetViewAdapter(_textView);
-            if (_autoCompletionController.NextCommandHandler != null)
-            {
-                ErrorHandler.ThrowOnFailure(viewAdapter.RemoveCommandFilter(_autoCompletionController));
-                _autoCompletionController.NextCommandHandler = null;
-            }
 
             if (_intelliSenseManager.NextCommandHandler != null)
             {
