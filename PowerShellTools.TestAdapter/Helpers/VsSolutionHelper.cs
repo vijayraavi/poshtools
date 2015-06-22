@@ -35,7 +35,7 @@ namespace XmlTestAdapter
 
 		public static IEnumerable<string> GetProjectItems(IVsHierarchy project, uint itemId)
 		{
-			object pVar = GetPropertyValue((int)__VSHPROPID.VSHPROPID_FirstChild, itemId, project);
+			object pVar = GetPropertyValue((int)__VSHPROPID.VSHPROPID_FirstVisibleChild, itemId, project);
 
 			uint childId = GetItemId(pVar);
 			while (childId != VSConstants.VSITEMID_NIL)
@@ -45,7 +45,7 @@ namespace XmlTestAdapter
 
 				foreach (var childNodePath in GetProjectItems(project, childId)) yield return childNodePath;
 
-				pVar = GetPropertyValue((int)__VSHPROPID.VSHPROPID_NextSibling, childId, project);
+				pVar = GetPropertyValue((int)__VSHPROPID.VSHPROPID_NextVisibleSibling, childId, project);
 				childId = GetItemId(pVar);
 			}
 		}

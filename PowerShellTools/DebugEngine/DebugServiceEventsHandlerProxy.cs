@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using Microsoft.VisualStudio.Shell;
 using PowerShellTools.ServiceManagement;
+using System.Collections.ObjectModel;
+using System.Management.Automation.Host;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -127,6 +129,11 @@ namespace PowerShellTools.DebugEngine
         public string ReadHostPrompt(string message, string name)
         {
             return Debugger.HostUi.ReadLine(message, name);
+        }
+
+        public int ReadHostPromptForChoices(string caption, string message, IList<ChoiceItem> choices, int defaultChoice)
+        {
+            return Debugger.HostUi.ReadChoice(caption, message, choices, defaultChoice);
         }
 
         /// <summary>

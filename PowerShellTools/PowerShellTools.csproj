@@ -33,14 +33,6 @@
     </When>
   </Choose>
   <Import Project="..\Build\ProjectBefore.settings" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <Prefer32Bit>false</Prefer32Bit>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DefineConstants>TRACE;DEBUG;POWERSHELL;DEV12;DEV12_OR_LATER;DEV11_OR_LATER</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
   <PropertyGroup>
     <DelaySign>false</DelaySign>
   </PropertyGroup>
@@ -54,7 +46,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PowerShellTools</RootNamespace>
-    <AssemblyName>PowerShellTools</AssemblyName>
+    <AssemblyName>PowerShellTools.$(VSTarget)</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
@@ -63,7 +55,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;POWERSHELL;DEV11</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;POWERSHELL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -79,7 +71,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;POWERSHELL;DEV11</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;POWERSHELL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -277,6 +269,12 @@
     <Compile Include="CredentialUI\SecureStringDialogViewModel.cs" />
     <Compile Include="DebugEngine\BreakpointManager.cs" />
     <Compile Include="DebugEngine\DebugEngineInternalException.cs" />
+    <Compile Include="DebugEngine\NativeMethods.cs" />
+    <Compile Include="DebugEngine\PromptUI\ChoiceButtonItem.cs" />
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesView.xaml.cs">
+      <DependentUpon>ReadHostPromptForChoicesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesViewModel.cs" />
     <Compile Include="DebugEngine\Remote\RemoteDebugPort.cs" />
     <Compile Include="DebugEngine\Remote\RemoteDebugPortSupplier.cs" />
     <Compile Include="DebugEngine\Remote\RemoteEnumDebugProcess.cs" />
@@ -318,6 +316,7 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="Intellisense\EdgeTrackingMode.cs" />
     <Compile Include="Options\BitnessEventArgs.cs" />
     <Compile Include="Options\BitnessOption.cs" />
     <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
@@ -599,7 +598,6 @@
     <Compile Include="Service\ExecutionEngine.cs" />
     <Compile Include="Service\IExecutionEngine.cs" />
     <Compile Include="Service\PowerShellService.cs" />
-    <Compile Include="VisualStudioEvents.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CredentialUI\Resources.resx">
@@ -662,7 +660,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="Manifest\$(VisualStudioVersion)\source.extension.vsixmanifest" />
+    <None Include="Manifest\source.extension.vsixmanifest" />
     <Content Include="poshtools.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -741,10 +739,11 @@
     <None Include="Templates\Files\Script.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <VSCTCompile Include="PowerShellTools.vsct">
+    <VSCTCompile Include="PowerShellTools.$(VSTarget).vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
+    <Content Include="PowerShellTools.vsct" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Images.png" />
@@ -764,6 +763,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="DebugEngine\PromptUI\ReadHostPromptDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DebugEngine\PromptUI\ReadHostPromptForChoicesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -820,7 +823,7 @@
     <ProjectReference Include="..\ReplWindow\PowerShellTools.Repl.csproj">
       <Project>{20bb6fac-44d2-4d76-abfe-0c1e163a1a4f}</Project>
       <Name>PowerShellTools.Repl</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3bVSIXContainerProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
   </ItemGroup>

@@ -104,10 +104,11 @@ namespace PowerShellTools.Intellisense
         /// <returns></returns>
         public int Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            bool? isInStringArea = null;
             var command = (VSConstants.VSStd2KCmdID)nCmdId;
             if (VsShellUtilities.IsInAutomationFunction(_serviceProvider) ||
-                Utilities.IsCaretInCommentArea(_textView) ||
-                IsUnhandledCommand(pguidCmdGroup, command))
+                IsUnhandledCommand(pguidCmdGroup, command) ||
+                Utilities.IsCaretInCommentArea(_textView))
             {
                 Log.DebugFormat("Non-VSStd2K command: '{0}'", ToCommandName(pguidCmdGroup, nCmdId));
                 return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
@@ -130,10 +131,13 @@ namespace PowerShellTools.Intellisense
                 Log.DebugFormat("Typed Character: '{0}'", (typedChar == char.MinValue) ? "<null>" : typedChar.ToString());
 
                 if (_activeSession == null &&
-                    IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar) &&
-                    Utilities.IsInStringArea(_textView.Caret.Position.BufferPosition.Position, _textView.TextBuffer))
+                    IsNotIntelliSenseTriggerWhenInStringLiteral(typedChar))
                 {
-                    return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                    isInStringArea = this.IsInStringArea(isInStringArea);
+                    if (isInStringArea == true)
+                    {
+                        return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                    }
                 }
             }
             else
@@ -211,7 +215,12 @@ namespace PowerShellTools.Intellisense
                     break;
 
                 case VSConstants.VSStd2KCmdID.COMPLETEWORD:
-
+                    isInStringArea = this.IsInStringArea(isInStringArea);
+                    if (isInStringArea == true)
+                    {
+                        return NextCommandHandler.Exec(ref pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
+                    }
+                    
                     TriggerCompletion();
                     return VSConstants.S_OK;
 
@@ -314,7 +323,11 @@ namespace PowerShellTools.Intellisense
                 (justCommitIntelliSense || (IsIntelliSenseTriggerDot(typedChar) && IsPreviousTokenVariable())) || // If dot just commit a session or previous token before a dot was a variable, trigger intellisense
                 (char.IsWhiteSpace(typedChar) && IsPreviousTokenParameter())) // If the previous token before a space was a parameter, trigger intellisense
             {
-                TriggerCompletion();
+                isInStringArea = this.IsInStringArea(isInStringArea);
+                if (isInStringArea == false)
+                {
+                    TriggerCompletion();
+                }                
             }
             if (!typedChar.Equals(char.MinValue) && IsFilterTrigger(typedChar))
             {
@@ -639,6 +652,15 @@ namespace PowerShellTools.Intellisense
             Log.Debug("Session Dismissed.");
             _activeSession.Dismissed -= CompletionSession_Dismissed;
             _activeSession = null;
+        }
+
+        private bool? IsInStringArea(bool? isInStringArea)
+        {
+            if (isInStringArea == null)
+            {
+                isInStringArea = Utilities.IsInStringArea(_textView);
+            }
+            return isInStringArea;
         }
 
         private bool IsPreviousTokenParameter()
