@@ -20,7 +20,6 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.IncrementalSearch;
-using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 
@@ -29,40 +28,34 @@ namespace PowerShellTools.Intellisense
     [Export(typeof(IIntellisenseControllerProvider)), ContentType(PowerShellConstants.LanguageName), Order]
     internal class IntellisenseControllerProvider : IIntellisenseControllerProvider
     {
-        [Import]
-        public ICompletionBroker CompletionBroker = null; // Set via MEF
+	[Import]
+	public ICompletionBroker CompletionBroker = null; // Set via MEF
 
-        [Import]
-        public IEditorOperationsFactoryService EditOperationsFactory = null; // Set via MEF
+	[Import]
+	public IVsEditorAdaptersFactoryService AdaptersFactory { get; set; }
 
-        [Import]
-        public IVsEditorAdaptersFactoryService AdaptersFactory { get; set; }
+	[Import]
+	public ISignatureHelpBroker SigBroker = null; // Set via MEF
 
-        [Import]
-        public ISignatureHelpBroker SigBroker = null; // Set via MEF
+	[Import]
+	public IQuickInfoBroker QuickInfoBroker = null; // Set via MEF
 
-        [Import]
-        public IQuickInfoBroker QuickInfoBroker = null; // Set via MEF
+	[Import]
+	public IIncrementalSearchFactoryService IncrementalSearch = null; // Set via MEF
 
-        [Import]
-        public IIncrementalSearchFactoryService IncrementalSearch = null; // Set via MEF
+	[Import]
+	public SVsServiceProvider ServiceProvider { get; set; }
 
-        [Import]
-        public SVsServiceProvider ServiceProvider { get; set; }
-
-        [Import]
-        public ITextUndoHistoryRegistry UndoHistoryRegistry = null;
-
-        public IIntellisenseController TryCreateIntellisenseController(ITextView textView, IList<ITextBuffer> subjectBuffers)
-        {
-            IntellisenseController controller;
-            if (!textView.Properties.TryGetProperty<IntellisenseController>(typeof(IntellisenseController), out controller))
-            {
-                controller = new IntellisenseController(this, textView, PowerShellToolsPackage.Instance.IntelliSenseServiceContext);
-                controller.AttachKeyboardFilter();
-            }
-            return controller;
-        }
+	public IIntellisenseController TryCreateIntellisenseController(ITextView textView, IList<ITextBuffer> subjectBuffers)
+	{
+	    IntellisenseController controller;
+	    if (!textView.Properties.TryGetProperty<IntellisenseController>(typeof(IntellisenseController), out controller))
+	    {
+		controller = new IntellisenseController(this, textView, PowerShellToolsPackage.Instance.IntelliSenseServiceContext);
+		controller.AttachKeyboardFilter();
+	    }
+	    return controller;
+	}
     }
 
     /// <summary>
@@ -77,27 +70,27 @@ namespace PowerShellTools.Intellisense
     [TextViewRole(PredefinedTextViewRoles.Editable)]
     internal class TextViewCreationListener : IVsTextViewCreationListener
     {
-        private readonly IVsEditorAdaptersFactoryService _adaptersFactory;
+	private readonly IVsEditorAdaptersFactoryService _adaptersFactory;
 
-        [ImportingConstructor]
-        public TextViewCreationListener(IVsEditorAdaptersFactoryService adaptersFactory)
-        {
-            _adaptersFactory = adaptersFactory;
-        }
+	[ImportingConstructor]
+	public TextViewCreationListener(IVsEditorAdaptersFactoryService adaptersFactory)
+	{
+	    _adaptersFactory = adaptersFactory;
+	}
 
-        #region IVsTextViewCreationListener Members
+	#region IVsTextViewCreationListener Members
 
-        public void VsTextViewCreated(IVsTextView textViewAdapter)
-        {
-            var textView = _adaptersFactory.GetWpfTextView(textViewAdapter);
-            IntellisenseController controller;
-            if (textView.Properties.TryGetProperty<IntellisenseController>(typeof(IntellisenseController), out controller))
-            {
-                controller.AttachKeyboardFilter();
-            }
-        }
+	public void VsTextViewCreated(IVsTextView textViewAdapter)
+	{
+	    var textView = _adaptersFactory.GetWpfTextView(textViewAdapter);
+	    IntellisenseController controller;
+	    if (textView.Properties.TryGetProperty<IntellisenseController>(typeof(IntellisenseController), out controller))
+	    {
+		controller.AttachKeyboardFilter();
+	    }
+	}
 
-        #endregion
+	#endregion
     }
 
 }
