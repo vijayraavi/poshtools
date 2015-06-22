@@ -40,6 +40,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Runspace availability change handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void _runspace_AvailabilityChanged(Object sender, RunspaceAvailabilityEventArgs e)
+        {
+            ServiceCommon.Log("Runspace Availability Changed: {0}", e.RunspaceAvailability.ToString());
+        }
+
+        /// <summary>
         /// Breakpoint updates (such as enabled/disabled)
         /// </summary>
         /// <param name="sender"></param>

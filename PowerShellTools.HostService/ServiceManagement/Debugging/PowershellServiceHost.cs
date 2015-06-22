@@ -230,6 +230,11 @@ Also leaving the implementation here as a reference because that is going to be 
             {
                 _callback.SetRemoteRunspace(false);
             }
+
+            if (_attaching)
+            {
+                _attachRequestEvent.Reset();
+            }
         }
 
 
@@ -264,7 +269,7 @@ Also leaving the implementation here as a reference because that is going to be 
 
             RegisterRemoteFileOpenEvent(runspace);
 
-            if(_attaching)
+            if (_attaching)
             {
                 // wake up AttachToProcess method
                 _attachRequestEvent.Reset();

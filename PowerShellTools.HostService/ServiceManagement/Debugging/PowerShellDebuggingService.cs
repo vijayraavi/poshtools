@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -60,6 +61,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Minimal powershell version required for remote session debugging
         /// </summary>
         private static readonly Version RequiredPowerShellVersionForRemoteSessionDebugging = new Version(4, 0);
+
+        /// <summary>
+        /// Minimal powershell version required for process attach debugging
+        /// </summary>
+        private static readonly Version RequiredPowerShellVersionForProcessAttach = new Version(5, 0);
 
         public PowerShellDebuggingService()
         {
@@ -142,19 +148,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public void AttachToRunspace(uint pid)
         {
-            // _callback should be null (check with Eric/Andre about this, should just be b/c we bypassed Execute)
             if (_callback == null)
             {
                 _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
             }
 
+            // Attaching leverages cmdlets introduced in PSv5
+            if (_installedPowerShellVersion < RequiredPowerShellVersionForProcessAttach)
+            {
+                MessageBox.Show(Constants.ProcessAttachVersionError, "Invalid Version", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             // Enter into to-attach process which will swap out the current runspace
             _attaching = true;
             _needToOpen = true;
-            PowerShell ps = PowerShell.Create();
-            ps.Runspace = _runspace;
-            ps.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
-            ps.Invoke();
+            _currentPowerShell = PowerShell.Create();
+            _currentPowerShell.Runspace = _runspace;
+            _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
+            _currentPowerShell.Invoke();
 
             // wait for invoke to finish swapping the runspaces
             _attachRequestEvent.WaitOne(5000);
@@ -162,12 +174,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             // rehook up the event handling
             _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
             _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            _runspace.StateChanged += _runspace_StateChanged;
+            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
 
             // debug the runspace
-            ps.Runspace = _runspace;
-            ps.Commands.Clear();
-            ps.AddCommand("Debug-Runspace").AddParameter("Id", "1");
-            ps.Invoke();
+            _currentPowerShell.Runspace = _runspace;
+            _currentPowerShell.Commands.Clear();
+            _currentPowerShell.AddCommand("Debug-Runspace").AddParameter("Id", "1");
+
+            try
+            {
+                _currentPowerShell.Invoke();
+            }
+            catch (RemoteException ex)
+            {
+                // exception is expected if user asks to stop debugging while script is running
+                ServiceCommon.Log("Forced to detach via stop command; " + ex.ToString());
+            }
         }
 
         /// <summary>
@@ -185,7 +208,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 ServiceCommon.Log("IsAttachable:" + process.ProcessName + "; id:" + process.Id);
                 foreach (ProcessModule module in process.Modules)
                 {
-                    if (module.ModuleName.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase))
+                    if (module.ModuleName.Equals("powershell.exe") && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
                     {
                         return true;
                     }
@@ -198,6 +221,45 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return false;
         }
 
+        /// <summary>
+        /// Detaches the HostService from a local runspace
+        /// </summary>
+        public void DetachFromRunspace()
+        {
+            if (_callback == null)
+            {
+                _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
+            }
+
+            // detach from the program and exit the host
+            if (_runspace.Debugger.IsActive == false)
+            {
+                _currentPowerShell.Stop();
+            }
+            else
+            {
+                ExecuteDebuggingCommand("detach", false);
+            }
+
+            PowerShell ps = PowerShell.Create();
+            ps.Runspace = _runspace;
+            ps.AddCommand("Exit-PSHostProcess");
+            ps.Invoke();
+
+            // wait for invoke to finish swapping the runspaces
+            _attachRequestEvent.WaitOne(5000);
+
+            // Reset attaching variables rehook event handlers
+            _attaching = false;
+            _needToOpen = false;
+            
+            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            _runspace.StateChanged += _runspace_StateChanged;
+            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
+
+            _callback.RefreshPrompt();
+        }
 
         /// <summary>
         /// Client respond with resume action to service

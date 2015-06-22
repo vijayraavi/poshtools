@@ -95,5 +95,10 @@ namespace PowerShellTools.Common
         /// PowerShell host process window title format
         /// </summary>
         public const string HostProcessWindowTitleFormat = "{0} : {1}";
+
+        /// <summary>
+        /// Error message for attempted to attach on PowerShell v4 or below
+        /// </summary>
+        public const string ProcessAttachVersionError = "Powershell version 5.0 or above is required to attach to a local or remote process.";
     }
 }
