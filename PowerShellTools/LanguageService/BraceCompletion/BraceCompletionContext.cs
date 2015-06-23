@@ -30,7 +30,7 @@ namespace PowerShellTools.LanguageService.BraceCompletion
         private readonly ITextUndoHistory _undoHistory;
 
         /// <summary>
-        /// Contructor.
+        /// Constructor.
         /// </summary>
         /// <param name="editorOperations">Imported MEF component.</param>
         /// <param name="undoHistory">Imported MEF component.</param>
