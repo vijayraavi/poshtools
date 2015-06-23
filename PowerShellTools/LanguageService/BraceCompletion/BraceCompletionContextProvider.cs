@@ -46,7 +46,7 @@ namespace PowerShellTools.LanguageService.BraceCompletion
         /// Interface method implementation.
         /// </summary>
         /// <param name="textView">Current text view.</param>
-        /// <param name="openingPoint">snapshot point for the opening brace.</param>
+        /// <param name="openingPoint">Snapshot point for the opening brace.</param>
         /// <param name="openingBrace">The opening brace char.</param>
         /// <param name="closingBrace">The closing brace char.</param>
         /// <param name="context">The instance of brace completion context.</param>
