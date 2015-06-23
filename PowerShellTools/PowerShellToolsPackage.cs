@@ -62,7 +62,6 @@ namespace PowerShellTools
     [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellReplCreationUiContextString)]
     // 5. PowerShell service execution
     [ProvideService(typeof(IPowerShellService))]
-
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
                             101,
@@ -70,6 +69,7 @@ namespace PowerShellTools
                             ShowDropDownOptions = true,
                             EnableCommenting = true)]
     [ProvideEditorFactory(typeof(PowerShellEditorFactory), 114, TrustLevel = __VSEDITORTRUSTLEVEL.ETL_AlwaysTrusted)]
+    [ProvideBraceCompletion(PowerShellConstants.LanguageName)]
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideKeyBindingTable(GuidList.guidCustomEditorEditorFactoryString, 102)]
