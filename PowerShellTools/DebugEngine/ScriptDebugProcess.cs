@@ -2,11 +2,10 @@
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
-using PowerShellTools.DebugEngine.Remote;
 
 namespace PowerShellTools.DebugEngine
 {
-    public class ScriptDebugProcess : IDebugProcess2, IDebugProcessSecurity2
+    public class ScriptDebugProcess : IDebugProcess2
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugProcess));
 
@@ -37,17 +36,10 @@ namespace PowerShellTools.DebugEngine
 
             if ((fields & enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME) != 0)
             {
-                // trying out some things to get remote processes listed on attach dialog
                 pProcessInfo[0].bstrFileName = Node.FileName;
                 pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_DEBUGGER_ATTACHED |
                                         enum_PROCESS_INFO_FLAGS.PIFLAG_PROCESS_RUNNING;
-                pProcessInfo[0].Fields = fields; // enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME | enum_PROCESS_INFO_FIELDS.PIF_FLAGS;
-
-                pProcessInfo[0].bstrBaseName = "base name";
-                pProcessInfo[0].bstrTitle = "title";
-                pProcessInfo[0].ProcessId.dwProcessId = ProcessId;
-                pProcessInfo[0].dwSessionId = 1;
-                pProcessInfo[0].bstrAttachedSessionName = "attached session name";
+                pProcessInfo[0].Fields = enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME | enum_PROCESS_INFO_FIELDS.PIF_FLAGS;
             }
             return VSConstants.S_OK;
         }
@@ -55,7 +47,7 @@ namespace PowerShellTools.DebugEngine
         public int EnumPrograms(out IEnumDebugPrograms2 ppEnum)
         {
             Log.Debug("Process: EnumPrograms");
-            ppEnum = new RemoteEnumDebugPrograms(this);
+            ppEnum = null;
             return VSConstants.S_OK;
         }
 
@@ -136,18 +128,6 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Debug("Process: GetPort");
             ppPort = _port;
-            return VSConstants.S_OK;
-        }
-
-        public int QueryCanSafelyAttach()
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int GetUserName(out string pbstrUserName)
-        {
-            // should grab this when doing the connect
-            pbstrUserName = "Unknown User";
             return VSConstants.S_OK;
         }
     }

@@ -20,9 +20,9 @@ namespace Microsoft.VisualStudioTools {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     internal class ProvideDebugPortSupplierAttribute : RegistrationAttribute {
         private readonly string _id, _name;
-        private readonly Type _portSupplier, _portPicker;
+        private readonly Type _portSupplier;
 
-        public ProvideDebugPortSupplierAttribute(string name, Type portSupplier, string id, Type portPicker = null) {
+        public ProvideDebugPortSupplierAttribute(string name, Type portSupplier, string id) {
             _name = name;
             _portSupplier = portSupplier;
             _id = id;
@@ -32,10 +32,6 @@ namespace Microsoft.VisualStudioTools {
             var engineKey = context.CreateKey("AD7Metrics\\PortSupplier\\" + _id);
             engineKey.SetValue("Name", _name);
             engineKey.SetValue("CLSID", _portSupplier.GUID.ToString("B"));
-            if (_portPicker != null)
-            {
-                engineKey.SetValue("PortPickerCLSID", _portPicker.GUID.ToString("B"));
-            }
 
             var clsidKey = context.CreateKey("CLSID");
             var clsidGuidKey = clsidKey.CreateSubkey(_portSupplier.GUID.ToString("B"));

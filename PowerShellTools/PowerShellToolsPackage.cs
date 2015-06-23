@@ -34,10 +34,6 @@ using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 using Threading = System.Threading.Tasks;
 
-using Microsoft.VisualStudio.Debugger;
-using Microsoft.VisualStudio.Debugger.Interop;
-using PowerShellTools.DebugEngine.Remote;
-
 namespace PowerShellTools
 {
     /// <summary>
@@ -111,9 +107,6 @@ namespace PowerShellTools
         "PowerShell",        // Name of Language attribute in snippet template
         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
-
-    [ProvideDebugPortSupplier("Powershell Remote Debugging", typeof(RemoteDebugPortSupplier), RemoteDebugPortSupplier.PortSupplierId, typeof(RemotePortPicker))]
-    [ProvideDebugPortPicker(typeof(RemotePortPicker))]
 
     public sealed class PowerShellToolsPackage : CommonPackage
     {
