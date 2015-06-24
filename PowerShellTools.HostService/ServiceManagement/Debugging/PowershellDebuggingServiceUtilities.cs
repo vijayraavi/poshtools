@@ -41,7 +41,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             if (_runspace != null)
             {
-                if (_runspace.ConnectionInfo == null || _installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+                if (GetDebugScenario() == DebugScenario.Local || _installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
                 {
                     runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
                     runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
@@ -55,7 +55,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             if (_runspace != null)
             {
-                if (_runspace.ConnectionInfo == null || _installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+                if (GetDebugScenario() == DebugScenario.Local || _installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
                 {
                     runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
                     runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
@@ -285,36 +285,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 NotifyOutputString(outputString.ToString());
             }
-        }
-
-        /// <summary>
-        /// Adds a breakpoint record to the _psBreakpointTable while first checking that an bp with the same id 
-        /// does not already exist in the table.
-        /// </summary>
-        /// <param name="bpRecord"></param>
-        private void addToBpTable(PowerShellBreakpointRecord bpRecord)
-        {
-            if (bpTableDoesNotContain(bpRecord.Id))
-            {
-                _psBreakpointTable.Add(bpRecord);
-            }
-        }
-
-        /// <summary>
-        /// Checks for the existence of a breakpoint with a certain id in the _psBreakpointTable.
-        /// </summary>
-        /// <param name="bpId"></param>
-        /// <returns>True if a breakpoint with bpId is in the _psBreakpointTable, false otherwise.</returns>
-        private bool bpTableDoesNotContain(int bpId)
-        {
-            foreach (PowerShellBreakpointRecord bp in _psBreakpointTable)
-            {
-                if (bp.Id == bpId)
-                {
-                    return false;
-                }
-            }
-            return true;
         }
     }
 }

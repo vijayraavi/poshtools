@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Shell;
 using PowerShellTools.ServiceManagement;
 using System.Collections.ObjectModel;
 using System.Management.Automation.Host;
+using PowerShellTools.Common.Debugging;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -153,7 +154,7 @@ namespace PowerShellTools.DebugEngine
         /// <param name="fullName">Full name of remote file(mapped into local)</param>
         public void OpenRemoteFile(string fullName)
         {
-            Debugger.OpenFileInVS(fullName, true);
+            Debugger.OpenFileInVS(fullName);
         }
 
         /// <summary>

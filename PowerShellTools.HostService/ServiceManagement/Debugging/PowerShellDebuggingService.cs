@@ -39,15 +39,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Dictionary<string, Object> _propVariables;
         private Dictionary<string, string> _mapLocalToRemote;
         private Dictionary<string, string> _mapRemoteToLocal;
-        private List<PowerShellBreakpointRecord> _psBreakpointTable;
+        private HashSet<PowerShellBreakpointRecord> _psBreakpointTable;
         private readonly AutoResetEvent _pausedEvent = new AutoResetEvent(false);
         private readonly AutoResetEvent _debugCommandEvent = new AutoResetEvent(false);
         private readonly AutoResetEvent _attachRequestEvent = new AutoResetEvent(false);
         private object _executeDebugCommandLock = new object();
         private string _debugCommandOutput;
         private bool _debugOutput;
-        private bool _attaching;
-        private bool _needToOpen;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
         private static readonly Regex validStackLine = new Regex(DebugEngineConstants.ValidCallStackLine, RegexOptions.Compiled);
         private DebuggerResumeAction _resumeAction;
@@ -75,10 +73,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _propVariables = new Dictionary<string, object>();
             _mapLocalToRemote = new Dictionary<string, string>();
             _mapRemoteToLocal = new Dictionary<string, string>();
-            _psBreakpointTable = new List<PowerShellBreakpointRecord>();
+            _psBreakpointTable = new HashSet<PowerShellBreakpointRecord>();
             _debugOutput = true;
-            _attaching = false;
-            _needToOpen = false;
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             InitializeRunspace(this);
         }
@@ -156,40 +152,54 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             // Attaching leverages cmdlets introduced in PSv5
             if (_installedPowerShellVersion < RequiredPowerShellVersionForProcessAttach)
             {
-                MessageBox.Show(Constants.ProcessAttachVersionError, "Invalid Version", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Constants.ProcessAttachVersionErrorBody, Constants.ProcessAttachVersionErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                ServiceCommon.Log("User asked to attach to process while running inadequete PowerShell version");
                 return;
             }
 
             // Enter into to-attach process which will swap out the current runspace
-            _attaching = true;
-            _needToOpen = true;
-            _currentPowerShell = PowerShell.Create();
-            _currentPowerShell.Runspace = _runspace;
-            _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
-            _currentPowerShell.Invoke();
-
-            // wait for invoke to finish swapping the runspaces
-            _attachRequestEvent.WaitOne(5000);
-
-            // rehook up the event handling
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
-            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
-
-            // debug the runspace
-            _currentPowerShell.Runspace = _runspace;
-            _currentPowerShell.Commands.Clear();
-            _currentPowerShell.AddCommand("Debug-Runspace").AddParameter("Id", "1");
-
-            try
+            using (_currentPowerShell = PowerShell.Create())
             {
+                _currentPowerShell.Runspace = _runspace;
+                _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
                 _currentPowerShell.Invoke();
-            }
-            catch (RemoteException ex)
-            {
-                // exception is expected if user asks to stop debugging while script is running
-                ServiceCommon.Log("Forced to detach via stop command; " + ex.ToString());
+
+                // wait for invoke to finish swapping the runspaces
+                _attachRequestEvent.WaitOne(5000);
+
+                // make sure that the semaphore didn't just time out
+                if (GetDebugScenario() != DebugScenario.Local_Attach)
+                {
+                    MessageBox.Show(Constants.ProcessAttachFailErrorBody, Constants.ProcessAttachFailErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ServiceCommon.Log("Failed to attach to running process.");
+                    return;
+                }
+
+                // rehook up the event handling
+                _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+                _runspace.StateChanged += _runspace_StateChanged;
+                _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
+
+                // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
+                _currentPowerShell.Runspace = _runspace;
+                _currentPowerShell.Commands.Clear();
+                _currentPowerShell.AddCommand("Debug-Runspace").AddParameter("Id", "1");
+
+                try
+                {
+                    _currentPowerShell.Invoke();
+                }
+                catch (RemoteException remoteException)
+                {
+                    // exception is expected if user asks to stop debugging while script is running
+                    ServiceCommon.Log("Forced to detach via stop command; " + remoteException.ToString());
+                }
+                catch (Exception exception)
+                {
+                    // any other sort of exception is not expected
+                    ServiceCommon.Log("Unexpected exception while debugging runspace; " + exception.ToString());
+                }
             }
         }
 
@@ -208,7 +218,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 ServiceCommon.Log("IsAttachable:" + process.ProcessName + "; id:" + process.Id);
                 foreach (ProcessModule module in process.Modules)
                 {
-                    if (module.ModuleName.Equals("powershell.exe") && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
+                    if (module.ModuleName.Equals("powershell.exe", StringComparison.Ordinal) && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
                     {
                         return true;
                     }
@@ -232,33 +242,41 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             // detach from the program and exit the host
-            if (_runspace.Debugger.IsActive == false)
+            if (!_runspace.Debugger.IsActive)
             {
+                // if program is running we must use stop to force the debugger to detach
                 _currentPowerShell.Stop();
             }
             else
             {
+                // gracefully detach the debugger
                 ExecuteDebuggingCommand("detach", false);
             }
 
-            PowerShell ps = PowerShell.Create();
-            ps.Runspace = _runspace;
-            ps.AddCommand("Exit-PSHostProcess");
-            ps.Invoke();
+            using (_currentPowerShell = PowerShell.Create())
+            {
+                _currentPowerShell.Runspace = _runspace;
+                _currentPowerShell.AddCommand("Exit-PSHostProcess");
+                _currentPowerShell.Invoke();
 
-            // wait for invoke to finish swapping the runspaces
-            _attachRequestEvent.WaitOne(5000);
+                // wait for invoke to finish swapping the runspaces
+                _attachRequestEvent.WaitOne(5000);
 
-            // Reset attaching variables rehook event handlers
-            _attaching = false;
-            _needToOpen = false;
-            
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
-            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
+                // make sure that the semaphore didn't just time out
+                if (GetDebugScenario() != DebugScenario.Local)
+                {
+                    ServiceCommon.Log("Failed to detach from running process");
+                    return;
+                }
 
-            _callback.RefreshPrompt();
+                // Rehook event handlers
+                _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+                _runspace.StateChanged += _runspace_StateChanged;
+                _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
+
+                _callback.RefreshPrompt();
+            }            
         }
 
         /// <summary>
@@ -299,7 +317,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         var command = new Command("Set-PSBreakpoint");
 
                         string file = bp.ScriptFullPath;
-                        if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                        if (GetDebugScenario() == DebugScenario.Local && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
                         {
                             file = _mapLocalToRemote[bp.ScriptFullPath];
                         }
@@ -316,7 +334,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     var pobj = breakpoints.FirstOrDefault();
                     if (pobj != null)
                     {
-                        addToBpTable(
+                        _psBreakpointTable.Add(
                             new PowerShellBreakpointRecord(
                                 bp,
                                 ((LineBreakpoint)pobj.BaseObject).Id));
@@ -352,7 +370,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         var command = new Command("Remove-PSBreakpoint");
 
                         string file = bp.ScriptFullPath;
-                        if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                        if (GetDebugScenario() == DebugScenario.Local && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
                         {
                             file = _mapLocalToRemote[bp.ScriptFullPath];
                         }
@@ -397,7 +415,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         var command = new Command(cmd);
 
                         string file = bp.ScriptFullPath;
-                        if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                        if (GetDebugScenario() == DebugScenario.Local && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
                         {
                             file = _mapLocalToRemote[bp.ScriptFullPath];
                         }
@@ -507,7 +525,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
 
                 bool error = false;
-                if (_runspace.ConnectionInfo != null && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
+                if (GetDebugScenario() == DebugScenario.Local && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
                 {
                     string localFile = _rgx.Match(commandLine).Value;
 
@@ -607,7 +625,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             foreach (var psobj in _varaiables)
             {
                 PSVariable psVar = null;
-                if (_runspace.ConnectionInfo == null)
+                if (GetDebugScenario() == DebugScenario.Local)
                 {
                     // Local debugging variable
                     psVar = psobj.BaseObject as PSVariable;
@@ -722,7 +740,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     object obj = item;
                     var psObj = obj as PSObject;
-                    if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.ImmediateBaseObject is string))
+                    if (psObj != null && GetDebugScenario() == DebugScenario.Local && !(psObj.ImmediateBaseObject is string))
                     {
                         obj = psObj.ImmediateBaseObject;
                     }
@@ -826,7 +844,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     {
                         val = prop.Value;
                         var psObj = val as PSObject;
-                        if (psObj != null && _runspace.ConnectionInfo != null && !(psObj.ImmediateBaseObject is string))
+                        if (psObj != null && GetDebugScenario() == DebugScenario.Local && !(psObj.ImmediateBaseObject is string))
                         {
                             val = psObj.ImmediateBaseObject;
                         }
@@ -867,8 +885,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             foreach (var psobj in _callstack)
             {
-                if (_runspace.ConnectionInfo == null)
+                if (GetDebugScenario() == DebugScenario.Local)
                 {
+                    // standard debugging scenario
                     var frame = psobj.BaseObject as CallStackFrame;
                     if (frame != null)
                     {
@@ -882,8 +901,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                else if (_runspace.ConnectionInfo is WSManConnectionInfo)
+                else if (GetDebugScenario() == DebugScenario.Remote_Session)
                 {
+                    // remote session debugging
                     dynamic psFrame = (dynamic)psobj;
 
                     callStackFrames.Add(
@@ -892,9 +912,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
                 }
-                else
+                else if(GetDebugScenario() == DebugScenario.Local_Attach)
                 {
-                    String currentCall = psobj.ToString();
+                    // local process attach debugging
+                    string currentCall = psobj.ToString();
                     Match match = validStackLine.Match(currentCall);
                     if (match.Success)
                     {
@@ -923,7 +944,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.AddCommand("prompt");
 
                 string prompt = _currentPowerShell.Invoke<string>().FirstOrDefault();
-                if (_runspace.ConnectionInfo != null)
+                if (GetDebugScenario() == DebugScenario.Local)
                 {
                     prompt = string.Format("[{0}] {1}", _runspace.ConnectionInfo.ComputerName, prompt);
                 }
@@ -953,6 +974,26 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public void SetOption(PowerShellRawHostOptions options)
         {
             _rawHostOptions = options;
+        }
+
+        /// <summary>
+        /// Returns the connection info for the current runspace
+        /// </summary>
+        public DebugScenario GetDebugScenario()
+        {
+            if (_runspace.ConnectionInfo == null)
+            {
+                return DebugScenario.Local;
+            }
+            else if (_runspace.ConnectionInfo is WSManConnectionInfo)
+            {
+                return DebugScenario.Remote_Session;
+            }
+            else if (_runspace.ConnectionInfo != null && !(_runspace.ConnectionInfo is WSManConnectionInfo))
+            {
+                return DebugScenario.Local_Attach;
+            }
+            return DebugScenario.Unknown;
         }
 
         #endregion

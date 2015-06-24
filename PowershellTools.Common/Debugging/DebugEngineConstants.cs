@@ -41,7 +41,12 @@ namespace PowerShellTools.Common.Debugging
         /// <remarks>
         /// Pattern sample: Matching pattern like "wait     {x=6, y=8} script.ps1: line 3"
         /// </remarks>
-        public const string ValidCallStackLine = @"(\S+)\s+\{([,\s]?[^\s,]+=\S+)*\}\s+([^\s:]+):\s+line (\d)";
+        public const string ValidCallStackLine = 
+            @"(\S+)" + // function name which consists of no whitespace characters
+            @"\s+" + // spaces between function name and variable list
+            @"\{([,\s]?[^\s,]+=\S+)*\}" + // list of parameters which are comma seperated, (note the equals sign)
+            @"\s+([^\s:]+):" + // any number of spaces after the parameter list, and then the script name which ends right before a colon
+            @"\s+line (\d)"; // any number of spaces (after the colon) and then the word "line" and then a number which denotes the line number
 
         #region Remote file open events
 
@@ -137,5 +142,13 @@ param (
 
         public const string PowerShellHostProcessLogTag = "[{0}]:";
         public const string PowerShellHostProcessLogFormat = PowerShellHostProcessLogTag + "{1}";
+
+        /// <summary>
+        /// Lookup table for error messages pertaining to opening files in the various debugging scenarios.
+        /// </summary>
+        public static readonly string[] FileOpenErrorMessages = { "Failed to open file", // LOCAL
+                                                                  "Failed to open remote file through powershell remote session", // REMOTE_SESSION
+                                                                  "Failed to open file while attaching to local process.", // LOCAL_ATTACH
+                                                                  "Failed to open file." }; // UNKNOWN
     }
 }

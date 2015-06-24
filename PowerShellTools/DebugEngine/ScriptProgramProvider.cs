@@ -16,10 +16,6 @@ namespace PowerShellTools.DebugEngine
     [Guid("08F3B557-C153-4F6C-8745-227439E55E79")]
     public class ScriptProgramProvider : IDebugProgramProvider2
     {
-        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
-
         private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptProgramProvider));
 
         #region Implementation of IDebugProgramProvider2
@@ -48,7 +44,7 @@ namespace PowerShellTools.DebugEngine
             }
             catch (Exception ex)
             {
-                Log.Debug("programprovider:" + ex.Message);
+                Log.Debug("Exception while examining local running process: " + ex.Message);
             }
             return VSConstants.S_FALSE;
         }

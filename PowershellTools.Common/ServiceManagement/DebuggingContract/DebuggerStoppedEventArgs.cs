@@ -30,9 +30,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             this.BreakpointHit = false;
         }
 
-        public DebuggerStoppedEventArgs(bool bpHit, string script, int line, int column, bool openScript)
+        public DebuggerStoppedEventArgs(bool breakpointHit, string script, int line, int column, bool openScript)
         {
-            this.BreakpointHit = bpHit;
+            this.BreakpointHit = breakpointHit;
             this.ScriptFullPath = script;
             this.Line = line;
             this.Column = column;
