@@ -328,7 +328,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         var command = new Command("Set-PSBreakpoint");
 
                         string file = bp.ScriptFullPath;
-                        if (GetDebugScenario() == DebugScenario.Local && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                        if (GetDebugScenario() != DebugScenario.Local && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
                         {
                             file = _mapLocalToRemote[bp.ScriptFullPath];
                         }
@@ -381,7 +381,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         var command = new Command("Remove-PSBreakpoint");
 
                         string file = bp.ScriptFullPath;
-                        if (GetDebugScenario() == DebugScenario.Local && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                        if (GetDebugScenario() != DebugScenario.Local && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
                         {
                             file = _mapLocalToRemote[bp.ScriptFullPath];
                         }
@@ -426,7 +426,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         var command = new Command(cmd);
 
                         string file = bp.ScriptFullPath;
-                        if (GetDebugScenario() == DebugScenario.Local && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                        if (GetDebugScenario() != DebugScenario.Local && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
                         {
                             file = _mapLocalToRemote[bp.ScriptFullPath];
                         }
@@ -536,7 +536,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
 
                 bool error = false;
-                if (GetDebugScenario() == DebugScenario.Local && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
+                if (GetDebugScenario() != DebugScenario.Local && Regex.IsMatch(commandLine, DebugEngineConstants.ExecutionCommandPattern))
                 {
                     string localFile = _rgx.Match(commandLine).Value;
 
@@ -751,7 +751,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     object obj = item;
                     var psObj = obj as PSObject;
-                    if (psObj != null && GetDebugScenario() == DebugScenario.Local && !(psObj.ImmediateBaseObject is string))
+                    if (psObj != null && GetDebugScenario() != DebugScenario.Local && !(psObj.ImmediateBaseObject is string))
                     {
                         obj = psObj.ImmediateBaseObject;
                     }
@@ -855,7 +855,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     {
                         val = prop.Value;
                         var psObj = val as PSObject;
-                        if (psObj != null && GetDebugScenario() == DebugScenario.Local && !(psObj.ImmediateBaseObject is string))
+                        if (psObj != null && GetDebugScenario() != DebugScenario.Local && !(psObj.ImmediateBaseObject is string))
                         {
                             val = psObj.ImmediateBaseObject;
                         }
@@ -955,7 +955,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.AddCommand("prompt");
 
                 string prompt = _currentPowerShell.Invoke<string>().FirstOrDefault();
-                if (GetDebugScenario() == DebugScenario.Local)
+                if (GetDebugScenario() != DebugScenario.Local)
                 {
                     prompt = string.Format("[{0}] {1}", _runspace.ConnectionInfo.ComputerName, prompt);
                 }
