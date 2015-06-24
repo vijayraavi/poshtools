@@ -11,6 +11,13 @@ namespace PowerShellTools.DebugEngine
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugProcess));
 
         private readonly IDebugPort2 _port;
+        private string _processName;
+
+        public ScriptDebugProcess(IDebugPort2 debugPort, uint processId, string processName) : this(debugPort)
+        {
+            ProcessId = processId;
+            _processName = processName;
+        }
 
         public ScriptDebugProcess(IDebugPort2 debugPort, uint processId) : this(debugPort)
         {
@@ -33,8 +40,6 @@ namespace PowerShellTools.DebugEngine
 
         public int GetInfo(enum_PROCESS_INFO_FIELDS fields, PROCESS_INFO[] pProcessInfo)
         {
-            Log.Debug("Process: GetInfo");
-
             if ((fields & enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME) != 0)
             {
                 // trying out some things to get remote processes listed on attach dialog
@@ -99,9 +104,14 @@ namespace PowerShellTools.DebugEngine
 
         public int GetPhysicalProcessId(AD_PROCESS_ID[] pProcessId)
         {
-            pProcessId[0].ProcessIdType = (uint)enum_AD_PROCESS_ID.AD_PROCESS_ID_GUID;
-            pProcessId[0].guidProcessId = Id;
+            //pProcessId[0].ProcessIdType = (uint)enum_AD_PROCESS_ID.AD_PROCESS_ID_GUID;
+            //pProcessId[0].guidProcessId = Id;
             Log.Debug("Process: GetPhysicalProcessId");
+
+            var pidStruct = new AD_PROCESS_ID();
+            pidStruct.dwProcessId = (uint)ProcessId;
+            pProcessId[0] = pidStruct;
+
             return VSConstants.S_OK;
         }
 
@@ -115,8 +125,7 @@ namespace PowerShellTools.DebugEngine
         public int GetAttachedSessionName(out string pbstrSessionName)
         {
             Log.Debug("Process: GetAttachedSessionName");
-            pbstrSessionName = String.Empty;
-            return VSConstants.S_OK;
+            throw new NotImplementedException();
         }
 
         public int EnumThreads(out IEnumDebugThreads2 ppEnum)

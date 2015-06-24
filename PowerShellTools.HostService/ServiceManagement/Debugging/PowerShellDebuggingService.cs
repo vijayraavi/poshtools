@@ -261,6 +261,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _callback.RefreshPrompt();
         }
 
+        List<Process> GetRemoteProcesses(string remoteMachine)
+        {
+            using (_currentPowerShell = PowerShell.Create())
+            {
+                _currentPowerShell.AddCommand("Enter-PSSession").AddParameter("ComputerName", remoteMachine);
+                _currentPowerShell.AddCommand("Get-Process");
+                _currentPowerShell.Invoke();
+            }
+            return null;
+        }
+
         /// <summary>
         /// Client respond with resume action to service
         /// </summary>

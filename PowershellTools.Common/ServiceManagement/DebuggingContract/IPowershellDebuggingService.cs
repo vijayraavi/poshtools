@@ -7,6 +7,7 @@ using System.Management.Automation.Runspaces;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 {
@@ -51,6 +52,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract]
         bool IsAttachable(uint pid);
+
+        [OperationContract]
+        List<Process> GetRemoteProcesses(string remoteMachine);
 
         [OperationContract]
         Collection<Variable> GetScopedVariable();

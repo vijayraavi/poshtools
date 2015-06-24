@@ -49,10 +49,12 @@ namespace PowerShellTools.DebugEngine.Remote
                 result = ps.Invoke();
                 rs.Close();
 
+                List<Process> processes = PowerShellToolsPackage.Debugger.DebuggingService.GetRemoteProcesses(_remoteComputer);
+
                 foreach (Automation.PSObject obj in result)
                 {
                     dynamic process = obj.ImmediateBaseObject;
-                    _runningProcesses.Add(new ScriptDebugProcess(remotePort, (uint)process.Id));
+                    _runningProcesses.Add(new ScriptDebugProcess(remotePort, (uint)process.Id, process.Name));
                 }
             }
         }
