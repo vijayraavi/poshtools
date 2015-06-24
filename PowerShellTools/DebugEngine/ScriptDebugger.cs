@@ -108,7 +108,7 @@ namespace PowerShellTools.DebugEngine
             {
                 if (e.OpenScript)
                 {
-                    OpenFileInVS(e.ScriptFullPath, false);
+                    OpenFileInVS(e.ScriptFullPath);
                 }
 
                 RefreshScopedVariables();
@@ -456,7 +456,7 @@ namespace PowerShellTools.DebugEngine
             _stoppingCompleteEvent.Set();
         }
 
-        internal void OpenFileInVS(string fullName, bool forRemote)
+        internal void OpenFileInVS(string fullName)
         {
             var dte2 = (DTE80.DTE2)Package.GetGlobalService(typeof(DTE.DTE));
 
@@ -464,20 +464,14 @@ namespace PowerShellTools.DebugEngine
             {
                 try
                 {
-                    dte2.ItemOperations.OpenFile(fullName);
+                    if(!dte2.ItemOperations.IsFileOpen(fullName))
+                    {
+                        dte2.ItemOperations.OpenFile(fullName);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    String err;
-                    if (forRemote)
-                    {
-                        err = "Failed to open remote file through powershell remote session";
-                    }
-                    else
-                    {
-                        err = "Failed to open local file";
-                    }
-                    Log.Error(err, ex);
+                    Log.Error(DebugEngineConstants.FileOpenErrorMessages[(int)DebuggingService.GetDebugScenario()], ex);
                     HostUi.VsOutputString(ex.Message);
                 }
             }

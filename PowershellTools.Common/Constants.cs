@@ -97,8 +97,23 @@ namespace PowerShellTools.Common
         public const string HostProcessWindowTitleFormat = "{0} : {1}";
 
         /// <summary>
-        /// Error message for attempted to attach on PowerShell v4 or below
+        /// Dialog box title for invalid attempt at attaching on PowerShell v4 or below
         /// </summary>
-        public const string ProcessAttachVersionError = "Powershell version 5.0 or above is required to attach to a local or remote process.";
+        public const string ProcessAttachVersionErrorTitle = "Invalid PowerShell Version";
+
+        /// <summary>
+        /// Dialog box body for invalid attempt at attaching on PowerShell v4 or below
+        /// </summary>
+        public const string ProcessAttachVersionErrorBody = "Unable to attach to specified process with PowerShell Tools.\nPowerShell version 5.0 or above is required before PowerShell Tools may attach to a local or remote process.";
+
+        /// <summary>
+        /// Dialog box title for when wait on Enter-PSHostProcess cmdlet times out
+        /// </summary>
+        public const string ProcessAttachFailErrorTitle = "Error Attaching to Process";
+
+        /// <summary>
+        /// Dialog box body for when wait on Enter-PSHostProcess cmdlet times out
+        /// </summary>
+        public const string ProcessAttachFailErrorBody = "Unable to attach to specified process.";
     }
 }

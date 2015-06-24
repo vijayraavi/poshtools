@@ -44,5 +44,35 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return _id;
             }
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            PowerShellBreakpointRecord record = obj as PowerShellBreakpointRecord;
+            if (record == null)
+            {
+                return false;
+            }
+            else
+            {
+                return record._id == this._id;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            if (_psBreakpoint != null)
+            {
+                return _id;
+            }
+            else
+            {
+                return 0;
+            }
+        }
     }
 }

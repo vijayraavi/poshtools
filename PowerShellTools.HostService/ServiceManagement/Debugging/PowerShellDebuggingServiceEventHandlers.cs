@@ -44,7 +44,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void _runspace_AvailabilityChanged(Object sender, RunspaceAvailabilityEventArgs e)
+        private void _runspace_AvailabilityChanged(Object sender, RunspaceAvailabilityEventArgs e)
         {
             ServiceCommon.Log("Runspace Availability Changed: {0}", e.RunspaceAvailability.ToString());
         }
@@ -121,31 +121,27 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 if (_callback != null)
                 {
                     string file = bp.Script;
-                    if (_runspace.ConnectionInfo != null && _mapRemoteToLocal.ContainsKey(bp.Script))
+                    if (GetDebugScenario() == DebugScenario.Local && _mapRemoteToLocal.ContainsKey(bp.Script))
                     {
                         file = _mapRemoteToLocal[bp.Script];
                     }
 
+                    // breakpoint is always hit for this case
                     _callback.DebuggerStopped(new DebuggerStoppedEventArgs(true, file, bp.Line, bp.Column, false));
                 }
             }
             else
-            {                
+            {
                 if (_callback != null)
                 {
-                    if (_attaching)
+                    if (GetDebugScenario() == DebugScenario.Local_Attach)
                     {
                         string file = e.InvocationInfo.ScriptName;
                         int lineNum = e.InvocationInfo.ScriptLineNumber;
                         int column = e.InvocationInfo.OffsetInLine;
 
-                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(true, file, lineNum, column, _needToOpen));
-
-                        // only open the file one time
-                        if (_needToOpen == true)
-                        {
-                            _needToOpen = false;
-                        }
+                        // breakpoint is not hit for this case, also request to open file since this is associated with local attaching
+                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(false, file, lineNum, column, true));
                     }
                     else
                     {
@@ -163,7 +159,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     if (!string.IsNullOrEmpty(_debuggingCommand))
                     {
-                        if (_runspace.ConnectionInfo == null)
+                        if (GetDebugScenario() == DebugScenario.Local)
                         {
                             // local debugging
                             var output = new Collection<PSObject>();
@@ -238,7 +234,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
                     if (bp != null)
                     {
-                        addToBpTable(
+                        _psBreakpointTable.Add(
                             new PowerShellBreakpointRecord(
                                 new PowerShellBreakpoint(bp.Script, bp.Line, bp.Column),
                                 bp.Id));
@@ -260,7 +256,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
                 if (bp != null)
                 {
-                    addToBpTable(
+                    _psBreakpointTable.Add(
                         new PowerShellBreakpointRecord(
                             new PowerShellBreakpoint(bp.Script, bp.Line, bp.Column),
                             bp.Id));
