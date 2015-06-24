@@ -121,7 +121,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 if (_callback != null)
                 {
                     string file = bp.Script;
-                    if (GetDebugScenario() == DebugScenario.Local && _mapRemoteToLocal.ContainsKey(bp.Script))
+                    if (GetDebugScenario() != DebugScenario.Local && _mapRemoteToLocal.ContainsKey(bp.Script))
                     {
                         file = _mapRemoteToLocal[bp.Script];
                     }
