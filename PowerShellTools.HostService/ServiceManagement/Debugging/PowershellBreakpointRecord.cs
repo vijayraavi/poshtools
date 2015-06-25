@@ -45,6 +45,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        public bool Equals(PowerShellBreakpointRecord other)
+        {
+            return this.PSBreakpoint.Equals(other.PSBreakpoint) 
+                && this.Id == other.Id;
+        }
+
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -52,20 +58,24 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return false;
             }
 
-            PowerShellBreakpointRecord record = obj as PowerShellBreakpointRecord;
-            if (record == null)
+            PowerShellBreakpointRecord other = obj as PowerShellBreakpointRecord;
+            if (other == null)
             {
                 return false;
             }
             else
             {
-                return record._id == this._id;
+                return this.PSBreakpoint.Equals(other.PSBreakpoint) 
+                    && this.Id == other.Id;
             }
         }
 
         public override int GetHashCode()
         {
-                return _id;
+            return _id.GetHashCode() 
+                ^ PSBreakpoint.ScriptFullPath.GetHashCode() 
+                ^ PSBreakpoint.Line.GetHashCode() 
+                ^ PSBreakpoint.Column.GetHashCode();
         }
     }
 }

@@ -83,14 +83,4 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         DebugScenario GetDebugScenario();
     }
 
-    /// <summary>
-    /// Enumerated type representing the various debugging scenarios. See GetDebugScenario for more information
-    /// </summary>
-    public enum DebugScenario
-    {
-        Local,            // running script from Visual Studio
-        Remote_Session,   // remote session debuggin
-        Local_Attach,     // attaching to a local process
-        Unknown           // cannot determine the scenario
-    }
 }

@@ -359,7 +359,7 @@ namespace PowerShellTools.DebugEngine
             IntPtr hostProcessWindowHandle = NativeMethods.FindWindow(
                     null, 
                     string.Format(
-                    PowerShellTools.Common.Constants.HostProcessWindowTitleFormat, 
+                    PowerShellTools.Common.Resources.HostProcessWindowTitleFormat, 
                     Process.GetCurrentProcess().Id, 
                     PowerShellTools.Common.Constants.PowerShellHostExeName));
             NativeMethods.SetForegroundWindow(hostProcessWindowHandle);
@@ -471,7 +471,7 @@ namespace PowerShellTools.DebugEngine
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(DebugEngineConstants.FileOpenErrorMessages[(int)DebuggingService.GetDebugScenario()], ex);
+                    Log.Error(DebugScenarioUtilities.ScenarioToFileOpenErrorMsg(DebuggingService.GetDebugScenario()), ex);
                     HostUi.VsOutputString(ex.Message);
                 }
             }

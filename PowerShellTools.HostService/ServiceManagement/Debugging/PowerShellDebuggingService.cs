@@ -152,7 +152,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             // Attaching leverages cmdlets introduced in PSv5
             if (_installedPowerShellVersion < RequiredPowerShellVersionForProcessAttach)
             {
-                MessageBox.Show(Constants.ProcessAttachVersionErrorBody, Constants.ProcessAttachVersionErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Resources.ProcessAttachVersionErrorBody, Resources.ProcessAttachVersionErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
                 ServiceCommon.Log("User asked to attach to process while running inadequete PowerShell version");
                 return;
             }
@@ -168,9 +168,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _attachRequestEvent.WaitOne(5000);
 
                 // make sure that the semaphore didn't just time out
-                if (GetDebugScenario() != DebugScenario.Local_Attach)
+                if (GetDebugScenario() != DebugScenario.LocalAttach)
                 {
-                    MessageBox.Show(Constants.ProcessAttachFailErrorBody, Constants.ProcessAttachFailErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(Resources.ProcessAttachFailErrorBody, Resources.ProcessAttachFailErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
                     ServiceCommon.Log("Failed to attach to running process.");
                     return;
                 }
@@ -920,7 +920,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                else if (GetDebugScenario() == DebugScenario.Remote_Session)
+                else if (GetDebugScenario() == DebugScenario.RemoteSession)
                 {
                     // remote session debugging
                     dynamic psFrame = (dynamic)psobj;
@@ -931,7 +931,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
                 }
-                else if(GetDebugScenario() == DebugScenario.Local_Attach)
+                else if(GetDebugScenario() == DebugScenario.LocalAttach)
                 {
                     // local process attach debugging
                     string currentCall = psobj.ToString();
@@ -1006,11 +1006,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             else if (_runspace.ConnectionInfo is WSManConnectionInfo)
             {
-                return DebugScenario.Remote_Session;
+                return DebugScenario.RemoteSession;
             }
             else if (_runspace.ConnectionInfo != null && !(_runspace.ConnectionInfo is WSManConnectionInfo))
             {
-                return DebugScenario.Local_Attach;
+                return DebugScenario.LocalAttach;
             }
             return DebugScenario.Unknown;
         }

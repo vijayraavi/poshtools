@@ -142,13 +142,5 @@ param (
 
         public const string PowerShellHostProcessLogTag = "[{0}]:";
         public const string PowerShellHostProcessLogFormat = PowerShellHostProcessLogTag + "{1}";
-
-        /// <summary>
-        /// Lookup table for error messages pertaining to opening files in the various debugging scenarios.
-        /// </summary>
-        public static readonly string[] FileOpenErrorMessages = { "Failed to open file", // LOCAL
-                                                                  "Failed to open remote file through powershell remote session", // REMOTE_SESSION
-                                                                  "Failed to open file while attaching to local process.", // LOCAL_ATTACH
-                                                                  "Failed to open file." }; // UNKNOWN
     }
 }

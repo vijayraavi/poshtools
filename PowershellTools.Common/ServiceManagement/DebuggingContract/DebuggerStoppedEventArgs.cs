@@ -30,7 +30,15 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             this.BreakpointHit = false;
         }
 
-        public DebuggerStoppedEventArgs(bool breakpointHit, string script, int line, int column, bool openScript)
+        /// <summary>
+        /// Constructor for DebuggerStoppedEventArgs
+        /// </summary>
+        /// <param name="script">Script which generated the stop event</param>
+        /// <param name="line">Line number where the script stopped</param>
+        /// <param name="column">Column number where the script stopped</param>
+        /// <param name="breakpointHit">Whether or not a breakpoint hit cased the stop event, defaults to true</param>
+        /// <param name="openScript">Whether or not the client should ask Visual Studio to attempt opening the script</param>
+        public DebuggerStoppedEventArgs(string script, int line, int column, bool breakpointHit = true, bool openScript = false)
         {
             this.BreakpointHit = breakpointHit;
             this.ScriptFullPath = script;
