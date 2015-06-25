@@ -280,13 +280,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }            
         }
 
-        List<Process> GetRemoteProcesses(string remoteMachine)
+        /// <summary>
+        /// </summary>
+        public List<Process> GetRemoteProcesses(string remoteName)
         {
+            Execute(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
             using (_currentPowerShell = PowerShell.Create())
             {
-                _currentPowerShell.AddCommand("Enter-PSSession").AddParameter("ComputerName", remoteMachine);
                 _currentPowerShell.AddCommand("Get-Process");
-                _currentPowerShell.Invoke();
+                Collection<PSObject> result = _currentPowerShell.Invoke();
+                foreach (PSObject psobj in result)
+                {
+                    ServiceCommon.Log("Process?");
+                }
             }
             return null;
         }
