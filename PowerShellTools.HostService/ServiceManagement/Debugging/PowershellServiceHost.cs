@@ -237,7 +237,7 @@ Also leaving the implementation here as a reference because that is going to be 
 
             if (needToWake)
             {
-                // wake up DetachFromProcess thread
+                // wake up DetachFromRunspace
                 _attachRequestEvent.Reset();
             }
         }
@@ -276,7 +276,7 @@ Also leaving the implementation here as a reference because that is going to be 
 
             if (GetDebugScenario() == DebugScenario.Local_Attach)
             {
-                // wake up AttachToProcess method
+                // wake up AttachToRunspace
                 _attachRequestEvent.Reset();
             }
         }
