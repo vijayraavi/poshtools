@@ -65,14 +65,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         public override int GetHashCode()
         {
-            if (_psBreakpoint != null)
-            {
                 return _id;
-            }
-            else
-            {
-                return 0;
-            }
         }
     }
 }

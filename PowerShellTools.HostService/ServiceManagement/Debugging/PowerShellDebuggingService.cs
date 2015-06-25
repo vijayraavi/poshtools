@@ -241,16 +241,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
             }
 
-            // detach from the program and exit the host
-            if (!_runspace.Debugger.IsActive)
+            try
+            {
+                // attempt to gracefully detach the deugger
+                ClearBreakpoints();
+                ExecuteDebuggingCommand("detach", false);
+            }
+            catch (Exception e)
             {
                 // if program is running we must use stop to force the debugger to detach
+                ServiceCommon.Log("Script currently in execution, must use stop to end debugger");
                 _currentPowerShell.Stop();
-            }
-            else
-            {
-                // gracefully detach the debugger
-                ExecuteDebuggingCommand("detach", false);
             }
 
             using (_currentPowerShell = PowerShell.Create())
@@ -476,6 +477,24 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     pipeline.Commands.Add(command);
 
                     pipeline.Invoke();
+                }
+            }
+            else if (_runspace.Debugger.IsActive)
+            {
+                // IsActive denotes debugger being stopped and the presence of breakpoints
+                _debuggingCommand = "Get-PSBreakpoint";
+                PSDataCollection<PSObject> breakpoints = ExecuteDebuggingCommand();
+
+                foreach (PSObject pobj in breakpoints)
+                {
+                    if (pobj != null && pobj.BaseObject is LineBreakpoint)
+                    {
+                        LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
+                        if (bp != null)
+                        {
+                            ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, bp.Id));
+                        }
+                    }
                 }
             }
             else
