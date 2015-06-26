@@ -48,6 +48,20 @@ namespace PowerShellTools.Common.Debugging
             @"\s+([^\s:]+):" + // any number of spaces after the parameter list, and then the script name which ends right before a colon
             @"\s+line (\d)"; // any number of spaces (after the colon) and then the word "line" and then a number which denotes the line number
 
+        public const string EnumerateRemoteProcessesScript = @"
+$processes = Get-Process;
+$valid_processes = @();
+Foreach($process in $processes) {
+    ForEach($module in $process.Modules) {
+        if($module.ModuleName -eq 'powershell.exe') {
+            $valid_processes += $process.id;
+            $valid_processes += $process.ProcessName;
+            break;
+        }
+    }
+}
+return $valid_processes;";
+
         #region Remote file open events
 
         /// <summary>

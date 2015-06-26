@@ -54,7 +54,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         bool IsAttachable(uint pid);
 
         [OperationContract]
-        List<Process> GetRemoteProcesses(string remoteMachine);
+        List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteMachine);
 
         [OperationContract]
         Collection<Variable> GetScopedVariable();

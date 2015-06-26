@@ -282,19 +282,33 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// </summary>
-        public List<Process> GetRemoteProcesses(string remoteName)
+        public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName)
         {
+            List<KeyValuePair<uint, string>> validProcesses = new List<KeyValuePair<uint, string>>();
+
+            // Initiate remote session with the remote machine to find all attachable processes
             Execute(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+            _attachRequestEvent.WaitOne(10000);
+
             using (_currentPowerShell = PowerShell.Create())
             {
-                _currentPowerShell.AddCommand("Get-Process");
+                // Run script on remote machine to grab all attachable processes
+                _currentPowerShell.AddScript(DebugEngineConstants.EnumerateRemoteProcessesScript);
+                _currentPowerShell.Runspace = _runspace;
                 Collection<PSObject> result = _currentPowerShell.Invoke();
-                foreach (PSObject psobj in result)
+
+                // Add each process' name and pid to the list to be returned
+                for (int i = 0; i < result.Count; i += 2)
                 {
-                    ServiceCommon.Log("Process?");
+                    dynamic pid = result.ElementAt(i);
+                    dynamic name = result.ElementAt(i + 1);
+                    validProcesses.Add(new KeyValuePair<uint, string>(uint.Parse(pid.ToString()), name.ToString()));
                 }
             }
-            return null;
+
+            // Exit the remote session and return results back to RemoteEnumDebugProcess
+            Execute(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+            return validProcesses;
         }
 
         /// <summary>

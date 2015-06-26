@@ -274,7 +274,7 @@ Also leaving the implementation here as a reference because that is going to be 
 
             RegisterRemoteFileOpenEvent(runspace);
 
-            if (GetDebugScenario() == DebugScenario.Local_Attach)
+            if (true || GetDebugScenario() == DebugScenario.Local_Attach)
             {
                 // wake up AttachToRunspace
                 _attachRequestEvent.Reset();

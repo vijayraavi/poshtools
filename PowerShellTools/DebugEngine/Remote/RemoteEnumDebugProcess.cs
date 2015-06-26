@@ -32,30 +32,10 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public void connect(IDebugPort2 remotePort)
         {
-            Collection<Automation.PSObject> result;
-
-            Runspace rs = RunspaceFactory.CreateRunspace();
-            rs.Open();
-            using (Automation.PowerShell ps = Automation.PowerShell.Create())
+            List<KeyValuePair<uint, string>> information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer);
+            foreach (KeyValuePair<uint, string> info in information)
             {
-                /*
-                * Should really be using Enter-PSSession here. Could not get it 
-                * to work though. I think it is something about how the remoting
-                * actually works with the runspace not changing. Need to figure 
-                * this out. Till then, this method works fine.
-                */
-                ps.Runspace = rs;
-                ps.AddCommand("Get-Process").AddParameter("ComputerName", _remoteComputer).AddParameter("Name", "*powershell*");
-                result = ps.Invoke();
-                rs.Close();
-
-                List<Process> processes = PowerShellToolsPackage.Debugger.DebuggingService.GetRemoteProcesses(_remoteComputer);
-
-                foreach (Automation.PSObject obj in result)
-                {
-                    dynamic process = obj.ImmediateBaseObject;
-                    _runningProcesses.Add(new ScriptDebugProcess(remotePort, (uint)process.Id, process.Name));
-                }
+                _runningProcesses.Add(new ScriptDebugProcess(remotePort, info.Key, info.Value));
             }
         }
 

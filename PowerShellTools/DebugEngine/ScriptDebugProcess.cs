@@ -22,6 +22,10 @@ namespace PowerShellTools.DebugEngine
         public ScriptDebugProcess(IDebugPort2 debugPort, uint processId) : this(debugPort)
         {
             ProcessId = processId;
+            if (_processName == null)
+            {
+                _processName = "";
+            }
         }
 
         public ScriptDebugProcess(IDebugPort2 debugPort)
@@ -42,17 +46,15 @@ namespace PowerShellTools.DebugEngine
         {
             if ((fields & enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME) != 0)
             {
-                // trying out some things to get remote processes listed on attach dialog
                 pProcessInfo[0].bstrFileName = Node.FileName;
                 pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_DEBUGGER_ATTACHED |
                                         enum_PROCESS_INFO_FLAGS.PIFLAG_PROCESS_RUNNING;
-                pProcessInfo[0].Fields = fields; // enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME | enum_PROCESS_INFO_FIELDS.PIF_FLAGS;
+                pProcessInfo[0].Fields = fields;
 
-                pProcessInfo[0].bstrBaseName = "base name";
-                pProcessInfo[0].bstrTitle = "title";
+                pProcessInfo[0].bstrBaseName = _processName;
+                pProcessInfo[0].bstrTitle = "";
                 pProcessInfo[0].ProcessId.dwProcessId = ProcessId;
                 pProcessInfo[0].dwSessionId = 1;
-                pProcessInfo[0].bstrAttachedSessionName = "attached session name";
             }
             return VSConstants.S_OK;
         }
@@ -155,8 +157,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetUserName(out string pbstrUserName)
         {
-            // should grab this when doing the connect
-            pbstrUserName = "Unknown User";
+            pbstrUserName = "";
             return VSConstants.S_OK;
         }
     }
