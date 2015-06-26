@@ -172,7 +172,7 @@ namespace PowerShellTools.DebugEngine
         public int Detach()
         {
             Log.Debug("ScriptProgramNode: Entering Detach");
-            //ScriptDebugger.DebuggerManager.StopDebug();
+            Debugger.DebuggingService.DetachFromRunspace();
             return VSConstants.S_OK;
         }
 

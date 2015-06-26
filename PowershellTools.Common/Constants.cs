@@ -75,7 +75,6 @@ namespace PowerShellTools.Common
         /// </summary>
         public static readonly Guid PowerShellReplCreationUiContextGuid = new Guid(PowerShellReplCreationUiContextString);
 
-
         /// <summary>
         /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell project is opened/created.
         /// </summary>
@@ -90,10 +89,5 @@ namespace PowerShellTools.Common
         /// Minimal width of REPL output buffer as 80 to keep consistent experience with another PowerShell custom host in VS: Nuget Manager Console
         /// </summary>
         public const int MinimalReplBufferWidth = 80;
-
-        /// <summary>
-        /// PowerShell host process window title format
-        /// </summary>
-        public const string HostProcessWindowTitleFormat = "{0} : {1}";
     }
 }

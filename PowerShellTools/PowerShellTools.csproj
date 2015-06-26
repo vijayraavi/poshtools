@@ -285,7 +285,6 @@
     <Compile Include="DebugEngine\EngineEvents.cs" />
     <Compile Include="DebugEngine\Engine\EngineUtils.cs" />
     <Compile Include="DebugEngine\Engine\OperationThread.cs" />
-    <Compile Include="DebugEngine\EnterPSSessionCommandWrapper.cs" />
     <Compile Include="DebugEngine\Impl\AD7Enums.cs" />
     <Compile Include="DebugEngine\IRunspaceProvider.cs" />
     <Compile Include="DebugEngine\PendingBreakpoint.cs" />

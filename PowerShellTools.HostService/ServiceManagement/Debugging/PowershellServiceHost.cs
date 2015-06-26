@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Diagnostics;
 using PowerShellTools.Common;
 using System.Runtime.InteropServices;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -218,6 +219,9 @@ Also leaving the implementation here as a reference because that is going to be 
 
         public void PopRunspace()
         {
+            // determine if you need to wake up detach runspace thread after popping
+            bool needToWake = (GetDebugScenario() == DebugScenario.LocalAttach);
+
             if (_pushedRunspace != null)
             {
                 Runspace.StateChanged -= Runspace_StateChanged;
@@ -229,6 +233,12 @@ Also leaving the implementation here as a reference because that is going to be 
             if (_callback != null)
             {
                 _callback.SetRemoteRunspace(false);
+            }
+
+            if (needToWake)
+            {
+                // wake up DetachFromRunspace
+                _attachRequestEvent.Reset();
             }
         }
 
@@ -263,6 +273,12 @@ Also leaving the implementation here as a reference because that is going to be 
             }
 
             RegisterRemoteFileOpenEvent(runspace);
+
+            if (GetDebugScenario() == DebugScenario.LocalAttach)
+            {
+                // wake up AttachToRunspace
+                _attachRequestEvent.Reset();
+            }
         }
 
         private void Runspace_StateChanged(object sender, RunspaceStateEventArgs e)

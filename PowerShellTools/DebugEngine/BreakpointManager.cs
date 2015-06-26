@@ -196,7 +196,7 @@ namespace PowerShellTools.DebugEngine
         }
 
         /// <summary>
-        /// Enable breakpoint
+        /// Remove breakpoint
         /// </summary>
         /// <param name="breakpoint">Breakpoint to be removed</param>
         public void RemoveBreakpoint(ScriptBreakpoint breakpoint)

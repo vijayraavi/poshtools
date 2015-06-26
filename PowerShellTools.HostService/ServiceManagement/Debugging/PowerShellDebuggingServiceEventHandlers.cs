@@ -40,6 +40,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Runspace availability change handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void _runspace_AvailabilityChanged(Object sender, RunspaceAvailabilityEventArgs e)
+        {
+            ServiceCommon.Log("Runspace Availability Changed: {0}", e.RunspaceAvailability.ToString());
+        }
+
+        /// <summary>
         /// Breakpoint updates (such as enabled/disabled)
         /// </summary>
         /// <param name="sender"></param>
@@ -111,19 +121,32 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 if (_callback != null)
                 {
                     string file = bp.Script;
-                    if (_runspace.ConnectionInfo != null && _mapRemoteToLocal.ContainsKey(bp.Script))
+                    if (GetDebugScenario() != DebugScenario.Local && _mapRemoteToLocal.ContainsKey(bp.Script))
                     {
                         file = _mapRemoteToLocal[bp.Script];
                     }
 
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, bp.Line, bp.Column));
+                    // breakpoint is always hit for this case
+                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, bp.Line, bp.Column, true, false));
                 }
             }
             else
             {
                 if (_callback != null)
                 {
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
+                    if (GetDebugScenario() == DebugScenario.LocalAttach)
+                    {
+                        string file = e.InvocationInfo.ScriptName;
+                        int lineNum = e.InvocationInfo.ScriptLineNumber;
+                        int column = e.InvocationInfo.OffsetInLine;
+
+                        // the stop which occurs after attaching is not associated with a breakpoint and should result in the process' script being opened
+                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, lineNum, column, false, true));
+                    }
+                    else
+                    {
+                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
+                    }
                 }
             }
 
@@ -136,7 +159,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     if (!string.IsNullOrEmpty(_debuggingCommand))
                     {
-                        if (_runspace.ConnectionInfo == null)
+                        if (GetDebugScenario() == DebugScenario.Local)
                         {
                             // local debugging
                             var output = new Collection<PSObject>();

@@ -35,6 +35,19 @@ namespace PowerShellTools.Common.Debugging
         /// </remarks>
         public const string ExecutionCommandFileReplacePattern = @"(?<=\.\s\').*?(?=\')";
 
+        /// <summary>
+        /// Match a call stack line, used for local attaching.
+        /// </summary>
+        /// <remarks>
+        /// Pattern sample: Matching pattern like "wait     {x=6, y=8} script.ps1: line 3"
+        /// </remarks>
+        public const string ValidCallStackLine = 
+            @"(\S+)" + // function name which consists of no whitespace characters
+            @"\s+" + // spaces between function name and variable list
+            @"\{([,\s]?[^\s,]+=\S+)*\}" + // list of parameters which are comma seperated, (note the equals sign)
+            @"\s+([^\s:]+):" + // any number of spaces after the parameter list, and then the script name which ends right before a colon
+            @"\s+\w+ (\d)"; // any number of spaces and then some word such as "line" (depending on localization) and then a line number
+
         #region Remote file open events
 
         /// <summary>
