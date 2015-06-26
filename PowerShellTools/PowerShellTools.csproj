@@ -285,7 +285,6 @@
     <Compile Include="DebugEngine\EngineEvents.cs" />
     <Compile Include="DebugEngine\Engine\EngineUtils.cs" />
     <Compile Include="DebugEngine\Engine\OperationThread.cs" />
-    <Compile Include="DebugEngine\EnterPSSessionCommandWrapper.cs" />
     <Compile Include="DebugEngine\Impl\AD7Enums.cs" />
     <Compile Include="DebugEngine\IRunspaceProvider.cs" />
     <Compile Include="DebugEngine\PendingBreakpoint.cs" />
@@ -313,6 +312,10 @@
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
     <Compile Include="Intellisense\EdgeTrackingMode.cs" />
+    <Compile Include="Intellisense\ProvideBraceCompletion.cs" />
+    <Compile Include="LanguageService\BraceCompletion\BraceCompletionContext.cs" />
+    <Compile Include="LanguageService\BraceCompletion\BraceCompletionContextProvider.cs" />
+    <Compile Include="LanguageService\BraceCompletion\BraceKind.cs" />
     <Compile Include="Options\BitnessEventArgs.cs" />
     <Compile Include="Options\BitnessOption.cs" />
     <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
@@ -331,7 +334,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="IDependencyValidator.cs" />
-    <Compile Include="Intellisense\AutoCompletionController.cs" />
     <Compile Include="Intellisense\IntellisenseController.cs" />
     <Compile Include="Intellisense\IntellisenseControllerProvider.cs" />
     <Compile Include="Intellisense\IntelliSenseEventsHandlerProxy.cs" />

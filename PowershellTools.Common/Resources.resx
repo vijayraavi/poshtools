@@ -121,6 +121,22 @@
     <value>Invalid argument '{0}'</value>
     <comment>0=name of argument</comment>
   </data>
+  <data name="DefaultFileOpenError" xml:space="preserve">
+    <value>"Failed to open file."</value>
+  </data>
+  <data name="HostProcessWindowTitleFormat" xml:space="preserve">
+    <value>{0} : {1}</value>
+    <comment>PowerShell host process window title format</comment>
+  </data>
+  <data name="LocalAttachFileOpenError" xml:space="preserve">
+    <value>"Failed to open local file while attaching to local process."</value>
+  </data>
+  <data name="LocalFileOpenError" xml:space="preserve">
+    <value>"Failed to open local file."</value>
+  </data>
+  <data name="RemoteSessionFileOpenError" xml:space="preserve">
+    <value>"Failed to open remote file through powershell remote session."</value>
+  </data>
   <data name="ValidateExactlyOneSpecifiedFailed_2args" xml:space="preserve">
     <value>Exactly one of parameters '{0}' and '{1}' should be specified.</value>
   </data>

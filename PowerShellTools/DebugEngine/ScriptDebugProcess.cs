@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.Debugger.Interop;
 
 namespace PowerShellTools.DebugEngine
 {
-    public class ScriptDebugProcess : IDebugProcess2 
+    public class ScriptDebugProcess : IDebugProcess2
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugProcess));
 

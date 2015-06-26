@@ -19,7 +19,6 @@ using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudioTools;
 
 namespace PowerShellTools.Intellisense
@@ -30,7 +29,6 @@ namespace PowerShellTools.Intellisense
         private readonly ITextView _textView;
         private readonly IntellisenseControllerProvider _provider;
         private readonly IntelliSenseManager _intelliSenseManager;
-        private readonly AutoCompletionController _autoCompletionController;
 
         /// <summary>
         /// Attaches events for invoking Statement completion 
@@ -41,11 +39,7 @@ namespace PowerShellTools.Intellisense
             _provider = provider;
             textView.Properties.AddProperty(typeof(IntellisenseController), this);  // added so our key processors can get back to us
 
-            IEditorOperations editorOperations = provider.EditOperationsFactory.GetEditorOperations(textView);
-            ITextUndoHistory undoHistory = provider.UndoHistoryRegistry.GetHistory(textView.TextBuffer);
             _intelliSenseManager = new IntelliSenseManager(provider.CompletionBroker, provider.ServiceProvider, null, textView, callbackContext);
-            _autoCompletionController = new AutoCompletionController(textView, editorOperations, undoHistory, provider.ServiceProvider);
-
         }
 
         public ICompletionBroker CompletionBroker
@@ -85,9 +79,6 @@ namespace PowerShellTools.Intellisense
 
                     ErrorHandler.ThrowOnFailure(viewAdapter.AddCommandFilter(this, out next));
                     _intelliSenseManager.NextCommandHandler = next;
-
-                    ErrorHandler.ThrowOnFailure(viewAdapter.AddCommandFilter(_autoCompletionController, out next));
-                    _autoCompletionController.NextCommandHandler = next;
                 }
             }
         }
@@ -153,11 +144,6 @@ namespace PowerShellTools.Intellisense
         private void DetachKeyboardFilter()
         {
             var viewAdapter = AdaptersFactory.GetViewAdapter(_textView);
-            if (_autoCompletionController.NextCommandHandler != null)
-            {
-                ErrorHandler.ThrowOnFailure(viewAdapter.RemoveCommandFilter(_autoCompletionController));
-                _autoCompletionController.NextCommandHandler = null;
-            }
 
             if (_intelliSenseManager.NextCommandHandler != null)
             {

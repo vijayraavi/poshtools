@@ -30,7 +30,7 @@ namespace PowerShellTools.HostService
             this.Top = 28000;
             this.ShowInTaskbar = false;
             this.Title = string.Format(
-                    PowerShellTools.Common.Constants.HostProcessWindowTitleFormat, 
+                    PowerShellTools.Common.Resources.HostProcessWindowTitleFormat, 
                     App.VsProcessId, 
                     PowerShellTools.Common.Constants.PowerShellHostExeName);
 
