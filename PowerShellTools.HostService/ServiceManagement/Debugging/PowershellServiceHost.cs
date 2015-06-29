@@ -235,7 +235,7 @@ Also leaving the implementation here as a reference because that is going to be 
                 _callback.SetRemoteRunspace(false);
             }
 
-            if (needToWake)
+            if (true || needToWake)
             {
                 // wake up DetachFromRunspace
                 _attachRequestEvent.Reset();

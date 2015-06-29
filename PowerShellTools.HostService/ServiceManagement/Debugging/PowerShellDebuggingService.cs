@@ -281,33 +281,49 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Finds all processes on a remote computer which have loaded the powershell.exe module
         /// </summary>
+        /// <param name="remoteName">Name of the remote machine</param>
+        /// <returns></returns>
         public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName)
         {
             List<KeyValuePair<uint, string>> validProcesses = new List<KeyValuePair<uint, string>>();
 
-            // Initiate remote session with the remote machine to find all attachable processes
-            Execute(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
-            _attachRequestEvent.WaitOne(10000);
+            try {
+                // Initiate remote session with the remote machine to find all attachable processes
+                Execute(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+                _attachRequestEvent.WaitOne(5000);
 
-            using (_currentPowerShell = PowerShell.Create())
-            {
-                // Run script on remote machine to grab all attachable processes
-                _currentPowerShell.AddScript(DebugEngineConstants.EnumerateRemoteProcessesScript);
-                _currentPowerShell.Runspace = _runspace;
-                Collection<PSObject> result = _currentPowerShell.Invoke();
-
-                // Add each process' name and pid to the list to be returned
-                for (int i = 0; i < result.Count; i += 2)
+                if (GetDebugScenario() == DebugScenario.Local)
                 {
-                    dynamic pid = result.ElementAt(i);
-                    dynamic name = result.ElementAt(i + 1);
-                    validProcesses.Add(new KeyValuePair<uint, string>(uint.Parse(pid.ToString()), name.ToString()));
+                    return null;
                 }
+
+                using (_currentPowerShell = PowerShell.Create())
+                {
+                    // Run script on remote machine to grab all attachable processes
+                    _currentPowerShell.AddScript(DebugEngineConstants.EnumerateRemoteProcessesScript);
+                    _currentPowerShell.Runspace = _runspace;
+                    Collection<PSObject> result = _currentPowerShell.Invoke();
+
+                    // Add each process' name and pid to the list to be returned
+                    for (int i = 0; i < result.Count; i += 2)
+                    {
+                        dynamic pid = result.ElementAt(i);
+                        dynamic name = result.ElementAt(i + 1);
+                        validProcesses.Add(new KeyValuePair<uint, string>(uint.Parse(pid.ToString()), name.ToString()));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log("Error connecting to remote machine; " + ex.ToString());
+                return null;
             }
 
             // Exit the remote session and return results back to RemoteEnumDebugProcess
             Execute(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+            _attachRequestEvent.WaitOne(5000);
             return validProcesses;
         }
 

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Debugger.Interop;
 using Automation = System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
@@ -32,7 +33,22 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public void connect(IDebugPort2 remotePort)
         {
-            List<KeyValuePair<uint, string>> information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer);
+            List<KeyValuePair<uint, string>> information;
+            while (true)
+            {
+                information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer);
+                if (information != null)
+                {
+                    break;
+                }
+
+                DialogResult dlgRes = MessageBox.Show("Unable to connect to " + _remoteComputer + ". Retry?", null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                if (dlgRes != DialogResult.Retry)
+                {
+                    return;
+                }
+            }
+            
             foreach (KeyValuePair<uint, string> info in information)
             {
                 _runningProcesses.Add(new ScriptDebugProcess(remotePort, info.Key, info.Value));
