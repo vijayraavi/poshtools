@@ -12,11 +12,13 @@ namespace PowerShellTools.DebugEngine
 
         private readonly IDebugPort2 _port;
         private string _processName;
+        private string _hostname;
 
-        public ScriptDebugProcess(IDebugPort2 debugPort, uint processId, string processName) : this(debugPort)
+        public ScriptDebugProcess(IDebugPort2 debugPort, uint processId, string processName, string hostname) : this(debugPort)
         {
             ProcessId = processId;
             _processName = processName;
+            HostName = hostname;
         }
 
         public ScriptDebugProcess(IDebugPort2 debugPort, uint processId) : this(debugPort)
@@ -42,19 +44,30 @@ namespace PowerShellTools.DebugEngine
 
         public ScriptProgramNode Node { get; set; }
 
+        public string HostName { get; set; }
+
         public int GetInfo(enum_PROCESS_INFO_FIELDS fields, PROCESS_INFO[] pProcessInfo)
         {
             if ((fields & enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME) != 0)
             {
                 pProcessInfo[0].bstrFileName = Node.FileName;
-                pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_DEBUGGER_ATTACHED |
+
+                if (Node.Debugger != null)
+                {
+                    pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_DEBUGGER_ATTACHED |
                                         enum_PROCESS_INFO_FLAGS.PIFLAG_PROCESS_RUNNING;
+                }
+                else
+                {
+                    pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_PROCESS_RUNNING;
+                }
+                
                 pProcessInfo[0].Fields = fields;
 
                 pProcessInfo[0].bstrBaseName = _processName;
                 pProcessInfo[0].bstrTitle = "";
                 pProcessInfo[0].ProcessId.dwProcessId = ProcessId;
-                pProcessInfo[0].dwSessionId = 1;
+                pProcessInfo[0].dwSessionId = 0;
             }
             return VSConstants.S_OK;
         }
@@ -157,7 +170,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetUserName(out string pbstrUserName)
         {
-            pbstrUserName = "";
+            pbstrUserName = "REDMOND\\t-maray";
             return VSConstants.S_OK;
         }
     }

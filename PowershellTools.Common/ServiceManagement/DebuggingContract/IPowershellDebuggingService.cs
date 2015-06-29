@@ -57,6 +57,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteMachine);
 
         [OperationContract]
+        void AttachToRemoteRunspace(uint pid, string remoteName);
+
+        [OperationContract]
         Collection<Variable> GetScopedVariable();
 
         [OperationContract]

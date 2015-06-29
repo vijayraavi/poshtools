@@ -43,6 +43,10 @@ namespace PowerShellTools.DebugEngine
         /// attached to.
         /// </summary>
         public bool IsAttachedProgram { get; set; }
+        /// <summary>
+        /// Whether or not this program node represents a runspace on a remote machine.
+        /// </summary>
+        public bool IsRemoteProgram { get; set; }
 
         public ScriptProgramNode(ScriptDebugProcess process)
         {

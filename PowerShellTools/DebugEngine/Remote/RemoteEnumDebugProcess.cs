@@ -51,7 +51,7 @@ namespace PowerShellTools.DebugEngine.Remote
             
             foreach (KeyValuePair<uint, string> info in information)
             {
-                _runningProcesses.Add(new ScriptDebugProcess(remotePort, info.Key, info.Value));
+                _runningProcesses.Add(new ScriptDebugProcess(remotePort, info.Key, info.Value, _remoteComputer));
             }
         }
 

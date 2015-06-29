@@ -140,6 +140,34 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Examines a process' modules for powershell.exe which indicates the process should
+        /// be attachable. Will generate an exception if the host process is x86 and the process
+        /// is x64.
+        /// </summary>
+        /// <param name="pid"></param>
+        /// <returns>True if powershell.exe is a module of the process, false otherwise.</returns>
+        public bool IsAttachable(uint pid)
+        {
+            try
+            {
+                var process = Process.GetProcessById((int)pid);
+                ServiceCommon.Log("IsAttachable:" + process.ProcessName + "; id:" + process.Id);
+                foreach (ProcessModule module in process.Modules)
+                {
+                    if (module.ModuleName.Equals("powershell.exe", StringComparison.Ordinal) && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log(string.Format("{0} , cannot examine modules of process; id: {1}", ex.Message, pid));
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Attaches the HostService to a local runspace already in execution
         /// </summary>
         public void AttachToRunspace(uint pid)
@@ -201,34 +229,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     ServiceCommon.Log("Unexpected exception while debugging runspace; " + exception.ToString());
                 }
             }
-        }
-
-        /// <summary>
-        /// Examines a process' modules for powershell.exe which indicates the process should
-        /// be attachable. Will generate an exception if the host process is x86 and the process
-        /// is x64.
-        /// </summary>
-        /// <param name="pid"></param>
-        /// <returns>True if powershell.exe is a module of the process, false otherwise.</returns>
-        public bool IsAttachable(uint pid)
-        {
-            try
-            {
-                var process = Process.GetProcessById((int)pid);
-                ServiceCommon.Log("IsAttachable:" + process.ProcessName + "; id:" + process.Id);
-                foreach (ProcessModule module in process.Modules)
-                {
-                    if (module.ModuleName.Equals("powershell.exe", StringComparison.Ordinal) && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ServiceCommon.Log(string.Format("{0} , cannot examine modules of process; id: {1}", ex.Message, pid));
-            }
-            return false;
         }
 
         /// <summary>
@@ -325,6 +325,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             Execute(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
             _attachRequestEvent.WaitOne(5000);
             return validProcesses;
+        }
+
+        /// <summary>
+        /// Attaches the HostService to a remote runspace already in execution
+        /// </summary>
+        public void AttachToRemoteRunspace(uint pid, string remoteName)
+        {
+            // enter into a remote session
+            // Initiate remote session with the remote machine to find all attachable processes
+            Execute(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+            _attachRequestEvent.WaitOne(5000);
+
+            // use attach to runspace since now it isn't remote?
+            AttachToRunspace(pid);
         }
 
         /// <summary>
