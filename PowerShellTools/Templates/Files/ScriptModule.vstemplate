@@ -7,7 +7,7 @@
     <Description>An empty PowerShell script module.</Description>
     <TemplateID>PowerShellTools.PowerShell.PowerShellScriptModule</TemplateID>
     <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
-    <AppliesTo>PowerShell | DeploymentProject</AppliesTo>
+    <AppliesTo>PowerShell | DeploymentProject | DNX</AppliesTo>
     <SortOrder>151</SortOrder>
     <Icon>PowerShellModule.ico</Icon>
   </TemplateData>
