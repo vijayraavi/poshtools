@@ -7,7 +7,7 @@
     <Description>An empty PowerShell script.</Description>
     <TemplateID>PowerShellTools.PowerShell.PowerShellScript</TemplateID>
     <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
-    <AppliesTo>PowerShell | (!PowerShell)</AppliesTo>
+    <AppliesTo>PowerShell | DeploymentProject | DNX</AppliesTo>
     <SortOrder>149</SortOrder>
     <Icon>PowerShellScript.ico</Icon>
     <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>

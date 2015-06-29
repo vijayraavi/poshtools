@@ -653,7 +653,7 @@
     <Resource Include="Commands\UserInterface\Resources\StatusAnnotations_Invalid_color_16x.png" />
     <Resource Include="Commands\UserInterface\Resources\Warning_yellow_7231_16x16.png" />
     <Content Include="DebugEngine\PowerShellTools.DebugEngine.csproj" />
-    <Content Include="ItemTemplates\PowerShell Script.zip">
+    <Content Include="ItemTemplates\PowerShellScript.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -684,11 +684,11 @@
     <Content Include="Templates\Projects\PowerShellModuleProject.vstemplate" />
     <Content Include="Templates\Projects\PowerShellProject.vstemplate" />
     <Resource Include="Templates\Projects\PowerShellProject.ico" />
-    <Content Include="ItemTemplates\PowerShell Script Module.zip">
+    <Content Include="ItemTemplates\PowerShellScriptModule.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="ItemTemplates\PowerShell Script Data File.zip">
+    <Content Include="ItemTemplates\PowerShellScriptDataFile.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -717,8 +717,8 @@
     </None>
     <None Include="Templates\Projects\Script.ps1" />
     <Resource Include="Templates\Files\PowerShellScript.ico" />
-    <Resource Include="Templates\Files\PowerShellModule.ico" />
-    <Resource Include="Templates\Files\PowerShellDataFile.ico" />
+    <Resource Include="Templates\Files\PowerShellScriptModule.ico" />
+    <Resource Include="Templates\Files\PowerShellScriptDataFile.ico" />
     <None Include="PowerShellTools.targets" />
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
