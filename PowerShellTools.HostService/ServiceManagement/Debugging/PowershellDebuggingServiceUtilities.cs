@@ -12,6 +12,7 @@ using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -285,6 +286,32 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 NotifyOutputString(outputString.ToString());
             }
+        }
+
+        private string OpenRemoteAttachedFile(string scriptName)
+        {
+            _debuggingCommand = "Get-Content \"" + scriptName + "\"";
+            PSDataCollection<PSObject> result = ExecuteDebuggingCommand();
+
+            string[] text = new string[result.Count()];
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                text[i] = result.ElementAt(i).BaseObject as string;
+            }
+
+            string tmpFileName = Path.GetTempFileName();
+            string dirPath = tmpFileName.Remove(tmpFileName.LastIndexOf('.'));
+            Directory.CreateDirectory(dirPath);
+            string fullFileName = Path.Combine(dirPath, new FileInfo(scriptName).Name);
+
+            _mapRemoteToLocal[scriptName] = fullFileName;
+            _mapLocalToRemote[fullFileName] = scriptName;
+
+            File.WriteAllLines(fullFileName, text);
+
+            _debuggingCommand = "";
+            return fullFileName;
         }
     }
 }

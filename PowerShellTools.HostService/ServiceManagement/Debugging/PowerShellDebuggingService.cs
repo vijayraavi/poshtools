@@ -188,46 +188,46 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             // Enter into to-attach process which will swap out the current runspace
             using (_currentPowerShell = PowerShell.Create())
             {
-            _currentPowerShell.Runspace = _runspace;
-            _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
-            _currentPowerShell.Invoke();
+                _currentPowerShell.Runspace = _runspace;
+                _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
+                _currentPowerShell.Invoke();
 
-            // wait for invoke to finish swapping the runspaces
-            _attachRequestEvent.WaitOne(5000);
+                // wait for invoke to finish swapping the runspaces
+                _attachRequestEvent.WaitOne(5000);
 
                 // make sure that the semaphore didn't just time out
-                if (GetDebugScenario() != DebugScenario.LocalAttach)
+                if (GetDebugScenario() == DebugScenario.Local)
                 {
                     MessageBox.Show(Resources.ProcessAttachFailErrorBody, Resources.ProcessAttachFailErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
                     ServiceCommon.Log("Failed to attach to running process.");
                     return;
                 }
 
-            // rehook up the event handling
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
-            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
+                // rehook up the event handling
+                _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+                _runspace.StateChanged += _runspace_StateChanged;
+                _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
 
                 // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
-            _currentPowerShell.Runspace = _runspace;
-            _currentPowerShell.Commands.Clear();
-            _currentPowerShell.AddCommand("Debug-Runspace").AddParameter("Id", "1");
+                _currentPowerShell.Runspace = _runspace;
+                _currentPowerShell.Commands.Clear();
+                _currentPowerShell.AddCommand("Debug-Runspace").AddParameter("Id", "1");
 
-            try
-            {
-                _currentPowerShell.Invoke();
-            }
+                try
+                {
+                    _currentPowerShell.Invoke();
+                }
                 catch (RemoteException remoteException)
-            {
-                // exception is expected if user asks to stop debugging while script is running
+                {
+                    // exception is expected if user asks to stop debugging while script is running
                     ServiceCommon.Log("Forced to detach via stop command; " + remoteException.ToString());
-            }
+                }
                 catch (Exception exception)
-                    {
+                {
                     // any other sort of exception is not expected
                     ServiceCommon.Log("Unexpected exception while debugging runspace; " + exception.ToString());
-            }
+                }
             }
         }
 

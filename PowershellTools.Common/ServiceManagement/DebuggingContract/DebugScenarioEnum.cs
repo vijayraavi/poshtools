@@ -12,7 +12,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
     public enum DebugScenario
     {
         Local,            // running script from Visual Studio
-        RemoteSession,    // remote session debugging
+        RemoteSession,    // remote session or remote process attach debugging
         LocalAttach,      // attaching to a local process
         Unknown           // cannot determine the scenario
     }
