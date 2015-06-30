@@ -268,9 +268,8 @@ namespace PowerShellTools
             var langService = new PowerShellLanguageInfo(this);
             ((IServiceContainer)this).AddService(langService.GetType(), langService, true);
 
-            _textBufferFactoryService = ComponentModel.GetService<ITextBufferFactoryService>();
             EditorImports.ClassificationTypeRegistryService = ComponentModel.GetService<IClassificationTypeRegistryService>();
-            EditorImports.ClassificationFormatMap = ComponentModel.GetService<IClassificationFormatMapService>();
+            _textBufferFactoryService = ComponentModel.GetService<ITextBufferFactoryService>();
 
             if (_textBufferFactoryService != null)
             {
