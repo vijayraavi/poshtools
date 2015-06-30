@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Management.Automation;
 using Microsoft.VisualStudio.Language.StandardClassification;
 using Microsoft.VisualStudio.Text;
@@ -80,6 +81,7 @@ namespace PowerShellTools.Classification
 
         private static Dictionary<PSTokenType, IClassificationType> _tokenClassificationTypeMap;
         private static IClassificationType _scriptGaps;
+#pragma warning restore 169, 649
 
         internal PowerShellClassifier(ITextBuffer bufferToClassify)
             : base(bufferToClassify)
@@ -93,7 +95,7 @@ namespace PowerShellTools.Classification
             {
                 if (EditorImports.ClassificationTypeRegistryService == null)
                 {
-                    throw new ArgumentNullException("ClassificationTypeRegistryService");
+                    throw new InvalidOperationException("ClassificationTypeRegistryService is null");
                 }
                 return EditorImports.ClassificationTypeRegistryService;
             }
@@ -137,7 +139,7 @@ namespace PowerShellTools.Classification
 
         private static void CreateClassificationTypeMap()
         {
-            if (_tokenClassificationTypeMap == null || _tokenClassificationTypeMap.Count == 0)
+            if (_tokenClassificationTypeMap == null || !_tokenClassificationTypeMap.Any())
             {
                 _tokenClassificationTypeMap = new Dictionary<PSTokenType, IClassificationType>();
                 _tokenClassificationTypeMap[PSTokenType.Attribute] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellAttribute);
