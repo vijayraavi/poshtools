@@ -31,12 +31,17 @@
     <VsixGuid Condition=" '$(VSTarget)' == '14.0' ">59875F69-67B7-4A5C-B33A-9E2C2B5D266D</VsixGuid>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <VsixDisplayName Condition=" '$(VSTarget)' == '12.0' ">PowerShell Tools for Visual Studio 2013</VsixDisplayName>
+    <VsixDisplayName Condition=" '$(VSTarget)' == '14.0' ">PowerShell Tools for Visual Studio 2015</VsixDisplayName>
+  </PropertyGroup>
 
   <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them -->
   <!-- TODO: Bring the below into its own .targets file, possibly Vsix.Targets, and import it. -->
   <Target Name="GetVsixVersion" Outputs="$(appveyor_build_version)" />
   <Target Name="GetVsixVSTarget" Outputs="$(VSTarget)" />
   <Target Name="GetVsixGuid" Outputs="$(VsixGuid)" />
+  <Target Name="GetVsixDisplayName" Outputs="$(VsixDisplayName)" />
   
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="'$(Language)' == 'C#'" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(Language)' == 'C#' and '$(CreateVsixContainer)' != '' and $(CreateVsixContainer) and '$(VSToolsPath)' != ''" />
