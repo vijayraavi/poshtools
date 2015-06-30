@@ -359,7 +359,7 @@ namespace PowerShellTools.DebugEngine
             IntPtr hostProcessWindowHandle = NativeMethods.FindWindow(
                     null, 
                     string.Format(
-                    PowerShellTools.Common.Constants.HostProcessWindowTitleFormat, 
+                    PowerShellTools.Common.Resources.HostProcessWindowTitleFormat, 
                     Process.GetCurrentProcess().Id, 
                     PowerShellTools.Common.Constants.PowerShellHostExeName));
             NativeMethods.SetForegroundWindow(hostProcessWindowHandle);
@@ -401,7 +401,7 @@ namespace PowerShellTools.DebugEngine
 
             if (node.IsAttachedProgram && !node.IsRemoteProgram)
             {
-                DebuggingService.AttachToRunspace(node.Process.ProcessId);
+                    DebuggingService.AttachToRunspace(node.Process.ProcessId);
             }
             else if (node.IsAttachedProgram && node.IsRemoteProgram)
             {
@@ -470,12 +470,12 @@ namespace PowerShellTools.DebugEngine
                 {
                     if(!dte2.ItemOperations.IsFileOpen(fullName))
                     {
-                        dte2.ItemOperations.OpenFile(fullName);
-                    }
+                    dte2.ItemOperations.OpenFile(fullName);
+                }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(DebugEngineConstants.FileOpenErrorMessages[(int)DebuggingService.GetDebugScenario()], ex);
+                    Log.Error(DebugScenarioUtilities.ScenarioToFileOpenErrorMsg(DebuggingService.GetDebugScenario()), ex);
                     HostUi.VsOutputString(ex.Message);
                 }
             }

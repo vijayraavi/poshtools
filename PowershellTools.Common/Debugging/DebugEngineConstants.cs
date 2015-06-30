@@ -46,7 +46,7 @@ namespace PowerShellTools.Common.Debugging
             @"\s+" + // spaces between function name and variable list
             @"\{([,\s]?[^\s,]+=\S+)*\}" + // list of parameters which are comma seperated, (note the equals sign)
             @"\s+([^\s:]+):" + // any number of spaces after the parameter list, and then the script name which ends right before a colon
-            @"\s+line (\d)"; // any number of spaces (after the colon) and then the word "line" and then a number which denotes the line number
+            @"\s+\w+ (\d)"; // any number of spaces (after the colon) and then the word "line" and then a number which denotes the line number
 
         public const string EnumerateRemoteProcessesScript = @"
 $processes = Get-Process;

@@ -75,7 +75,6 @@ namespace PowerShellTools.Common
         /// </summary>
         public static readonly Guid PowerShellReplCreationUiContextGuid = new Guid(PowerShellReplCreationUiContextString);
 
-
         /// <summary>
         /// This is the GUID in string form of the Visual Studio UI Context when in PowerShell project is opened/created.
         /// </summary>
@@ -90,30 +89,5 @@ namespace PowerShellTools.Common
         /// Minimal width of REPL output buffer as 80 to keep consistent experience with another PowerShell custom host in VS: Nuget Manager Console
         /// </summary>
         public const int MinimalReplBufferWidth = 80;
-
-        /// <summary>
-        /// PowerShell host process window title format
-        /// </summary>
-        public const string HostProcessWindowTitleFormat = "{0} : {1}";
-
-        /// <summary>
-        /// Dialog box title for invalid attempt at attaching on PowerShell v4 or below
-        /// </summary>
-        public const string ProcessAttachVersionErrorTitle = "Invalid PowerShell Version";
-
-        /// <summary>
-        /// Dialog box body for invalid attempt at attaching on PowerShell v4 or below
-        /// </summary>
-        public const string ProcessAttachVersionErrorBody = "Unable to attach to specified process with PowerShell Tools.\nPowerShell version 5.0 or above is required before PowerShell Tools may attach to a local or remote process.";
-
-        /// <summary>
-        /// Dialog box title for when wait on Enter-PSHostProcess cmdlet times out
-        /// </summary>
-        public const string ProcessAttachFailErrorTitle = "Error Attaching to Process";
-
-        /// <summary>
-        /// Dialog box body for when wait on Enter-PSHostProcess cmdlet times out
-        /// </summary>
-        public const string ProcessAttachFailErrorBody = "Unable to attach to specified process.";
     }
 }

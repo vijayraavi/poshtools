@@ -20,7 +20,6 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.IncrementalSearch;
-using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 
@@ -31,9 +30,6 @@ namespace PowerShellTools.Intellisense
     {
         [Import]
         public ICompletionBroker CompletionBroker = null; // Set via MEF
-
-        [Import]
-        public IEditorOperationsFactoryService EditOperationsFactory = null; // Set via MEF
 
         [Import]
         public IVsEditorAdaptersFactoryService AdaptersFactory { get; set; }
@@ -49,9 +45,6 @@ namespace PowerShellTools.Intellisense
 
         [Import]
         public SVsServiceProvider ServiceProvider { get; set; }
-
-        [Import]
-        public ITextUndoHistoryRegistry UndoHistoryRegistry = null;
 
         public IIntellisenseController TryCreateIntellisenseController(ITextView textView, IList<ITextBuffer> subjectBuffers)
         {

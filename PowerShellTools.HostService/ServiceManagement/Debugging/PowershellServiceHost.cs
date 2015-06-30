@@ -220,7 +220,7 @@ Also leaving the implementation here as a reference because that is going to be 
         public void PopRunspace()
         {
             // determine if you need to wake up detach runspace thread after popping
-            bool needToWake = (GetDebugScenario() == DebugScenario.Local_Attach);
+            bool needToWake = (GetDebugScenario() == DebugScenario.LocalAttach);
 
             if (_pushedRunspace != null)
             {
@@ -274,7 +274,7 @@ Also leaving the implementation here as a reference because that is going to be 
 
             RegisterRemoteFileOpenEvent(runspace);
 
-            if (true || GetDebugScenario() == DebugScenario.Local_Attach)
+            if (true || GetDebugScenario() == DebugScenario.LocalAttach)
             {
                 // wake up AttachToRunspace
                 _attachRequestEvent.Reset();

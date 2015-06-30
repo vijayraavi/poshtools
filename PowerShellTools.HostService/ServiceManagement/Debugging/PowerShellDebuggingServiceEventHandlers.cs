@@ -127,21 +127,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
 
                     // breakpoint is always hit for this case
-                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(true, file, bp.Line, bp.Column, false));
+                    _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, bp.Line, bp.Column, true, false));
                 }
             }
             else
-            {
+            {                
                 if (_callback != null)
                 {
-                    if (GetDebugScenario() == DebugScenario.Local_Attach)
+                    if (GetDebugScenario() == DebugScenario.LocalAttach)
                     {
                         string file = e.InvocationInfo.ScriptName;
                         int lineNum = e.InvocationInfo.ScriptLineNumber;
                         int column = e.InvocationInfo.OffsetInLine;
 
-                        // breakpoint is not hit for this case, also request to open file since this is associated with local attaching
-                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(false, file, lineNum, column, true));
+                        // the stop which occurs after attaching is not associated with a breakpoint and should result in the process' script being opened
+                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, lineNum, column, false, true));
                     }
                     else
                     {

@@ -180,7 +180,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             // Attaching leverages cmdlets introduced in PSv5
             if (_installedPowerShellVersion < RequiredPowerShellVersionForProcessAttach)
             {
-                MessageBox.Show(Constants.ProcessAttachVersionErrorBody, Constants.ProcessAttachVersionErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(Resources.ProcessAttachVersionErrorBody, Resources.ProcessAttachVersionErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
                 ServiceCommon.Log("User asked to attach to process while running inadequete PowerShell version");
                 return;
             }
@@ -188,46 +188,46 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             // Enter into to-attach process which will swap out the current runspace
             using (_currentPowerShell = PowerShell.Create())
             {
-                _currentPowerShell.Runspace = _runspace;
-                _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
-                _currentPowerShell.Invoke();
+            _currentPowerShell.Runspace = _runspace;
+            _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
+            _currentPowerShell.Invoke();
 
-                // wait for invoke to finish swapping the runspaces
-                _attachRequestEvent.WaitOne(5000);
+            // wait for invoke to finish swapping the runspaces
+            _attachRequestEvent.WaitOne(5000);
 
                 // make sure that the semaphore didn't just time out
-                if (GetDebugScenario() != DebugScenario.Local_Attach)
+                if (GetDebugScenario() != DebugScenario.LocalAttach)
                 {
-                    MessageBox.Show(Constants.ProcessAttachFailErrorBody, Constants.ProcessAttachFailErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(Resources.ProcessAttachFailErrorBody, Resources.ProcessAttachFailErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
                     ServiceCommon.Log("Failed to attach to running process.");
                     return;
                 }
 
-                // rehook up the event handling
-                _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-                _runspace.StateChanged += _runspace_StateChanged;
-                _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
+            // rehook up the event handling
+            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            _runspace.StateChanged += _runspace_StateChanged;
+            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
 
                 // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
-                _currentPowerShell.Runspace = _runspace;
-                _currentPowerShell.Commands.Clear();
-                _currentPowerShell.AddCommand("Debug-Runspace").AddParameter("Id", "1");
+            _currentPowerShell.Runspace = _runspace;
+            _currentPowerShell.Commands.Clear();
+            _currentPowerShell.AddCommand("Debug-Runspace").AddParameter("Id", "1");
 
-                try
-                {
-                    _currentPowerShell.Invoke();
-                }
+            try
+            {
+                _currentPowerShell.Invoke();
+            }
                 catch (RemoteException remoteException)
-                {
-                    // exception is expected if user asks to stop debugging while script is running
+            {
+                // exception is expected if user asks to stop debugging while script is running
                     ServiceCommon.Log("Forced to detach via stop command; " + remoteException.ToString());
-                }
+            }
                 catch (Exception exception)
-                {
+                    {
                     // any other sort of exception is not expected
                     ServiceCommon.Log("Unexpected exception while debugging runspace; " + exception.ToString());
-                }
+            }
             }
         }
 
@@ -260,8 +260,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.AddCommand("Exit-PSHostProcess");
                 _currentPowerShell.Invoke();
 
-                // wait for invoke to finish swapping the runspaces
-                _attachRequestEvent.WaitOne(5000);
+            // wait for invoke to finish swapping the runspaces
+            _attachRequestEvent.WaitOne(5000);
 
                 // make sure that the semaphore didn't just time out
                 if (GetDebugScenario() != DebugScenario.Local)
@@ -269,15 +269,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     ServiceCommon.Log("Failed to detach from running process");
                     return;
                 }
-
+            
                 // Rehook event handlers
-                _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-                _runspace.StateChanged += _runspace_StateChanged;
-                _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
+            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            _runspace.StateChanged += _runspace_StateChanged;
+            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
 
-                _callback.RefreshPrompt();
-            }            
+            _callback.RefreshPrompt();
+        }
         }
 
         /// <summary>
@@ -981,7 +981,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                else if (GetDebugScenario() == DebugScenario.Remote_Session)
+                else if (GetDebugScenario() == DebugScenario.RemoteSession)
                 {
                     // remote session debugging
                     dynamic psFrame = (dynamic)psobj;
@@ -992,7 +992,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
                 }
-                else if(GetDebugScenario() == DebugScenario.Local_Attach)
+                else if(GetDebugScenario() == DebugScenario.LocalAttach)
                 {
                     // local process attach debugging
                     string currentCall = psobj.ToString();
@@ -1067,11 +1067,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             else if (_runspace.ConnectionInfo is WSManConnectionInfo)
             {
-                return DebugScenario.Remote_Session;
+                return DebugScenario.RemoteSession;
             }
             else if (_runspace.ConnectionInfo != null && !(_runspace.ConnectionInfo is WSManConnectionInfo))
             {
-                return DebugScenario.Local_Attach;
+                return DebugScenario.LocalAttach;
             }
             return DebugScenario.Unknown;
         }

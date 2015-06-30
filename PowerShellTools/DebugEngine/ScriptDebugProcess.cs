@@ -2,11 +2,10 @@
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
-using PowerShellTools.DebugEngine.Remote;
 
 namespace PowerShellTools.DebugEngine
 {
-    public class ScriptDebugProcess : IDebugProcess2, IDebugProcessSecurity2
+    public class ScriptDebugProcess : IDebugProcess2
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugProcess));
 
@@ -27,7 +26,7 @@ namespace PowerShellTools.DebugEngine
             if (_processName == null)
             {
                 _processName = "";
-            }
+        }
         }
 
         public ScriptDebugProcess(IDebugPort2 debugPort)
@@ -54,7 +53,7 @@ namespace PowerShellTools.DebugEngine
 
                 if (Node.Debugger != null)
                 {
-                    pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_DEBUGGER_ATTACHED |
+                pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_DEBUGGER_ATTACHED |
                                         enum_PROCESS_INFO_FLAGS.PIFLAG_PROCESS_RUNNING;
                 }
                 else
@@ -75,7 +74,7 @@ namespace PowerShellTools.DebugEngine
         public int EnumPrograms(out IEnumDebugPrograms2 ppEnum)
         {
             Log.Debug("Process: EnumPrograms");
-            ppEnum = new RemoteEnumDebugPrograms(this);
+            ppEnum = null;
             return VSConstants.S_OK;
         }
 

@@ -113,6 +113,7 @@
     <Compile Include="IntelliSense\EmptyScriptPosition.cs" />
     <Compile Include="ObservableObject.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\ChoiceItem.cs" />
+    <Compile Include="ServiceManagement\DebuggingContract\DebugScenarioEnum.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\VsKeyInfo.cs" />
     <Compile Include="ServiceManagement\PowerShellRawHostOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

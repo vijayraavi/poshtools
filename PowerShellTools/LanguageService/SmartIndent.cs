@@ -4,7 +4,6 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Editor.OptionsExtensionMethods;
 using Microsoft.VisualStudio.TextManager.Interop;
-using PowerShellTools.Classification;
 using PowerShellTools.Intellisense;
 
 namespace PowerShellTools.LanguageService
@@ -78,7 +77,7 @@ namespace PowerShellTools.LanguageService
         private int? GetSmartIndentationImp(ITextSnapshotLine line, int tabSize)
         {
             int lineNumber = line.LineNumber;
-            if (lineNumber < 1) return null;
+            if (lineNumber < 0) return null;
 
             string baselineText;
             ITextSnapshotLine baseline;
@@ -144,9 +143,9 @@ namespace PowerShellTools.LanguageService
         {
             var currentSnapshot = line.Snapshot;
             groupStartLineText = line.GetText();
-            int lineNumber = line.LineNumber - 1;
+            int lineNumber = line.LineNumber;
             Stack<char> groupChars = new Stack<char>();
-            while (lineNumber >= 0)
+            while (true)
             {
                 for (int offset = line.Length - 1; offset >= 0; offset--)
                 {
@@ -169,9 +168,14 @@ namespace PowerShellTools.LanguageService
                         }
                     }
                 }
+
+                if ((--lineNumber) < 0)
+                {
+                    break;
+                }
+
                 line = currentSnapshot.GetLineFromLineNumber(lineNumber);
                 groupStartLineText = line.GetText();
-                lineNumber--;
             }
             groupStartChar = char.MinValue;
             return false;

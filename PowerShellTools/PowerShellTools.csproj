@@ -275,11 +275,11 @@
       <DependentUpon>ReadHostPromptForChoicesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesViewModel.cs" />
-    <Compile Include="DebugEngine\Remote_Debugging\RemoteDebugPort.cs" />
-    <Compile Include="DebugEngine\Remote_Debugging\RemoteDebugPortSupplier.cs" />
-    <Compile Include="DebugEngine\Remote_Debugging\RemoteEnumDebugProcess.cs" />
-    <Compile Include="DebugEngine\Remote_Debugging\RemoteEnumDebugPrograms.cs" />
-    <Compile Include="DebugEngine\Remote_Debugging\RemotePortPicker.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteDebugPort.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteDebugPortSupplier.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteEnumDebugProcess.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteEnumDebugPrograms.cs" />
+    <Compile Include="DebugEngine\Remote\RemotePortPicker.cs" />
     <Compile Include="DebugServiceEventHandlerBehaviorAttribute.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
@@ -317,6 +317,10 @@
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
     <Compile Include="Intellisense\EdgeTrackingMode.cs" />
+    <Compile Include="Intellisense\ProvideBraceCompletion.cs" />
+    <Compile Include="LanguageService\BraceCompletion\BraceCompletionContext.cs" />
+    <Compile Include="LanguageService\BraceCompletion\BraceCompletionContextProvider.cs" />
+    <Compile Include="LanguageService\BraceCompletion\BraceKind.cs" />
     <Compile Include="Options\BitnessEventArgs.cs" />
     <Compile Include="Options\BitnessOption.cs" />
     <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
@@ -335,7 +339,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="IDependencyValidator.cs" />
-    <Compile Include="Intellisense\AutoCompletionController.cs" />
     <Compile Include="Intellisense\IntellisenseController.cs" />
     <Compile Include="Intellisense\IntellisenseControllerProvider.cs" />
     <Compile Include="Intellisense\IntelliSenseEventsHandlerProxy.cs" />
@@ -656,7 +659,7 @@
     <Resource Include="Commands\UserInterface\Resources\StatusAnnotations_Invalid_color_16x.png" />
     <Resource Include="Commands\UserInterface\Resources\Warning_yellow_7231_16x16.png" />
     <Content Include="DebugEngine\PowerShellTools.DebugEngine.csproj" />
-    <Content Include="ItemTemplates\PowerShell Script.zip">
+    <Content Include="ItemTemplates\PowerShellScript.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -687,11 +690,11 @@
     <Content Include="Templates\Projects\PowerShellModuleProject.vstemplate" />
     <Content Include="Templates\Projects\PowerShellProject.vstemplate" />
     <Resource Include="Templates\Projects\PowerShellProject.ico" />
-    <Content Include="ItemTemplates\PowerShell Script Module.zip">
+    <Content Include="ItemTemplates\PowerShellScriptModule.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="ItemTemplates\PowerShell Script Data File.zip">
+    <Content Include="ItemTemplates\PowerShellScriptDataFile.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -720,8 +723,8 @@
     </None>
     <None Include="Templates\Projects\Script.ps1" />
     <Resource Include="Templates\Files\PowerShellScript.ico" />
-    <Resource Include="Templates\Files\PowerShellModule.ico" />
-    <Resource Include="Templates\Files\PowerShellDataFile.ico" />
+    <Resource Include="Templates\Files\PowerShellScriptModule.ico" />
+    <Resource Include="Templates\Files\PowerShellScriptDataFile.ico" />
     <None Include="PowerShellTools.targets" />
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
