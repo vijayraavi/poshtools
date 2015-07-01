@@ -290,8 +290,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private string OpenRemoteAttachedFile(string scriptName)
         {
+            // check to see if we have already copied the script over
+            if (_mapRemoteToLocal.ContainsKey(scriptName))
+            {
+                return _mapRemoteToLocal[scriptName];
+            }
+
+            // get content of the script
             _debuggingCommand = "Get-Content \"" + scriptName + "\"";
             PSDataCollection<PSObject> result = ExecuteDebuggingCommand();
+            _debuggingCommand "";
 
             string[] text = new string[result.Count()];
 
@@ -300,6 +308,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 text[i] = result.ElementAt(i).BaseObject as string;
             }
 
+            // create and map to new local temp file
             string tmpFileName = Path.GetTempFileName();
             string dirPath = tmpFileName.Remove(tmpFileName.LastIndexOf('.'));
             Directory.CreateDirectory(dirPath);
@@ -310,7 +319,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             File.WriteAllLines(fullFileName, text);
 
-            _debuggingCommand = "";
             return fullFileName;
         }
     }

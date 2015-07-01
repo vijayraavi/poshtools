@@ -260,8 +260,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.AddCommand("Exit-PSHostProcess");
                 _currentPowerShell.Invoke();
 
-            // wait for invoke to finish swapping the runspaces
-            _attachRequestEvent.WaitOne(5000);
+                // wait for invoke to finish swapping the runspaces
+                _attachRequestEvent.WaitOne(5000);
 
                 // make sure that the semaphore didn't just time out
                 if (GetDebugScenario() != DebugScenario.Local)
@@ -271,13 +271,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
             
                 // Rehook event handlers
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
-            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
+                _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+                _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+                _runspace.StateChanged += _runspace_StateChanged;
+                _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
 
-            _callback.RefreshPrompt();
-        }
+                _callback.RefreshPrompt();
+            }
         }
 
         /// <summary>
@@ -289,41 +289,52 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             List<KeyValuePair<uint, string>> validProcesses = new List<KeyValuePair<uint, string>>();
 
-            try {
-                // Initiate remote session with the remote machine to find all attachable processes
-                Execute(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
-                _attachRequestEvent.WaitOne(5000);
-
-                if (GetDebugScenario() == DebugScenario.Local)
-                {
-                    return null;
-                }
-
+            // Retrieve callback context so credentials window can display
+            if (_callback == null)
+            {
+                _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
+            }
                 using (_currentPowerShell = PowerShell.Create())
                 {
-                    // Run script on remote machine to grab all attachable processes
-                    _currentPowerShell.AddScript(DebugEngineConstants.EnumerateRemoteProcessesScript);
-                    _currentPowerShell.Runspace = _runspace;
-                    Collection<PSObject> result = _currentPowerShell.Invoke();
-
-                    // Add each process' name and pid to the list to be returned
-                    for (int i = 0; i < result.Count; i += 2)
+                    try
                     {
-                        dynamic pid = result.ElementAt(i);
-                        dynamic name = result.ElementAt(i + 1);
-                        validProcesses.Add(new KeyValuePair<uint, string>(uint.Parse(pid.ToString()), name.ToString()));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ServiceCommon.Log("Error connecting to remote machine; " + ex.ToString());
-                return null;
-            }
+                        // Initiate remote session with the remote machine
+                        _currentPowerShell.Runspace = _runspace;
+                        _currentPowerShell.AddScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+                        _currentPowerShell.Invoke();
+                        _attachRequestEvent.WaitOne(5000);
 
-            // Exit the remote session and return results back to RemoteEnumDebugProcess
-            Execute(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
-            _attachRequestEvent.WaitOne(5000);
+                        if (GetDebugScenario() == DebugScenario.Local)
+                        {
+                            return null;
+                        }
+
+                        // Run script on remote machine to grab all attachable processes
+                        _currentPowerShell.Commands.Clear();
+                        _currentPowerShell.AddScript(DebugEngineConstants.EnumerateRemoteProcessesScript);
+                        _currentPowerShell.Runspace = _runspace;
+                        Collection<PSObject> result = _currentPowerShell.Invoke();
+
+                        // Add each process' name and pid to the list to be returned
+                        for (int i = 0; i < result.Count; i += 2)
+                        {
+                            dynamic pid = result.ElementAt(i);
+                            dynamic name = result.ElementAt(i + 1);
+                            validProcesses.Add(new KeyValuePair<uint, string>(uint.Parse(pid.ToString()), name.ToString()));
+                        }
+
+                        // Exit the remote session and return results back to RemoteEnumDebugProcess
+                        _currentPowerShell.Commands.Clear();
+                        _currentPowerShell.AddScript(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+                        _currentPowerShell.Invoke();
+                        _attachRequestEvent.WaitOne(5000);
+                    }
+                    catch (Exception ex)
+                    {
+                        ServiceCommon.Log("Error connecting to remote machine; " + ex.ToString());
+                        return null;
+                    }
+            }
             return validProcesses;
         }
 
@@ -334,9 +345,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             // enter into a remote session
             // Initiate remote session with the remote machine to find all attachable processes
-            Execute(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
-            _attachRequestEvent.WaitOne(5000);
+            using (_currentPowerShell = PowerShell.Create())
+            {
+                _currentPowerShell.Runspace = _runspace;
+                _currentPowerShell.AddScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+                _currentPowerShell.Invoke();
 
+                _attachRequestEvent.WaitOne(5000);
+            }
             // use attach to runspace since now it isn't remote?
             AttachToRunspace(pid);
         }
@@ -981,7 +997,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                else if (GetDebugScenario() == DebugScenario.RemoteSession)
+                /*else if (GetDebugScenario() == DebugScenario.RemoteSession)
                 {
                     // remote session debugging
                     dynamic psFrame = (dynamic)psobj;
@@ -991,8 +1007,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             psFrame.ScriptName == null ? string.Empty : _mapRemoteToLocal[(string)psFrame.ScriptName.ToString()],
                             (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
-                }
-                else if(GetDebugScenario() == DebugScenario.LocalAttach)
+                }*/
+                else if(true || GetDebugScenario() == DebugScenario.LocalAttach)
                 {
                     // local process attach debugging
                     string currentCall = psobj.ToString();
