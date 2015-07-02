@@ -86,7 +86,7 @@ namespace PowerShellTools.Classification
         internal PowerShellClassifier(ITextBuffer bufferToClassify)
             : base(bufferToClassify)
         {
-
+            CreateClassificationTypeMap();
         }
 
         private static IClassificationTypeRegistryService ClassificationTypeRegistryService
