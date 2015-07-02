@@ -23,24 +23,18 @@ namespace PowerShellTools.DebugEngine
         public int GetProviderProcessData(enum_PROVIDER_FLAGS Flags, IDebugDefaultPort2 pPort, AD_PROCESS_ID ProcessId, CONST_GUID_ARRAY EngineFilter, PROVIDER_PROCESS_DATA[] pProcess)
         {
             Log.Debug("ProgramProvider: GetProviderProcessData");
-            return VSConstants.E_NOTIMPL;
-
-#if FALSE
-
-            if (Flags.HasFlag(enum_PROVIDER_FLAGS.PFLAG_GET_PROGRAM_NODES))
+            /*
+            try
             {
-                var process = Process.GetProcessById((int) ProcessId.dwProcessId);
-                foreach (ProcessModule module in process.Modules)
+                if (Flags.HasFlag(enum_PROVIDER_FLAGS.PFLAG_GET_PROGRAM_NODES))
                 {
-                    if (module.ModuleName.StartsWith("System.Management.Automation", StringComparison.OrdinalIgnoreCase))
+                    if(PowerShellToolsPackage.DebuggingService.IsAttachable(ProcessId.dwProcessId))
                     {
                         var node = new ScriptProgramNode(new ScriptDebugProcess(pPort, ProcessId.dwProcessId));
-
                         var programNodes = new[] { Marshal.GetComInterfaceForObject(node, typeof(IDebugProgramNode2)) };
-
                         var destinationArray = Marshal.AllocCoTaskMem(IntPtr.Size * programNodes.Length);
-                        Marshal.Copy(programNodes, 0, destinationArray, programNodes.Length);
 
+                        Marshal.Copy(programNodes, 0, destinationArray, programNodes.Length);
                         pProcess[0].Fields = enum_PROVIDER_FIELDS.PFIELD_PROGRAM_NODES;
                         pProcess[0].ProgramNodes.Members = destinationArray;
                         pProcess[0].ProgramNodes.dwCount = (uint)programNodes.Length;
@@ -49,9 +43,12 @@ namespace PowerShellTools.DebugEngine
                     }
                 }
             }
-
+            catch (Exception ex)
+            {
+                Log.Debug("Exception while examining local running process: " + ex.Message);
+            }
+            */
             return VSConstants.S_FALSE;
-#endif
         }
 
         public int GetProviderProgramNode(enum_PROVIDER_FLAGS Flags, IDebugDefaultPort2 pPort, AD_PROCESS_ID ProcessId, ref Guid guidEngine, ulong programId, out IDebugProgramNode2 ppProgramNode)

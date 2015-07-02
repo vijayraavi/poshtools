@@ -44,6 +44,15 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void SetRunspace(bool overrideExecutionPolicy);
 
         [OperationContract]
+        void AttachToRunspace(uint pid);
+
+        [OperationContract]
+        void DetachFromRunspace();
+
+        [OperationContract]
+        bool IsAttachable(uint pid);
+
+        [OperationContract]
         Collection<Variable> GetScopedVariable();
 
         [OperationContract]
@@ -69,5 +78,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract]
         void SetOption(PowerShellRawHostOptions option);
+
+        [OperationContract]
+        DebugScenario GetDebugScenario();
     }
+
 }

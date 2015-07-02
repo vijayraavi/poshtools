@@ -106,6 +106,11 @@ namespace PowerShellTools.DebugEngine
             Log.InfoFormat("Debugger stopped");
             try
             {
+                if (e.OpenScript)
+                {
+                    OpenFileInVS(e.ScriptFullPath);
+                }
+
                 RefreshScopedVariables();
                 RefreshCallStack();
 
@@ -354,7 +359,7 @@ namespace PowerShellTools.DebugEngine
             IntPtr hostProcessWindowHandle = NativeMethods.FindWindow(
                     null, 
                     string.Format(
-                    PowerShellTools.Common.Constants.HostProcessWindowTitleFormat, 
+                    PowerShellTools.Common.Resources.HostProcessWindowTitleFormat, 
                     Process.GetCurrentProcess().Id, 
                     PowerShellTools.Common.Constants.PowerShellHostExeName));
             NativeMethods.SetForegroundWindow(hostProcessWindowHandle);
@@ -396,8 +401,7 @@ namespace PowerShellTools.DebugEngine
 
             if (node.IsAttachedProgram)
             {
-                Execute(String.Format("Enter-PSHostProcess -Id {0};", node.Process.ProcessId));
-                Execute("Debug-Runspace 1");
+                    DebuggingService.AttachToRunspace(node.Process.ProcessId);
             }
             else
             {
@@ -452,7 +456,7 @@ namespace PowerShellTools.DebugEngine
             _stoppingCompleteEvent.Set();
         }
 
-        internal void OpenRemoteFile(string fullName)
+        internal void OpenFileInVS(string fullName)
         {
             var dte2 = (DTE80.DTE2)Package.GetGlobalService(typeof(DTE.DTE));
 
@@ -460,11 +464,14 @@ namespace PowerShellTools.DebugEngine
             {
                 try
                 {
-                    dte2.ItemOperations.OpenFile(fullName);
+                    if(!dte2.ItemOperations.IsFileOpen(fullName))
+                    {
+                        dte2.ItemOperations.OpenFile(fullName);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Failed to open remote file through powershell remote session", ex);
+                    Log.Error(DebugScenarioUtilities.ScenarioToFileOpenErrorMsg(DebuggingService.GetDebugScenario()), ex);
                     HostUi.VsOutputString(ex.Message);
                 }
             }
