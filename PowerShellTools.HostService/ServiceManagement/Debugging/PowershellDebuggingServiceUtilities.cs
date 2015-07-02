@@ -288,6 +288,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        /// <summary>
+        /// Opens the script a remote process is running.
+        /// </summary>
+        /// <param name="scriptName"></param>
+        /// <returns></returns>
         private string OpenRemoteAttachedFile(string scriptName)
         {
             // check to see if we have already copied the script over
@@ -297,9 +302,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             // get content of the script
-            _debuggingCommand = "Get-Content \"" + scriptName + "\"";
-            PSDataCollection<PSObject> result = ExecuteDebuggingCommand();
-            _debuggingCommand "";
+            // _debuggingCommand = "Get-Content \"" + scriptName + "\"";
+            // PSDataCollection<PSObject> result = ExecuteDebuggingCommand();
+            // _debuggingCommand = "";
+
+            PSCommand psCommand = new PSCommand();
+            psCommand.AddScript("Get-Content \"" + scriptName + "\"");
+            PSDataCollection<PSObject> result = new PSDataCollection<PSObject>();
+            _runspace.Debugger.ProcessCommand(psCommand, result);
 
             string[] text = new string[result.Count()];
 
@@ -320,6 +330,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             File.WriteAllLines(fullFileName, text);
 
             return fullFileName;
+        }
+
+        /// <summary>
+        /// Re-adds all of the various event handlers to the runspace
+        /// </summary>
+        private void AddEventHandlers()
+        {
+            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            _runspace.StateChanged += _runspace_StateChanged;
+            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
         }
     }
 }

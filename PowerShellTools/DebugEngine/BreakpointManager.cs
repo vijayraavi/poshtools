@@ -145,14 +145,7 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
-                {
-                    Debugger.DebuggingService.SetBreakpoint(new PowerShellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
-                }
-                else if (Debugger.IsDebuggingCommandReady)
-                {
-                    Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.SetPSBreakpoint, breakpoint.File, breakpoint.Line));
-                }
+                Debugger.DebuggingService.SetBreakpoint(new PowerShellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column), Debugger.IsDebuggingCommandReady);
             }
             catch (Exception ex)
             {

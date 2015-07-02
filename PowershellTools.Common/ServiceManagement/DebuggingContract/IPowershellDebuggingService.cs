@@ -15,7 +15,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
     public interface IPowerShellDebuggingService
     {
         [OperationContract]
-        void SetBreakpoint(PowerShellBreakpoint bp);
+        void SetBreakpoint(PowerShellBreakpoint bp, bool commandReady);
 
         [OperationContract]
         void EnableBreakpoint(PowerShellBreakpoint bp, bool enable);
@@ -45,19 +45,22 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void SetRunspace(bool overrideExecutionPolicy);
 
         [OperationContract]
+        bool IsAttachable(uint pid);
+
+        [OperationContract]
         void AttachToRunspace(uint pid);
 
         [OperationContract]
-        void DetachFromRunspace();
-
-        [OperationContract]
-        bool IsAttachable(uint pid);
+        bool DetachFromRunspace();
 
         [OperationContract]
         List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteMachine);
 
         [OperationContract]
         void AttachToRemoteRunspace(uint pid, string remoteName);
+
+        [OperationContract]
+        bool DetachFromRemoteRunspace();
 
         [OperationContract]
         Collection<Variable> GetScopedVariable();

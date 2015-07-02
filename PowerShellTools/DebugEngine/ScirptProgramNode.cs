@@ -5,6 +5,7 @@ using System.Diagnostics;
 using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 #endregion
 
@@ -176,8 +177,18 @@ namespace PowerShellTools.DebugEngine
         public int Detach()
         {
             Log.Debug("ScriptProgramNode: Entering Detach");
-            Debugger.DebuggingService.DetachFromRunspace();
-            return VSConstants.S_OK;
+
+            bool result = true;
+            if (Debugger.DebuggingService.GetDebugScenario() == DebugScenario.LocalAttach)
+            {
+                result = Debugger.DebuggingService.DetachFromRunspace();
+            }
+            else if (Debugger.DebuggingService.GetDebugScenario() == DebugScenario.RemoteSession)
+            {
+                result = Debugger.DebuggingService.DetachFromRemoteRunspace();
+            }
+
+            return result ? VSConstants.S_OK : VSConstants.S_FALSE;
         }
 
         public int GetProgramId(out Guid pguidProgramId)
