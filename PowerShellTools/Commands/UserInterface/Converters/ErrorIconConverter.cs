@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
@@ -12,10 +9,12 @@ namespace PowerShellTools.Commands.UserInterface
     {
         private BitmapImage _errorIcon;
         private BitmapImage _warningIcon;
+        private const string _assemblyLoaderPrefix = "pack://application:,,,/{0};component/Commands/UserInterface/Resources/";
 
         public ErrorIconConverter()
         {
-            var packPrefix = "pack://application:,,,/PowerShellTools;component/Commands/UserInterface/Resources/";
+            var assemblyName = Assembly.GetExecutingAssembly().GetName();
+            var packPrefix = string.Format(_assemblyLoaderPrefix, assemblyName);
             _errorIcon = new BitmapImage(new Uri(packPrefix + "StatusAnnotations_Invalid_Color_16x.png"));
             _warningIcon = new BitmapImage(new Uri(packPrefix + "Warning_yellow_7231_16x16.png"));
         }
