@@ -48,6 +48,10 @@ namespace PowerShellTools.Common.Debugging
             @"\s+([^\s:]+):" + // any number of spaces after the parameter list, and then the script name which ends right before a colon
             @"\s+\w+ (\d)"; // any number of spaces (after the colon) and then the word "line" and then a number which denotes the line number
 
+        /// <summary>
+        /// Enumerates through all processes on a machine and looks for one running the powershell.exe module. Adds the process id and process name
+        /// of any valid processes to an array which is then returned.
+        /// </summary>
         public const string EnumerateRemoteProcessesScript = @"
 $processes = Get-Process;
 $valid_processes = @();
@@ -156,13 +160,5 @@ param (
 
         public const string PowerShellHostProcessLogTag = "[{0}]:";
         public const string PowerShellHostProcessLogFormat = PowerShellHostProcessLogTag + "{1}";
-
-        /// <summary>
-        /// Lookup table for error messages pertaining to opening files in the various debugging scenarios.
-        /// </summary>
-        public static readonly string[] FileOpenErrorMessages = { "Failed to open file", // LOCAL
-                                                                  "Failed to open remote file through powershell remote session", // REMOTE_SESSION
-                                                                  "Failed to open file while attaching to local process.", // LOCAL_ATTACH
-                                                                  "Failed to open file." }; // UNKNOWN
     }
 }
