@@ -117,8 +117,6 @@ namespace PowerShellTools.DebugEngine
 
         public int GetPhysicalProcessId(AD_PROCESS_ID[] pProcessId)
         {
-            //pProcessId[0].ProcessIdType = (uint)enum_AD_PROCESS_ID.AD_PROCESS_ID_GUID;
-            //pProcessId[0].guidProcessId = Id;
             Log.Debug("Process: GetPhysicalProcessId");
 
             var pidStruct = new AD_PROCESS_ID();
@@ -168,7 +166,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetUserName(out string pbstrUserName)
         {
-            pbstrUserName = "REDMOND\\t-maray";
+            pbstrUserName = "";
             return VSConstants.S_OK;
         }
     }

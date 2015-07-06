@@ -243,7 +243,7 @@ namespace PowerShellTools.DebugEngine
             {
                 _node = rgpProgramNodes[0] as ScriptProgramNode;
 
-                // not sure why for attaching to remote that the program node is put in the programs array...
+                // during remote attach, the program node is put in the programs array
                 if (_node == null)
                 {
                     _node = rgpPrograms[0] as ScriptProgramNode;

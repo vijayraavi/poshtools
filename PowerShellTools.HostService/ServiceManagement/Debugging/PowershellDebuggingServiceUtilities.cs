@@ -295,27 +295,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns></returns>
         private string OpenRemoteAttachedFile(string scriptName)
         {
-            // check to see if we have already copied the script over
-            if (_mapRemoteToLocal.ContainsKey(scriptName))
-            {
-                return _mapRemoteToLocal[scriptName];
-            }
-
-            // get content of the script
-            // _debuggingCommand = "Get-Content \"" + scriptName + "\"";
-            // PSDataCollection<PSObject> result = ExecuteDebuggingCommand();
-            // _debuggingCommand = "";
-
             PSCommand psCommand = new PSCommand();
             psCommand.AddScript("Get-Content \"" + scriptName + "\"");
             PSDataCollection<PSObject> result = new PSDataCollection<PSObject>();
             _runspace.Debugger.ProcessCommand(psCommand, result);
 
-            string[] text = new string[result.Count()];
+            string[] remoteText = new string[result.Count()];
 
-            for (int i = 0; i < text.Length; i++)
+            for (int i = 0; i < remoteText.Length; i++)
             {
-                text[i] = result.ElementAt(i).BaseObject as string;
+                remoteText[i] = result.ElementAt(i).BaseObject as string;
             }
 
             // create and map to new local temp file
@@ -324,10 +313,28 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             Directory.CreateDirectory(dirPath);
             string fullFileName = Path.Combine(dirPath, new FileInfo(scriptName).Name);
 
+            // check to see if we have already copied the script over, and if so, whether or not we should overwrite it
+            if (_mapRemoteToLocal.ContainsKey(scriptName))
+            {
+                string[] localText = File.ReadAllLines(_mapRemoteToLocal[scriptName]);
+                var unionText = from a in localText
+                                join b in remoteText on a equals b
+                                select a;
+
+                if (localText.Length == remoteText.Length && unionText.Count() == localText.Length)
+                {
+                    return _mapRemoteToLocal[scriptName];
+                }
+                else
+                {
+                    File.Delete(_mapRemoteToLocal[scriptName]);
+                }
+            }
+
             _mapRemoteToLocal[scriptName] = fullFileName;
             _mapLocalToRemote[fullFileName] = scriptName;
 
-            File.WriteAllLines(fullFileName, text);
+            File.WriteAllLines(fullFileName, remoteText);
 
             return fullFileName;
         }
