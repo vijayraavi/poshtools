@@ -10,12 +10,11 @@ using Microsoft.VisualStudio.Debugger.Interop;
 namespace PowerShellTools.DebugEngine.Remote
 {
     /// <summary>
-    /// Part of the process to add a PowerShell Tools remote debugging transport to the
+    /// Supplies the PowerShell Tools remote debugging transport to the
     /// attach to process dialog.
     /// </summary>
     internal class RemoteDebugPortSupplier : IDebugPortSupplier2, IDebugPortSupplierDescription2
     {
-        // Guid taken from PTVS, need to generate our own
         public const string PortSupplierId = "{FEB76325-D127-4E02-B59D-B16D93D46CF5}";
         public static readonly Guid PortSupplierGuid = new Guid(PortSupplierId);
 
@@ -43,8 +42,7 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public int GetDescription(enum_PORT_SUPPLIER_DESCRIPTION_FLAGS[] pdwFlags, out string pbstrText)
         {
-            pbstrText = "Allows for debugging of a PowerShell script on a remote machine. Utilizes PowerShell v5.0+ features." +
-                " This version of PowerShell must be installed in order to remotely debug.";
+            pbstrText = Resources.RemotePortDescription;
             return VSConstants.S_OK;
         }
 
@@ -62,7 +60,7 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public int GetPortSupplierName(out string pbstrName)
         {
-            pbstrName = "PowerShell Tools Remote Debugging";
+            pbstrName = Resources.RemoteDebugTitle;
             return VSConstants.S_OK;
         }
 

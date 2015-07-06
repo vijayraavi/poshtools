@@ -396,4 +396,10 @@ Would you like to download now?</value>
   <data name="ParameterSetNameLabel" xml:space="preserve">
     <value>ParameterSetName:</value>
   </data>
+  <data name="RemotePortDescription" xml:space="preserve">
+    <value>Allows for debugging of a PowerShell script on a remote machine. Utilizes PowerShell v5.0+ features. This version of PowerShell must be installed on the remote machine in order to remotely debug.</value>
+  </data>
+  <data name="RemoteDebugTitle" xml:space="preserve">
+    <value>PowerShell Tools Remote Debugging</value>
+  </data>
 </root>

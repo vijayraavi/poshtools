@@ -9,8 +9,8 @@ using Microsoft.VisualStudio.Debugger.Interop;
 namespace PowerShellTools.DebugEngine.Remote
 {
     /// <summary>
-    /// Enumerates through all programs running in a PowerShell program. Assumes
-    /// that only one program exists per process.
+    /// Enumerates through all programs running in an attachable process. We assume
+    /// that there is only one program exists per process though.
     /// </summary>
     internal class RemoteEnumDebugPrograms : IEnumDebugPrograms2
     {

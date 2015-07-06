@@ -10,7 +10,7 @@ namespace PowerShellTools.DebugEngine.Remote
 {
     /// <summary>
     /// Implementation of IDebugPort 2 interface. Contacts a remote machine and uses the IEnumDebugProcess2
-    /// interface to grab all powershell processes off of that machine. 
+    /// interface to grab all attachable processes off of that machine. 
     /// </summary>
     class RemoteDebugPort : IDebugPort2
     {

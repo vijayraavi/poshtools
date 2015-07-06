@@ -14,9 +14,8 @@ using System.Windows.Forms;
 namespace PowerShellTools.DebugEngine.Remote
 {
     /// <summary>
-    /// Enumerates all of the processes on a remote machine via
-    /// the PowerShell Get-Process cmdlet. Stores all PowerShell related
-    /// processes in a list structure.
+    /// Works with the host service to find all attachable processes on a 
+    /// remote machine. Stores said processes in a list structure.
     /// </summary>
     internal class RemoteEnumDebugProcess : IEnumDebugProcesses2
     {
@@ -31,6 +30,11 @@ namespace PowerShellTools.DebugEngine.Remote
             _currIndex = 0;
         }
 
+        /// <summary>
+        /// Asks HostService to find all attachable processes on the given machine. Will prompt user to retry connecting if 
+        /// the call to EnumerateRemoteProcesses returns null.
+        /// </summary>
+        /// <param name="remotePort"></param>
         public void connect(IDebugPort2 remotePort)
         {
             List<KeyValuePair<uint, string>> information;
@@ -57,7 +61,6 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public int Clone(out IEnumDebugProcesses2 ppEnum)
         {
-            // should check that this makes sense
             ppEnum = new RemoteEnumDebugProcess(_remoteComputer);
             foreach (ScriptDebugProcess process in _runningProcesses)
             {

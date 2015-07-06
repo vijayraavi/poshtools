@@ -10,8 +10,8 @@ using Microsoft.VisualStudio.OLE.Interop;
 namespace PowerShellTools.DebugEngine.Remote
 {
     /// <summary>
-    /// Class is utilized by Visual Studio when the Attach to Process dialog is active and the Remote PowerShell
-    /// Debugging option is selected.
+    /// Class is utilized by Visual Studio when the Attach to Process dialog is active and the PowerShell Tools
+    /// Remote Debugging option is selected.
     /// </summary>
     internal class RemotePortPicker : IDebugPortPicker
     {
