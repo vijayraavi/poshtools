@@ -88,7 +88,7 @@ namespace PowerShellTools.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Failed to open local file while attaching to local process.&quot;.
+        ///   Looks up a localized string similar to Failed to open local file while attaching to local process..
         /// </summary>
         internal static string LocalAttachFileOpenError {
             get {
@@ -97,7 +97,7 @@ namespace PowerShellTools.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Failed to open local file.&quot;.
+        ///   Looks up a localized string similar to Failed to open local file..
         /// </summary>
         internal static string LocalFileOpenError {
             get {
@@ -106,7 +106,16 @@ namespace PowerShellTools.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Failed to open remote file through powershell remote session.&quot;.
+        ///   Looks up a localized string similar to Failed to open remote file while attaching to a remote process..
+        /// </summary>
+        internal static string RemoteAttachFileOpenError {
+            get {
+                return ResourceManager.GetString("RemoteAttachFileOpenError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to open remote file through powershell remote session..
         /// </summary>
         internal static string RemoteSessionFileOpenError {
             get {

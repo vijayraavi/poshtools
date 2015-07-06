@@ -235,10 +235,10 @@ Also leaving the implementation here as a reference because that is going to be 
                 _callback.SetRemoteRunspace(false);
             }
 
-            if (true || needToWake)
+            if (needToWake)
             {
                 // wake up DetachFromRunspace
-                _attachRequestEvent.Reset();
+                _attachRequestEvent.Set();
             }
         }
 
@@ -274,10 +274,10 @@ Also leaving the implementation here as a reference because that is going to be 
 
             RegisterRemoteFileOpenEvent(runspace);
 
-            if (true || GetDebugScenario() == DebugScenario.LocalAttach)
+            if (GetDebugScenario() == DebugScenario.LocalAttach)
             {
                 // wake up AttachToRunspace
-                _attachRequestEvent.Reset();
+                _attachRequestEvent.Set();
             }
         }
 

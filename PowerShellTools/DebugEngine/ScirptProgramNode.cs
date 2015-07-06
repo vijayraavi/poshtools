@@ -183,7 +183,7 @@ namespace PowerShellTools.DebugEngine
             {
                 result = Debugger.DebuggingService.DetachFromRunspace();
             }
-            else if (Debugger.DebuggingService.GetDebugScenario() == DebugScenario.RemoteSession)
+            else if (Debugger.DebuggingService.GetDebugScenario() == DebugScenario.RemoteAttach)
             {
                 result = Debugger.DebuggingService.DetachFromRemoteRunspace();
             }

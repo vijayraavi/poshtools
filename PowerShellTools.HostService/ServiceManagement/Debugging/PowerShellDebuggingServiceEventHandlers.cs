@@ -143,7 +143,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         // the stop which occurs after attaching is not associated with a breakpoint and should result in the process' script being opened
                         _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, lineNum, column, false, true));
                     }
-                    else if (GetDebugScenario() == DebugScenario.RemoteSession)
+                    else if (GetDebugScenario() == DebugScenario.RemoteAttach)
                     {
                         // copy the remote file over to host machine
                         string localFile = OpenRemoteAttachedFile(e.InvocationInfo.ScriptName);

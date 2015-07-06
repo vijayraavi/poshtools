@@ -188,19 +188,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             // Enter into to-attach process which will swap out the current runspace
             using (_currentPowerShell = PowerShell.Create())
             {
+                _attachRequestEvent.Reset();
+                DebugScenario preScenario = GetDebugScenario();
                 _currentPowerShell.Runspace = _runspace;
                 _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
                 _currentPowerShell.Invoke();
 
-                // wait for invoke to finish swapping the runspaces
-                _attachRequestEvent.WaitOne(5000);
-
-                // make sure that the semaphore didn't just time out
-                if (GetDebugScenario() == DebugScenario.Local)
+                // wait for invoke to finish swapping the runspaces if you are attaching to a local process
+                if (preScenario != DebugScenario.RemoteSession)
                 {
-                    MessageBox.Show(Resources.ProcessAttachFailErrorBody, Resources.ProcessAttachFailErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
-                    ServiceCommon.Log("Failed to attach to running process.");
-                    return;
+                    _attachRequestEvent.WaitOne(5000);
+                    DebugScenario postScenario = GetDebugScenario();
+
+                    // make sure that the semaphore didn't just time out
+                    if (preScenario == postScenario)
+                    {
+                        MessageBox.Show(Resources.ProcessAttachFailErrorBody, Resources.ProcessAttachFailErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ServiceCommon.Log("Failed to attach to running process.");
+                        return;
+                    }
                 }
 
                 // rehook event handlers
@@ -253,25 +259,33 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             using (_currentPowerShell = PowerShell.Create())
             {
+                _attachRequestEvent.Reset();
+                DebugScenario preScenario = GetDebugScenario();
                 _currentPowerShell.Runspace = _runspace;
                 _currentPowerShell.AddCommand("Exit-PSHostProcess");
                 _currentPowerShell.Invoke();
 
-                // wait for invoke to finish swapping the runspaces
-                _attachRequestEvent.WaitOne(5000);
-
-                // make sure that the semaphore didn't just time out
-                if (GetDebugScenario() != DebugScenario.Local)
+                // wait for invoke to finish swapping the runspaces if detaching from a local process
+                if (preScenario == DebugScenario.LocalAttach)
                 {
-                    // very unlikely for this to happen, but we should make sure to handle the case anyway
-                    ServiceCommon.Log("Failed to detach from running process");
-                    return false;
+                    _attachRequestEvent.WaitOne(5000);
+                    DebugScenario postScenario = GetDebugScenario();
+
+                    // make sure that the semaphore didn't just time out
+                    if (preScenario == postScenario)
+                    {
+                        // very unlikely for this to happen, but we should make sure to handle the case anyway
+                        ServiceCommon.Log("Failed to detach from running process");
+                        return false;
+                    }
                 }
 
-                // rehook event handlers
-                AddEventHandlers();
-
-                _callback.RefreshPrompt();
+                // rehook event handlers and update REPL prompt
+                if (GetDebugScenario() == DebugScenario.Local)
+                {
+                    AddEventHandlers();
+                    _callback.RefreshPrompt();
+                }
             }
 
             return true;
@@ -291,6 +305,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
             }
+
             using (_currentPowerShell = PowerShell.Create())
             {
                 try
@@ -299,7 +314,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _currentPowerShell.Runspace = _runspace;
                     _currentPowerShell.AddScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
                     _currentPowerShell.Invoke();
-                    _attachRequestEvent.WaitOne(5000);
 
                     if (GetDebugScenario() == DebugScenario.Local)
                     {
@@ -324,7 +338,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _currentPowerShell.Commands.Clear();
                     _currentPowerShell.AddScript(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
                     _currentPowerShell.Invoke();
-                    _attachRequestEvent.WaitOne(5000);
                 }
                 catch (Exception ex)
                 {
@@ -353,8 +366,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _currentPowerShell.Runspace = _runspace;
                     _currentPowerShell.AddScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
                     _currentPowerShell.Invoke();
-
-                    _attachRequestEvent.WaitOne(5000);
                 }
                 catch (Exception e)
                 {
@@ -367,6 +378,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             AttachToRunspace(pid);
         }
 
+        /// <summary>
+        /// Detaches the HostService from a remote runspace
+        /// </summary>
         public bool DetachFromRemoteRunspace()
         {
             // detach from the runspace
@@ -382,9 +396,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.AddScript(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
                 _currentPowerShell.Invoke();
 
-                // wait for invoke to finish swapping the runspaces
-                _attachRequestEvent.WaitOne(5000);
-
                 if (GetDebugScenario() != DebugScenario.Local)
                 {
                     // very unlikely for this to happen, but we should make sure to handle the case anyway
@@ -392,9 +403,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     return false;
                 }
 
-                // rehook event handlers
+                // rehook event handlers and update REPL prompt
                 AddEventHandlers();
-
                 _callback.RefreshPrompt();
 
             }
@@ -1042,7 +1052,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                /*else if (GetDebugScenario() == DebugScenario.RemoteSession)
+                else if (GetDebugScenario() == DebugScenario.RemoteSession && !(psobj.BaseObject is string))
                 {
                     // remote session debugging
                     dynamic psFrame = (dynamic)psobj;
@@ -1052,10 +1062,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             psFrame.ScriptName == null ? string.Empty : _mapRemoteToLocal[(string)psFrame.ScriptName.ToString()],
                             (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
-                }*/
-                else if(true || GetDebugScenario() == DebugScenario.LocalAttach)
+                }
+                else if(GetDebugScenario() == DebugScenario.RemoteAttach || GetDebugScenario() == DebugScenario.LocalAttach)
                 {
-                    // local process attach debugging
+                    // local and remote process attach debugging
                     string currentCall = psobj.ToString();
                     Match match = validStackLine.Match(currentCall);
                     if (match.Success)
@@ -1118,7 +1128,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Returns the connection info for the current runspace
+        /// Returns the connection info for the current runspace based on certain characteristics of the runspace. Note: the criteria for remote debug vs remote session
+        /// is not always correct and should be treated carefully.
         /// </summary>
         public DebugScenario GetDebugScenario()
         {
@@ -1128,7 +1139,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             else if (_runspace.ConnectionInfo is WSManConnectionInfo)
             {
-                return DebugScenario.RemoteSession;
+                if (_runspace.RunspaceAvailability == RunspaceAvailability.RemoteDebug)
+                {
+                    return DebugScenario.RemoteAttach;
+                }
+                else
+                {
+                    return DebugScenario.RemoteSession;
+                }
             }
             else if (_runspace.ConnectionInfo != null && !(_runspace.ConnectionInfo is WSManConnectionInfo))
             {
