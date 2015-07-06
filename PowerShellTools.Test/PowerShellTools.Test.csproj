@@ -74,6 +74,7 @@
     <Reference Include="System.Management.Automation">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Powershell\System.Management.Automation.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <Choose>

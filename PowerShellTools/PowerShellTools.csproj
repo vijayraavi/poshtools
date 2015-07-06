@@ -789,25 +789,25 @@
     <ProjectReference Include="..\PowerShell.HostService.Console\PowerShell.HostService.Console.csproj">
       <Project>{e84fc12d-897f-4244-b44c-b42839d677a4}</Project>
       <Name>PowerShell.HostService.Console</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.Common\PowerShellTools.Common.csproj">
       <Project>{F62AB73F-FD18-4C6D-967C-5DB4CD14B92B}</Project>
       <Name>PowerShellTools.Common</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.HostService.x86\PowerShellTools.HostService.x86.csproj">
       <Project>{528d75e0-71d8-408c-aeae-485d84e08bd2}</Project>
       <Name>PowerShellTools.HostService.x86</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.HostService\PowerShellTools.HostService.csproj">
       <Project>{8b0f3db2-ad3d-4d3a-85c3-4850263054e9}</Project>
       <Name>PowerShellTools.HostService</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.Contracts\PowerShellTools.Contracts.csproj">
@@ -818,13 +818,13 @@
     <ProjectReference Include="..\PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj">
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>
       <Name>PowerShellTools.TestAdapter</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\ReplWindow\PowerShellTools.Repl.csproj">
       <Project>{20bb6fac-44d2-4d76-abfe-0c1e163a1a4f}</Project>
       <Name>PowerShellTools.Repl</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3bPkgdefProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
   </ItemGroup>
