@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Management.Automation;
-using System.Windows.Media;
 using Microsoft.VisualStudio.Language.StandardClassification;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
@@ -78,40 +79,35 @@ namespace PowerShellTools.Classification
         [BaseDefinition("text"), Name("PS1ScriptGaps"), Export(typeof(ClassificationTypeDefinition))]
         private static ClassificationTypeDefinition scriptGapsTypeDefinition;
 
-        private static Dictionary<PSTokenType, IClassificationType> tokenClassificationTypeMap;
-        private static IClassificationType scriptGaps;
+        private static Dictionary<PSTokenType, IClassificationType> _tokenClassificationTypeMap;
+        private static IClassificationType _scriptGaps;
 #pragma warning restore 169, 649
-
-        static PowerShellClassifier()
-        {
-            tokenClassificationTypeMap = new Dictionary<PSTokenType, IClassificationType>();
-            tokenClassificationTypeMap[PSTokenType.Attribute] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellAttribute);
-            tokenClassificationTypeMap[PSTokenType.Command] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellCommand);
-            tokenClassificationTypeMap[PSTokenType.CommandArgument] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellCommandArgument);
-            tokenClassificationTypeMap[PSTokenType.CommandParameter] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellCommandParameter);
-            tokenClassificationTypeMap[PSTokenType.Comment] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellComment);
-            tokenClassificationTypeMap[PSTokenType.GroupEnd] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellGroupEnd);
-            tokenClassificationTypeMap[PSTokenType.GroupStart] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellGroupStart);
-            tokenClassificationTypeMap[PSTokenType.Keyword] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellKeyword);
-            tokenClassificationTypeMap[PSTokenType.LineContinuation] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellLineContinuation);
-            tokenClassificationTypeMap[PSTokenType.LoopLabel] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellLoopLabel);
-            tokenClassificationTypeMap[PSTokenType.Member] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellMember);
-            tokenClassificationTypeMap[PSTokenType.NewLine] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellNewLine);
-            tokenClassificationTypeMap[PSTokenType.Number] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellNumber);
-            tokenClassificationTypeMap[PSTokenType.Operator] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellOperator);
-            tokenClassificationTypeMap[PSTokenType.Position] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellPosition);
-            tokenClassificationTypeMap[PSTokenType.StatementSeparator] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellStatementSeparator);
-            tokenClassificationTypeMap[PSTokenType.String] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellString);
-            tokenClassificationTypeMap[PSTokenType.Type] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellType);
-            tokenClassificationTypeMap[PSTokenType.Unknown] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellUnknown);
-            tokenClassificationTypeMap[PSTokenType.Variable] = EditorImports.ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellVariable);
-            scriptGaps = EditorImports.ClassificationTypeRegistryService.GetClassificationType("PS1ScriptGaps");
-        }
 
         internal PowerShellClassifier(ITextBuffer bufferToClassify)
             : base(bufferToClassify)
         {
+            CreateClassificationTypeMap();
+        }
 
+        private static IClassificationTypeRegistryService ClassificationTypeRegistryService
+        {
+            get
+            {
+                if (EditorImports.ClassificationTypeRegistryService == null)
+                {
+                    throw new InvalidOperationException("ClassificationTypeRegistryService is null");
+                }
+                return EditorImports.ClassificationTypeRegistryService;
+            }
+        }
+
+        internal static Dictionary<PSTokenType, IClassificationType> TokenClassificationTypeMap
+        {
+            get
+            {
+                CreateClassificationTypeMap();
+                return _tokenClassificationTypeMap;
+            }
         }
 
         protected override IList<ClassificationSpan> VirtualGetClassificationSpans(SnapshotSpan span)
@@ -122,15 +118,15 @@ namespace PowerShellTools.Classification
                 return list;
             }
 
-            AddTokenClassifications(TextBuffer, span, list, null, scriptGaps);
-            FillBeginningAndEnd(span, list, TextBuffer.CurrentSnapshot, scriptGaps);
+            AddTokenClassifications(TextBuffer, span, list, null, _scriptGaps);
+            FillBeginningAndEnd(span, list, TextBuffer.CurrentSnapshot, _scriptGaps);
             return list;
         }
 
         internal static IClassificationType GetClassificationType(PSTokenType tokenType)
         {
             IClassificationType result;
-            return tokenClassificationTypeMap.TryGetValue(tokenType, out result) ? result : null;
+            return TokenClassificationTypeMap.TryGetValue(tokenType, out result) ? result : null;
         }
 
         private void FillClassificationGap(List<ClassificationSpan> classifications, Span? lastClassificationSpan, Span newClassificationSpan, ITextSnapshot currentSnapshot, IClassificationType classificationType)
@@ -138,6 +134,35 @@ namespace PowerShellTools.Classification
             if (lastClassificationSpan.HasValue && newClassificationSpan.Start > lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length)
             {
                 classifications.Add(new ClassificationSpan(new SnapshotSpan(currentSnapshot, lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length, newClassificationSpan.Start - (lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length)), classificationType));
+            }
+        }
+
+        private static void CreateClassificationTypeMap()
+        {
+            if (_tokenClassificationTypeMap == null || !_tokenClassificationTypeMap.Any())
+            {
+                _tokenClassificationTypeMap = new Dictionary<PSTokenType, IClassificationType>();
+                _tokenClassificationTypeMap[PSTokenType.Attribute] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellAttribute);
+                _tokenClassificationTypeMap[PSTokenType.Command] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellCommand);
+                _tokenClassificationTypeMap[PSTokenType.CommandArgument] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellCommandArgument);
+                _tokenClassificationTypeMap[PSTokenType.CommandParameter] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellCommandParameter);
+                _tokenClassificationTypeMap[PSTokenType.Comment] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellComment);
+                _tokenClassificationTypeMap[PSTokenType.GroupEnd] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellGroupEnd);
+                _tokenClassificationTypeMap[PSTokenType.GroupStart] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellGroupStart);
+                _tokenClassificationTypeMap[PSTokenType.Keyword] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellKeyword);
+                _tokenClassificationTypeMap[PSTokenType.LineContinuation] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellLineContinuation);
+                _tokenClassificationTypeMap[PSTokenType.LoopLabel] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellLoopLabel);
+                _tokenClassificationTypeMap[PSTokenType.Member] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellMember);
+                _tokenClassificationTypeMap[PSTokenType.NewLine] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellNewLine);
+                _tokenClassificationTypeMap[PSTokenType.Number] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellNumber);
+                _tokenClassificationTypeMap[PSTokenType.Operator] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellOperator);
+                _tokenClassificationTypeMap[PSTokenType.Position] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellPosition);
+                _tokenClassificationTypeMap[PSTokenType.StatementSeparator] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellStatementSeparator);
+                _tokenClassificationTypeMap[PSTokenType.String] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellString);
+                _tokenClassificationTypeMap[PSTokenType.Type] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellType);
+                _tokenClassificationTypeMap[PSTokenType.Unknown] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellUnknown);
+                _tokenClassificationTypeMap[PSTokenType.Variable] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellVariable);
+                _scriptGaps = ClassificationTypeRegistryService.GetClassificationType("PS1ScriptGaps");
             }
         }
 
