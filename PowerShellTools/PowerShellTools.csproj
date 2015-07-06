@@ -732,7 +732,7 @@
     </Content>
     <Content Include="PowerShellToolsProcessHost.exe.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
+      <IncludeInVSIX>false</IncludeInVSIX>
     </Content>
     <None Include="Project\SharedProject\SharedProject.proj" />
     <None Include="Templates\Files\Script.ps1" />
