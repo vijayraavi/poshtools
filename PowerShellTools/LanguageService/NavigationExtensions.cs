@@ -114,7 +114,7 @@ namespace PowerShellTools.LanguageService
             {
                 // If in the same scope as the reference call, the function must be defined before the call
                 var definitions = scope.Statements.OfType<FunctionDefinitionAst>().
-                    Where(def => def.Name.ToLower() == reference.GetCommandName().ToLower() && def.Extent.EndOffset <= reference.Extent.StartOffset);
+                    Where(def => def.Name.Equals(reference.GetCommandName(), System.StringComparison.OrdinalIgnoreCase) && def.Extent.EndOffset <= reference.Extent.StartOffset);
 
                 if (definitions.Any())
                 {
@@ -127,7 +127,7 @@ namespace PowerShellTools.LanguageService
 
                 while ((scope = GetParentScope(scope)) != null)
                 {
-                    definitions = scope.Statements.OfType<FunctionDefinitionAst>().Where(def => def.Name.ToLower() == reference.GetCommandName().ToLower());
+                    definitions = scope.Statements.OfType<FunctionDefinitionAst>().Where(def => def.Name.Equals(reference.GetCommandName(), System.StringComparison.OrdinalIgnoreCase));
 
                     if (definitions.Any())
                     {
