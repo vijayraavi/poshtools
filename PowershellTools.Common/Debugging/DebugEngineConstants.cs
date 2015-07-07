@@ -160,5 +160,10 @@ param (
 
         public const string PowerShellHostProcessLogTag = "[{0}]:";
         public const string PowerShellHostProcessLogFormat = PowerShellHostProcessLogTag + "{1}";
+
+        /// <summary>
+        /// Time in milisceonds that _attachRequestEvent waits before timing out.
+        /// </summary>
+        public const int AttachRequestEventTimeout = 1000 * 5;
     }
 }

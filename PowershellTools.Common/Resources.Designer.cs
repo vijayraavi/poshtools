@@ -115,7 +115,7 @@ namespace PowerShellTools.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to open remote file through powershell remote session..
+        ///   Looks up a localized string similar to Failed to open remote file through PowerShell remote session..
         /// </summary>
         internal static string RemoteSessionFileOpenError {
             get {

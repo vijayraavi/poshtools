@@ -22,6 +22,7 @@ using PowerShellTools.Common.Debugging;
 using System.Diagnostics;
 using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common;
+using System.ComponentModel;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -144,23 +145,24 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// be attachable. Will generate an exception if the host process is x86 and the process
         /// is x64.
         /// </summary>
-        /// <param name="pid"></param>
+        /// <param name="pid">Process id of the process to examine</param>
         /// <returns>True if powershell.exe is a module of the process, false otherwise.</returns>
         public bool IsAttachable(uint pid)
         {
             try
             {
-                var process = Process.GetProcessById((int)pid);
-                ServiceCommon.Log("IsAttachable:" + process.ProcessName + "; id:" + process.Id);
-                foreach (ProcessModule module in process.Modules)
+                if (_installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
                 {
-                    if (module.ModuleName.Equals("powershell.exe", StringComparison.Ordinal) && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
+                    var process = Process.GetProcessById((int)pid);
+                    ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}" , process.ProcessName, process.Id));
+
+                    if (process != null)
                     {
-                        return true;
+                        return process.Modules.OfType<ProcessModule>().Any(pm => pm.ModuleName.Equals("powershell.exe", StringComparison.Ordinal));
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Win32Exception ex)
             {
                 ServiceCommon.Log(string.Format("{0} , cannot examine modules of process; id: {1}", ex.Message, pid));
             }
@@ -177,7 +179,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
             }
 
-            // Attaching leverages cmdlets introduced in PSv5
+            // attaching leverages cmdlets introduced in PSv5
             if (_installedPowerShellVersion < RequiredPowerShellVersionForProcessAttach)
             {
                 MessageBox.Show(Resources.ProcessAttachVersionErrorBody, Resources.ProcessAttachVersionErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -185,11 +187,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return;
             }
 
-            // Enter into to-attach process which will swap out the current runspace
+            // enter into to-attach process which will swap out the current runspace
             using (_currentPowerShell = PowerShell.Create())
             {
-                _attachRequestEvent.Reset();
+                // scenario before entering, used to determine if we are local attaching
                 DebugScenario preScenario = GetDebugScenario();
+
+                _attachRequestEvent.Reset();
                 _currentPowerShell.Runspace = _runspace;
                 _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
                 _currentPowerShell.Invoke();
@@ -197,7 +201,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 // wait for invoke to finish swapping the runspaces if you are attaching to a local process
                 if (preScenario != DebugScenario.RemoteSession)
                 {
-                    _attachRequestEvent.WaitOne(5000);
+                    _attachRequestEvent.WaitOne(DebugEngineConstants.AttachRequestEventTimeout);
+
+                    // scenario after entering, used to determine if semaphore timed out, should not match our pre-scenario
                     DebugScenario postScenario = GetDebugScenario();
 
                     // make sure that the semaphore didn't just time out
@@ -250,7 +256,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 ClearBreakpoints();
                 ExecuteDebuggingCommand("detach", false);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // if program is running we must use stop to force the debugger to detach
                 ServiceCommon.Log("Script currently in execution, must use stop to end debugger");
@@ -259,8 +265,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             using (_currentPowerShell = PowerShell.Create())
             {
-                _attachRequestEvent.Reset();
+                // scenario before exiting, used to determine if we are local detaching
                 DebugScenario preScenario = GetDebugScenario();
+
+                _attachRequestEvent.Reset();
                 _currentPowerShell.Runspace = _runspace;
                 _currentPowerShell.AddCommand("Exit-PSHostProcess");
                 _currentPowerShell.Invoke();
@@ -268,7 +276,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 // wait for invoke to finish swapping the runspaces if detaching from a local process
                 if (preScenario == DebugScenario.LocalAttach)
                 {
-                    _attachRequestEvent.WaitOne(5000);
+                    _attachRequestEvent.WaitOne(DebugEngineConstants.AttachRequestEventTimeout);
+
+                    // scenario after exiting, used to determine if semaphore timed out, should not match our pre-scenario
                     DebugScenario postScenario = GetDebugScenario();
 
                     // make sure that the semaphore didn't just time out
@@ -429,6 +439,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Sets breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
+        /// <param name="commandReady">If the runspace is not available, this being true will allow the debugger to issue the set breakpoint as 
+        /// debugger command.</param>
         public void SetBreakpoint(PowerShellBreakpoint bp, bool commandReady = false)
         {
             IEnumerable<PSObject> breakpoints;
