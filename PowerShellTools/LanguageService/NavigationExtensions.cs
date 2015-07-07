@@ -114,7 +114,7 @@ namespace PowerShellTools.LanguageService
             {
                 // If in the same scope as the reference call, the function must be defined before the call
                 var definitions = scope.Statements.OfType<FunctionDefinitionAst>().
-                    Where(def => def.Name == reference.GetCommandName() && def.Extent.EndOffset <= reference.Extent.StartOffset);
+                    Where(def => def.Name.ToLower() == reference.GetCommandName().ToLower() && def.Extent.EndOffset <= reference.Extent.StartOffset);
 
                 if (definitions.Any())
                 {
