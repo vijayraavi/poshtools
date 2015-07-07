@@ -127,7 +127,7 @@ namespace PowerShellTools.LanguageService
 
                 while ((scope = GetParentScope(scope)) != null)
                 {
-                    definitions = scope.Statements.OfType<FunctionDefinitionAst>().Where(def => def.Name == reference.GetCommandName());
+                    definitions = scope.Statements.OfType<FunctionDefinitionAst>().Where(def => def.Name.ToLower() == reference.GetCommandName().ToLower());
 
                     if (definitions.Any())
                     {
