@@ -280,12 +280,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                 }
 
-                // rehook event handlers and update REPL prompt
-                if (GetDebugScenario() == DebugScenario.Local)
-                {
-                    AddEventHandlers();
-                    _callback.RefreshPrompt();
-                }
+                // rehook event handlers
+                AddEventHandlers();
             }
 
             return true;
@@ -403,10 +399,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     return false;
                 }
 
-                // rehook event handlers and update REPL prompt
+                // rehook event handlers
                 AddEventHandlers();
-                _callback.RefreshPrompt();
-
             }
             return true;
         }

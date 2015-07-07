@@ -188,6 +188,12 @@ namespace PowerShellTools.DebugEngine
                 result = Debugger.DebuggingService.DetachFromRemoteRunspace();
             }
 
+            if (result)
+            {
+                Debugger.DebuggerFinished();
+                Debugger.RefreshPrompt();
+            }
+
             return result ? VSConstants.S_OK : VSConstants.S_FALSE;
         }
 

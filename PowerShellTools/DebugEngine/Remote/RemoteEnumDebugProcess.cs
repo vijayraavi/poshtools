@@ -10,6 +10,7 @@ using Automation = System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Diagnostics;
 using System.Windows.Forms;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
@@ -37,6 +38,14 @@ namespace PowerShellTools.DebugEngine.Remote
         /// <param name="remotePort"></param>
         public void connect(IDebugPort2 remotePort)
         {
+            // host needs to be initialized before we can connect/enumerate
+            UiContextUtilities.ActivateUiContext(UiContextUtilities.CreateUiContext(Constants.PowerShellReplCreationUiContextGuid));
+            if (!PowerShellToolsPackage.PowerShellHostInitialized)
+            {
+                // TODO: UI Work required to give user inidcation that it is waiting for debugger to get alive.
+                PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
+            }
+
             List<KeyValuePair<uint, string>> information;
             while (true)
             {
