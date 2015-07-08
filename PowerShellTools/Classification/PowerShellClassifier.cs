@@ -80,60 +80,43 @@ namespace PowerShellTools.Classification
         private static ClassificationTypeDefinition scriptGapsTypeDefinition;
 
         private static Dictionary<PSTokenType, IClassificationType> _tokenClassificationTypeMap;
-        private static IClassificationType _scriptGaps;
 #pragma warning restore 169, 649
+
+        private IClassificationType _scriptGaps;
 
         internal PowerShellClassifier(ITextBuffer bufferToClassify)
             : base(bufferToClassify)
         {
-            CreateClassificationTypeMap();
+            _scriptGaps = ClassificationTypeRegistryService.GetClassificationType("PS1ScriptGaps");
         }
 
-        private static IClassificationTypeRegistryService ClassificationTypeRegistryService
-        {
-            get
-            {
-                if (EditorImports.ClassificationTypeRegistryService == null)
-                {
-                    throw new InvalidOperationException("ClassificationTypeRegistryService is null");
-                }
-                return EditorImports.ClassificationTypeRegistryService;
-            }
-        }
+        #region Static helper methods
 
-        internal static Dictionary<PSTokenType, IClassificationType> TokenClassificationTypeMap
-        {
-            get
-            {
-                CreateClassificationTypeMap();
-                return _tokenClassificationTypeMap;
-            }
-        }
-
-        protected override IList<ClassificationSpan> VirtualGetClassificationSpans(SnapshotSpan span)
-        {
-            var list = new List<ClassificationSpan>();
-            if (span.Snapshot == null || span.Snapshot.Length == 0)
-            {
-                return list;
-            }
-
-            AddTokenClassifications(TextBuffer, span, list, null, _scriptGaps);
-            FillBeginningAndEnd(span, list, TextBuffer.CurrentSnapshot, _scriptGaps);
-            return list;
-        }
-
+        /// <summary>
+        /// Get the classification type VS recognizes from the PowerShell token type.
+        /// </summary>
+        /// <param name="tokenType">The PowerShell token type.</param>
+        /// <returns>The mapped classification type.</returns>
         internal static IClassificationType GetClassificationType(PSTokenType tokenType)
         {
             IClassificationType result;
             return TokenClassificationTypeMap.TryGetValue(tokenType, out result) ? result : null;
         }
 
-        private void FillClassificationGap(List<ClassificationSpan> classifications, Span? lastClassificationSpan, Span newClassificationSpan, ITextSnapshot currentSnapshot, IClassificationType classificationType)
+        private static IClassificationTypeRegistryService ClassificationTypeRegistryService
         {
-            if (lastClassificationSpan.HasValue && newClassificationSpan.Start > lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length)
+            get
             {
-                classifications.Add(new ClassificationSpan(new SnapshotSpan(currentSnapshot, lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length, newClassificationSpan.Start - (lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length)), classificationType));
+                return EditorImports.ClassificationTypeRegistryService;
+            }
+        }
+
+        private static Dictionary<PSTokenType, IClassificationType> TokenClassificationTypeMap
+        {
+            get
+            {
+                CreateClassificationTypeMap();
+                return _tokenClassificationTypeMap;
             }
         }
 
@@ -162,10 +145,32 @@ namespace PowerShellTools.Classification
                 _tokenClassificationTypeMap[PSTokenType.Type] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellType);
                 _tokenClassificationTypeMap[PSTokenType.Unknown] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellUnknown);
                 _tokenClassificationTypeMap[PSTokenType.Variable] = ClassificationTypeRegistryService.GetClassificationType(Classifications.PowerShellVariable);
-                _scriptGaps = ClassificationTypeRegistryService.GetClassificationType("PS1ScriptGaps");
             }
         }
 
+        #endregion
+
+        protected override IList<ClassificationSpan> VirtualGetClassificationSpans(SnapshotSpan span)
+        {
+            var list = new List<ClassificationSpan>();
+            if (span.Snapshot == null || span.Snapshot.Length == 0)
+            {
+                return list;
+            }
+
+            AddTokenClassifications(TextBuffer, span, list, null, _scriptGaps);
+            FillBeginningAndEnd(span, list, TextBuffer.CurrentSnapshot, _scriptGaps);
+            return list;
+        }
+
+        private void FillClassificationGap(List<ClassificationSpan> classifications, Span? lastClassificationSpan, Span newClassificationSpan, ITextSnapshot currentSnapshot, IClassificationType classificationType)
+        {
+            if (lastClassificationSpan.HasValue && newClassificationSpan.Start > lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length)
+            {
+                classifications.Add(new ClassificationSpan(new SnapshotSpan(currentSnapshot, lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length, newClassificationSpan.Start - (lastClassificationSpan.Value.Start + lastClassificationSpan.Value.Length)), classificationType));
+            }
+        }
+        
         private void FillBeginningAndEnd(SnapshotSpan span, List<ClassificationSpan> classifications, ITextSnapshot currentSnapshot, IClassificationType classificationType)
         {
             if (classifications.Count == 0)

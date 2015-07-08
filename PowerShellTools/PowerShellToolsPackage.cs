@@ -268,7 +268,6 @@ namespace PowerShellTools
             var langService = new PowerShellLanguageInfo(this);
             ((IServiceContainer)this).AddService(langService.GetType(), langService, true);
 
-            EditorImports.ClassificationTypeRegistryService = ComponentModel.GetService<IClassificationTypeRegistryService>();
             _textBufferFactoryService = ComponentModel.GetService<ITextBufferFactoryService>();
 
             if (_textBufferFactoryService != null)
@@ -335,7 +334,7 @@ namespace PowerShellTools
             serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powerShellService.Value, true);
         }
 
-        private static void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
+        private void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
         {
             ITextBuffer buffer = e.TextBuffer;
 
@@ -344,7 +343,7 @@ namespace PowerShellTools
             EnsureBufferHasTokenizer(e.TextBuffer.ContentType, buffer);
         }
 
-        private static void TextBuffer_ContentTypeChanged(object sender, ContentTypeChangedEventArgs e)
+        private void TextBuffer_ContentTypeChanged(object sender, ContentTypeChangedEventArgs e)
         {
             var buffer = sender as ITextBuffer;
 
@@ -353,7 +352,7 @@ namespace PowerShellTools
             EnsureBufferHasTokenizer(e.AfterContentType, buffer);
         }
 
-        private static void EnsureBufferHasTokenizer(IContentType contentType, ITextBuffer buffer)
+        private void EnsureBufferHasTokenizer(IContentType contentType, ITextBuffer buffer)
         {
             if (contentType.IsOfType(PowerShellConstants.LanguageName) && !buffer.Properties.ContainsProperty(BufferProperties.PowerShellTokenizer))
             {
