@@ -143,21 +143,24 @@ namespace PowerShellTools
         {
             get
             {
-                ThreadHelper.Generic.Invoke(() =>
+                if (_instance == null)
                 {
-                    if (_instance == null)
+                    ThreadHelper.Generic.Invoke(() =>
                     {
-                        var vsShell = Package.GetGlobalService(typeof(SVsShell)) as IVsShell;
-                        var packageGuid = new Guid(GuidList.PowerShellToolsPackageGuid);
-                        IVsPackage vsPackage;
-                        if (vsShell.IsPackageLoaded(ref packageGuid, out vsPackage) != VSConstants.S_OK)
+                        if (_instance == null)
                         {
-                            vsShell.LoadPackage(ref packageGuid, out vsPackage);
-                        }
+                            var vsShell = Package.GetGlobalService(typeof(SVsShell)) as IVsShell;
+                            var packageGuid = new Guid(GuidList.PowerShellToolsPackageGuid);
+                            IVsPackage vsPackage;
+                            if (vsShell.IsPackageLoaded(ref packageGuid, out vsPackage) != VSConstants.S_OK)
+                            {
+                                vsShell.LoadPackage(ref packageGuid, out vsPackage);
+                            }
 
-                        _instance = (PowerShellToolsPackage)vsPackage;
-                    }
-                });
+                            _instance = (PowerShellToolsPackage)vsPackage;
+                        }
+                    });
+                }
 
                 return _instance;
             }
