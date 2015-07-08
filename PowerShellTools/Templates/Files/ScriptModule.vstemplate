@@ -9,7 +9,7 @@
     <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
     <AppliesTo>PowerShell | DeploymentProject | Web | DNX</AppliesTo>
     <SortOrder>151</SortOrder>
-    <Icon>PowerShellModule.ico</Icon>
+    <Icon>PowerShellScriptModule.ico</Icon>
   </TemplateData>
   <TemplateContent>
     <References />
