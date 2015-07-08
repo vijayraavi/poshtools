@@ -28,6 +28,7 @@ namespace PowerShellTools
             }
             set
             {
+                // For unit tests use
                 _classificationTypeRegistryService = value;
             }
         }

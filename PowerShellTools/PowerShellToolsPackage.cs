@@ -118,9 +118,7 @@ namespace PowerShellTools
         private IContentType _contentType;
         private IntelliSenseEventsHandlerProxy _intelliSenseServiceContext;
         private static PowerShellToolsPackage _instance;
-
         public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
-
         public static bool PowerShellHostInitialized = false;
 
         /// <summary>
@@ -141,26 +139,28 @@ namespace PowerShellTools
         /// <summary>
         /// Returns the current package instance.
         /// </summary>
-        public static PowerShellToolsPackage Instance
+        internal static PowerShellToolsPackage Instance
         {
             get
             {
-                if (_instance == null)
+                ThreadHelper.Generic.Invoke(() =>
                 {
-                    var vsShell = Package.GetGlobalService(typeof(SVsShell)) as IVsShell;
-                    var packageGuid = new Guid(GuidList.PowerShellToolsPackageGuid);
-                    IVsPackage vsPackage;
-                    if (vsShell.IsPackageLoaded(ref packageGuid, out vsPackage) != VSConstants.S_OK)
+                    if (_instance == null)
                     {
-                        vsShell.LoadPackage(ref packageGuid, out vsPackage);
-                    }
+                        var vsShell = Package.GetGlobalService(typeof(SVsShell)) as IVsShell;
+                        var packageGuid = new Guid(GuidList.PowerShellToolsPackageGuid);
+                        IVsPackage vsPackage;
+                        if (vsShell.IsPackageLoaded(ref packageGuid, out vsPackage) != VSConstants.S_OK)
+                        {
+                            vsShell.LoadPackage(ref packageGuid, out vsPackage);
+                        }
 
-                    _instance = vsPackage as PowerShellToolsPackage;
-                }
+                        _instance = (PowerShellToolsPackage)vsPackage;
+                    }
+                });
 
                 return _instance;
             }
-
         }
 
         public static IPowerShellDebuggingService DebuggingService
