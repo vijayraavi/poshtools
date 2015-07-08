@@ -8,11 +8,11 @@ using System.Threading;
 using System.Windows;
 using log4net;
 using Microsoft;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudioTools;
@@ -117,6 +117,7 @@ namespace PowerShellTools
         private static Dictionary<ICommand, MenuCommand> _commands;
         private IContentType _contentType;
         private IntelliSenseEventsHandlerProxy _intelliSenseServiceContext;
+        private static PowerShellToolsPackage _instance;
 
         public static EventWaitHandle DebuggerReadyEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
 
@@ -132,7 +133,7 @@ namespace PowerShellTools
         public PowerShellToolsPackage()
         {
             Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
-            Instance = this;
+
             _commands = new Dictionary<ICommand, MenuCommand>();
             DependencyValidator = new DependencyValidator();
         }
@@ -140,7 +141,27 @@ namespace PowerShellTools
         /// <summary>
         /// Returns the current package instance.
         /// </summary>
-        public static PowerShellToolsPackage Instance { get; private set; }
+        public static PowerShellToolsPackage Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    var vsShell = Package.GetGlobalService(typeof(SVsShell)) as IVsShell;
+                    var packageGuid = new Guid(GuidList.PowerShellToolsPackageGuid);
+                    IVsPackage vsPackage;
+                    if (vsShell.IsPackageLoaded(ref packageGuid, out vsPackage) != VSConstants.S_OK)
+                    {
+                        vsShell.LoadPackage(ref packageGuid, out vsPackage);
+                    }
+
+                    _instance = vsPackage as PowerShellToolsPackage;
+                }
+
+                return _instance;
+            }
+
+        }
 
         public static IPowerShellDebuggingService DebuggingService
         {
