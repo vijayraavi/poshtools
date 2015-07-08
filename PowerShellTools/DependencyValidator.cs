@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Windows;
-using EnvDTE;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.Win32;
 using System.ComponentModel.Composition;
+using System.Windows;
+using Microsoft.VisualStudio.Shell;
 using PowerShellTools.Common;
 
 namespace PowerShellTools
@@ -12,15 +10,8 @@ namespace PowerShellTools
     internal class DependencyValidator : IDependencyValidator
     {
         private static readonly Version RequiredPowerShellVersion = new Version(3, 0);
-
-        private readonly Package _package;
-
-        public DependencyValidator()
-        {
-            _package = PowerShellToolsPackage.Instance;
-        }
-
         private bool? _previousResult;
+
         public bool Validate()
         {
             if (_previousResult.HasValue) return _previousResult.Value;
@@ -33,7 +24,7 @@ namespace PowerShellTools
             {
                 try
                 {
-                    if (!VsShellUtilities.IsInAutomationFunction(_package) && 
+                    if (!VsShellUtilities.IsInAutomationFunction(ServiceProvider.GlobalProvider) &&
                         MessageBox.Show(Resources.MissingPowerShellVersion,
                                         Resources.MissingDependency,
                                         MessageBoxButton.YesNo,
@@ -44,16 +35,14 @@ namespace PowerShellTools
                 }
                 catch (InvalidOperationException)
                 {
-                    
+
                 }
-
-
 
                 _previousResult = false;
             }
             else
             {
-                _previousResult = true;    
+                _previousResult = true;
             }
 
             return _previousResult.Value;
