@@ -60,6 +60,7 @@ namespace PowerShellTools.Test
             TypeSetupHelper(out _unknownType, Classifications.PowerShellUnknown);
 
             EditorImports.ClassificationTypeRegistryService = _classificationRegistry.Object;
+
             _classifierService = new ClassifierService();
         }
 

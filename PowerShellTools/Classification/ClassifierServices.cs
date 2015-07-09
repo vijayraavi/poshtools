@@ -44,14 +44,14 @@ namespace PowerShellTools.Classification
             ToClassificationInfo(token, token.Extent.StartOffset + spanStart, token.Extent.EndOffset - token.Extent.StartOffset, classificationInfo);
         }
 
-        private static IClassificationType GetClassificationType(Token token)
+        private IClassificationType GetClassificationType(Token token)
         {
             var pSTokenType = PSToken.GetPSTokenType(token);
             var classificationType = PowerShellClassifier.GetClassificationType(pSTokenType);
             return classificationType;
         }
 
-        private static void ToClassificationInfo(Token token, int start, int length, ICollection<ClassificationInfo> classificationInfo)
+        private void ToClassificationInfo(Token token, int start, int length, ICollection<ClassificationInfo> classificationInfo)
         {
             if (token != null && length > 0)
             {
