@@ -14,6 +14,7 @@ using DTE80 = EnvDTE80;
 using PowerShellTools.Common.Debugging;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Windows;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -399,13 +400,22 @@ namespace PowerShellTools.DebugEngine
         {
             CurrentExecutingNode = node;
 
-            if (node.IsAttachedProgram && !node.IsRemoteProgram)
+            if (node.IsAttachedProgram)
             {
-                DebuggingService.AttachToRunspace(node.Process.ProcessId);
-            }
-            else if (node.IsAttachedProgram && node.IsRemoteProgram)
-            {
-                DebuggingService.AttachToRemoteRunspace(node.Process.ProcessId, node.Process.HostName);
+                string result = "";
+                if (!node.IsRemoteProgram)
+                {
+                    result = DebuggingService.AttachToRunspace(node.Process.ProcessId);
+                }
+                else
+                {
+                    result = DebuggingService.AttachToRemoteRunspace(node.Process.ProcessId, node.Process.HostName);
+                }
+
+                if (!string.IsNullOrEmpty(result))
+                {
+                    MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             else
             {
@@ -468,10 +478,10 @@ namespace PowerShellTools.DebugEngine
             {
                 try
                 {
-                    if(!dte2.ItemOperations.IsFileOpen(fullName))
+                    if (!dte2.ItemOperations.IsFileOpen(fullName))
                     {
-                    dte2.ItemOperations.OpenFile(fullName);
-                }
+                        dte2.ItemOperations.OpenFile(fullName);
+                    }
                 }
                 catch (Exception ex)
                 {

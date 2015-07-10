@@ -12,7 +12,7 @@ namespace PowerShellTools.DebugEngine.Remote
     /// Implementation of IDebugPort 2 interface. Contacts a remote machine and uses the IEnumDebugProcess2
     /// interface to grab all attachable processes off of that machine. 
     /// </summary>
-    class RemoteDebugPort : IDebugPort2
+    internal class RemoteDebugPort : IDebugPort2
     {
         private readonly RemoteDebugPortSupplier _supplier;
         private readonly IDebugPortRequest2 _request;
@@ -65,7 +65,26 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public int GetProcess(AD_PROCESS_ID ProcessId, out IDebugProcess2 ppProcess)
         {
-            throw new NotImplementedException();
+            RemoteEnumDebugProcess processList = new RemoteEnumDebugProcess(_computerName);
+            processList.connect(this);
+            uint numProcesses = 0;
+            uint numRetrieved = 0;
+            ppProcess = null;
+
+            processList.GetCount(out numProcesses);
+            IDebugProcess2[] processes = new IDebugProcess2[numProcesses];
+            processList.Next(numProcesses, processes, ref numRetrieved);
+            
+            while (numRetrieved >= 0)
+            {
+                if ((processes[numRetrieved - 1] as ScriptDebugProcess).ProcessId == ProcessId.dwProcessId)
+                {
+                    ppProcess = processes[numRetrieved - 1];
+                    return VSConstants.S_OK;
+                }
+            }
+
+            return VSConstants.S_FALSE;
         }
     }
 }

@@ -179,11 +179,13 @@ namespace PowerShellTools.DebugEngine
             Log.Debug("ScriptProgramNode: Entering Detach");
 
             bool result = true;
-            if (Debugger.DebuggingService.GetDebugScenario() == DebugScenario.LocalAttach)
+            DebugScenario scenario = Debugger.DebuggingService.GetDebugScenario();
+
+            if (scenario == DebugScenario.LocalAttach)
             {
                 result = Debugger.DebuggingService.DetachFromRunspace();
             }
-            else if (Debugger.DebuggingService.GetDebugScenario() == DebugScenario.RemoteAttach)
+            else if (scenario == DebugScenario.RemoteAttach)
             {
                 result = Debugger.DebuggingService.DetachFromRemoteRunspace();
             }

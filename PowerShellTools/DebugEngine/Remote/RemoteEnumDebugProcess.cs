@@ -50,12 +50,14 @@ namespace PowerShellTools.DebugEngine.Remote
             while (true)
             {
                 information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer);
+
+                // use 0 to detect error since PID of 0 is reserved to the system idle process
                 if (information != null)
                 {
                     break;
                 }
 
-                DialogResult dlgRes = MessageBox.Show("Unable to connect to " + _remoteComputer + ". Retry?", null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                DialogResult dlgRes = MessageBox.Show(string.Format(Resources.ConnectionErrorRetryPrompt, _remoteComputer), null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                 if (dlgRes != DialogResult.Retry)
                 {
                     return;
@@ -78,12 +80,24 @@ namespace PowerShellTools.DebugEngine.Remote
             return VSConstants.S_OK;
         }
 
+        // <summary>
+        /// Gets number of processes retrieved
+        /// </summary>
+        /// <param name="pcelt">Out parameter for number of processes</param>
+        /// <returns></returns>
         public int GetCount(out uint pcelt)
         {
             pcelt = (uint)_runningProcesses.Count();
             return VSConstants.S_OK;
         }
 
+        /// <summary>
+        /// Fills the given array with a specified number of processes
+        /// </summary>
+        /// <param name="celt">How many processes to attempt to retrieve</param>
+        /// <param name="rgelt">Array to fill with said processes</param>
+        /// <param name="pceltFetched">How many processes were actually put in the array</param>
+        /// <returns>If successful, returns S_OK. Returns S_FALSE if fewer than the requested number of elements could be returned</returns>
         public int Next(uint celt, IDebugProcess2[] rgelt, ref uint pceltFetched)
         {
             int index = 0;
@@ -106,6 +120,11 @@ namespace PowerShellTools.DebugEngine.Remote
             return VSConstants.S_OK;
         }
 
+        /// <summary>
+        /// Skips the given number of processes in the enumeration
+        /// </summary>
+        /// <param name="celt">Number to skip</param>
+        /// <returns>If successful, returns S_OK. Returns S_FALSE if celt is greater than the number of remaining elements</returns>
         public int Skip(uint celt)
         {
             _currIndex += celt;

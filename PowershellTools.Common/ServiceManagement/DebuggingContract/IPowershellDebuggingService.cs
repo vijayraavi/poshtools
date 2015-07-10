@@ -15,7 +15,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
     public interface IPowerShellDebuggingService
     {
         [OperationContract]
-        void SetBreakpoint(PowerShellBreakpoint bp, bool commandReady);
+        void SetBreakpoint(PowerShellBreakpoint bp);
 
         [OperationContract]
         void EnableBreakpoint(PowerShellBreakpoint bp, bool enable);
@@ -48,7 +48,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         bool IsAttachable(uint pid);
 
         [OperationContract]
-        void AttachToRunspace(uint pid);
+        string AttachToRunspace(uint pid);
 
         [OperationContract]
         bool DetachFromRunspace();
@@ -57,7 +57,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteMachine);
 
         [OperationContract]
-        void AttachToRemoteRunspace(uint pid, string remoteName);
+        string AttachToRemoteRunspace(uint pid, string remoteName);
 
         [OperationContract]
         bool DetachFromRemoteRunspace();
@@ -91,6 +91,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract]
         DebugScenario GetDebugScenario();
+
+        [OperationContract]
+        string GetTrueFileName(string file);
     }
 
 }

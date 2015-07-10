@@ -142,10 +142,18 @@ namespace PowerShellTools.DebugEngine
         public void SetBreakpoint(ScriptBreakpoint breakpoint)
         {
             Log.InfoFormat("SetBreakpoint: {0} {1} {2}", breakpoint.File, breakpoint.Line, breakpoint.Column);
+            string fileName = Debugger.DebuggingService.GetTrueFileName(breakpoint.File);
 
             try
             {
-                Debugger.DebuggingService.SetBreakpoint(new PowerShellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column), Debugger.IsDebuggingCommandReady);
+                if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
+                {
+                    Debugger.DebuggingService.SetBreakpoint(new PowerShellBreakpoint(breakpoint.File, breakpoint.Line, breakpoint.Column));
+                }
+                else if (Debugger.IsDebuggingCommandReady)
+                {
+                    Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.SetPSBreakpoint, breakpoint.File, breakpoint.Line));
+                }
             }
             catch (Exception ex)
             {

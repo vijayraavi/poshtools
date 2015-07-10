@@ -79,6 +79,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error Attaching to Process.
+        /// </summary>
+        public static string AttachErrorTitle {
+            get {
+                return ResourceManager.GetString("AttachErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The author of the module..
         /// </summary>
         public static string Author_Description {
@@ -183,6 +192,15 @@ namespace PowerShellTools {
         public static string CompanyName_DisplayName {
             get {
                 return ResourceManager.GetString("CompanyName_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to {0}. Retry?.
+        /// </summary>
+        public static string ConnectionErrorRetryPrompt {
+            get {
+                return ResourceManager.GetString("ConnectionErrorRetryPrompt", resourceCulture);
             }
         }
         

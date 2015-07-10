@@ -102,6 +102,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
         {
             ServiceCommon.Log("Debugger stopped ...");
+            DebugScenario currScenario = GetDebugScenario();
 
             if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
             {
@@ -121,7 +122,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 if (_callback != null)
                 {
                     string file = bp.Script;
-                    if (GetDebugScenario() != DebugScenario.Local && _mapRemoteToLocal.ContainsKey(bp.Script))
+                    if (currScenario != DebugScenario.Local && _mapRemoteToLocal.ContainsKey(bp.Script))
                     {
                         file = _mapRemoteToLocal[bp.Script];
                     }
@@ -134,28 +135,31 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {                
                 if (_callback != null)
                 {
-                    if (GetDebugScenario() == DebugScenario.LocalAttach)
-                    {
-                        string file = e.InvocationInfo.ScriptName;
-                        int lineNum = e.InvocationInfo.ScriptLineNumber;
-                        int column = e.InvocationInfo.OffsetInLine;
+                    string file;
+                    int lineNum, column;
 
-                        // the stop which occurs after attaching is not associated with a breakpoint and should result in the process' script being opened
-                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, lineNum, column, false, true));
-                    }
-                    else if (GetDebugScenario() == DebugScenario.RemoteAttach)
+                    switch (currScenario)
                     {
-                        // copy the remote file over to host machine
-                        string localFile = OpenRemoteAttachedFile(e.InvocationInfo.ScriptName);
-                        int lineNum = e.InvocationInfo.ScriptLineNumber;
-                        int column = e.InvocationInfo.OffsetInLine;
+                        case DebugScenario.LocalAttach:
+                            file = e.InvocationInfo.ScriptName;
+                            lineNum = e.InvocationInfo.ScriptLineNumber;
+                            column = e.InvocationInfo.OffsetInLine;
 
-                        // the stop which occurs after attaching is not associated with a breakpoint and should result in the remote process' script being opened
-                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs(localFile, lineNum, column, false, true));
-                    }
-                    else
-                    {
-                        _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
+                            // the stop which occurs after attaching is not associated with a breakpoint and should result in the process' script being opened
+                            _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, lineNum, column, false, true));
+                            break;
+                        case DebugScenario.RemoteAttach:
+                            // copy the remote file over to host machine
+                            file = OpenRemoteAttachedFile(e.InvocationInfo.ScriptName);
+                            lineNum = e.InvocationInfo.ScriptLineNumber;
+                            column = e.InvocationInfo.OffsetInLine;
+
+                            // the stop which occurs after attaching is not associated with a breakpoint and should result in the remote process' script being opened
+                            _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, lineNum, column, false, true));
+                            break;
+                        default:
+                            _callback.DebuggerStopped(new DebuggerStoppedEventArgs());
+                            break;
                     }
                 }
             }
@@ -167,9 +171,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 try
                 {
+                    currScenario = GetDebugScenario();
                     if (!string.IsNullOrEmpty(_debuggingCommand))
                     {
-                        if (GetDebugScenario() == DebugScenario.Local)
+                        if (currScenario == DebugScenario.Local)
                         {
                             // local debugging
                             var output = new Collection<PSObject>();

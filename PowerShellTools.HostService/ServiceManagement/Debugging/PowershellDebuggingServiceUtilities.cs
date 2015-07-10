@@ -296,7 +296,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private string OpenRemoteAttachedFile(string scriptName)
         {
             PSCommand psCommand = new PSCommand();
-            psCommand.AddScript("Get-Content \"" + scriptName + "\"");
+            psCommand.AddScript(string.Format("Get-Content \"{0}\"", scriptName));
             PSDataCollection<PSObject> result = new PSDataCollection<PSObject>();
             _runspace.Debugger.ProcessCommand(psCommand, result);
 
@@ -307,28 +307,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 remoteText[i] = result.ElementAt(i).BaseObject as string;
             }
 
-            // create and map to new local temp file
+            // create new directory and corressponding file path/name
             string tmpFileName = Path.GetTempFileName();
             string dirPath = tmpFileName.Remove(tmpFileName.LastIndexOf('.'));
-            Directory.CreateDirectory(dirPath);
             string fullFileName = Path.Combine(dirPath, new FileInfo(scriptName).Name);
 
-            // check to see if we have already copied the script over, and if so, whether or not we should overwrite it
+            // check to see if we have already copied the script over, and if so, overwrite
             if (_mapRemoteToLocal.ContainsKey(scriptName))
             {
-                string[] localText = File.ReadAllLines(_mapRemoteToLocal[scriptName]);
-                var unionText = from a in localText
-                                join b in remoteText on a equals b
-                                select a;
-
-                if (localText.Length == remoteText.Length && unionText.Count() == localText.Length)
-                {
-                    return _mapRemoteToLocal[scriptName];
-                }
-                else
-                {
-                    File.Delete(_mapRemoteToLocal[scriptName]);
-                }
+                fullFileName = _mapRemoteToLocal[scriptName];
+            }
+            else
+            {
+                Directory.CreateDirectory(dirPath);
             }
 
             _mapRemoteToLocal[scriptName] = fullFileName;

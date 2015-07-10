@@ -13,9 +13,8 @@ namespace PowerShellTools.DebugEngine
         private readonly IDebugPort2 _port;
         private string _processName;
 
-        public ScriptDebugProcess(IDebugPort2 debugPort, uint processId, string processName, string hostname) : this(debugPort)
+        public ScriptDebugProcess(IDebugPort2 debugPort, uint processId, string processName, string hostname) : this(debugPort, processId)
         {
-            ProcessId = processId;
             _processName = processName;
             HostName = hostname;
         }
@@ -25,7 +24,7 @@ namespace PowerShellTools.DebugEngine
             ProcessId = processId;
             if (_processName == null)
             {
-                _processName = "";
+                _processName = string.Empty;
             }
         }
 
@@ -50,20 +49,16 @@ namespace PowerShellTools.DebugEngine
             if ((fields & enum_PROCESS_INFO_FIELDS.PIF_FILE_NAME) != 0)
             {
                 pProcessInfo[0].bstrFileName = Node.FileName;
+                pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_PROCESS_RUNNING;
 
                 if (Node.Debugger != null)
                 {
-                    pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_DEBUGGER_ATTACHED | enum_PROCESS_INFO_FLAGS.PIFLAG_PROCESS_RUNNING;
-                }
-                else
-                {
-                    pProcessInfo[0].Flags = enum_PROCESS_INFO_FLAGS.PIFLAG_PROCESS_RUNNING;
+                    pProcessInfo[0].Flags = pProcessInfo[0].Flags | enum_PROCESS_INFO_FLAGS.PIFLAG_DEBUGGER_ATTACHED;
                 }
                 
                 pProcessInfo[0].Fields = fields;
-
                 pProcessInfo[0].bstrBaseName = _processName;
-                pProcessInfo[0].bstrTitle = "";
+                pProcessInfo[0].bstrTitle = string.Empty;
                 pProcessInfo[0].ProcessId.dwProcessId = ProcessId;
                 pProcessInfo[0].dwSessionId = 0;
             }
@@ -136,7 +131,8 @@ namespace PowerShellTools.DebugEngine
         public int GetAttachedSessionName(out string pbstrSessionName)
         {
             Log.Debug("Process: GetAttachedSessionName");
-            throw new NotImplementedException();
+            pbstrSessionName = null;
+            return VSConstants.E_NOTIMPL;
         }
 
         public int EnumThreads(out IEnumDebugThreads2 ppEnum)
@@ -166,7 +162,7 @@ namespace PowerShellTools.DebugEngine
 
         public int GetUserName(out string pbstrUserName)
         {
-            pbstrUserName = "";
+            pbstrUserName = string.Empty;
             return VSConstants.S_OK;
         }
     }
