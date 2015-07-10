@@ -61,6 +61,15 @@ namespace PowerShellTools.HostService {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to {0}..
+        /// </summary>
+        public static string ConnectionError {
+            get {
+                return ResourceManager.GetString("ConnectionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows PowerShell credential request.
         /// </summary>
         public static string CredentialDialogCaption {
