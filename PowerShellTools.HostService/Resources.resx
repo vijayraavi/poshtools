@@ -127,6 +127,14 @@
   <data name="CredentialDialogMessage" xml:space="preserve">
     <value>Enter your credentials.</value>
   </data>
+  <data name="EnumRemoteConnectionError" xml:space="preserve">
+    <value>Unable to connect to {0}. Retry?</value>
+    <comment>{0} - remote machine name</comment>
+  </data>
+  <data name="EnumRemoteVersionError" xml:space="preserve">
+    <value>Unable to attach with current remote PowerShell version ({0}). Please ensure that PowerShell v5 or higher is installed.</value>
+    <comment>{0} - remote PowerShell version</comment>
+  </data>
   <data name="Error_LocalScriptInRemoteSession" xml:space="preserve">
     <value>Local script ({0}) cannot be run through remote PowerShell session</value>
     <comment>{0} - Script file path</comment>

@@ -405,8 +405,4 @@ Would you like to download now?</value>
   <data name="AttachErrorTitle" xml:space="preserve">
     <value>Error Attaching to Process</value>
   </data>
-  <data name="ConnectionErrorRetryPrompt" xml:space="preserve">
-    <value>Unable to connect to {0}. Retry?</value>
-    <comment>{0} - remote machine name</comment>
-  </data>
 </root>

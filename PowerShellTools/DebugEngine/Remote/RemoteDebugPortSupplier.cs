@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
-
+using PowerShellTools.Common;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
@@ -15,9 +15,6 @@ namespace PowerShellTools.DebugEngine.Remote
     /// </summary>
     internal class RemoteDebugPortSupplier : IDebugPortSupplier2, IDebugPortSupplierDescription2
     {
-        public const string PortSupplierId = "{FEB76325-D127-4E02-B59D-B16D93D46CF5}";
-        public static readonly Guid PortSupplierGuid = new Guid(PortSupplierId);
-
         public int AddPort(IDebugPortRequest2 pRequest, out IDebugPort2 ppPort)
         {
             ppPort = null;
@@ -54,7 +51,7 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public int GetPortSupplierId(out Guid pguidPortSupplier)
         {
-            pguidPortSupplier = PortSupplierGuid;
+            pguidPortSupplier = Constants.PortSupplierGuid;
             return VSConstants.S_OK;
         }
 

@@ -47,17 +47,17 @@ namespace PowerShellTools.DebugEngine.Remote
             }
 
             List<KeyValuePair<uint, string>> information;
+            string errorMessage = "";
             while (true)
             {
-                information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer);
+                information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer, out errorMessage);
 
-                // use 0 to detect error since PID of 0 is reserved to the system idle process
                 if (information != null)
                 {
                     break;
                 }
 
-                DialogResult dlgRes = MessageBox.Show(string.Format(Resources.ConnectionErrorRetryPrompt, _remoteComputer), null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                DialogResult dlgRes = MessageBox.Show(errorMessage, null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                 if (dlgRes != DialogResult.Retry)
                 {
                     return;

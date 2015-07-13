@@ -88,6 +88,24 @@ namespace PowerShellTools.HostService {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to {0}. Retry?.
+        /// </summary>
+        public static string EnumRemoteConnectionError {
+            get {
+                return ResourceManager.GetString("EnumRemoteConnectionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to attach with current remote PowerShell version ({0}). Please ensure that PowerShell v5 or higher is installed..
+        /// </summary>
+        public static string EnumRemoteVersionError {
+            get {
+                return ResourceManager.GetString("EnumRemoteVersionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Local script ({0}) cannot be run through remote PowerShell session.
         /// </summary>
         public static string Error_LocalScriptInRemoteSession {

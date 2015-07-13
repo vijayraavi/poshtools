@@ -54,7 +54,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         bool DetachFromRunspace();
 
         [OperationContract]
-        List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteMachine);
+        List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteMachine, out string errorMessage);
 
         [OperationContract]
         string AttachToRemoteRunspace(uint pid, string remoteName);

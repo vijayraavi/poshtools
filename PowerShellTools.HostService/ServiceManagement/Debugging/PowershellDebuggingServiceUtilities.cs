@@ -295,6 +295,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns></returns>
         private string OpenRemoteAttachedFile(string scriptName)
         {
+            if (!_needToCopyRemoteScript && _mapRemoteToLocal.ContainsKey(scriptName))
+            {
+                return _mapRemoteToLocal[scriptName];
+            }
+
             PSCommand psCommand = new PSCommand();
             psCommand.AddScript(string.Format("Get-Content \"{0}\"", scriptName));
             PSDataCollection<PSObject> result = new PSDataCollection<PSObject>();

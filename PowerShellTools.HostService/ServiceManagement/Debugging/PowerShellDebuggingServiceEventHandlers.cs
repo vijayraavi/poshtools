@@ -156,6 +156,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                             // the stop which occurs after attaching is not associated with a breakpoint and should result in the remote process' script being opened
                             _callback.DebuggerStopped(new DebuggerStoppedEventArgs(file, lineNum, column, false, true));
+                            _needToCopyRemoteScript = false;
                             break;
                         default:
                             _callback.DebuggerStopped(new DebuggerStoppedEventArgs());

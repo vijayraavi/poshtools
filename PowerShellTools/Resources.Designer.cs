@@ -196,15 +196,6 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to connect to {0}. Retry?.
-        /// </summary>
-        public static string ConnectionErrorRetryPrompt {
-            get {
-                return ResourceManager.GetString("ConnectionErrorRetryPrompt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The copyright information for the module..
         /// </summary>
         public static string Copyright_Description {

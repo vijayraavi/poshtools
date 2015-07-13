@@ -68,6 +68,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private static readonly Version RequiredPowerShellVersionForProcessAttach = new Version(5, 0);
 
         /// <summary>
+        /// Whether or not we need to copy the script associated with a remote process. This is set to true before in AttachToRemoteRunspace
+        /// and false inside of Debugger_DebuggerStop. Needed so if code is changed on a remote machine while we are debugging, we don't overwrite
+        /// our local copy and cause VS to reload the script which breaks the debugging experience.
+        /// </summary>
+        private static bool _needToCopyRemoteScript = false;
+
+        /// <summary>
         /// Used to check bitness of processes
         /// </summary>
         /// <param name="process"></param>
@@ -163,16 +170,26 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 var process = Process.GetProcessById((int)pid);
                 ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}" , process.ProcessName, process.Id));
                 bool is64Bit = false;
-                IsWow64Process(process.Handle, out is64Bit);
 
-                // cannot examine a 64 bit process' modules from a 32 bit process
-                if (!Environment.Is64BitProcess && is64Bit)
+                try
                 {
-                    return false;
+                    IsWow64Process(process.Handle, out is64Bit);
+
+                    // cannot examine a 64 bit process' modules from a 32 bit process
+                    if (!Environment.Is64BitProcess && is64Bit)
+                    {
+                        return false;
+                    }
+                    else if (process != null)
+                    {
+                        return process.Modules.OfType<ProcessModule>().Any(pm => pm.ModuleName.Equals("powershell.exe", StringComparison.Ordinal));
+                    }
                 }
-                else if (process != null)
+                catch(Win32Exception ex)
                 {
-                    return process.Modules.OfType<ProcessModule>().Any(pm => pm.ModuleName.Equals("powershell.exe", StringComparison.Ordinal));
+                    // if a process being run as admin IsWow64Process may throw an exception
+                    ServiceCommon.Log(string.Format("Win32Exception while examining process: {1}; id: {1}; ex {2}", process.ProcessName, process.Id, ex.ToString()));
+                    return false;
                 }
             }
             return false;
@@ -326,10 +343,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Finds all processes on a remote computer which have loaded the powershell.exe module
         /// </summary>
         /// <param name="remoteName">Name of the remote machine</param>
+        /// <param name="errorMessage">Error message to be presented to user if failure occurs</param>
         /// <returns></returns>
-        public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName)
+        public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName, out string errorMessage)
         {
             List<KeyValuePair<uint, string>> validProcesses = new List<KeyValuePair<uint, string>>();
+            errorMessage = "";
 
             // Retrieve callback context so credentials window can display
             if (_callback == null)
@@ -350,6 +369,24 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     {
                         // bad credentials, couldn't connect to machine, user hit cancel on the auth dialog
                         ServiceCommon.Log("User entered wrong credentials, hit cancel, or we could not reach the remote machine.");
+                        errorMessage = string.Format(Resources.EnumRemoteConnectionError, remoteName);
+                        return null;
+                    }
+
+                    // Check remote PowerShell version
+                    _currentPowerShell.Commands.Clear();
+                    _currentPowerShell.AddScript("$PSVersionTable.PSVersion");
+                    _currentPowerShell.Runspace = _runspace;
+                    Collection<PSObject> result = _currentPowerShell.Invoke();
+
+                    Version remoteVersion = result.ElementAt(0).BaseObject as Version;
+                    if (remoteVersion != null && (remoteVersion < RequiredPowerShellVersionForProcessAttach))
+                    {
+                        _currentPowerShell.Commands.Clear();
+                        _currentPowerShell.AddScript(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+                        _currentPowerShell.Invoke();
+
+                        errorMessage = string.Format(Resources.EnumRemoteVersionError, remoteVersion.ToString());
                         return null;
                     }
 
@@ -357,7 +394,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _currentPowerShell.Commands.Clear();
                     _currentPowerShell.AddScript(DebugEngineConstants.EnumerateRemoteProcessesScript);
                     _currentPowerShell.Runspace = _runspace;
-                    Collection<PSObject> result = _currentPowerShell.Invoke();
+                    result = _currentPowerShell.Invoke();
 
                     // Add each process' name and pid to the list to be returned
                     for (int i = 0; i < result.Count; i += 2)
@@ -375,6 +412,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 catch (Exception ex)
                 {
                     ServiceCommon.Log(string.Format("Error connecting to remote machine; {0}", ex.ToString()));
+                    errorMessage = string.Format(Resources.EnumRemoteConnectionError, remoteName);
                     return null;
                 }
             }
@@ -406,6 +444,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         ServiceCommon.Log("Unable to connect to local machine.");
                         return string.Format(Resources.ConnectionError, remoteName);
                     }
+
+                    _needToCopyRemoteScript = true;
 
                 }
                 catch (Exception ex)
@@ -1104,7 +1144,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
                 }
-                else if(scenario == DebugScenario.RemoteAttach || scenario == DebugScenario.LocalAttach)
+                else if(scenario == DebugScenario.RemoteAttach || scenario == DebugScenario.LocalAttach || psobj.BaseObject is string)
                 {
                     // local and remote process attach debugging
                     string currentCall = psobj.ToString();
