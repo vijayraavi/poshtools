@@ -52,19 +52,7 @@ namespace PowerShellTools.Common.Debugging
         /// Enumerates through all processes on a machine and looks for one running the powershell.exe module. Adds the process id and process name
         /// of any valid processes to an array which is then returned.
         /// </summary>
-        public const string EnumerateRemoteProcessesScript = @"
-$processes = Get-Process;
-$valid_processes = @();
-Foreach($process in $processes) {
-    ForEach($module in $process.Modules) {
-        if($module.ModuleName -eq 'powershell.exe') {
-            $valid_processes += $process.id;
-            $valid_processes += $process.ProcessName;
-            break;
-        }
-    }
-}
-return $valid_processes;";
+        public const string EnumerateRemoteProcessesScript = @"get-process | Where-Object {foreach-Object{$_.Modules} | Where-Object{$_.ModuleName -eq 'powershell.exe'}} | Select-Object Id, ProcessName";
 
         #region Remote file open events
 

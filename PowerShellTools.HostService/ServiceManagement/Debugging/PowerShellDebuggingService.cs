@@ -397,11 +397,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     result = _currentPowerShell.Invoke();
 
                     // Add each process' name and pid to the list to be returned
-                    for (int i = 0; i < result.Count; i += 2)
+                    foreach(PSObject obj in result)
                     {
-                        dynamic pid = result.ElementAt(i);
-                        dynamic name = result.ElementAt(i + 1);
-                        validProcesses.Add(new KeyValuePair<uint, string>(uint.Parse(pid.ToString()), name.ToString()));
+                        uint pid = (uint)((int)obj.Members["Id"].Value);
+                        string name = (string)obj.Members["ProcessName"].Value;
+                        validProcesses.Add(new KeyValuePair<uint, string>(pid, name));
                     }
 
                     // Exit the remote session and return results back to RemoteEnumDebugProcess
