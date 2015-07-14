@@ -95,6 +95,7 @@
     <Reference Include="System.Management.Automation">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="Microsoft.VisualStudio.Shell.$(VSTarget)" />
