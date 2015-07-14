@@ -248,8 +248,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                 }
 
-                // rehook event handlers
+                // rehook event handlers and reset _pausedEvent
                 AddEventHandlers();
+                _pausedEvent.Reset();
 
                 // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
                 _currentPowerShell.Runspace = _runspace;
@@ -289,11 +290,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 // attempt to gracefully detach the deugger
                 ClearBreakpoints();
-                ExecuteDebuggingCommand("detach", false);
+                if (_runspace.RunspaceAvailability != RunspaceAvailability.Busy)
+                {
+                    ExecuteDebuggingCommand("detach", false);
+                }
+                else
+                {
+                    _currentPowerShell.Stop();
+                }
             }
             catch (Exception ex)
             {
-                // if program is running we must use stop to force the debugger to detach
+                // if program is running/a problem is encountered, we must use stop to force the debugger to detach
                 ServiceCommon.Log(string.Format("Script currently in execution, must use stop to end debugger; {0}", ex.ToString()));
                 _currentPowerShell.Stop();
             }
@@ -333,8 +341,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                 }
 
-                // rehook event handlers
+                // rehook event handlers and make sure _pausedEvent is woken up
                 AddEventHandlers();
+                _pausedEvent.Set();
             }
             return true;
         }
