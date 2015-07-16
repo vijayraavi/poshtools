@@ -24,6 +24,7 @@
     <KeyBindings>
         <KeyBinding guid="guidReplWindowCmdSet" id="cmdidSmartExecute" key1="VK_RETURN" mod1="C" editor="guidReplWindow" />
         <KeyBinding guid="guidReplWindowCmdSet" id="cmdidBreakRepl" key1="VK_CANCEL" mod1="C" editor="guidReplWindow" />
+        <KeyBinding guid="guidReplWindowCmdSet" id="cmdidBreakRepl" key1="C" mod1="Control" editor="guidReplWindow" />
         <KeyBinding guid="guidReplWindowCmdSet" id="cmdidReplHistoryNext"  key1="VK_DOWN" mod1="Alt" editor="guidReplWindow" />
         <KeyBinding guid="guidReplWindowCmdSet" id="cmdidReplHistoryPrevious" key1="VK_UP" mod1="Alt" editor="guidReplWindow" />
         <KeyBinding guid="guidReplWindowCmdSet" id="cmdidBreakLine" key1="VK_RETURN" mod1="S" editor="guidReplWindow" />
