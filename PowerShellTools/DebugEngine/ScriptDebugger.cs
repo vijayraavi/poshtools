@@ -402,7 +402,7 @@ namespace PowerShellTools.DebugEngine
 
             if (node.IsAttachedProgram)
             {
-                string result = "";
+                string result = string.Empty;
                 if (!node.IsRemoteProgram)
                 {
                     result = DebuggingService.AttachToRunspace(node.Process.ProcessId);

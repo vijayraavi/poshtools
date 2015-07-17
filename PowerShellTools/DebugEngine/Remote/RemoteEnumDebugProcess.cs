@@ -47,7 +47,7 @@ namespace PowerShellTools.DebugEngine.Remote
             }
 
             List<KeyValuePair<uint, string>> information;
-            string errorMessage = "";
+            string errorMessage = string.Empty;
             while (true)
             {
                 information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer, out errorMessage);

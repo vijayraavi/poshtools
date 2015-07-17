@@ -273,7 +273,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     return Resources.ProcessDebugError;
                 }
             }
-            return "";
+            return string.Empty;
         }
 
         /// <summary>
@@ -357,7 +357,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName, out string errorMessage)
         {
             List<KeyValuePair<uint, string>> validProcesses = new List<KeyValuePair<uint, string>>();
-            errorMessage = "";
+            errorMessage = string.Empty;
 
             // Retrieve callback context so credentials window can display
             if (_callback == null)
@@ -466,7 +466,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             // now that we are in the remote session we can attach to the runspace
             AttachToRunspace(pid);
-            return "";
+            return string.Empty;
         }
 
         /// <summary>
