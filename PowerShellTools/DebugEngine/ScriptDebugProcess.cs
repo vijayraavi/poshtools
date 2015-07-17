@@ -113,9 +113,20 @@ namespace PowerShellTools.DebugEngine
         public int GetPhysicalProcessId(AD_PROCESS_ID[] pProcessId)
         {
             Log.Debug("Process: GetPhysicalProcessId");
-
             var pidStruct = new AD_PROCESS_ID();
-            pidStruct.dwProcessId = (uint)ProcessId;
+
+            // if dealing with an actual process we need to identify it with its PID
+            if(ProcessId != 0)
+            {
+                pidStruct.dwProcessId = (uint)ProcessId;
+                pidStruct.ProcessIdType = (uint)enum_AD_PROCESS_ID.AD_PROCESS_ID_SYSTEM;
+            }
+            else
+            {
+                pidStruct.guidProcessId = Id;
+                pidStruct.ProcessIdType = (uint)enum_AD_PROCESS_ID.AD_PROCESS_ID_GUID;
+            }
+            
             pProcessId[0] = pidStruct;
 
             return VSConstants.S_OK;
