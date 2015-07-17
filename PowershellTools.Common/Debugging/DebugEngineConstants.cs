@@ -46,7 +46,13 @@ namespace PowerShellTools.Common.Debugging
             @"\s+" + // spaces between function name and variable list
             @"\{([,\s]?[^\s,]+=\S+)*\}" + // list of parameters which are comma seperated, (note the equals sign)
             @"\s+([^\s:]+):" + // any number of spaces after the parameter list, and then the script name which ends right before a colon
-            @"\s+\w+ (\d)"; // any number of spaces and then some word such as "line" (depending on localization) and then a line number
+            @"\s+\w+ (\d)"; // any number of spaces (after the colon) and then the word "line" and then a number which denotes the line number
+
+        /// <summary>
+        /// Enumerates through all processes on a machine and looks for one running the powershell.exe module. Adds the process id and process name
+        /// of any valid processes to an array which is then returned.
+        /// </summary>
+        public const string EnumerateRemoteProcessesScript = @"get-process | Where-Object {foreach-Object{$_.Modules} | Where-Object{$_.ModuleName -eq 'powershell.exe'}} | Select-Object Id, ProcessName";
 
         #region Remote file open events
 
@@ -142,5 +148,10 @@ param (
 
         public const string PowerShellHostProcessLogTag = "[{0}]:";
         public const string PowerShellHostProcessLogFormat = PowerShellHostProcessLogTag + "{1}";
+
+        /// <summary>
+        /// Time in milisceonds that _attachRequestEvent waits before timing out.
+        /// </summary>
+        public const int AttachRequestEventTimeout = 1000 * 5;
     }
 }

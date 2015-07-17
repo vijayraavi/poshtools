@@ -12,8 +12,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
     public enum DebugScenario
     {
         Local,            // running script from Visual Studio
-        RemoteSession,    // remote session debugging
+        RemoteSession,    // remote session or remote process attach debugging
         LocalAttach,      // attaching to a local process
+        RemoteAttach,     // attaching to a remote process
         Unknown           // cannot determine the scenario
     }
 
@@ -37,6 +38,8 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
                     return Resources.RemoteSessionFileOpenError;
                 case DebugScenario.LocalAttach:
                     return Resources.LocalAttachFileOpenError;
+                case DebugScenario.RemoteAttach:
+                    return Resources.RemoteAttachFileOpenError;
                 default:
                     return Resources.DefaultFileOpenError;
             }

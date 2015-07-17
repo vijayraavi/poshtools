@@ -117,11 +117,23 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ConnectionError" xml:space="preserve">
+    <value>Unable to connect to {0}.</value>
+    <comment>{0] - remote machine name</comment>
+  </data>
   <data name="CredentialDialogCaption" xml:space="preserve">
     <value>Windows PowerShell credential request</value>
   </data>
   <data name="CredentialDialogMessage" xml:space="preserve">
     <value>Enter your credentials.</value>
+  </data>
+  <data name="EnumRemoteConnectionError" xml:space="preserve">
+    <value>Unable to connect to {0}. Retry?</value>
+    <comment>{0} - remote machine name</comment>
+  </data>
+  <data name="EnumRemoteVersionError" xml:space="preserve">
+    <value>Unable to attach with current remote PowerShell version ({0}). Please ensure that PowerShell v5 or higher is installed.</value>
+    <comment>{0} - remote PowerShell version</comment>
   </data>
   <data name="Error_LocalScriptInRemoteSession" xml:space="preserve">
     <value>Local script ({0}) cannot be run through remote PowerShell session</value>
@@ -132,20 +144,15 @@
   </data>
   <data name="ProcessAttachFailErrorBody" xml:space="preserve">
     <value>Unable to attach to specified process.</value>
-    <comment>Dialog box body for when wait on Enter-PSHostProcess cmdlet times out</comment>
-  </data>
-  <data name="ProcessAttachFailErrorTitle" xml:space="preserve">
-    <value>Error Attaching to Process</value>
-    <comment>Dialog box title for when wait on Enter-PSHostProcess cmdlet times out</comment>
+    <comment>Generic dialog box body for when attaching to a process fails</comment>
   </data>
   <data name="ProcessAttachVersionErrorBody" xml:space="preserve">
-    <value>Unable to attach to specified process with PowerShell Tools.
-PowerShell version 5.0 or above is required before PowerShell Tools may attach to a local or remote process.</value>
+    <value>Unable to attach with current PowerShell version ({0}). Please ensure that PowerShell v5 or higher is installed.</value>
     <comment>Dialog box body for invalid attempt at attaching on PowerShell v4 or below</comment>
   </data>
-  <data name="ProcessAttachVersionErrorTitle" xml:space="preserve">
-    <value>Invalid PowerShell Version</value>
-    <comment>Dialog box title for invalid attempt at attaching on PowerShell v4 or below</comment>
+  <data name="ProcessDebugError" xml:space="preserve">
+    <value>Error while attempting to debug the specified process.</value>
+    <comment>Error message given if an error occurs attempting to/while debugging the runspace</comment>
   </data>
   <data name="Warning_HigherVersionOnTargetRequiredForDebugging" xml:space="preserve">
     <value>Warning: PowerShell v4.0 or later is needed on your remote computer to debug during remote script execution. You can install the latest PowerShell from: {0}</value>

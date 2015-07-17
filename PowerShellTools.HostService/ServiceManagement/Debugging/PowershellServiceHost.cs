@@ -238,7 +238,7 @@ Also leaving the implementation here as a reference because that is going to be 
             if (needToWake)
             {
                 // wake up DetachFromRunspace
-                _attachRequestEvent.Reset();
+                _attachRequestEvent.Set();
             }
         }
 
@@ -277,7 +277,7 @@ Also leaving the implementation here as a reference because that is going to be 
             if (GetDebugScenario() == DebugScenario.LocalAttach)
             {
                 // wake up AttachToRunspace
-                _attachRequestEvent.Reset();
+                _attachRequestEvent.Set();
             }
         }
 

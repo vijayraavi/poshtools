@@ -12,6 +12,7 @@ using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -285,6 +286,64 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 NotifyOutputString(outputString.ToString());
             }
+        }
+
+        /// <summary>
+        /// Opens the script a remote process is running.
+        /// </summary>
+        /// <param name="scriptName"></param>
+        /// <returns></returns>
+        private string OpenRemoteAttachedFile(string scriptName)
+        {
+            if (!_needToCopyRemoteScript && _mapRemoteToLocal.ContainsKey(scriptName))
+            {
+                return _mapRemoteToLocal[scriptName];
+            }
+
+            PSCommand psCommand = new PSCommand();
+            psCommand.AddScript(string.Format("Get-Content \"{0}\"", scriptName));
+            PSDataCollection<PSObject> result = new PSDataCollection<PSObject>();
+            _runspace.Debugger.ProcessCommand(psCommand, result);
+
+            string[] remoteText = new string[result.Count()];
+
+            for (int i = 0; i < remoteText.Length; i++)
+            {
+                remoteText[i] = result.ElementAt(i).BaseObject as string;
+            }
+
+            // create new directory and corressponding file path/name
+            string tmpFileName = Path.GetTempFileName();
+            string dirPath = tmpFileName.Remove(tmpFileName.LastIndexOf('.'));
+            string fullFileName = Path.Combine(dirPath, new FileInfo(scriptName).Name);
+
+            // check to see if we have already copied the script over, and if so, overwrite
+            if (_mapRemoteToLocal.ContainsKey(scriptName))
+            {
+                fullFileName = _mapRemoteToLocal[scriptName];
+            }
+            else
+            {
+                Directory.CreateDirectory(dirPath);
+            }
+
+            _mapRemoteToLocal[scriptName] = fullFileName;
+            _mapLocalToRemote[fullFileName] = scriptName;
+
+            File.WriteAllLines(fullFileName, remoteText);
+
+            return fullFileName;
+        }
+
+        /// <summary>
+        /// Re-adds all of the various event handlers to the runspace
+        /// </summary>
+        private void AddEventHandlers()
+        {
+            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+            _runspace.StateChanged += _runspace_StateChanged;
+            _runspace.AvailabilityChanged += _runspace_AvailabilityChanged;
         }
     }
 }
