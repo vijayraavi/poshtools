@@ -200,52 +200,31 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public string AttachToRunspace(uint pid)
         {
+            string result = string.Empty;
             if (_callback == null)
             {
                 _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
             }
 
-            // attaching leverages cmdlets introduced in PSv5
-            if (_installedPowerShellVersion < RequiredPowerShellVersionForProcessAttach)
+            // scenario before entering, used to determine if we are local attaching
+            DebugScenario preScenario = GetDebugScenario();
+
+            // attaching leverages cmdlets introduced in PSv5, this must be on local machine to attach to a local process
+            if (preScenario == DebugScenario.Local && _installedPowerShellVersion < RequiredPowerShellVersionForProcessAttach)
             {
                 ServiceCommon.Log(string.Format("User asked to attach to process while running inadequete PowerShell version {0}", _installedPowerShellVersion.ToString()));
                 return string.Format(Resources.ProcessAttachVersionErrorBody, _installedPowerShellVersion.ToString());
             }
 
             // enter into to-attach process which will swap out the current runspace
-            using (_currentPowerShell = PowerShell.Create())
+            try
             {
-                // scenario before entering, used to determine if we are local attaching
-                DebugScenario preScenario = GetDebugScenario();
-
                 _attachRequestEvent.Reset();
-                _currentPowerShell.Runspace = _runspace;
-                _currentPowerShell.AddCommand("Enter-PSHostProcess").AddParameter("Id", pid.ToString());
-                _currentPowerShell.Invoke();
+                InvokeScript(string.Format("Enter-PSHOstProcess -Id {0}", pid.ToString()));
 
-                if (preScenario != DebugScenario.RemoteSession)
+                if (!string.IsNullOrEmpty(result = VerifyAttachToRunspace(preScenario)))
                 {
-                    // for local attach, we have to wait for the runspace to be pushed
-                    bool didTimeout = !(_attachRequestEvent.WaitOne(DebugEngineConstants.AttachRequestEventTimeout));
-                    if (didTimeout)
-                    {
-                        // if semaphore times out, check to see if runspace looks ok, if it does then we will move forward
-                        if (GetDebugScenario() != DebugScenario.LocalAttach)
-                        {
-                            ServiceCommon.Log("Unable to attach to local process. Semaphore timed out and runspace is confirmed to not be local attach.");
-                            return Resources.ProcessAttachFailErrorBody;
-                        }
-                    }
-                }
-                else
-                {
-                    // if remote attaching, make sure that we are still in a remote session after entering the host
-                    DebugScenario scenario = GetDebugScenario();
-                    if (scenario != DebugScenario.RemoteSession)
-                    {
-                        ServiceCommon.Log("Failed to attach to remote process; scenario after invoke: {0}", scenario);
-                        return Resources.ProcessAttachFailErrorBody;
-                    }
+                    return result;
                 }
 
                 // rehook event handlers and reset _pausedEvent
@@ -253,27 +232,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _pausedEvent.Reset();
 
                 // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
-                _currentPowerShell.Runspace = _runspace;
-                _currentPowerShell.Commands.Clear();
-                _currentPowerShell.AddCommand("Debug-Runspace").AddParameter("Id", "1");
-
-                try
-                {
-                    _currentPowerShell.Invoke();
-                }
-                catch (RemoteException remoteException)
-                {
-                    // exception is expected if user asks to stop debugging while script is running, no need to notify
-                    ServiceCommon.Log(string.Format("Forced to detach via stop command; {0}", remoteException.ToString()));
-                }
-                catch (Exception exception)
-                {
-                    // any other sort of exception is not expected
-                    ServiceCommon.Log(string.Format("Unexpected exception while debugging runspace; {0}", exception.ToString()));
-                    return Resources.ProcessDebugError;
-                }
+                InvokeScript("Debug-Runspace -Id 1");
             }
-            return string.Empty;
+            catch (RemoteException remoteException)
+            {
+                // exception is expected if user asks to stop debugging while script is running, no need to notify
+                ServiceCommon.Log(string.Format("Forced to detach via stop command; {0}", remoteException.ToString()));
+            }
+            catch (Exception exception)
+            {
+                // any other sort of exception is not expected
+                ServiceCommon.Log(string.Format("Unexpected exception while debugging runspace; {0}", exception.ToString()));
+                return Resources.ProcessDebugError;
+            }
+            return result;
         }
 
         /// <summary>
@@ -306,46 +278,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.Stop();
             }
 
-            using (_currentPowerShell = PowerShell.Create())
+            // scenario before exiting, used to determine if we are local detaching
+            DebugScenario preScenario = GetDebugScenario();
+
+            _attachRequestEvent.Reset();
+            InvokeScript("Exit-PSHostProcess");
+
+            if (!VerifyDetachFromRunspace(preScenario))
             {
-                // scenario before exiting, used to determine if we are local detaching
-                DebugScenario preScenario = GetDebugScenario();
-
-                _attachRequestEvent.Reset();
-                _currentPowerShell.Runspace = _runspace;
-                _currentPowerShell.AddCommand("Exit-PSHostProcess");
-                _currentPowerShell.Invoke();
-
-                // wait for invoke to finish swapping the runspaces if detaching from a local process
-                if (preScenario == DebugScenario.LocalAttach)
-                {
-                    bool didTimeout = !(_attachRequestEvent.WaitOne(DebugEngineConstants.AttachRequestEventTimeout));
-                    if (didTimeout)
-                    {
-                        // if semaphore times out, check to see if runspace looks ok, if it does then we will move forward
-                        if (GetDebugScenario() != DebugScenario.Local)
-                        {
-                            ServiceCommon.Log("Failed to detach from local process. Semaphore timed out and runspace is confirmed to not be local.");
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    // if remote attaching, make sure that we are still in a remote session after exiting the host
-                    DebugScenario scenario = GetDebugScenario();
-                    if (scenario != DebugScenario.RemoteSession)
-                    {
-                        ServiceCommon.Log(string.Format("Failed to detach from remote process; scenario after invoke: {0}", scenario));
-                        return false;
-                    }
-                }
-
+                return false;
+            }
+            else
+            {
                 // rehook event handlers and make sure _pausedEvent is woken up
                 AddEventHandlers();
                 _pausedEvent.Set();
+                return true;
             }
-            return true;
         }
 
         /// <summary>
@@ -353,11 +302,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         /// <param name="remoteName">Name of the remote machine</param>
         /// <param name="errorMessage">Error message to be presented to user if failure occurs</param>
-        /// <returns></returns>
-        public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName, out string errorMessage)
+        /// <returns>List of valid processes, each represented by a KeyValuePair of pid to process name</returns>
+        public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName, ref string errorMessage)
         {
             List<KeyValuePair<uint, string>> validProcesses = new List<KeyValuePair<uint, string>>();
-            errorMessage = string.Empty;
 
             // Retrieve callback context so credentials window can display
             if (_callback == null)
@@ -365,65 +313,44 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
             }
 
-            using (_currentPowerShell = PowerShell.Create())
+            try
             {
-                try
+                // Initiate remote session with the remote machine
+                InvokeScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+
+                if (GetDebugScenario() == DebugScenario.Local)
                 {
-                    // Initiate remote session with the remote machine
-                    _currentPowerShell.Runspace = _runspace;
-                    _currentPowerShell.AddScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
-                    _currentPowerShell.Invoke();
-
-                    if (GetDebugScenario() == DebugScenario.Local)
-                    {
-                        // bad credentials, couldn't connect to machine, user hit cancel on the auth dialog
-                        ServiceCommon.Log("User entered wrong credentials, hit cancel, or we could not reach the remote machine.");
-                        errorMessage = string.Format(Resources.EnumRemoteConnectionError, remoteName);
-                        return null;
-                    }
-
-                    // Check remote PowerShell version
-                    _currentPowerShell.Commands.Clear();
-                    _currentPowerShell.AddScript("$PSVersionTable.PSVersion");
-                    _currentPowerShell.Runspace = _runspace;
-                    Collection<PSObject> result = _currentPowerShell.Invoke();
-
-                    Version remoteVersion = result.ElementAt(0).BaseObject as Version;
-                    if (remoteVersion != null && (remoteVersion < RequiredPowerShellVersionForProcessAttach))
-                    {
-                        _currentPowerShell.Commands.Clear();
-                        _currentPowerShell.AddScript(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
-                        _currentPowerShell.Invoke();
-
-                        errorMessage = string.Format(Resources.EnumRemoteVersionError, remoteVersion.ToString());
-                        return null;
-                    }
-
-                    // Run script on remote machine to grab all attachable processes
-                    _currentPowerShell.Commands.Clear();
-                    _currentPowerShell.AddScript(DebugEngineConstants.EnumerateRemoteProcessesScript);
-                    _currentPowerShell.Runspace = _runspace;
-                    result = _currentPowerShell.Invoke();
-
-                    // Add each process' name and pid to the list to be returned
-                    foreach(PSObject obj in result)
-                    {
-                        uint pid = (uint)((int)obj.Members["Id"].Value);
-                        string name = (string)obj.Members["ProcessName"].Value;
-                        validProcesses.Add(new KeyValuePair<uint, string>(pid, name));
-                    }
-
-                    // Exit the remote session and return results back to RemoteEnumDebugProcess
-                    _currentPowerShell.Commands.Clear();
-                    _currentPowerShell.AddScript(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
-                    _currentPowerShell.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    ServiceCommon.Log(string.Format("Error connecting to remote machine; {0}", ex.ToString()));
+                    // bad credentials or couldn't connect to machine
+                    ServiceCommon.Log("User entered wrong credentials, or we could not reach the remote machine.");
                     errorMessage = string.Format(Resources.EnumRemoteConnectionError, remoteName);
                     return null;
                 }
+
+                // Check remote PowerShell version
+                Version remoteVersion = InvokeScript("$PSVersionTable.PSVersion").ElementAt(0).BaseObject as Version;
+                if (remoteVersion != null && (remoteVersion < RequiredPowerShellVersionForProcessAttach))
+                {
+                    InvokeScript(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+                    errorMessage = string.Format(Resources.EnumRemoteVersionError, remoteVersion.ToString());
+                    return null;
+                }
+
+                // grab all attachable processes and add each process' name and pid to the list to be returned
+                foreach(PSObject obj in InvokeScript(DebugEngineConstants.EnumerateRemoteProcessesScript))
+                {
+                    uint pid = (uint)((int)obj.Members["Id"].Value);
+                    string name = (string)obj.Members["ProcessName"].Value;
+                    validProcesses.Add(new KeyValuePair<uint, string>(pid, name));
+                }
+
+                // Exit the remote session and return results back to RemoteEnumDebugProcess
+                InvokeScript(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log(string.Format("Error connecting to remote machine; {0}", ex.ToString()));
+                errorMessage = string.Format(Resources.EnumRemoteConnectionError, remoteName);
+                return null;
             }
             return validProcesses;
         }
@@ -438,30 +365,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
             }
 
-            using (_currentPowerShell = PowerShell.Create())
+            try
             {
-                try
+                // enter into a remote session
+                InvokeScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+
+                if (!VerifyAttachToRemoteRunspace())
                 {
-                    // enter into a remote session
-                    _currentPowerShell.Runspace = _runspace;
-                    _currentPowerShell.AddScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
-                    _currentPowerShell.Invoke();
-
-                    if (GetDebugScenario() == DebugScenario.Local)
-                    {
-                        // bad credentials, couldn't connect to machine, user hit cancel on the auth dialog
-                        ServiceCommon.Log("Unable to connect to local machine.");
-                        return string.Format(Resources.ConnectionError, remoteName);
-                    }
-
-                    _needToCopyRemoteScript = true;
-
-                }
-                catch (Exception ex)
-                {
-                    ServiceCommon.Log(string.Format("Error connecting to remote machine; {0}", ex.ToString()));
+                    // bad credentials, couldn't connect to machine, user hit cancel on the auth dialog
+                    ServiceCommon.Log("Unable to connect to remote machine.");
                     return string.Format(Resources.ConnectionError, remoteName);
                 }
+
+                _needToCopyRemoteScript = true;
+
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log(string.Format("Error connecting to remote machine; {0}", ex.ToString()));
+                return string.Format(Resources.ConnectionError, remoteName);
             }
 
             // now that we are in the remote session we can attach to the runspace
@@ -480,24 +402,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return false;
             }
 
-            using (_currentPowerShell = PowerShell.Create())
+            // exit the remote session
+            InvokeScript(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
+
+            if (!VerifyDetachFromRemoteRunspace())
             {
-                // exit the remote session
-                _currentPowerShell.Runspace = _runspace;
-                _currentPowerShell.AddScript(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
-                _currentPowerShell.Invoke();
-
-                DebugScenario scenario = GetDebugScenario();
-                if (scenario != DebugScenario.Local)
-                {
-                    // very unlikely for this to happen, but we should make sure to handle the case anyway
-                    ServiceCommon.Log(string.Format("Unable to disconnect from the remote machine; debug scenario {0}", scenario));
-                    return false;
-                }
-
-                // rehook event handlers
-                AddEventHandlers();
+                // very unlikely for this to happen, but we should make sure to handle the case anyway
+                ServiceCommon.Log("Unable to disconnect from the remote machine.");
+                return false;
             }
+
+            // rehook event handlers
+            AddEventHandlers();
             return true;
         }
 

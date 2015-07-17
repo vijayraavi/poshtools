@@ -50,7 +50,7 @@ namespace PowerShellTools.DebugEngine.Remote
             string errorMessage = string.Empty;
             while (true)
             {
-                information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer, out errorMessage);
+                information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer, ref errorMessage);
 
                 if (information != null)
                 {
