@@ -236,7 +236,7 @@ namespace PowerShellTools.Commands.UserInterface
                         { 
                             Value=null,
                         },
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkNonNull", Type="string", ParameterSetName = "Set2" })
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkNotNull", Type="string", ParameterSetName = "Set2" })
                         { 
                             Value="hi"
                         },
@@ -299,7 +299,7 @@ namespace PowerShellTools.Commands.UserInterface
                         { 
                             Value=null,
                         },
-                        new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkNonNull", Type="string" })
+                        new ScriptParameterViewModel(new ScriptParameter() { Name="StringWithWatermarkNotNull", Type="string" })
                         { 
                             Value="hi"
                         },
