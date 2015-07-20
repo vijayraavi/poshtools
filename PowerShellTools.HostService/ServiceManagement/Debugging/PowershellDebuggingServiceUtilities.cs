@@ -360,9 +360,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
     }
 
-    class DebuggingServiceAttachValidator
+    public class DebuggingServiceAttachValidator
     {
         private IPowerShellDebuggingService _debuggingService;
+
+        public IPowerShellDebuggingService DebuggingService
+        {
+            get
+            {
+                return _debuggingService;
+            }
+            set
+            {
+                _debuggingService = value;
+            }
+        }
 
         public DebuggingServiceAttachValidator(IPowerShellDebuggingService service)
         {
