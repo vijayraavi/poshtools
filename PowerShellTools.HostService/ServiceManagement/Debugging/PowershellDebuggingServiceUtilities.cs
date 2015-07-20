@@ -348,18 +348,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Initizlizes _currentPowerShell, sets its runspace to _runspace, and then invokes the given script
+        /// Invokes given script on the provided PowerShell object after setting its runspace object
         /// </summary>
         /// <param name="script"></param>
         /// <returns>Returns the result of the invoke</returns>
-        private Collection<PSObject> InvokeScript(string script)
+        public static Collection<PSObject> InvokeScript(PowerShell powerShell, string script)
         {
-            using (_currentPowerShell = PowerShell.Create())
-            {
-                _currentPowerShell.Runspace = _runspace;
-                _currentPowerShell.AddScript(script);
-                return _currentPowerShell.Invoke();
-            }
+            powerShell.Runspace = PowerShellDebuggingService.Runspace;
+            powerShell.AddScript(script);
+            return powerShell.Invoke();
+        }
+    }
+
+    class DebuggingServiceAttachValidator
+    {
+        private IPowerShellDebuggingService _debuggingService;
+
+        public DebuggingServiceAttachValidator(IPowerShellDebuggingService service)
+        {
+            _debuggingService = service;
         }
 
         /// <summary>
@@ -367,16 +374,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         /// <param name="preScenario">The debug scenario before invoking Enter-PSHostProcess</param>
         /// <returns>Empty string if attachment was verified, string describing the result otherwise</returns>
-        private string VerifyAttachToRunspace(DebugScenario preScenario)
+        public string VerifyAttachToRunspace(DebugScenario preScenario, AutoResetEvent attachSemaphore)
         {
             if (preScenario != DebugScenario.RemoteSession)
             {
                 // for local attach, we have to wait for the runspace to be pushed
-                bool didTimeout = !(_attachRequestEvent.WaitOne(DebugEngineConstants.AttachRequestEventTimeout));
+                bool didTimeout = !(attachSemaphore.WaitOne(DebugEngineConstants.AttachRequestEventTimeout));
                 if (didTimeout)
                 {
                     // if semaphore times out, check to see if runspace looks ok, if it does then we will move forward
-                    if (GetDebugScenario() != DebugScenario.LocalAttach)
+                    if (_debuggingService.GetDebugScenario() != DebugScenario.LocalAttach)
                     {
                         ServiceCommon.Log("Unable to attach to local process. Semaphore timed out and runspace is confirmed to not be local attach.");
                         return Resources.ProcessAttachFailErrorBody;
@@ -386,7 +393,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             else
             {
                 // if remote attaching, make sure that we are still in a remote session after entering the host
-                DebugScenario scenario = GetDebugScenario();
+                DebugScenario scenario = _debuggingService.GetDebugScenario();
                 if (scenario != DebugScenario.RemoteSession)
                 {
                     ServiceCommon.Log("Failed to attach to remote process; scenario after invoke: {0}", scenario);
@@ -401,16 +408,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         /// <param name="preScenario">The debug scenario before invoking Exit-PSHostProcess</param>
         /// <returns>True if the detachment was verified, false otherwise</returns>
-        private bool VerifyDetachFromRunspace(DebugScenario preScenario)
+        public bool VerifyDetachFromRunspace(DebugScenario preScenario, AutoResetEvent attachSemaphore)
         {
             // wait for invoke to finish swapping the runspaces if detaching from a local process
             if (preScenario == DebugScenario.LocalAttach)
             {
-                bool didTimeout = !(_attachRequestEvent.WaitOne(DebugEngineConstants.AttachRequestEventTimeout));
+                bool didTimeout = !(attachSemaphore.WaitOne(DebugEngineConstants.AttachRequestEventTimeout));
                 if (didTimeout)
                 {
                     // if semaphore times out, check to see if runspace looks ok, if it does then we will move forward
-                    if (GetDebugScenario() != DebugScenario.Local)
+                    if (_debuggingService.GetDebugScenario() != DebugScenario.Local)
                     {
                         ServiceCommon.Log("Failed to detach from local process. Semaphore timed out and runspace is confirmed to not be local.");
                         return false;
@@ -420,7 +427,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             else
             {
                 // if remote attaching, make sure that we are still in a remote session after exiting the host
-                DebugScenario scenario = GetDebugScenario();
+                DebugScenario scenario = _debuggingService.GetDebugScenario();
                 if (scenario != DebugScenario.RemoteSession)
                 {
                     ServiceCommon.Log(string.Format("Failed to detach from remote process; scenario after invoke: {0}", scenario));
@@ -434,18 +441,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Verfies the first part of attaching to a remote runspace, the entering into a remote sessiom with the remote machine
         /// </summary>
         /// <returns>True if the debug scenario indicates a remote session, false otherwise</returns>
-        private bool VerifyAttachToRemoteRunspace()
+        public bool VerifyAttachToRemoteRunspace()
         {
-            return !(GetDebugScenario() == DebugScenario.Local);
+            return !(_debuggingService.GetDebugScenario() == DebugScenario.Local);
         }
 
         /// <summary>
         /// Verfies the second part of detaching from a remote runspace, the exiting of a remote session with the remote machine
         /// </summary>
         /// <returns>True if the debug scenario indicates a return to the local machine, false otherwise</returns>
-        private bool VerifyDetachFromRemoteRunspace()
+        public bool VerifyDetachFromRemoteRunspace()
         {
-            return GetDebugScenario() == DebugScenario.Local;
+            return _debuggingService.GetDebugScenario() == DebugScenario.Local;
         }
     }
 }

@@ -52,6 +52,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private static readonly Regex validStackLine = new Regex(DebugEngineConstants.ValidCallStackLine, RegexOptions.Compiled);
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
+        private DebuggingServiceAttachValidator _validator;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -95,6 +96,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _psBreakpointTable = new HashSet<PowerShellBreakpointRecord>();
             _debugOutput = true;
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
+            _validator = new DebuggingServiceAttachValidator(this);
             InitializeRunspace(this);
         }
 
@@ -216,23 +218,26 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return string.Format(Resources.ProcessAttachVersionErrorBody, _installedPowerShellVersion.ToString());
             }
 
-            // enter into to-attach process which will swap out the current runspace
             try
             {
-                _attachRequestEvent.Reset();
-                InvokeScript(string.Format("Enter-PSHOstProcess -Id {0}", pid.ToString()));
-
-                if (!string.IsNullOrEmpty(result = VerifyAttachToRunspace(preScenario)))
+                using (_currentPowerShell = PowerShell.Create())
                 {
-                    return result;
+                    // enter into to-attach process which will swap out the current runspace
+                    _attachRequestEvent.Reset();
+                    InvokeScript(_currentPowerShell, string.Format("Enter-PSHostProcess -Id {0}", pid.ToString()));
+
+                    if (!string.IsNullOrEmpty(result = _validator.VerifyAttachToRunspace(preScenario, _attachRequestEvent)))
+                    {
+                        return result;
+                    }
+
+                    // rehook event handlers and reset _pausedEvent
+                    AddEventHandlers();
+                    _pausedEvent.Reset();
+
+                    // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
+                    InvokeScript(_currentPowerShell, "Debug-Runspace -Id 1");
                 }
-
-                // rehook event handlers and reset _pausedEvent
-                AddEventHandlers();
-                _pausedEvent.Reset();
-
-                // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
-                InvokeScript("Debug-Runspace -Id 1");
             }
             catch (RemoteException remoteException)
             {
@@ -278,22 +283,25 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.Stop();
             }
 
-            // scenario before exiting, used to determine if we are local detaching
-            DebugScenario preScenario = GetDebugScenario();
-
-            _attachRequestEvent.Reset();
-            InvokeScript("Exit-PSHostProcess");
-
-            if (!VerifyDetachFromRunspace(preScenario))
+            using (_currentPowerShell = PowerShell.Create())
             {
-                return false;
-            }
-            else
-            {
-                // rehook event handlers and make sure _pausedEvent is woken up
-                AddEventHandlers();
-                _pausedEvent.Set();
-                return true;
+                // scenario before exiting, used to determine if we are local detaching
+                DebugScenario preScenario = GetDebugScenario();
+
+                _attachRequestEvent.Reset();
+                InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
+
+                if (!_validator.VerifyDetachFromRunspace(preScenario, _attachRequestEvent))
+                {
+                    return false;
+                }
+                else
+                {
+                    // rehook event handlers and make sure _pausedEvent is woken up
+                    AddEventHandlers();
+                    _pausedEvent.Set();
+                    return true;
+                }
             }
         }
 
@@ -315,36 +323,39 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             try
             {
-                // Initiate remote session with the remote machine
-                InvokeScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
-
-                if (GetDebugScenario() == DebugScenario.Local)
+                using (_currentPowerShell = PowerShell.Create())
                 {
-                    // bad credentials or couldn't connect to machine
-                    ServiceCommon.Log("User entered wrong credentials, or we could not reach the remote machine.");
-                    errorMessage = string.Format(Resources.EnumRemoteConnectionError, remoteName);
-                    return null;
-                }
+                    // Initiate remote session with the remote machine
+                    InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
 
-                // Check remote PowerShell version
-                Version remoteVersion = InvokeScript("$PSVersionTable.PSVersion").ElementAt(0).BaseObject as Version;
-                if (remoteVersion != null && (remoteVersion < RequiredPowerShellVersionForProcessAttach))
-                {
-                    InvokeScript(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
-                    errorMessage = string.Format(Resources.EnumRemoteVersionError, remoteVersion.ToString());
-                    return null;
-                }
+                    if (GetDebugScenario() == DebugScenario.Local)
+                    {
+                        // bad credentials or couldn't connect to machine
+                        ServiceCommon.Log("User entered wrong credentials, or we could not reach the remote machine.");
+                        errorMessage = string.Format(Resources.EnumRemoteConnectionError, remoteName);
+                        return null;
+                    }
 
-                // grab all attachable processes and add each process' name and pid to the list to be returned
-                foreach(PSObject obj in InvokeScript(DebugEngineConstants.EnumerateRemoteProcessesScript))
-                {
-                    uint pid = (uint)((int)obj.Members["Id"].Value);
-                    string name = (string)obj.Members["ProcessName"].Value;
-                    validProcesses.Add(new KeyValuePair<uint, string>(pid, name));
-                }
+                    // Check remote PowerShell version
+                    Version remoteVersion = InvokeScript(_currentPowerShell, "$PSVersionTable.PSVersion").ElementAt(0).BaseObject as Version;
+                    if (remoteVersion != null && (remoteVersion < RequiredPowerShellVersionForProcessAttach))
+                    {
+                        InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+                        errorMessage = string.Format(Resources.EnumRemoteVersionError, remoteVersion.ToString());
+                        return null;
+                    }
 
-                // Exit the remote session and return results back to RemoteEnumDebugProcess
-                InvokeScript(string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+                    // grab all attachable processes and add each process' name and pid to the list to be returned
+                    foreach (PSObject obj in InvokeScript(_currentPowerShell, DebugEngineConstants.EnumerateRemoteProcessesScript))
+                    {
+                        uint pid = (uint)((int)obj.Members["Id"].Value);
+                        string name = (string)obj.Members["ProcessName"].Value;
+                        validProcesses.Add(new KeyValuePair<uint, string>(pid, name));
+                    }
+
+                    // Exit the remote session and return results back to RemoteEnumDebugProcess
+                    InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+                }
             }
             catch (Exception ex)
             {
@@ -367,17 +378,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             try
             {
-                // enter into a remote session
-                InvokeScript(string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
-
-                if (!VerifyAttachToRemoteRunspace())
+                using (_currentPowerShell = PowerShell.Create())
                 {
-                    // bad credentials, couldn't connect to machine, user hit cancel on the auth dialog
-                    ServiceCommon.Log("Unable to connect to remote machine.");
-                    return string.Format(Resources.ConnectionError, remoteName);
-                }
+                    // enter into a remote session
+                    InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
 
-                _needToCopyRemoteScript = true;
+                    if (!_validator.VerifyAttachToRemoteRunspace())
+                    {
+                        // bad credentials, couldn't connect to machine, user hit cancel on the auth dialog
+                        ServiceCommon.Log("Unable to connect to remote machine.");
+                        return string.Format(Resources.ConnectionError, remoteName);
+                    }
+
+                    _needToCopyRemoteScript = true;
+                }
 
             }
             catch (Exception ex)
@@ -402,14 +416,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return false;
             }
 
-            // exit the remote session
-            InvokeScript(DebugEngineConstants.ExitRemoteSessionDefaultCommand);
-
-            if (!VerifyDetachFromRemoteRunspace())
+            using (_currentPowerShell = PowerShell.Create())
             {
-                // very unlikely for this to happen, but we should make sure to handle the case anyway
-                ServiceCommon.Log("Unable to disconnect from the remote machine.");
-                return false;
+                // exit the remote session
+                InvokeScript(_currentPowerShell, DebugEngineConstants.ExitRemoteSessionDefaultCommand);
+
+                if (!_validator.VerifyDetachFromRemoteRunspace())
+                {
+                    // very unlikely for this to happen, but we should make sure to handle the case anyway
+                    ServiceCommon.Log("Unable to disconnect from the remote machine.");
+                    return false;
+                }
             }
 
             // rehook event handlers
@@ -1058,7 +1075,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                else if (scenario == DebugScenario.RemoteSession && !(psobj.BaseObject is string))
+                else if ((scenario == DebugScenario.RemoteSession || scenario == DebugScenario.RemoteAttach) && !(psobj.BaseObject is string))
                 {
                     // remote session debugging
                     dynamic psFrame = (dynamic)psobj;
