@@ -354,6 +354,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns>Returns the result of the invoke</returns>
         public static Collection<PSObject> InvokeScript(PowerShell powerShell, string script)
         {
+            powerShell.Commands.Clear();
             powerShell.Runspace = PowerShellDebuggingService.Runspace;
             powerShell.AddScript(script);
             return powerShell.Invoke();

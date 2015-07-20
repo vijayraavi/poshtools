@@ -53,6 +53,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
         private DebuggingServiceAttachValidator _validator;
+        private bool _forceStop;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -97,6 +98,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _debugOutput = true;
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             _validator = new DebuggingServiceAttachValidator(this);
+            _forceStop = false;
             InitializeRunspace(this);
         }
 
@@ -241,8 +243,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             catch (RemoteException remoteException)
             {
-                // exception is expected if user asks to stop debugging while script is running, no need to notify
-                ServiceCommon.Log(string.Format("Forced to detach via stop command; {0}", remoteException.ToString()));
+                if (_forceStop)
+                {
+                    // exception is expected if user asks to stop debugging while script is running, no need to notify
+                    ServiceCommon.Log(string.Format("Forced to detach via stop command; {0}", remoteException.ToString()));
+                }
+                else
+                {
+                    // some actions, such as closing a remote process mid debugging may cause an unexpected remote exception
+                    ServiceCommon.Log(string.Format("Unexpected remote exception while debugging runspace; {0}", remoteException.ToString()));
+                    return Resources.ProcessDebugError;
+                }
             }
             catch (Exception exception)
             {
@@ -273,6 +284,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
                 else
                 {
+                    _forceStop = true;
                     _currentPowerShell.Stop();
                 }
             }
@@ -280,6 +292,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 // if program is running/a problem is encountered, we must use stop to force the debugger to detach
                 ServiceCommon.Log(string.Format("Script currently in execution, must use stop to end debugger; {0}", ex.ToString()));
+                _forceStop = true;
                 _currentPowerShell.Stop();
             }
 
@@ -401,8 +414,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
 
             // now that we are in the remote session we can attach to the runspace
-            AttachToRunspace(pid);
-            return string.Empty;
+            return AttachToRunspace(pid);
         }
 
         /// <summary>

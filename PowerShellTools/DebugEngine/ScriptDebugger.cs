@@ -415,6 +415,7 @@ namespace PowerShellTools.DebugEngine
                 if (!string.IsNullOrEmpty(result))
                 {
                     MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                    RefreshPrompt();
                 }
             }
             else
