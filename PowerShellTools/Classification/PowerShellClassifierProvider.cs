@@ -1,7 +1,7 @@
-using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
+using System.ComponentModel.Composition;
 
 namespace PowerShellTools.Classification
 {
@@ -33,13 +33,14 @@ namespace PowerShellTools.Classification
         internal static FileExtensionToContentTypeDefinition Ps1 = null;
 
         [Import]
+        private IDependencyValidator _validator;
+
+        [Import]
         public IClassificationFormatMapService ClassificationFormatMapService { get; set; }
 
         [Import]
         public IClassificationTypeRegistryService ClassificationTypeRegistryService { get; set; }
 
-        [Import]
-        internal IDependencyValidator _validator;
 
         public IClassifier GetClassifier(ITextBuffer textBuffer)
         {
