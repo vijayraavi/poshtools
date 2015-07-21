@@ -17,7 +17,7 @@ namespace PowerShellTools.Test
     public class RemoteDebuggingTest
     {
         private AutoResetEvent _attachSemaphore;
-        private DebuggingServiceAttachValidator _validator;
+        private PowerShellDebuggingServiceAttachValidator _validator;
         private DebugScenario _preScenario;
         private string _stringResult;
         private bool _boolResult;
@@ -25,7 +25,7 @@ namespace PowerShellTools.Test
         [TestInitialize]
         public void Init()
         {
-            _validator = new DebuggingServiceAttachValidator(null);
+            _validator = new PowerShellDebuggingServiceAttachValidator(null);
             _attachSemaphore = new AutoResetEvent(false);
         }
 

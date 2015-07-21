@@ -52,7 +52,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private static readonly Regex validStackLine = new Regex(DebugEngineConstants.ValidCallStackLine, RegexOptions.Compiled);
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
-        private DebuggingServiceAttachValidator _validator;
+        private PowerShellDebuggingServiceAttachValidator _validator;
         private bool _forceStop;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
@@ -97,7 +97,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _psBreakpointTable = new HashSet<PowerShellBreakpointRecord>();
             _debugOutput = true;
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
-            _validator = new DebuggingServiceAttachValidator(this);
+            _validator = new PowerShellDebuggingServiceAttachValidator(this);
             _forceStop = false;
             InitializeRunspace(this);
         }
@@ -239,6 +239,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                     // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
                     InvokeScript(_currentPowerShell, "Debug-Runspace -Id 1");
+
+                    if (_currentPowerShell.HadErrors)
+                    {
+                        return Resources.ProcessDebugError;
+                    }
                 }
             }
             catch (RemoteException remoteException)
@@ -296,11 +301,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _currentPowerShell.Stop();
             }
 
+            // scenario before exiting, used to determine if we are local detaching
+            DebugScenario preScenario = GetDebugScenario();
+
             using (_currentPowerShell = PowerShell.Create())
             {
-                // scenario before exiting, used to determine if we are local detaching
-                DebugScenario preScenario = GetDebugScenario();
-
                 _attachRequestEvent.Reset();
                 InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
 
@@ -1087,7 +1092,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                                 frame.Position.EndColumnNumber));
                     }
                 }
-                else if ((scenario == DebugScenario.RemoteSession || scenario == DebugScenario.RemoteAttach) && !(psobj.BaseObject is string))
+                else if (scenario == DebugScenario.RemoteSession)
                 {
                     // remote session debugging
                     dynamic psFrame = (dynamic)psobj;
@@ -1098,7 +1103,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
                 }
-                else if(scenario == DebugScenario.RemoteAttach || scenario == DebugScenario.LocalAttach || psobj.BaseObject is string)
+                else if(scenario == DebugScenario.RemoteAttach || scenario == DebugScenario.LocalAttach)
                 {
                     // local and remote process attach debugging
                     string currentCall = psobj.ToString();
@@ -1175,7 +1180,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             else if (_runspace.ConnectionInfo is WSManConnectionInfo)
             {
-                if (_runspace.RunspaceAvailability == RunspaceAvailability.RemoteDebug)
+                if (_currentPowerShell != null && 
+                    _currentPowerShell.Commands.Commands.Count == 1 && 
+                    _currentPowerShell.Commands.Commands.ElementAt(0).ToString().StartsWith("Debug-Runspace", StringComparison.OrdinalIgnoreCase))
                 {
                     return DebugScenario.RemoteAttach;
                 }
