@@ -63,6 +63,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         bool DetachFromRemoteRunspace();
 
         [OperationContract]
+        DebugScenario CleanupAttach();
+
+        [OperationContract]
         Collection<Variable> GetScopedVariable();
 
         [OperationContract]

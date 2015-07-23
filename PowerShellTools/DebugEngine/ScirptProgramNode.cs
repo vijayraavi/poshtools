@@ -195,6 +195,10 @@ namespace PowerShellTools.DebugEngine
                 Debugger.DebuggerFinished();
                 Debugger.RefreshPrompt();
             }
+            else
+            {
+                result = (Debugger.DebuggingService.CleanupAttach() == DebugScenario.Local);
+            }
 
             return result ? VSConstants.S_OK : VSConstants.S_FALSE;
         }

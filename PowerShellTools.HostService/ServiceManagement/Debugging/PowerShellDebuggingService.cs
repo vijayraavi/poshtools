@@ -451,6 +451,44 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return true;
         }
 
+        public DebugScenario CleanupAttach()
+        {
+            DebugScenario scenario = GetDebugScenario();
+            try {
+                using (_currentPowerShell = PowerShell.Create())
+                {
+                    switch (scenario)
+                    {
+                        case DebugScenario.RemoteAttach:
+                            // 1. detach the debugger, 2. exit the process, 3. exit the session
+                            _currentPowerShell.Stop();
+                            InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
+                            InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+                            break;
+                        case DebugScenario.RemoteSession:
+                            // 1. exit the process, 2. exit the session
+                            InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
+                            InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
+                            break;
+                        case DebugScenario.LocalAttach:
+                            // 1. detach the debugger, 2. exit the process
+                            _currentPowerShell.Stop();
+                            InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
+                            break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                ServiceCommon.Log(string.Format("CleanupAttach exception while in {0}; {1}", scenario.ToString(), e.ToString()));
+            }
+
+            AddEventHandlers();
+            _pausedEvent.Set();
+
+            return GetDebugScenario();
+        }
+
         /// <summary>
         /// Client respond with resume action to service
         /// </summary>
