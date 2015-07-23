@@ -127,10 +127,10 @@ namespace PowerShellTools.ServiceManagement
                         _powerShellDebuggingService = _debuggingServiceChannelFactory.CreateChannel();
                         _powerShellDebuggingService.SetRunspace(PowerShellToolsPackage.OverrideExecutionPolicyConfiguration);
                     }
-                    catch
+                    catch (Exception e)
                     {
                         // Connection has to be established...
-                        Log.Error("Connection establish failed...");
+                        Log.Error(string.Format("Connection establish failed... Error message: {0}", e.ToString()));
                         EnsureCloseProcess();
 
                         _powerShellIntelliSenseService = null;
