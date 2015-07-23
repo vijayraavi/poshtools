@@ -24,6 +24,7 @@ using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Management.Automation.Remoting;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -169,7 +170,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns>True if powershell.exe is a module of the process, false otherwise.</returns>
         public bool IsAttachable(uint pid)
         {
-            if (_installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
+            // make sure we are in a local scenario and that an adequate version of PowerShell is installed
+            if (GetDebugScenario() == DebugScenario.Local && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
             {
                 var process = Process.GetProcessById((int)pid);
                 ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}" , process.ProcessName, process.Id));
@@ -257,6 +259,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 {
                     // some actions, such as closing a remote process mid debugging may cause an unexpected remote exception
                     ServiceCommon.Log(string.Format("Unexpected remote exception while debugging runspace; {0}", remoteException.ToString()));
+                    return Resources.ProcessDebugError;
+                }
+            }
+            catch (PSRemotingDataStructureException remotingDataStructureException)
+            {
+                if (_forceStop)
+                {
+                    // exception is expected if we have to stop during cleanup
+                    ServiceCommon.Log(string.Format("Forced to detach via stop command; {0}", remotingDataStructureException.ToString()));
+                }
+                else
+                {
+                    // some actions, such as closing a remote process mid debugging may cause an unexpected remote exception
+                    ServiceCommon.Log(string.Format("Unexpected remote exception while debugging runspace; {0}", remotingDataStructureException.ToString()));
                     return Resources.ProcessDebugError;
                 }
             }
@@ -459,28 +475,35 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public DebugScenario CleanupAttach()
         {
             DebugScenario scenario = GetDebugScenario();
+            _forceStop = true;
             try {
-                using (_currentPowerShell = PowerShell.Create())
+                switch (scenario)
                 {
-                    switch (scenario)
-                    {
-                        case DebugScenario.RemoteAttach:
-                            // 1. detach the debugger, 2. exit the process, 3. exit the session
-                            _currentPowerShell.Stop();
+                    case DebugScenario.RemoteAttach:
+                        // 1. detach the debugger, 2. exit the process, 3. exit the session
+                        _currentPowerShell.Stop();
+                        using (_currentPowerShell = PowerShell.Create())
+                        {
                             InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
                             InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
-                            break;
-                        case DebugScenario.RemoteSession:
-                            // 1. exit the process, 2. exit the session
+                        }
+                        break;
+                    case DebugScenario.RemoteSession:
+                        // 1. exit the process, 2. exit the session
+                        using (_currentPowerShell = PowerShell.Create())
+                        {
                             InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
                             InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.ExitRemoteSessionDefaultCommand));
-                            break;
-                        case DebugScenario.LocalAttach:
-                            // 1. detach the debugger, 2. exit the process
-                            _currentPowerShell.Stop();
+                        }
+                        break;
+                    case DebugScenario.LocalAttach:
+                        // 1. detach the debugger, 2. exit the process
+                        _currentPowerShell.Stop();
+                        using (_currentPowerShell = PowerShell.Create())
+                        {
                             InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
-                            break;
-                    }
+                        }
+                        break;
                 }
             }
             catch (Exception e)
@@ -1212,8 +1235,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// Returns the connection info for the current runspace based on certain characteristics of the runspace.
-        /// Note: the difference between being in remote debug vs remote session can not always be distinguished, make
-        /// sure to test usage in such cases thoroughly
+        /// Note: if you overwrite the _currentPowerShell object after attaching to a process, this will no longer
+        /// return RemoteAttach.
         /// </summary>
         public DebugScenario GetDebugScenario()
         {

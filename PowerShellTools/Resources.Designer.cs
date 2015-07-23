@@ -88,6 +88,24 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot remotely debug a process while already attached to a process. Please detach from the currently attached process before trying again..
+        /// </summary>
+        public static string AttachExistingAttachError {
+            get {
+                return ResourceManager.GetString("AttachExistingAttachError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot remotely debug a process while in a remote session. Please exit your remote session before trying again..
+        /// </summary>
+        public static string AttachExistingRemoteError {
+            get {
+                return ResourceManager.GetString("AttachExistingRemoteError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The author of the module..
         /// </summary>
         public static string Author_Description {

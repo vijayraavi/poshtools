@@ -14,7 +14,7 @@ using DTE80 = EnvDTE80;
 using PowerShellTools.Common.Debugging;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using System.Windows;
+using System.Windows.Forms;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -414,10 +414,18 @@ namespace PowerShellTools.DebugEngine
 
                 if (!string.IsNullOrEmpty(result))
                 {
-                    MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                    if (DebuggingService.CleanupAttach() != DebugScenario.Local)
+                    MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    DebugScenario postCleanupScenario = DebugScenario.Unknown;
+                    int retryCount = DebugEngineConstants.CleanupRetryCount;
+                    while (retryCount-- > 0 && postCleanupScenario != DebugScenario.Local)
                     {
-                        MessageBox.Show(Resources.CleanupErrorMessage, Resources.DetachErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                        postCleanupScenario = DebuggingService.CleanupAttach();
+                    }
+
+                    if (postCleanupScenario != DebugScenario.Local)
+                    {
+                        MessageBox.Show(Resources.CleanupErrorMessage, Resources.DetachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                     RefreshPrompt();
                 }

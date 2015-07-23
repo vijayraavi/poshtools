@@ -411,4 +411,10 @@ Would you like to download now?</value>
   <data name="DetachErrorTitle" xml:space="preserve">
     <value>Error Detaching From Process</value>
   </data>
+  <data name="AttachExistingAttachError" xml:space="preserve">
+    <value>Cannot remotely debug a process while already attached to a process. Please detach from the currently attached process before trying again.</value>
+  </data>
+  <data name="AttachExistingRemoteError" xml:space="preserve">
+    <value>Cannot remotely debug a process while in a remote session. Please exit your remote session before trying again.</value>
+  </data>
 </root>

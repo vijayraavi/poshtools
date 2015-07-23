@@ -153,5 +153,10 @@ param (
         /// Time in milisceonds that _attachRequestEvent waits before timing out.
         /// </summary>
         public const int AttachRequestEventTimeout = 1000 * 5;
+
+        /// <summary>
+        /// The maximum number of times we will try to cleanup after an error during any sort of attachment debugging. Two times should be enough, but three gives a good buffer.
+        /// </summary>
+        public const int CleanupRetryCount = 3;
     }
 }
