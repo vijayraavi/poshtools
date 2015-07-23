@@ -115,6 +115,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PowerShell Tools is unable to detach/exit from the process. PowerShell Tools may now be in an unstable state. You may need to restart Visual Studio in order to restore the tools to a stable state..
+        /// </summary>
+        public static string CleanupErrorMessage {
+            get {
+                return ResourceManager.GetString("CleanupErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The CLR version that this module requires..
         /// </summary>
         public static string ClrVersion_Description {
@@ -228,6 +237,15 @@ namespace PowerShellTools {
         public static string Description_DisplayName {
             get {
                 return ResourceManager.GetString("Description_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error Detaching From Process.
+        /// </summary>
+        public static string DetachErrorTitle {
+            get {
+                return ResourceManager.GetString("DetachErrorTitle", resourceCulture);
             }
         }
         
@@ -756,7 +774,7 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allows for debugging of a PowerShell script on a remote machine. Utilizes PowerShell v5.0+ features. This version of PowerShell must be installed on the remote machine in order to remotely debug..
+        ///   Looks up a localized string similar to Allows for debugging of a PowerShell script on a remote machine. Utilizes PowerShell v5.0+ features. This version of PowerShell must be installed on the remote machine in order to remotely debug. Enter the name or address of the machine for which you wish to connect for the qualifier. There is no need to specify transport protocol type (http, tcp, etc.), a port number, or username..
         /// </summary>
         public static string RemotePortDescription {
             get {

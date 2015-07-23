@@ -414,17 +414,10 @@ namespace PowerShellTools.DebugEngine
 
                 if (!string.IsNullOrEmpty(result))
                 {
-                    /*
-                        -clean this up
-                        -move to resources
-                        -actually make into a yes/no retry
-                        -scenarios toString for better message
-                    */
-
                     MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                    while (DebuggingService.CleanupAttach() != DebugScenario.Local)
+                    if (DebuggingService.CleanupAttach() != DebugScenario.Local)
                     {
-                        MessageBox.Show("Cannot force detach. Retry?", Resources.AttachErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(Resources.CleanupErrorMessage, Resources.DetachErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                     RefreshPrompt();
                 }

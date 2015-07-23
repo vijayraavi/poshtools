@@ -451,6 +451,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return true;
         }
 
+        /// <summary>
+        /// Cleans up the host service from any given point in either remote or local attach scenarios.
+        /// Used after any sort of error state is detected.
+        /// </summary>
+        /// <returns>Scenario after attempting to cleanup the environement.</returns>
         public DebugScenario CleanupAttach()
         {
             DebugScenario scenario = GetDebugScenario();
