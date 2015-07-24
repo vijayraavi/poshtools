@@ -179,8 +179,8 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Debug("ScriptProgramNode: Entering Detach");
 
-            bool result = false;
             DebugScenario scenario = Debugger.DebuggingService.GetDebugScenario();
+            bool result = (scenario == DebugScenario.Local);
 
             if (scenario == DebugScenario.LocalAttach)
             {
@@ -193,12 +193,13 @@ namespace PowerShellTools.DebugEngine
 
             if (!result)
             {
-                int retryCount = DebugEngineConstants.CleanupRetryCount;
-                while (retryCount-- > 0 && !result)
+                // try as hard as we can to detach/cleanup the mess for the length of CleanupRetryTimeout
+                TimeSpan retryTimeSpan = TimeSpan.FromMilliseconds(DebugEngineConstants.CleanupRetryTimeout);
+                Stopwatch timeElapsed = Stopwatch.StartNew();
+                while (timeElapsed.Elapsed < retryTimeSpan && !result)
                 {
                     result = (Debugger.DebuggingService.CleanupAttach() == DebugScenario.Local);
                 }
-
             }
             
             if (result)

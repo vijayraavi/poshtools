@@ -415,10 +415,12 @@ namespace PowerShellTools.DebugEngine
                 if (!string.IsNullOrEmpty(result))
                 {
                     MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    DebugScenario postCleanupScenario = DebuggingService.GetDebugScenario();
 
-                    DebugScenario postCleanupScenario = DebugScenario.Unknown;
-                    int retryCount = DebugEngineConstants.CleanupRetryCount;
-                    while (retryCount-- > 0 && postCleanupScenario != DebugScenario.Local)
+                    // try as hard as we can to detach/cleanup the mess for the length of CleanupRetryTimeout
+                    TimeSpan retryTimeSpan = TimeSpan.FromMilliseconds(DebugEngineConstants.CleanupRetryTimeout);
+                    Stopwatch timeElapsed = Stopwatch.StartNew();
+                    while (timeElapsed.Elapsed < retryTimeSpan && postCleanupScenario != DebugScenario.Local)
                     {
                         postCleanupScenario = DebuggingService.CleanupAttach();
                     }
@@ -427,7 +429,9 @@ namespace PowerShellTools.DebugEngine
                     {
                         MessageBox.Show(Resources.CleanupErrorMessage, Resources.DetachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+
                     RefreshPrompt();
+                    DebuggerFinished();
                 }
             }
             else

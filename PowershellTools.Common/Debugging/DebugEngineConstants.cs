@@ -46,7 +46,7 @@ namespace PowerShellTools.Common.Debugging
             @"\s+" + // spaces between function name and variable list
             @"\{([,\s]?[^\s,]+=\S+)*\}" + // list of parameters which are comma seperated, (note the equals sign)
             @"\s+([^\s:]+):" + // any number of spaces after the parameter list, and then the script name which ends right before a colon
-            @"\s+\w+ (\d)+"; // any number of spaces (after the colon) and then the word "line" and then a number which denotes the line number
+            @"\s+\w+ (\d+)"; // any number of spaces (after the colon) and then the word "line" and then a number which denotes the line number
 
         /// <summary>
         /// Enumerates through all processes on a machine and looks for one running the powershell.exe module. Adds the process id and process name
@@ -150,13 +150,13 @@ param (
         public const string PowerShellHostProcessLogFormat = PowerShellHostProcessLogTag + "{1}";
 
         /// <summary>
-        /// Time in milisceonds that _attachRequestEvent waits before timing out.
+        /// Time in miliseconds that _attachRequestEvent waits before timing out.
         /// </summary>
         public const int AttachRequestEventTimeout = 1000 * 5;
 
         /// <summary>
-        /// The maximum number of times we will try to cleanup after an error during any sort of attachment debugging. Two times should be enough, but three gives a good buffer.
+        /// Time in miliseconds we give ourselves to attempt cleaning up the host service after any sort of attach/detach error.
         /// </summary>
-        public const int CleanupRetryCount = 3;
+        public const int CleanupRetryTimeout = 1000 * 10;
     }
 }
