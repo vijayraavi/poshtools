@@ -534,6 +534,9 @@ namespace PowerShellTools.Intellisense
                         var caretInLine = (_completionCaretPosition - line.Start);
 
                         int curCaretInLine = Math.Min(caretInLine, line.GetText().Length);
+
+                        Debug.Assert(curCaretInLine >= 0, "curCaretInline cannot be less than zero");
+
                         var text = line.GetText().Substring(0, curCaretInLine);
                         Log.Debug("Matching with existing caret position," + _completionCaretPosition.ToString());
                         if (string.Equals(_completionText, text, StringComparison.Ordinal) && completionMatchesList.Count != 0)
