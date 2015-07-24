@@ -104,7 +104,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns>True if the debug scenario indicates a remote session, false otherwise</returns>
         public bool VerifyAttachToRemoteRunspace()
         {
-            return !(_debuggingService.GetDebugScenario() == DebugScenario.Local);
+            return !VerifyDetachFromRemoteRunspace();
         }
 
         /// <summary>

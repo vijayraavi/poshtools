@@ -348,16 +348,42 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Invokes given script on the provided PowerShell object after setting its runspace object
+        /// Invokes given script on the provided PowerShell object after setting its runspace object.
         /// </summary>
-        /// <param name="script"></param>
+        /// <param name="powerShell">This should usually be _currentPowerShell. Make sure to enclose uses of _currentPowerShell and this method
+        /// inside of a using. </param>
+        /// <param name="script">Script to invoke.</param>
         /// <returns>Returns the result of the invoke</returns>
-        private static Collection<PSObject> InvokeScript(PowerShell powerShell, string script)
+        private Collection<PSObject> InvokeScript(PowerShell powerShell, string script)
         {
             powerShell.Commands.Clear();
             powerShell.Runspace = _runspace;
             powerShell.AddScript(script);
             return powerShell.Invoke();
         }
+
+        /// <summary>
+        /// Uses _savedCredential in order to enter into a remote session with a remote machine. If _savedCredential is null, method will instead
+        /// use InvokeScript to prompt/enter into a session without saving credentials.
+        /// </summary>
+        /// <param name="powerShell">This should usually be _currentPowerShell. Make sure to enclose uses of _currentPowerShell and this method
+        /// inside of a using. </param>
+        /// <param name="remoteName">Machine to connect to.</param>
+        private void EnterCredentialedRemoteSession(PowerShell powerShell, string remoteName)
+        {
+            if (_savedCredential == null)
+            {
+                InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+                return;
+            }
+
+            PSCommand enterSession = new PSCommand();
+            enterSession.AddCommand("Enter-PSSession").AddParameter("ComputerName", remoteName).AddParameter("Credential", _savedCredential);
+            powerShell.Runspace = _runspace;
+            powerShell.Commands.Clear();
+            powerShell.Commands = enterSession;
+            powerShell.Invoke();
+        }
+
     }
 }

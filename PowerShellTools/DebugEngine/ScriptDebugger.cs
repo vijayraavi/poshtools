@@ -414,7 +414,10 @@ namespace PowerShellTools.DebugEngine
 
                 if (!string.IsNullOrEmpty(result))
                 {
+                    // if either of the attaches returns an error, let the user know
                     MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    // see what state we are in post error, if not in a local state, we need to try and get there
                     DebugScenario postCleanupScenario = DebuggingService.GetDebugScenario();
 
                     // try as hard as we can to detach/cleanup the mess for the length of CleanupRetryTimeout
@@ -425,6 +428,7 @@ namespace PowerShellTools.DebugEngine
                         postCleanupScenario = DebuggingService.CleanupAttach();
                     }
 
+                    // if our efforts to cleanup the mess were unsuccessful, inform the user
                     if (postCleanupScenario != DebugScenario.Local)
                     {
                         MessageBox.Show(Resources.CleanupErrorMessage, Resources.DetachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);

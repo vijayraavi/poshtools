@@ -54,7 +54,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
         private PowerShellDebuggingServiceAttachValidator _validator;
-        private bool _forceStop;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -76,6 +75,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// our local copy and cause VS to reload the script which breaks the debugging experience.
         /// </summary>
         private static bool _needToCopyRemoteScript = false;
+
+        /// <summary>
+        /// Marks whether or not we decided to/were forced to use _currentPowerShell.stop() in order to detach while debugging.
+        /// </summary>
+        private bool _forceStop;
+
+        /// <summary>
+        /// User credentials that we save after enumerating remote processes.
+        /// </summary>
+        private PSCredential _savedCredential;
 
         /// <summary>
         /// Used to check bitness of processes
@@ -229,8 +238,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     // enter into to-attach process which will swap out the current runspace
                     _attachRequestEvent.Reset();
                     InvokeScript(_currentPowerShell, string.Format("Enter-PSHostProcess -Id {0}", pid.ToString()));
+                    result = _validator.VerifyAttachToRunspace(preScenario, _attachRequestEvent);
 
-                    if (!string.IsNullOrEmpty(result = _validator.VerifyAttachToRunspace(preScenario, _attachRequestEvent)))
+                    if (!string.IsNullOrEmpty(result))
                     {
                         return result;
                     }
@@ -359,8 +369,19 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 using (_currentPowerShell = PowerShell.Create())
                 {
-                    // Initiate remote session with the remote machine
-                    InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+                    // Grab user credentials and initiate remote session with the remote machine
+                    PSObject psobj = InvokeScript(_currentPowerShell, DebugEngineConstants.GetCredentialsCommand).FirstOrDefault();
+                    if (psobj != null)
+                    {
+                        _savedCredential = psobj.BaseObject as PSCredential;
+                    }
+                    else
+                    {
+                        // user hit cancel
+                        errorMessage = string.Empty;
+                        return null;
+                    }
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName);
 
                     if (GetDebugScenario() == DebugScenario.Local)
                     {
@@ -415,7 +436,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 using (_currentPowerShell = PowerShell.Create())
                 {
                     // enter into a remote session
-                    InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName);
 
                     if (!_validator.VerifyAttachToRemoteRunspace())
                     {
@@ -451,8 +472,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             using (_currentPowerShell = PowerShell.Create())
             {
-                // exit the remote session
+                // exit the remote session and delete saved credentials
                 InvokeScript(_currentPowerShell, DebugEngineConstants.ExitRemoteSessionDefaultCommand);
+                _savedCredential = null;
 
                 if (!_validator.VerifyDetachFromRemoteRunspace())
                 {
@@ -511,6 +533,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 ServiceCommon.Log(string.Format("CleanupAttach exception while in {0}; {1}", scenario.ToString(), e.ToString()));
             }
 
+            _savedCredential = null;
             AddEventHandlers();
             _pausedEvent.Set();
 
@@ -1246,16 +1269,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             else if (_runspace.ConnectionInfo is WSManConnectionInfo)
             {
-                if (_currentPowerShell != null && 
-                    _currentPowerShell.Commands.Commands.Count == 1 && 
-                    _currentPowerShell.Commands.Commands.ElementAt(0).ToString().StartsWith("Debug-Runspace", StringComparison.OrdinalIgnoreCase))
+                if (_currentPowerShell != null)
                 {
-                    return DebugScenario.RemoteAttach;
+                    if (_currentPowerShell.Commands.Commands.FirstOrDefault(c => c.CommandText.StartsWith("Debug-Runspace", StringComparison.OrdinalIgnoreCase)) != null)
+                    {
+                        return DebugScenario.RemoteAttach;
+                    }
                 }
-                else
-                {
-                    return DebugScenario.RemoteSession;
-                }
+                return DebugScenario.RemoteSession;
             }
             else if (_runspace.ConnectionInfo != null && !(_runspace.ConnectionInfo is WSManConnectionInfo))
             {

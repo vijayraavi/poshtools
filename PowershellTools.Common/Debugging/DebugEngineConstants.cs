@@ -150,13 +150,18 @@ param (
         public const string PowerShellHostProcessLogFormat = PowerShellHostProcessLogTag + "{1}";
 
         /// <summary>
-        /// Time in miliseconds that _attachRequestEvent waits before timing out.
+        /// Time in milliseconds that _attachRequestEvent waits before timing out.
         /// </summary>
         public const int AttachRequestEventTimeout = 1000 * 5;
 
         /// <summary>
-        /// Time in miliseconds we give ourselves to attempt cleaning up the host service after any sort of attach/detach error.
+        /// Time in milliseconds we give ourselves to attempt cleaning up the host service after any sort of attach/detach error.
         /// </summary>
         public const int CleanupRetryTimeout = 1000 * 10;
+
+        /// <summary>
+        /// Cmdlet to get a user's credentials. Used for attaching remotely. The $null Credential parameter supresses unwanted output in the REPL window.
+        /// </summary>
+        public const string GetCredentialsCommand = "Get-Credential -Credential $null";
     }
 }

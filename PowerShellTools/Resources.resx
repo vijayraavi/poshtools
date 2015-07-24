@@ -397,7 +397,9 @@ Would you like to download now?</value>
     <value>ParameterSetName:</value>
   </data>
   <data name="RemotePortDescription" xml:space="preserve">
-    <value>Allows for debugging of a PowerShell script on a remote machine. Utilizes PowerShell v5.0+ features. This version of PowerShell must be installed on the remote machine in order to remotely debug. Enter the name or address of the machine for which you wish to connect for the qualifier. There is no need to specify transport protocol type (http, tcp, etc.), a port number, or username.</value>
+    <value>Allows for debugging of a PowerShell script on a remote machine. Utilizes PowerShell v5.0+ features. This version of PowerShell must be installed on the remote machine in order to remotely debug.
+
+Enter the name or address of the machine for which you wish to connect for the qualifier. There is no need to specify a transport protocol type (http, tcp, etc.), port number, or username.</value>
   </data>
   <data name="RemoteDebugTitle" xml:space="preserve">
     <value>PowerShell Tools Remote Debugging</value>
@@ -406,7 +408,7 @@ Would you like to download now?</value>
     <value>Error Attaching to Process</value>
   </data>
   <data name="CleanupErrorMessage" xml:space="preserve">
-    <value>PowerShell Tools is unable to detach/exit from the process. PowerShell Tools may now be in an unstable state. You may need to restart Visual Studio in order to restore the tools to a stable state.</value>
+    <value>PowerShell Tools is unable to detach from the process and may now be in an unstable state. You may need to restart Visual Studio.</value>
   </data>
   <data name="DetachErrorTitle" xml:space="preserve">
     <value>Error Detaching From Process</value>

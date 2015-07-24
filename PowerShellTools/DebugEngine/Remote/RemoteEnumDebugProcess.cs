@@ -78,11 +78,18 @@ namespace PowerShellTools.DebugEngine.Remote
                     {
                         break;
                     }
-
-                    DialogResult dlgRes = MessageBox.Show(errorMessage, null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-                    if (dlgRes != DialogResult.Retry)
+                    else if (string.IsNullOrEmpty(errorMessage))
                     {
+                        // user hit cancel
                         return;
+                    }
+                    else
+                    {
+                        DialogResult dlgRes = MessageBox.Show(errorMessage, null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                        if (dlgRes != DialogResult.Retry)
+                        {
+                            return;
+                        }
                     }
                 }
 
