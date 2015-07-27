@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
-using Automation = System.Management.Automation;
-using System.Management.Automation.Runspaces;
-using System.Diagnostics;
 using PowerShellTools.Common;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-using log4net;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Management.Automation.Runspaces;
+using System.Text;
+using System.Threading.Tasks;
+
 using System.Windows.Forms;
 
 namespace PowerShellTools.DebugEngine.Remote

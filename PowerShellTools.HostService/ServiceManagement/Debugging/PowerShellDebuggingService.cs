@@ -1,5 +1,9 @@
 ﻿using EnvDTE80;
 using Microsoft.PowerShell;
+using PowerShellTools.Common;
+using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using PowerShellTools.Common.IntelliSense;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,19 +13,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System.Text.RegularExpressions;
-using PowerShellTools.Common.Debugging;
 using System.Diagnostics;
-using PowerShellTools.Common.IntelliSense;
-using PowerShellTools.Common;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Management.Automation.Remoting;
@@ -245,9 +244,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         return result;
                     }
 
-                    // rehook event handlers and reset _pausedEvent
+                    // rehook event handlers and reset _pausedEvent and _forceStop
                     AddEventHandlers();
                     _pausedEvent.Reset();
+                    _forceStop = false;
 
                     // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
                     InvokeScript(_currentPowerShell, "Debug-Runspace -Id 1");
