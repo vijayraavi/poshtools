@@ -82,6 +82,7 @@ namespace PowerShellTools.DebugEngine.Remote
                     ppProcess = processes[numRetrieved - 1];
                     return VSConstants.S_OK;
                 }
+                numRetrieved--;
             }
 
             return VSConstants.S_FALSE;

@@ -6,6 +6,7 @@ using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using PowerShellTools.Common.Debugging;
 
 #endregion
 
@@ -178,23 +179,35 @@ namespace PowerShellTools.DebugEngine
         {
             Log.Debug("ScriptProgramNode: Entering Detach");
 
-            bool result = true;
             DebugScenario scenario = Debugger.DebuggingService.GetDebugScenario();
+            bool result = (scenario == DebugScenario.Local);
 
             if (scenario == DebugScenario.LocalAttach)
             {
                 result = Debugger.DebuggingService.DetachFromRunspace();
             }
-            else if (scenario == DebugScenario.RemoteAttach || scenario == DebugScenario.RemoteSession)
+            else if (scenario == DebugScenario.RemoteAttach)
             {
                 result = Debugger.DebuggingService.DetachFromRemoteRunspace();
             }
 
+            if (!result)
+            {
+                // try as hard as we can to detach/cleanup the mess for the length of CleanupRetryTimeout
+                TimeSpan retryTimeSpan = TimeSpan.FromMilliseconds(DebugEngineConstants.CleanupRetryTimeout);
+                Stopwatch timeElapsed = Stopwatch.StartNew();
+                while (timeElapsed.Elapsed < retryTimeSpan && !result)
+                {
+                    result = (Debugger.DebuggingService.CleanupAttach() == DebugScenario.Local);
+                }
+            }
+            
             if (result)
             {
                 Debugger.DebuggerFinished();
                 Debugger.RefreshPrompt();
             }
+        
 
             return result ? VSConstants.S_OK : VSConstants.S_FALSE;
         }

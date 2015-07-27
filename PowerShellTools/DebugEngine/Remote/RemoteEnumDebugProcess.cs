@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Management.Automation.Runspaces;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
-using Automation = System.Management.Automation;
-using System.Management.Automation.Runspaces;
-using System.Diagnostics;
-using System.Windows.Forms;
 using PowerShellTools.Common;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
@@ -20,6 +21,7 @@ namespace PowerShellTools.DebugEngine.Remote
     /// </summary>
     internal class RemoteEnumDebugProcess : IEnumDebugProcesses2
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(RemoteEnumDebugProcess));
         private List<ScriptDebugProcess> _runningProcesses;
         private string _remoteComputer;
         private uint _currIndex;
@@ -38,35 +40,62 @@ namespace PowerShellTools.DebugEngine.Remote
         /// <param name="remotePort"></param>
         public void connect(IDebugPort2 remotePort)
         {
-            // host needs to be initialized before we can connect/enumerate
-            UiContextUtilities.ActivateUiContext(UiContextUtilities.CreateUiContext(Constants.PowerShellReplCreationUiContextGuid));
-            if (!PowerShellToolsPackage.PowerShellHostInitialized)
-            {
-                // TODO: UI Work required to give user inidcation that it is waiting for debugger to get alive.
-                PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
-            }
-
-            List<KeyValuePair<uint, string>> information;
-            string errorMessage = string.Empty;
-            while (true)
-            {
-                information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer, out errorMessage);
-
-                if (information != null)
-                {
-                    break;
-                }
-
-                DialogResult dlgRes = MessageBox.Show(errorMessage, null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-                if (dlgRes != DialogResult.Retry)
-                {
-                    return;
-                }
-            }
             
-            foreach (KeyValuePair<uint, string> info in information)
+
+            // Make sure user is starting from a local scenario
+            DebugScenario scenario = PowerShellToolsPackage.Debugger.DebuggingService.GetDebugScenario();
+            if (scenario != DebugScenario.Local)
             {
-                _runningProcesses.Add(new ScriptDebugProcess(remotePort, info.Key, info.Value, _remoteComputer));
+                Log.Debug(string.Format("User is trying to remote attach while already in {0}", scenario));
+                if (scenario == DebugScenario.RemoteSession)
+                {
+                    MessageBox.Show(Resources.AttachExistingRemoteError, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    MessageBox.Show(Resources.AttachExistingAttachError, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                // host needs to be initialized before we can connect/enumerate
+                UiContextUtilities.ActivateUiContext(UiContextUtilities.CreateUiContext(Constants.PowerShellReplCreationUiContextGuid));
+                if (!PowerShellToolsPackage.PowerShellHostInitialized)
+                {
+                    // TODO: UI Work required to give user inidcation that it is waiting for debugger to get alive.
+                    PowerShellToolsPackage.DebuggerReadyEvent.WaitOne();
+                }
+
+                List<KeyValuePair<uint, string>> information;
+                string errorMessage = string.Empty;
+                while (true)
+                {
+                    Log.Debug(string.Format("Attempting to find processes on {0}.", _remoteComputer));
+                    information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer, ref errorMessage);
+
+                    if (information != null)
+                    {
+                        break;
+                    }
+                    else if (string.IsNullOrEmpty(errorMessage))
+                    {
+                        // user hit cancel
+                        return;
+                    }
+                    else
+                    {
+                        DialogResult dlgRes = MessageBox.Show(errorMessage, null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                        if (dlgRes != DialogResult.Retry)
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                foreach (KeyValuePair<uint, string> info in information)
+                {
+                    _runningProcesses.Add(new ScriptDebugProcess(remotePort, info.Key, info.Value, _remoteComputer));
+                }
             }
         }
 

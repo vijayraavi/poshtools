@@ -14,7 +14,7 @@ using DTE80 = EnvDTE80;
 using PowerShellTools.Common.Debugging;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using System.Windows;
+using System.Windows.Forms;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -414,7 +414,28 @@ namespace PowerShellTools.DebugEngine
 
                 if (!string.IsNullOrEmpty(result))
                 {
-                    MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                    // if either of the attaches returns an error, let the user know
+                    MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    // see what state we are in post error, if not in a local state, we need to try and get there
+                    DebugScenario postCleanupScenario = DebuggingService.GetDebugScenario();
+
+                    // try as hard as we can to detach/cleanup the mess for the length of CleanupRetryTimeout
+                    TimeSpan retryTimeSpan = TimeSpan.FromMilliseconds(DebugEngineConstants.CleanupRetryTimeout);
+                    Stopwatch timeElapsed = Stopwatch.StartNew();
+                    while (timeElapsed.Elapsed < retryTimeSpan && postCleanupScenario != DebugScenario.Local)
+                    {
+                        postCleanupScenario = DebuggingService.CleanupAttach();
+                    }
+
+                    // if our efforts to cleanup the mess were unsuccessful, inform the user
+                    if (postCleanupScenario != DebugScenario.Local)
+                    {
+                        MessageBox.Show(Resources.CleanupErrorMessage, Resources.DetachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                    RefreshPrompt();
+                    DebuggerFinished();
                 }
             }
             else
