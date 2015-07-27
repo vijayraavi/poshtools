@@ -1,9 +1,6 @@
-﻿using EnvDTE80;
-using Microsoft.PowerShell;
-using PowerShellTools.Common.Debugging;
-using PowerShellTools.Common.IntelliSense;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -12,8 +9,11 @@ using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using EnvDTE80;
+using Microsoft.PowerShell;
+using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.IntelliSense;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -348,14 +348,26 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Invokes given script on the provided PowerShell object after setting its runspace object.
+        /// Invokes given script on the provided PowerShell object after setting its runspace object. If powerShell is null, then the method will
+        /// instantiate it inside of a using.
         /// </summary>
         /// <param name="powerShell">This should usually be _currentPowerShell. Make sure to enclose uses of _currentPowerShell and this method
-        /// inside of a using. </param>
+        /// inside of a using.</param>
         /// <param name="script">Script to invoke.</param>
         /// <returns>Returns the result of the invoke</returns>
         private Collection<PSObject> InvokeScript(PowerShell powerShell, string script)
         {
+            if (powerShell == null)
+            {
+                // if user passes in a null PowerShell object, we will instantiate it for them
+                using (powerShell = PowerShell.Create())
+                {
+                    powerShell.Runspace = _runspace;
+                    powerShell.AddScript(script);
+                    return powerShell.Invoke();
+                }
+            }
+
             powerShell.Commands.Clear();
             powerShell.Runspace = _runspace;
             powerShell.AddScript(script);
@@ -366,14 +378,20 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// Uses _savedCredential in order to enter into a remote session with a remote machine. If _savedCredential is null, method will instead
         /// use InvokeScript to prompt/enter into a session without saving credentials.
         /// </summary>
-        /// <param name="powerShell">This should usually be _currentPowerShell. Make sure to enclose uses of _currentPowerShell and this method
-        /// inside of a using. </param>
+        /// <param name="powerShell">This should be an already instanstiated PowerShell object, and should be inside of a using. If
+        /// powerShell is null, method will return without performing any action.</param>
         /// <param name="remoteName">Machine to connect to.</param>
         private void EnterCredentialedRemoteSession(PowerShell powerShell, string remoteName)
         {
+            if (powerShell == null)
+            {
+                // callee is expected to passs in an already inalized PowerShell object to this method
+                return;
+            }
+
             if (_savedCredential == null)
             {
-                InvokeScript(_currentPowerShell, string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
+                InvokeScript(powerShell, string.Format(DebugEngineConstants.EnterRemoteSessionDefaultCommand, remoteName));
                 return;
             }
 

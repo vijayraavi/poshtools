@@ -1,11 +1,11 @@
-﻿using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Debugger.Interop;
-using PowerShellTools.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.DebugEngine.Remote
 {

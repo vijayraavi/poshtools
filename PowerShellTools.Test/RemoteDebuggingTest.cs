@@ -1,13 +1,13 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-using PowerShellTools.HostService.ServiceManagement.Debugging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using PowerShellTools.HostService.ServiceManagement.Debugging;
 
 namespace PowerShellTools.Test
 {
