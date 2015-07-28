@@ -12,24 +12,27 @@
  *
  * ***************************************************************************/
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
 
-namespace PowerShellTools.Repl {    
+namespace PowerShellTools.Repl
+{
     /// <summary>
     /// Provides the classifier for our repl error output buffer.
     /// </summary>
     [Export(typeof(IClassifierProvider)), ContentType(ReplConstants.ReplOutputContentTypeName)]
-    class ReplOutputClassifierProvider : IClassifierProvider {
+    internal class ReplOutputClassifierProvider : IClassifierProvider
+    {
         internal readonly Dictionary<ConsoleColor, IClassificationType> _classTypes = new Dictionary<ConsoleColor, IClassificationType>();
 
         [ImportingConstructor]
-        public ReplOutputClassifierProvider(IClassificationTypeRegistryService classificationService) {
-            _classTypes[ConsoleColor.Black] = classificationService.GetClassificationType(InteractiveBlackFormatDefinition.Name);            
+        public ReplOutputClassifierProvider(IClassificationTypeRegistryService classificationService)
+        {
+            _classTypes[ConsoleColor.Black] = classificationService.GetClassificationType(InteractiveBlackFormatDefinition.Name);
             _classTypes[ConsoleColor.DarkBlue] = classificationService.GetClassificationType(InteractiveDarkBlueFormatDefinition.Name);
             _classTypes[ConsoleColor.DarkGreen] = classificationService.GetClassificationType(InteractiveDarkGreenFormatDefinition.Name);
             _classTypes[ConsoleColor.DarkCyan] = classificationService.GetClassificationType(InteractiveDarkCyanFormatDefinition.Name);
@@ -49,7 +52,8 @@ namespace PowerShellTools.Repl {
 
         #region IClassifierProvider Members
 
-        public IClassifier GetClassifier(ITextBuffer textBuffer) {
+        public IClassifier GetClassifier(ITextBuffer textBuffer)
+        {
             return new ReplOutputClassifier(this, textBuffer);
         }
 
