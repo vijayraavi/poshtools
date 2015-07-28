@@ -656,6 +656,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Alternative removal of breakpoint for current runspace, does so by executing a debugging command.
+        /// </summary>
+        /// <param name="id"></param>
+        public void RemoveBreakpointById(int id)
+        {
+            ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, id));
+            _psBreakpointTable.RemoveWhere(bp => bp.Id == id);
+        }
+
+        /// <summary>
         /// Enable/Disable breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>

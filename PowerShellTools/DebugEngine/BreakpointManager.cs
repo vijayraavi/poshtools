@@ -219,7 +219,7 @@ namespace PowerShellTools.DebugEngine
                     int id = Debugger.DebuggingService.GetPSBreakpointId(new PowerShellBreakpoint(fileName, breakpoint.Line, breakpoint.Column));
                     if (id >= 0)
                     {
-                        Debugger.DebuggingService.ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, id));
+                        Debugger.DebuggingService.RemoveBreakpointById(id);
                     }
                 }
                 _breakpoints.Remove(breakpoint);
