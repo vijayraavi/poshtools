@@ -792,9 +792,7 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allows for debugging of a PowerShell script on a remote machine. Utilizes PowerShell v5.0+ features. This version of PowerShell must be installed on the remote machine in order to remotely debug.
-        ///
-        ///Enter the name or address of the machine for which you wish to connect for the qualifier. There is no need to specify a transport protocol type (http, tcp, etc.), port number, or username..
+        ///   Looks up a localized string similar to Allows for debugging of a PowerShell script on a remote machine. Utilizes PowerShell v5.0+ features. This version of PowerShell must be installed on the remote machine in order to remotely debug. Enter the name or address of the machine for which you wish to connect for the qualifier. There is no need to specify a transport protocol type (http, tcp, etc.), port number, or username..
         /// </summary>
         public static string RemotePortDescription {
             get {
