@@ -947,11 +947,11 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;Null&gt;.
+        ///   Looks up a localized string similar to (Not set).
         /// </summary>
-        public static string WatermarkNull {
+        public static string WatermarkNotSet {
             get {
-                return ResourceManager.GetString("WatermarkNull", resourceCulture);
+                return ResourceManager.GetString("WatermarkNotSet", resourceCulture);
             }
         }
     }

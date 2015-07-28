@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Management.Automation.Runspaces;
-using PowerShellTools.DebugEngine;
-using PowerShellTools.HostService.ServiceManagement.Debugging;
-using System.Threading;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using PowerShellTools.HostService.ServiceManagement.Debugging;
 
 namespace PowerShellTools.Test
 {

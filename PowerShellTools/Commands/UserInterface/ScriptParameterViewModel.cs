@@ -151,7 +151,7 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 if (this.Value == null)
                 {
-                    return Resources.WatermarkNull;
+                    return Resources.WatermarkNotSet;
                 }
                 else
                 {

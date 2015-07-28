@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Management.Automation.Runspaces;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
-using Automation = System.Management.Automation;
-using System.Management.Automation.Runspaces;
-using System.Diagnostics;
 using PowerShellTools.Common;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-using log4net;
-using System.Windows.Forms;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
@@ -22,7 +21,7 @@ namespace PowerShellTools.DebugEngine.Remote
     /// </summary>
     internal class RemoteEnumDebugProcess : IEnumDebugProcesses2
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDebugger));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(RemoteEnumDebugProcess));
         private List<ScriptDebugProcess> _runningProcesses;
         private string _remoteComputer;
         private uint _currIndex;

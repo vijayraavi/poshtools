@@ -1,30 +1,29 @@
-﻿using EnvDTE80;
-using Microsoft.PowerShell;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Host;
+using System.Management.Automation.Remoting;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.ServiceModel;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using PowerShellTools.Common.ServiceManagement.DebuggingContract;
-using System.Text.RegularExpressions;
-using PowerShellTools.Common.Debugging;
-using System.Diagnostics;
-using PowerShellTools.Common.IntelliSense;
+using System.Windows;
+using EnvDTE80;
+using Microsoft.PowerShell;
 using PowerShellTools.Common;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Management.Automation.Remoting;
+using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.IntelliSense;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -245,9 +244,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         return result;
                     }
 
-                    // rehook event handlers and reset _pausedEvent
+                    // rehook event handlers and reset _pausedEvent and _forceStop
                     AddEventHandlers();
                     _pausedEvent.Reset();
+                    _forceStop = false;
 
                     // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
                     InvokeScript(_currentPowerShell, "Debug-Runspace -Id 1");
