@@ -181,29 +181,35 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             // make sure we are in a local scenario and that an adequate version of PowerShell is installed
             if (GetDebugScenario() == DebugScenario.Local && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
             {
-                var process = Process.GetProcessById((int)pid);
-                ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}" , process.ProcessName, process.Id));
-                bool is64Bit = false;
-
-                try
+                using (_currentPowerShell = PowerShell.Create())
                 {
-                    IsWow64Process(process.Handle, out is64Bit);
+                    Collection<PSObject> result = InvokeScript(_currentPowerShell, string.Format("Get-PSHostProcessInfo -Id {0}", pid));
+                    if (result.Count > 0)
+                    {
+                        var process = Process.GetProcessById((int)pid);
+                        ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}", process.ProcessName, process.Id));
+                        bool is64Bit = false;
 
-                    // cannot examine a 64 bit process' modules from a 32 bit process
-                    if (!Environment.Is64BitProcess && is64Bit)
-                    {
-                        return false;
+                        try
+                        {
+                            if (process != null)
+                            {
+                                IsWow64Process(process.Handle, out is64Bit);
+                                if (!Environment.Is64BitProcess && is64Bit)
+                                {
+                                    // cannot examine a 64 bit process' modules from a 32 bit process
+                                    return false;
+                                }
+                                return true;
+                            }
+                        }
+                        catch (Win32Exception ex)
+                        {
+                            // if a process being run as admin IsWow64Process may throw an exception
+                            ServiceCommon.Log(string.Format("Win32Exception while examining process: {1}; id: {1}; ex {2}", process.ProcessName, process.Id, ex.ToString()));
+                            return false;
+                        }
                     }
-                    else if (process != null)
-                    {
-                        return process.Modules.OfType<ProcessModule>().Any(pm => pm.ModuleName.Equals("powershell.exe", StringComparison.Ordinal));
-                    }
-                }
-                catch(Win32Exception ex)
-                {
-                    // if a process being run as admin IsWow64Process may throw an exception
-                    ServiceCommon.Log(string.Format("Win32Exception while examining process: {1}; id: {1}; ex {2}", process.ProcessName, process.Id, ex.ToString()));
-                    return false;
                 }
             }
             return false;
@@ -401,9 +407,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
 
                     // grab all attachable processes and add each process' name and pid to the list to be returned
-                    foreach (PSObject obj in InvokeScript(_currentPowerShell, DebugEngineConstants.EnumerateRemoteProcessesScript))
+                    foreach (PSObject obj in InvokeScript(_currentPowerShell, "Get-PSHostProcessInfo"))
                     {
-                        uint pid = (uint)((int)obj.Members["Id"].Value);
+                        uint pid = (uint)((int)obj.Members["ProcessId"].Value);
                         string name = (string)obj.Members["ProcessName"].Value;
                         validProcesses.Add(new KeyValuePair<uint, string>(pid, name));
                     }
