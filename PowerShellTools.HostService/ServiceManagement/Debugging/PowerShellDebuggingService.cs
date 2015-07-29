@@ -53,6 +53,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
         private PowerShellDebuggingServiceAttachValidator _validator;
+        private bool _useSSL;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -183,8 +184,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 using (_currentPowerShell = PowerShell.Create())
                 {
-                    Collection<PSObject> result = InvokeScript(_currentPowerShell, string.Format("Get-PSHostProcessInfo -Id {0}", pid));
-                    if (result.Count > 0)
+                    // see if the process is a PS host
+                    if (InvokeScript(_currentPowerShell, string.Format("Get-PSHostProcessInfo -Id {0}", pid)).Count > 0)
                     {
                         var process = Process.GetProcessById((int)pid);
                         ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}", process.ProcessName, process.Id));
@@ -361,8 +362,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="remoteName">Name of the remote machine</param>
         /// <param name="errorMessage">Error message to be presented to user if failure occurs</param>
         /// <returns>List of valid processes, each represented by a KeyValuePair of pid to process name</returns>
-        public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName, ref string errorMessage)
+        public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName, ref string errorMessage, bool useSSL)
         {
+            _useSSL = useSSL;
             List<KeyValuePair<uint, string>> validProcesses = new List<KeyValuePair<uint, string>>();
 
             // Retrieve callback context so credentials window can display
@@ -387,7 +389,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         errorMessage = string.Empty;
                         return null;
                     }
-                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName);
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, _useSSL);
 
                     if (GetDebugScenario() == DebugScenario.Local)
                     {
@@ -442,7 +444,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 using (_currentPowerShell = PowerShell.Create())
                 {
                     // enter into a remote session
-                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName);
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, _useSSL);
 
                     if (!_validator.VerifyAttachToRemoteRunspace())
                     {
