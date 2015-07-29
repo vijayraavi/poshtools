@@ -177,9 +177,13 @@ namespace PowerShellTools.DebugEngine
                 {
                     case ProgressRecordType.Processing:
                         {
-                            if (record.PercentComplete >= 0)
+                            if (record.PercentComplete >= 0 && record.PercentComplete < 100)
                             {
                                 statusBar.Progress(ref cookie, 1, label, (uint)record.PercentComplete, 100);
+                            }
+                            else if (record.PercentComplete == 100)
+                            {
+                                statusBar.Progress(ref cookie, 1, "", 0, 0);
                             }
                             else
                             {
