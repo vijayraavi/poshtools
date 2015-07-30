@@ -185,7 +185,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 using (_currentPowerShell = PowerShell.Create())
                 {
                     // see if the process is a PS host
-                    if (InvokeScript(_currentPowerShell, string.Format("Get-PSHostProcessInfo -Id {0}", pid)).Count > 0)
+                    if (InvokeScript(_currentPowerShell, string.Format("Get-PSHostProcessInfo -Id {0}", pid)).Any())
                     {
                         var process = Process.GetProcessById((int)pid);
                         ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}", process.ProcessName, process.Id));
