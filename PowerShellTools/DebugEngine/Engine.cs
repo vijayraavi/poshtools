@@ -106,7 +106,6 @@ namespace PowerShellTools.DebugEngine
             }
 
             Debugger.HostUi.OutputString = _events.OutputString;
-            Debugger.OutputString += Debugger_OutputString;
             Debugger.BreakpointManager.BreakpointHit += Debugger_BreakpointHit;
             Debugger.DebuggingBegin += Debugger_DebuggingBegin;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;

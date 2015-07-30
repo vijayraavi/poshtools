@@ -194,7 +194,6 @@ namespace PowerShellTools.Test
             var mre = new ManualResetEvent(false);
             string outputString = null;
             _debugger.DebuggingFinished += (sender, args) => mre.Set();
-            _debugger.OutputString += (sender, args) => outputString = args.Value;
             _debugger.Execute(node);
 
             Assert.IsTrue(mre.WaitOne(5000));
