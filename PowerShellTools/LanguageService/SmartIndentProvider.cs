@@ -13,7 +13,7 @@ namespace PowerShellTools.LanguageService
         private PowerShellLanguageInfo _powershellService;
 
         [Import]
-        private IDependencyValidator _validator;
+        private IDependencyValidator _validator = null;
 
         [ImportingConstructor]
         internal SmartIndentProvider([Import(typeof(SVsServiceProvider))] IServiceProvider serviceProvider)

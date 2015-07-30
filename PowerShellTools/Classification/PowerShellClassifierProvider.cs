@@ -33,7 +33,7 @@ namespace PowerShellTools.Classification
         internal static FileExtensionToContentTypeDefinition Ps1 = null;
 
         [Import]
-        private IDependencyValidator _validator;
+        private IDependencyValidator _validator = null;
 
         [Import]
         public IClassificationFormatMapService ClassificationFormatMapService { get; set; }

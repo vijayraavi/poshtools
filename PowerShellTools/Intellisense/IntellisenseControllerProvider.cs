@@ -29,7 +29,7 @@ namespace PowerShellTools.Intellisense
     internal class IntellisenseControllerProvider : IIntellisenseControllerProvider
     {
         [Import]
-        private IDependencyValidator _validator;
+        private IDependencyValidator _validator =  null;
 
         [Import]
         public ICompletionBroker CompletionBroker = null; // Set via MEF
