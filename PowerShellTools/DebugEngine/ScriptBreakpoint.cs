@@ -61,6 +61,14 @@ namespace PowerShellTools.DebugEngine
             return false;
         }
 
+        public override int GetHashCode()
+        {
+            return _node.GetHashCode()
+                ^ Line.GetHashCode()
+                ^ Column.GetHashCode()
+                ^ File.GetHashCode();
+        }
+
         public void IncrementHitCount()
         {
             _hitCount++;
