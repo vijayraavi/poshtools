@@ -55,7 +55,8 @@ namespace PowerShellTools.DebugEngine
                 if (other != null)
                 {
                     return other.Column == Column && other.Line == Line &&
-                            File.Equals(other.File, StringComparison.InvariantCultureIgnoreCase);
+                            File.Equals(other.File, StringComparison.InvariantCultureIgnoreCase) &&
+                            _node.Equals(other._node);
                 }
             }
             return false;
