@@ -13,8 +13,9 @@ namespace PowerShellTools.Classification
     /// </summary>
     internal static class PowerShellParseUtilities
     {
-        private const string ValidateSetConst = "ValidateSet";
-        private const string ParameterSetNameConst = "ParameterSetName";
+        private const string ValidateSetTypeName = "ValidateSet";
+        private const string ParameterSetArgumentName = "ParameterSetName";
+        private const string MandatoryArgumentName = "Mandatory";
         private static readonly Version CurrentPowershellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
         private static readonly Version RequiredVersionForInformationCommonParams = new Version(5, 0);
 
@@ -52,11 +53,12 @@ namespace PowerShellTools.Classification
                 HashSet<object> allowedValues = new HashSet<object>();
                 bool isParameterSetDefined = false;
                 string parameterSetName = null;
+                bool isMandatory = false;
 
                 foreach (var a in p.Attributes)
                 {
                     // Find if there defines attribute ValidateSet
-                    if (a.TypeName.FullName.Equals(ValidateSetConst, StringComparison.OrdinalIgnoreCase))
+                    if (a.TypeName.FullName.Equals(ValidateSetTypeName, StringComparison.OrdinalIgnoreCase))
                     {
                         foreach (StringConstantExpressionAst pa in ((AttributeAst)a).PositionalArguments)
                         {
@@ -65,20 +67,29 @@ namespace PowerShellTools.Classification
                     }
 
                     // Find if there defines attribute ParameterNameSet
+                    // Find if there defines attribute Mandatory
                     if (a is AttributeAst)
                     {
-                        ((AttributeAst)a).NamedArguments.Any(
-                            n =>
+                        foreach(var arg in ((AttributeAst)a).NamedArguments)
+                        {
+                            if (!isParameterSetDefined)
                             {
-                                isParameterSetDefined = n.ArgumentName.Equals(ParameterSetNameConst, StringComparison.OrdinalIgnoreCase);
-                                if (!isParameterSetDefined)
+                                isParameterSetDefined = arg.ArgumentName.Equals(ParameterSetArgumentName, StringComparison.OrdinalIgnoreCase);
+                                if (isParameterSetDefined)
                                 {
-                                    return isParameterSetDefined;
+                                    parameterSetName = ((StringConstantExpressionAst)arg.Argument).Value;
                                 }
+                            }
 
-                                parameterSetName = ((StringConstantExpressionAst)n.Argument).Value;
-                                return isParameterSetDefined;
-                            });
+                            if (!isMandatory)
+                            {
+                                bool isMandatoryDefined = arg.ArgumentName.Equals(MandatoryArgumentName, StringComparison.OrdinalIgnoreCase);
+                                if (isMandatoryDefined)
+                                {
+                                    isMandatory = ((VariableExpressionAst)arg.Argument).VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase);
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -110,7 +121,7 @@ namespace PowerShellTools.Classification
                 ScriptParameterViewModel newViewModel = null;
                 if (isParameterSetDefined && parameterSetName != null)
                 {
-                    newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues, parameterSetName));
+                    newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues, parameterSetName, isMandatory));
                     IList<ScriptParameterViewModel> existingSets;
                     if (parameterSetToParametersDict.TryGetValue(parameterSetName, out existingSets))
                     {
@@ -124,7 +135,7 @@ namespace PowerShellTools.Classification
                 }
                 else
                 {
-                    newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues));
+                    newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues, isMandatory));
                     scriptParameters.Add(newViewModel);
                 }
             }
