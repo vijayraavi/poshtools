@@ -48,6 +48,7 @@ namespace PowerShellTools.LanguageService
                         case VSConstants.VSStd2KCmdID.COMMENTBLOCK:
                         case VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
                         case VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
+                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
                             return VSConstants.S_OK;
                     }
                 }
@@ -58,6 +59,7 @@ namespace PowerShellTools.LanguageService
                 {
                     if ((VSConstants.VSStd97CmdID)prgCmds[i].cmdID == VSConstants.VSStd97CmdID.GotoDefn)
                     {
+                        prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
                         return VSConstants.S_OK;
                     }
                 }
