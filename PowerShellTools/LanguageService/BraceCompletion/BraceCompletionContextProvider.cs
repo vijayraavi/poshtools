@@ -37,7 +37,7 @@ namespace PowerShellTools.LanguageService.BraceCompletion
     internal sealed class BraceCompletionContextProvider : IBraceCompletionContextProvider
     {
         [Import]
-        private IDependencyValidator _validator;
+        private IDependencyValidator _validator = null;
 
         [Import]
         private IEditorOperationsFactoryService EditOperationsFactory = null;

@@ -15,7 +15,7 @@ namespace PowerShellTools.Intellisense
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellCompletionSourceProvider));
 
         [Import]
-        private IDependencyValidator _validator;
+        private IDependencyValidator _validator =  null;
 
         [Import]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }

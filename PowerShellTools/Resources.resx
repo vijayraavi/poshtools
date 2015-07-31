@@ -397,10 +397,10 @@ Would you like to download now?</value>
     <value>ParameterSetName:</value>
   </data>
   <data name="RemotePortDescription" xml:space="preserve">
-    <value>Allows for debugging of a PowerShell script on a remote machine. Utilizes PowerShell v5.0+ features. This version of PowerShell must be installed on the remote machine in order to remotely debug. Enter the name or address of the machine for which you wish to connect for the qualifier. There is no need to specify a transport protocol type (http, tcp, etc.), port number, or username.</value>
+    <value>Allows for debugging of a PowerShell script on a remote machine. Enter the name or address of the machine for which you wish to connect for the qualifier. Port 5986 is the default port but another may be specified. There is no need to specify a transport protocol type (http, tcp, etc.) or username. PowerShell v5.0+ must be installed on the remote machine. Requires a SSL certificate.</value>
   </data>
   <data name="RemoteDebugTitle" xml:space="preserve">
-    <value>PowerShell Tools Remote Debugging</value>
+    <value>PowerShell Tools Remote Debugging (SSL Required)</value>
   </data>
   <data name="AttachErrorTitle" xml:space="preserve">
     <value>Error Attaching to Process</value>
@@ -416,6 +416,12 @@ Would you like to download now?</value>
   </data>
   <data name="AttachExistingRemoteError" xml:space="preserve">
     <value>Cannot remotely debug a process while in a remote session. Please exit your remote session before trying again.</value>
+  </data>
+  <data name="RemoteUnsecuredDebugTitle" xml:space="preserve">
+    <value>PowerShell Tools Remote Debugging</value>
+  </data>
+  <data name="RemoteUnsecuredPortDescription" xml:space="preserve">
+    <value>Allows for debugging of a PowerShell script on a remote machine. Enter the name or address of the machine for which you wish to connect for the qualifier. Port 5985 is the default port but another may be specified. There is no need to specify a transport protocol type (http, tcp, etc.) or username. PowerShell v5.0+ must be installed on the remote machine. Does not require a SSL certificate.</value>
   </data>
   <data name="Warning_MandatoryValueNotSet_1arg" xml:space="preserve">
     <value>Parameter '{0}' is Mandatory.</value>

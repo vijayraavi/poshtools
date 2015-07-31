@@ -14,12 +14,12 @@ namespace PowerShellTools.DebugEngine.Remote
     /// </summary>
     internal class RemoteDebugPort : IDebugPort2
     {
-        private readonly RemoteDebugPortSupplier _supplier;
+        private readonly IPowerShellToolsPortSupplier _supplier;
         private readonly IDebugPortRequest2 _request;
         private readonly Guid _guid = Guid.NewGuid();
         private readonly string _computerName;
 
-        public RemoteDebugPort(RemoteDebugPortSupplier supplier, IDebugPortRequest2 request, string computerName)
+        public RemoteDebugPort(IPowerShellToolsPortSupplier supplier, IDebugPortRequest2 request, string computerName)
         {
             _supplier = supplier;
             _request = request;
@@ -34,7 +34,7 @@ namespace PowerShellTools.DebugEngine.Remote
         public int EnumProcesses(out IEnumDebugProcesses2 ppEnum)
         {
             RemoteEnumDebugProcess processList = new RemoteEnumDebugProcess(_computerName);
-            processList.connect(this);
+            processList.connect(this, _supplier.UsesSSL());
             ppEnum = processList;
             return VSConstants.S_OK;
         }
@@ -66,7 +66,7 @@ namespace PowerShellTools.DebugEngine.Remote
         public int GetProcess(AD_PROCESS_ID ProcessId, out IDebugProcess2 ppProcess)
         {
             RemoteEnumDebugProcess processList = new RemoteEnumDebugProcess(_computerName);
-            processList.connect(this);
+            processList.connect(this, _supplier.UsesSSL());
             uint numProcesses = 0;
             uint numRetrieved = 0;
             ppProcess = null;

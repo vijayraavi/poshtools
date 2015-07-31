@@ -112,7 +112,8 @@ namespace PowerShellTools
         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
 
-    [ProvideDebugPortSupplier("Powershell Remote Debugging", typeof(RemoteDebugPortSupplier), PowerShellTools.Common.Constants.PortSupplierId, typeof(RemotePortPicker))]
+    [ProvideDebugPortSupplier("Powershell Remote Debugging (SSL Required)", typeof(RemoteDebugPortSupplier), PowerShellTools.Common.Constants.PortSupplierId, typeof(RemotePortPicker))]
+    [ProvideDebugPortSupplier("Powershell Remote Debugging", typeof(RemoteUnsecuredDebugPortSupplier), PowerShellTools.Common.Constants.UnsecuredPortSupplierId, typeof(RemoteUnsecuredPortPicker))]
     [ProvideDebugPortPicker(typeof(RemotePortPicker))]
 
     public sealed class PowerShellToolsPackage : CommonPackage

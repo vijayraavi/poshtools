@@ -12,7 +12,7 @@ namespace PowerShellTools.Classification
     internal sealed class PowerShellBraceMatchingTaggerProvider : IViewTaggerProvider
     {
         [Import]
-        private IDependencyValidator _validator;
+        private IDependencyValidator _validator = null;
 
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {

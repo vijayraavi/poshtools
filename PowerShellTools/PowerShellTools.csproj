@@ -280,11 +280,14 @@
       <DependentUpon>ReadHostPromptForChoicesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesViewModel.cs" />
+    <Compile Include="DebugEngine\Remote\IPowerShellToolsPortSupplier.cs" />
     <Compile Include="DebugEngine\Remote\RemoteDebugPort.cs" />
     <Compile Include="DebugEngine\Remote\RemoteDebugPortSupplier.cs" />
     <Compile Include="DebugEngine\Remote\RemoteEnumDebugProcess.cs" />
     <Compile Include="DebugEngine\Remote\RemoteEnumDebugPrograms.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteUnsecuredPortPicker.cs" />
     <Compile Include="DebugEngine\Remote\RemotePortPicker.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteUnsecuredDebugPortSupplier.cs" />
     <Compile Include="DebugServiceEventHandlerBehaviorAttribute.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
@@ -363,7 +366,6 @@
     <Compile Include="LanguageService\TextViewFilter.cs" />
     <Compile Include="LanguageService\EditFilter.cs" />
     <Compile Include="Guids.cs" />
-    <Compile Include="Classification\OutputPaneClassifier.cs" />
     <Compile Include="PackageProperties.cs" />
     <Compile Include="PowerShellConstants.cs" />
     <Compile Include="Classification\PowerShellEditorFactory.cs" />

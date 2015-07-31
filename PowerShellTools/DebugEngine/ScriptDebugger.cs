@@ -43,11 +43,6 @@ namespace PowerShellTools.DebugEngine
         public event EventHandler<EventArgs<ScriptLocation>> DebuggerPaused;
 
         /// <summary>
-        /// Event is fired when a string is output from the PowerShell host.
-        /// </summary>
-        public event EventHandler<EventArgs<string>> OutputString;
-
-        /// <summary>
         /// Event is fired when the debugger has finished.
         /// </summary>
         public event EventHandler DebuggingFinished;

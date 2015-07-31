@@ -133,4 +133,7 @@
   <data name="114" xml:space="preserve">
     <value>PowerShell</value>
   </data>
+  <data name="102" xml:space="preserve">
+    <value>PowerShell Tools</value>
+  </data>
 </root>
