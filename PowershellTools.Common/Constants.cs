@@ -99,5 +99,15 @@ namespace PowerShellTools.Common
         /// This is the GUID for the PowerShell Tools remote debugging port supplier.
         /// </summary>
         public static readonly Guid PortSupplierGuid = new Guid(PortSupplierId);
+
+        /// <summary>
+        /// This is the GUID in string form for the PowerShell Tools unsecured remote debugging port supplier.
+        /// </summary>
+        public const string UnsecuredPortSupplierId = "{44379988-7b12-4cfe-b02a-d56f751d597a}";
+
+        /// <summary>
+        /// This is the GUID for the PowerShell Tools unsecured remote debugging port supplier.
+        /// </summary>
+        public static readonly Guid UnsecuredPortSupplierGuid = new Guid(UnsecuredPortSupplierId);
     }
 }

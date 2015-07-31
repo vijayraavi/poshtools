@@ -7,13 +7,14 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerShellTools.Common;
 
+
 namespace PowerShellTools.DebugEngine.Remote
 {
     /// <summary>
-    /// Supplies the PowerShell Tools remote debugging transport to the
+    /// Supplies the PowerShell Tools unsecured remote debugging transport to the
     /// attach to process dialog.
     /// </summary>
-    internal class RemoteDebugPortSupplier : IPowerShellToolsPortSupplier
+    internal class RemoteUnsecuredDebugPortSupplier : IPowerShellToolsPortSupplier
     {
         public int AddPort(IDebugPortRequest2 pRequest, out IDebugPort2 ppPort)
         {
@@ -28,7 +29,7 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public bool UsesSSL()
         {
-            return true;
+            return false;
         }
 
         public int CanAddPort()
@@ -39,12 +40,12 @@ namespace PowerShellTools.DebugEngine.Remote
         public int EnumPorts(out IEnumDebugPorts2 ppEnum)
         {
             ppEnum = null;
-            return VSConstants.S_OK;   
+            return VSConstants.S_OK;
         }
 
         public int GetDescription(enum_PORT_SUPPLIER_DESCRIPTION_FLAGS[] pdwFlags, out string pbstrText)
         {
-            pbstrText = Resources.RemotePortDescription;
+            pbstrText = Resources.RemoteUnsecuredPortDescription;
             return VSConstants.S_OK;
         }
 
@@ -62,7 +63,7 @@ namespace PowerShellTools.DebugEngine.Remote
 
         public int GetPortSupplierName(out string pbstrName)
         {
-            pbstrName = Resources.RemoteDebugTitle;
+            pbstrName = Resources.RemoteUnsecuredDebugTitle;
             return VSConstants.S_OK;
         }
 

@@ -53,6 +53,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
         private PowerShellDebuggingServiceAttachValidator _validator;
+        private bool _useSSL;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -181,29 +182,35 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             // make sure we are in a local scenario and that an adequate version of PowerShell is installed
             if (GetDebugScenario() == DebugScenario.Local && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
             {
-                var process = Process.GetProcessById((int)pid);
-                ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}" , process.ProcessName, process.Id));
-                bool is64Bit = false;
-
-                try
+                using (_currentPowerShell = PowerShell.Create())
                 {
-                    IsWow64Process(process.Handle, out is64Bit);
+                    // see if the process is a PS host
+                    if (InvokeScript(_currentPowerShell, string.Format("Get-PSHostProcessInfo -Id {0}", pid)).Any())
+                    {
+                        var process = Process.GetProcessById((int)pid);
+                        ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}", process.ProcessName, process.Id));
+                        bool is64Bit = false;
 
-                    // cannot examine a 64 bit process' modules from a 32 bit process
-                    if (!Environment.Is64BitProcess && is64Bit)
-                    {
-                        return false;
+                        try
+                        {
+                            if (process != null)
+                            {
+                                IsWow64Process(process.Handle, out is64Bit);
+                                if (!Environment.Is64BitProcess && is64Bit)
+                                {
+                                    // cannot examine a 64 bit process' modules from a 32 bit process
+                                    return false;
+                                }
+                                return true;
+                            }
+                        }
+                        catch (Win32Exception ex)
+                        {
+                            // if a process being run as admin IsWow64Process may throw an exception
+                            ServiceCommon.Log(string.Format("Win32Exception while examining process: {1}; id: {1}; ex {2}", process.ProcessName, process.Id, ex.ToString()));
+                            return false;
+                        }
                     }
-                    else if (process != null)
-                    {
-                        return process.Modules.OfType<ProcessModule>().Any(pm => pm.ModuleName.Equals("powershell.exe", StringComparison.Ordinal));
-                    }
-                }
-                catch(Win32Exception ex)
-                {
-                    // if a process being run as admin IsWow64Process may throw an exception
-                    ServiceCommon.Log(string.Format("Win32Exception while examining process: {1}; id: {1}; ex {2}", process.ProcessName, process.Id, ex.ToString()));
-                    return false;
                 }
             }
             return false;
@@ -355,8 +362,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="remoteName">Name of the remote machine</param>
         /// <param name="errorMessage">Error message to be presented to user if failure occurs</param>
         /// <returns>List of valid processes, each represented by a KeyValuePair of pid to process name</returns>
-        public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName, ref string errorMessage)
+        public List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteName, ref string errorMessage, bool useSSL)
         {
+            _useSSL = useSSL;
             List<KeyValuePair<uint, string>> validProcesses = new List<KeyValuePair<uint, string>>();
 
             // Retrieve callback context so credentials window can display
@@ -381,7 +389,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         errorMessage = string.Empty;
                         return null;
                     }
-                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName);
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, _useSSL);
 
                     if (GetDebugScenario() == DebugScenario.Local)
                     {
@@ -401,9 +409,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
 
                     // grab all attachable processes and add each process' name and pid to the list to be returned
-                    foreach (PSObject obj in InvokeScript(_currentPowerShell, DebugEngineConstants.EnumerateRemoteProcessesScript))
+                    foreach (PSObject obj in InvokeScript(_currentPowerShell, "Get-PSHostProcessInfo"))
                     {
-                        uint pid = (uint)((int)obj.Members["Id"].Value);
+                        uint pid = (uint)((int)obj.Members["ProcessId"].Value);
                         string name = (string)obj.Members["ProcessName"].Value;
                         validProcesses.Add(new KeyValuePair<uint, string>(pid, name));
                     }
@@ -436,7 +444,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 using (_currentPowerShell = PowerShell.Create())
                 {
                     // enter into a remote session
-                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName);
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, _useSSL);
 
                     if (!_validator.VerifyAttachToRemoteRunspace())
                     {

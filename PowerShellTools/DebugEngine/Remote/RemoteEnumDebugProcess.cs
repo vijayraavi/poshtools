@@ -12,6 +12,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerShellTools.Common;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using PowerShellTools.Options;
 
 namespace PowerShellTools.DebugEngine.Remote
 {
@@ -38,10 +39,8 @@ namespace PowerShellTools.DebugEngine.Remote
         /// the call to EnumerateRemoteProcesses returns null.
         /// </summary>
         /// <param name="remotePort"></param>
-        public void connect(IDebugPort2 remotePort)
+        public void connect(IDebugPort2 remotePort, bool useSSL)
         {
-            
-
             // Make sure user is starting from a local scenario
             DebugScenario scenario = PowerShellToolsPackage.Debugger.DebuggingService.GetDebugScenario();
             if (scenario != DebugScenario.Local)
@@ -71,7 +70,7 @@ namespace PowerShellTools.DebugEngine.Remote
                 while (true)
                 {
                     Log.Debug(string.Format("Attempting to find processes on {0}.", _remoteComputer));
-                    information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer, ref errorMessage);
+                    information = PowerShellToolsPackage.Debugger.DebuggingService.EnumerateRemoteProcesses(_remoteComputer, ref errorMessage, useSSL);
 
                     if (information != null)
                     {
