@@ -810,7 +810,7 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allows for debugging of a PowerShell script on a remote machine. Enter the name or address of the machine for which you wish to connect for the qualifier. Port 5986 is the default port but another may be specified. There is no need to specify a transport protocol type (http, tcp, etc.) or username. PowerShell v5.0+ must be installed on the remote machine. Does not require a SSL certificate..
+        ///   Looks up a localized string similar to Allows for debugging of a PowerShell script on a remote machine. Enter the name or address of the machine for which you wish to connect for the qualifier. Port 5985 is the default port but another may be specified. There is no need to specify a transport protocol type (http, tcp, etc.) or username. PowerShell v5.0+ must be installed on the remote machine. Does not require a SSL certificate..
         /// </summary>
         public static string RemoteUnsecuredPortDescription {
             get {
