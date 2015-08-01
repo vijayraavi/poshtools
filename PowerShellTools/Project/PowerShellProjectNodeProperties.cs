@@ -9,11 +9,11 @@ namespace PowerShellTools.Project
     [Guid(CommonConstants.ProjectNodePropertiesGuid)]
     public class PowerShellProjectNodeProperties : CommonProjectNodeProperties
     {
-        internal PowerShellProjectNodeProperties(ProjectNode node) : base(node)
+        internal PowerShellProjectNodeProperties(ProjectNode node)
+            : base(node)
         {
         }
 
-        public new string StartupFile { get; set; }
-
+        //public new string StartupFile { get; set; }
     }
 }
