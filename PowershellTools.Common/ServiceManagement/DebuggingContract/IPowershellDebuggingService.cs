@@ -22,7 +22,10 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract]
         void RemoveBreakpoint(PowerShellBreakpoint bp);
-
+        
+        [OperationContract]
+        void RemoveBreakpointById(int id);
+        
         [OperationContract]
         void ClearBreakpoints();
 
