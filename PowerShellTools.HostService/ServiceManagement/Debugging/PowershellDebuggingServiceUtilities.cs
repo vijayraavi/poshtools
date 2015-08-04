@@ -25,6 +25,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         // Potential TODO: Refactor this class into either a static Utilities class
 
         private const string DteVariableName = "dte";
+        private const string ProfileVariableName = "profile";
 
         private void SetRunspace(Runspace runspace)
         {
@@ -37,6 +38,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             LoadRunspace(_runspace);
 
             ProvideDteVariable(_runspace);
+            ProvideProfileVariable(_runspace);
         }
 
         private void LoadRunspace(Runspace runspace)
@@ -244,13 +246,38 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         // We want to make $dte constant so that it can't be overridden; similar to the $psISE analog
 
                         PSVariable dteVar = new PSVariable(DteVariableName, dte, ScopedItemOptions.Constant);
-
                         runspace.SessionStateProxy.PSVariable.Set(dteVar);
                     }
                     else
                     {
                         ServiceCommon.Log("Dte object not found.");
                     }
+                }
+            }
+        }
+
+        private static void ProvideProfileVariable(Runspace runspace)
+        {
+            if (runspace.ConnectionInfo == null)
+            {
+                // Provide profile as PS variable if not yet defined
+                if (runspace.SessionStateProxy.PSVariable.Get(ProfileVariableName) == null)
+                {
+                    ServiceCommon.Log("Providing $profile variable to the local runspace.");
+
+                    string psHome = (string)runspace.SessionStateProxy.PSVariable.Get("PsHome").Value;
+                    string windowsPowerShell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "WindowsPowerShell");
+
+                    PSObject profile = new PSObject(Path.Combine(windowsPowerShell, "PoshTools_profile.ps1"));
+
+                    // 1. Current User, Current Host  2. Current User, All Hosts 3. All Users, Current Host 4. All Users, All Hosts
+                    profile.Members.Add(new PSNoteProperty("CurrentUserCurrentHost", Path.Combine(windowsPowerShell, "PoshTools_profile.ps1")));
+                    profile.Members.Add(new PSNoteProperty("CurrentUserAllHosts", Path.Combine(windowsPowerShell, "Profile.ps1")));
+                    profile.Members.Add(new PSNoteProperty("AllUsersCurrentHost", Path.Combine(psHome, "PoshTools_profile.ps1")));
+                    profile.Members.Add(new PSNoteProperty("AllUsersAllHosts", Path.Combine(psHome, "Profile.ps1")));
+
+                    PSVariable profileVar = new PSVariable(ProfileVariableName, profile, ScopedItemOptions.Constant);
+                    runspace.SessionStateProxy.PSVariable.Set(profileVar);
                 }
             }
         }
