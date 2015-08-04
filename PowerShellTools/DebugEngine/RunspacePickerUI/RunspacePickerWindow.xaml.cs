@@ -32,9 +32,14 @@ namespace PowerShellTools.DebugEngine.RunspacePickerUI
             DataContext = viewModel;
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = true;
+            DialogResult = (RunspaceList.SelectedIndex != -1);
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
         }
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.PowerShell;
 using PowerShellTools.Common.Debugging;
 using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using System.Management.Automation.Remoting;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -415,6 +416,55 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             powerShell.Commands.Clear();
             powerShell.Commands = enterSession;
             powerShell.Invoke();
+        }
+
+        /// <summary>
+        /// Determines what string AttachToRunspace should return if it encounters an exception.
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        private string HandleAttachToRunspaceException(Exception exception)
+        {
+            if (exception is RemoteException || exception is PSRemotingDataStructureException)
+            {
+                if (_forceStop)
+                {
+                    // these two types of exceptions are expected if we have to stop during cleanup
+                    ServiceCommon.Log(string.Format("Forced to detach via stop command; {0}", exception.ToString()));
+                    return "";
+                }
+                else
+                {
+                    // other actions, such as closing a remote process mid debugging may cause an unexpected exception of these types
+                    ServiceCommon.Log(string.Format("Unexpected remote exception while debugging runspace; {0}", exception.ToString()));
+                    return Resources.ProcessDebugError;
+                }
+            }
+            else
+            {
+                // any other sort of exception is not expected
+                ServiceCommon.Log(string.Format("Unexpected exception while debugging runspace; {0}", exception.ToString()));
+                return Resources.ProcessDebugError;
+            }
+        }
+
+        /// <summary>
+        /// Given a collection of PSObjects which are Runspaces, creates a dialog through the HostUi to prompt user to pick one.
+        /// </summary>
+        /// <param name="runspaces">Collection of Runspaces in PSObject format</param>
+        /// <returns>Id of the selected runspace, -1 if user hit cancel</returns>
+        private int PromptUserToPickRunspace(Collection<PSObject> runspaces)
+        {
+            Dictionary<string, int> runspaceDict = new Dictionary<string, int>();
+            foreach (PSObject obj in runspaces)
+            {
+                string runspaceName = obj.Properties["Name"].Value.ToString();
+                int runspaceId = (int)obj.Properties["Id"].Value;
+                runspaceDict.Add(string.Format("{0} (Id {1})", runspaceName, runspaceId), runspaceId);
+            }
+            string choice = _callback.PromptUserToPickRunspace(runspaceDict.Keys.ToList());
+
+            return choice == null ? -1 : runspaceDict[choice];
         }
     }
 }

@@ -414,6 +414,10 @@ namespace PowerShellTools.DebugEngine
                 {
                     name = viewModel.RunspaceName;
                 }
+                else
+                {
+                    name = null;
+                }
             });
             return name;
         }

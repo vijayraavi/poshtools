@@ -23,7 +23,6 @@ namespace PowerShellTools.DebugEngine.RunspacePickerUI
                 if (_runspaceName != value)
                 {
                     _runspaceName = value;
-
                     OnPropertyChanged("RunspaceName");
                 }
             }
