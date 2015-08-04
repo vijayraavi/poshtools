@@ -38,7 +38,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             LoadRunspace(_runspace);
 
             ProvideDteVariable(_runspace);
-            ProvideProfileVariable(_runspace);
         }
 
         private void LoadRunspace(Runspace runspace)
@@ -147,28 +146,37 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _runspace = RunspaceFactory.CreateRunspace(psHost, iss);
             _runspace.Open();
 
-            LoadProfile();
+            ProvideProfileVariable();
+            LoadProfiles();
             ServiceCommon.Log("Done initializing runspace");
         }
 
-        private void LoadProfile()
+        private void LoadProfiles()
         {
             ServiceCommon.Log("Loading PowerShell Profile");
             using (PowerShell ps = PowerShell.Create())
             {
-                var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                var windowsPowerShell = Path.Combine(myDocuments, "WindowsPowerShell");
-                var profile = Path.Combine(windowsPowerShell, "PoshTools_profile.ps1");
-
-                var fi = new FileInfo(profile);
-                if (!fi.Exists)
-                {
-                    return;
-                }
-
                 ps.Runspace = _runspace;
-                ps.AddScript(". '" + profile + "'");
-                ps.Invoke();
+
+                PSObject profiles = _runspace.SessionStateProxy.PSVariable.Get("profile").Value as PSObject;
+                foreach(PSMemberInfo member in profiles.Members)
+                {
+                    if (member.MemberType == PSMemberTypes.NoteProperty)
+                    {
+                        var profilePath = (string)member.Value;
+                        var profileFile = new FileInfo(profilePath);
+
+                        if (!profileFile.Exists)
+                        {
+                            return;
+                        }
+
+                        ServiceCommon.Log(string.Format("Profile of name {0} found at {1}.", member.Name, profilePath));
+                        ps.Commands.Clear();
+                        ps.AddScript(". '" + profilePath + "'");
+                        ps.Invoke();
+                    }
+                }
             }
         }
 
@@ -256,16 +264,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        private static void ProvideProfileVariable(Runspace runspace)
+        private static void ProvideProfileVariable()
         {
-            if (runspace.ConnectionInfo == null)
+            if (_runspace.ConnectionInfo == null)
             {
                 // Provide profile as PS variable if not yet defined
-                if (runspace.SessionStateProxy.PSVariable.Get(ProfileVariableName) == null)
+                if (_runspace.SessionStateProxy.PSVariable.Get(ProfileVariableName) == null)
                 {
                     ServiceCommon.Log("Providing $profile variable to the local runspace.");
 
-                    string psHome = (string)runspace.SessionStateProxy.PSVariable.Get("PsHome").Value;
+                    string psHome = (string)_runspace.SessionStateProxy.PSVariable.Get("PsHome").Value;
                     string windowsPowerShell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "WindowsPowerShell");
 
                     PSObject profile = new PSObject(Path.Combine(windowsPowerShell, "PoshTools_profile.ps1"));
@@ -277,7 +285,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     profile.Members.Add(new PSNoteProperty("AllUsersAllHosts", Path.Combine(psHome, "Profile.ps1")));
 
                     PSVariable profileVar = new PSVariable(ProfileVariableName, profile, ScopedItemOptions.Constant);
-                    runspace.SessionStateProxy.PSVariable.Set(profileVar);
+                    _runspace.SessionStateProxy.PSVariable.Set(profileVar);
                 }
             }
         }
