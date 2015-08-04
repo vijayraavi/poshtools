@@ -78,5 +78,8 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract(IsOneWay = false)]
         int GetREPLWindowWidth();
+
+        [OperationContract]
+        string PromptUserToPickRunspace(IList<string> runspaces);
     }
 }

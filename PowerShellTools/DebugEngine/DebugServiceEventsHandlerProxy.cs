@@ -263,5 +263,10 @@ namespace PowerShellTools.DebugEngine
 
             return width;
         }
+
+        public string PromptUserToPickRunspace(IList<string> runspaces)
+        {
+            return Debugger.HostUi.PromptUserToPickRunspace(runspaces);
+        }
     }
 }

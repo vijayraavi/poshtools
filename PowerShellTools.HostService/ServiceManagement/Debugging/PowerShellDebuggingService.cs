@@ -256,8 +256,23 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _pausedEvent.Reset();
                     _forceStop = false;
 
-                    // debug the runspace, for the vast majority of cases the 1st runspace is the one to attach to
-                    InvokeScript(_currentPowerShell, "Debug-Runspace -Id 1");
+                    Collection<PSObject> runspaces = InvokeScript(_currentPowerShell, "Get-Runspace");
+                    if (runspaces.Count() == 2)
+                    {
+                        // default case, we know that the only valid runspace to debug is the 1st runspace
+                        InvokeScript(_currentPowerShell, "Debug-Runspace -Id 1");
+                    }
+                    else
+                    {
+                        // if more than 2 runspaces, we ask the user to choose the runspace
+                        Dictionary<string, int> runspaceDict = new Dictionary<string, int>();
+                        foreach (PSObject obj in runspaces)
+                        {
+                            runspaceDict.Add(obj.Properties["Name"].Value.ToString(), (int)obj.Properties["Id"].Value);
+                        }
+                        string choice = _callback.PromptUserToPickRunspace(runspaceDict.Keys.ToList());
+                        InvokeScript(_currentPowerShell, string.Format("Debug-Runspace -Id {0}", runspaceDict[choice]));
+                    }                   
 
                     if (_currentPowerShell.HadErrors)
                     {

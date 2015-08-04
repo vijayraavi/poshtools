@@ -6,6 +6,8 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Security;
 using PowerShellTools.Repl;
+using PowerShellTools.Commands.UserInterface;
+using PowerShellTools.DebugEngine.RunspacePickerUI;
 using Thread = System.Threading.Thread;
 
 namespace PowerShellTools.DebugEngine
@@ -398,6 +400,22 @@ namespace PowerShellTools.DebugEngine
             {
                 OutputString(output);
             }
+        }
+
+        public string PromptUserToPickRunspace(IList<string> runspaces)
+        {
+            string name = runspaces.ElementAt(0);
+            ThreadHelper.Generic.Invoke(() =>
+            {
+                var viewModel = new RunspacePickerWindowViewModel();
+                var view = new RunspacePickerWindow(viewModel, runspaces);
+
+                if (view.ShowModal() == true)
+                {
+                    name = viewModel.RunspaceName;
+                }
+            });
+            return name;
         }
     }
 }
