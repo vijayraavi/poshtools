@@ -21,7 +21,7 @@ namespace PowerShellTools.DebugEngine.RunspacePickerUI
     /// </summary>
     internal partial class RunspacePickerWindow : VsShellDialogWindow
     {
-        public RunspacePickerWindow(RunspacePickerWindowViewModel viewModel, IList<String> runspaces)
+        public RunspacePickerWindow(RunspacePickerWindowViewModel viewModel)
         {
             if (viewModel == null)
             {
@@ -29,10 +29,7 @@ namespace PowerShellTools.DebugEngine.RunspacePickerUI
             }
 
             InitializeComponent();
-
             DataContext = viewModel;
-            RunspaceList.ItemsSource = runspaces;
-            RunspaceList.SelectedIndex = 0;
         }
 
         private void button_Click(object sender, RoutedEventArgs e)

@@ -407,8 +407,8 @@ namespace PowerShellTools.DebugEngine
             string name = runspaces.ElementAt(0);
             ThreadHelper.Generic.Invoke(() =>
             {
-                var viewModel = new RunspacePickerWindowViewModel();
-                var view = new RunspacePickerWindow(viewModel, runspaces);
+                var viewModel = new RunspacePickerWindowViewModel(runspaces);
+                var view = new RunspacePickerWindow(viewModel);
 
                 if (view.ShowModal() == true)
                 {

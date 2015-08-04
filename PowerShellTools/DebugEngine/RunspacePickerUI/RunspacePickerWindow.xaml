@@ -11,15 +11,16 @@
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         mc:Ignorable="d" 
         Title="Runspace Picker"
-        MinHeight="100.0"
+        MinHeight="125.0"
         MinWidth="375.000"
         SizeToContent="WidthAndHeight"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        WindowStartupLocation="CenterOwner" Height="100">
-    <Grid Margin="0,0,2,0">
-        <ComboBox x:Name="RunspaceList" HorizontalAlignment="Left" VerticalAlignment="Top" Width="196" Margin="160,10,0,0" Grid.ColumnSpan="3"/>
-        <Button x:Name="OkButton" Content="Ok" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="282,37,0,0" Click="button_Click"/>
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Choose runspace to debug:" VerticalAlignment="Top" RenderTransformOrigin="1.186,3.139" Margin="10,11,0,0"/>
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="0,0,2,10">
+        <ComboBox x:Name="RunspaceList" ItemsSource="{Binding Runspaces}" SelectedItem="{Binding RunspaceName}" SelectedIndex="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="196" Margin="161,31,0,0"/>
+        <Button x:Name="OkButton" Content="Ok" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="282,58,0,0" Click="button_Click"/>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Select a runspace to debug:" VerticalAlignment="Top" RenderTransformOrigin="1.186,3.139" Margin="10,31,0,0"/>
+        <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Unable to determine which runspace to debug." VerticalAlignment="Top" Margin="10,10,0,0"/>
     </Grid>
 </shell:VsShellDialogWindow>

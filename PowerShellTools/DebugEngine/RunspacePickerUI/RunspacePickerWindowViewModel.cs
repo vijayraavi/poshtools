@@ -10,6 +10,7 @@ namespace PowerShellTools.DebugEngine.RunspacePickerUI
     class RunspacePickerWindowViewModel : INotifyPropertyChanged
     {
         private string _runspaceName;
+        private IList<string> _runspaces;
 
         public string RunspaceName
         {
@@ -26,6 +27,19 @@ namespace PowerShellTools.DebugEngine.RunspacePickerUI
                     OnPropertyChanged("RunspaceName");
                 }
             }
+        }
+
+        public IList<string> Runspaces
+        {
+            get
+            {
+                return _runspaces;
+            }
+        }
+
+        public RunspacePickerWindowViewModel(IList<string> runspaces)
+        {
+            _runspaces = runspaces;
         }
 
         private void OnPropertyChanged(string propertyName)

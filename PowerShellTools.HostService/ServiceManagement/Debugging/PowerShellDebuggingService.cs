@@ -257,7 +257,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _forceStop = false;
 
                     Collection<PSObject> runspaces = InvokeScript(_currentPowerShell, "Get-Runspace");
-                    if (runspaces.Count() == 2)
+                    if (runspaces.Count() <= 2)
                     {
                         // default case, we know that the only valid runspace to debug is the 1st runspace
                         InvokeScript(_currentPowerShell, "Debug-Runspace -Id 1");
@@ -268,7 +268,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         Dictionary<string, int> runspaceDict = new Dictionary<string, int>();
                         foreach (PSObject obj in runspaces)
                         {
-                            runspaceDict.Add(obj.Properties["Name"].Value.ToString(), (int)obj.Properties["Id"].Value);
+                            string runspaceName = obj.Properties["Name"].Value.ToString();
+                            int runspaceId = (int)obj.Properties["Id"].Value;
+
+                            if (runspaceDict.ContainsKey(runspaceName)) {
+                                runspaceDict.Add(string.Format("{0} (Id {1})", runspaceName, runspaceId), runspaceId);
+                            }
+                            else
+                            {
+                                runspaceDict.Add(runspaceName, runspaceId);
+                            }
                         }
                         string choice = _callback.PromptUserToPickRunspace(runspaceDict.Keys.ToList());
                         InvokeScript(_currentPowerShell, string.Format("Debug-Runspace -Id {0}", runspaceDict[choice]));
