@@ -163,5 +163,13 @@ param (
         /// Cmdlet to get a user's credentials. Used for attaching remotely. The $null Credential parameter supresses unwanted output in the REPL window.
         /// </summary>
         public const string GetCredentialsCommand = "Get-Credential -Credential $null";
+
+        public static readonly string[] PowerShellProfiles =
+        {
+            "AllUsersAllHosts",
+            "AllUsersCurrentHost",
+            "CurrentUserAllHosts",
+            "CurrentUserCurrentHost"
+        };
     }
 }
