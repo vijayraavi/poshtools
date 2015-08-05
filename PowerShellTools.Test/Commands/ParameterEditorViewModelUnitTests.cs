@@ -62,6 +62,78 @@ namespace PowerShellTools.Test.Commands
         }
 
         [TestMethod]
+        public void ShouldDetectMantoryParametersNotSet()
+        {
+            var model = new ParameterEditorModel(
+                new ObservableCollection<ScriptParameterViewModel>()
+                {
+                    new ScriptParameterViewModel(new ScriptParameter()
+                        {
+                            Name = "StringType",
+                            Type = DataTypeConstants.StringType,
+                            DefaultValue = null,
+                            IsMandatory = true
+                        }),
+                    new ScriptParameterViewModel(new ScriptParameter()
+                    {
+                        Name = "CharType",
+                        Type = DataTypeConstants.CharType,
+                        DefaultValue = null,
+                        IsMandatory = true
+                        
+                    }),
+                    new ScriptParameterViewModel(new ScriptParameter()
+                    {
+                        Name = "ByteType",
+                        Type = DataTypeConstants.ByteType,
+                        DefaultValue = null,
+                        IsMandatory = true
+                    }),
+                    new ScriptParameterViewModel(new ScriptParameter()
+                    {
+                        Name = "IntType",
+                        Type = DataTypeConstants.Int32Type,
+                        DefaultValue = null,
+                        IsMandatory = true
+                    }),
+                    new ScriptParameterViewModel(new ScriptParameter()
+                    {
+                        Name = "BoolType",
+                        Type = DataTypeConstants.BoolType,
+                        DefaultValue = null,
+                        IsMandatory = true
+                    })
+                },
+
+                PowerShellParseUtilities.GenerateCommonParameters());
+
+            var viewModel = new ParameterEditorViewModel(model);
+            model.Parameters[0].Value = null;
+            Assert.AreEqual<bool>(true, viewModel.Parameters[0].HasValidationResult);
+            Assert.AreEqual<bool>(true, viewModel.Parameters[0].ValidationResult.IsWarning);
+
+            model.Parameters[0].Value = string.Empty;
+            Assert.AreEqual<bool>(true, viewModel.Parameters[1].HasValidationResult);
+            Assert.AreEqual<bool>(true, viewModel.Parameters[1].ValidationResult.IsWarning);
+
+            model.Parameters[1].Value = null;
+            Assert.AreEqual<bool>(true, viewModel.Parameters[1].HasValidationResult);
+            Assert.AreEqual<bool>(true, viewModel.Parameters[1].ValidationResult.IsWarning);
+
+            model.Parameters[2].Value = null;
+            Assert.AreEqual<bool>(true, viewModel.Parameters[2].HasValidationResult);
+            Assert.AreEqual<bool>(true, viewModel.Parameters[2].ValidationResult.IsWarning);
+
+            model.Parameters[3].Value = null;
+            Assert.AreEqual<bool>(true, viewModel.Parameters[3].HasValidationResult);
+            Assert.AreEqual<bool>(true, viewModel.Parameters[3].ValidationResult.IsWarning);
+
+            model.Parameters[4].Value = null;
+            Assert.AreEqual<bool>(true, viewModel.Parameters[4].HasValidationResult);
+            Assert.AreEqual<bool>(true, viewModel.Parameters[4].ValidationResult.IsWarning);
+        }
+
+        [TestMethod]
         public void ShouldCollapseParameterSetNamesWhenThereIsNone()
         {
             var model = new ParameterEditorModel(
