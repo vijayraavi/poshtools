@@ -7,6 +7,7 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using EnvDTE80;
@@ -153,7 +154,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void LoadProfiles()
         {
-            ServiceCommon.Log("Loading PowerShell Profile");
+            if (_callback == null && OperationContext.Current != null)
+            {
+                _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
+            }
+
+            if (_callback == null || !_callback.ShouldLoadProfiles())
+            {
+                // if we can't reach the _callback on startup, let's not assume anything and skip loading profiles
+                return;
+            }
+
+            ServiceCommon.Log("Loading PowerShell Profiles");
             using (PowerShell ps = PowerShell.Create())
             {
                 ps.Runspace = _runspace;
