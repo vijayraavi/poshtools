@@ -11,6 +11,7 @@ namespace PowerShellTools.Commands.UserInterface
         private string _type;
         private string _name;
         private string _parameterSetName;
+        private bool _isMandatory;
 
         // Known parameter names
         // Known parameter object keys
@@ -30,7 +31,12 @@ namespace PowerShellTools.Commands.UserInterface
         {
         }
 
-        public ScriptParameter(string name, string type, object defaultValue, HashSet<object> allowedValues, string parameterSetName)
+        public ScriptParameter(string name, string type, object defaultValue, HashSet<object> allowedValues, bool isMandatory)
+            : this(name, type, defaultValue, allowedValues, null, isMandatory)
+        {
+        }
+
+        public ScriptParameter(string name, string type, object defaultValue, HashSet<object> allowedValues, string parameterSetName, bool isMandatory = false)
         {
             _name = name;
             _type = type;
@@ -50,6 +56,7 @@ namespace PowerShellTools.Commands.UserInterface
             _defaultValue = defaultValue;
             _allowedValues = allowedValues;
             _parameterSetName = parameterSetName;
+            _isMandatory = isMandatory;
         }
 
         /// <summary>
@@ -143,6 +150,22 @@ namespace PowerShellTools.Commands.UserInterface
                 if (_parameterSetName != value)
                 {
                     _parameterSetName = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsMandatory
+        {
+            get
+            {
+                return _isMandatory;
+            }
+            set
+            {
+                if (_isMandatory != value)
+                {
+                    _isMandatory = value;
                     NotifyPropertyChanged();
                 }
             }

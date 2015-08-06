@@ -3,6 +3,7 @@ using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using System.Runtime.InteropServices;
+using System;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -16,6 +17,7 @@ namespace PowerShellTools.DebugEngine
         private readonly IEngineEvents _callback;
         private readonly ScriptProgramNode _node;
         private bool _enabled;
+        private uint _hitCount;
 
         /// <summary>
         /// Line where this breakpoint is set.
@@ -42,6 +44,35 @@ namespace PowerShellTools.DebugEngine
             Line = line;
             Column = column;
             File = file;
+            _hitCount = 0;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj != null)
+            {
+                ScriptBreakpoint other = obj as ScriptBreakpoint;
+                if (other != null)
+                {
+                    return other.Column == Column && other.Line == Line &&
+                            File.Equals(other.File, StringComparison.InvariantCultureIgnoreCase) &&
+                            _node.Equals(other._node);
+                }
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return _node.GetHashCode()
+                ^ Line.GetHashCode()
+                ^ Column.GetHashCode()
+                ^ File.GetHashCode();
+        }
+
+        public void IncrementHitCount()
+        {
+            _hitCount++;
         }
 
         #region Implementation of IDebugBoundBreakpoint2
@@ -63,8 +94,8 @@ namespace PowerShellTools.DebugEngine
         public int GetHitCount(out uint pdwHitCount)
         {
             Log.Debug("ScriptBreakpoint: GetHitCount");
-            pdwHitCount = 0;
-            return VSConstants.E_NOTIMPL;
+            pdwHitCount = _hitCount;
+            return VSConstants.S_OK;
         }
 
         public int GetBreakpointResolution(out IDebugBreakpointResolution2 ppBPResolution)
@@ -85,7 +116,8 @@ namespace PowerShellTools.DebugEngine
         public int SetHitCount(uint dwHitCount)
         {
             Log.Debug("ScriptBreakpoint: SetHitCount");
-            return VSConstants.E_NOTIMPL;
+            _hitCount = dwHitCount;
+            return VSConstants.S_OK;
         }
 
         public int SetCondition(BP_CONDITION bpCondition)
@@ -103,6 +135,7 @@ namespace PowerShellTools.DebugEngine
         public int Delete()
         {
             Log.Debug("ScriptBreakpoint: Delete");
+            _callback.BreakpointRemoved(this);
             return VSConstants.S_OK;
         }
 
