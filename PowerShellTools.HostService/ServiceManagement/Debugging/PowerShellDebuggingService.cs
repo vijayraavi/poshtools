@@ -736,7 +736,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     pipeline.Invoke();
                 }
             }
-            else if (_runspace.Debugger.IsActive)
+            else if (IsDebuggerActive(_runspace.Debugger))
             {
                 // IsActive denotes debugger being stopped and the presence of breakpoints
                 _debuggingCommand = "Get-PSBreakpoint";

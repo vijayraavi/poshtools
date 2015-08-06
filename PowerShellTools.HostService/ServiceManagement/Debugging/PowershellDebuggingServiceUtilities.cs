@@ -103,8 +103,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ServiceCommon.Log("DebuggerFinished");
 
-            ClearBreakpoints();
-            _psBreakpointTable.Clear();
+            try
+            {
+                ClearBreakpoints();
+            }
+            catch (Exception ex)
+            {
+                ServiceCommon.Log(string.Format("DebuggerFinished exception: {0}", ex.ToString()));
+            }
+            finally
+            {
+                _psBreakpointTable.Clear();
+            }
 
             if (_callback != null)
             {
@@ -133,6 +143,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 _callback.DebuggerFinished();
             }
+        }
+
+        private bool IsDebuggerActive(System.Management.Automation.Debugger debugger)
+        {
+            if (_installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+            {
+                return debugger.IsActive;
+            }
+
+            return false;
         }
 
         private void InitializeRunspace(PSHost psHost)
