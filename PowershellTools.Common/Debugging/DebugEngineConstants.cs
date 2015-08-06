@@ -164,12 +164,36 @@ param (
         /// </summary>
         public const string GetCredentialsCommand = "Get-Credential -Credential $null";
 
+        /// <summary>
+        /// File name that is shared by all PowerShell hosts for either of the all hosts profiles.
+        /// </summary>
+        public const string AllHostsProfileFileName = "Profile.ps1";
+
+        /// <summary>
+        /// File name for profiles specifically for PowerShell tools
+        /// </summary>
+        public const string PowerShellToolsProfileFileName = "PoshTools_profile.ps1";
+
+        /// <summary>
+        /// Names of the various PowerShell profiles, in the order that they should be loaded.
+        /// </summary>
         public static readonly string[] PowerShellProfiles =
         {
             "AllUsersAllHosts",
             "AllUsersCurrentHost",
             "CurrentUserAllHosts",
             "CurrentUserCurrentHost"
+        };
+
+        /// <summary>
+        /// File names that go with each of the profiles in PowerShellProfiles. This ordering is consistent with the ordering of PowerShellProfiles.
+        /// </summary>
+        public static readonly string[] PowerShellProfileFiles =
+        {
+            AllHostsProfileFileName,
+            PowerShellToolsProfileFileName,
+            AllHostsProfileFileName,
+            PowerShellToolsProfileFileName
         };
     }
 }

@@ -148,51 +148,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _runspace.Open();
 
             ProvideProfileVariable();
-            LoadProfiles();
             ServiceCommon.Log("Done initializing runspace");
-        }
-
-        private void LoadProfiles()
-        {
-            if (_callback == null && OperationContext.Current != null)
-            {
-                _callback = OperationContext.Current.GetCallbackChannel<IDebugEngineCallback>();
-            }
-
-            if (_callback == null || !_callback.ShouldLoadProfiles())
-            {
-                // if we can't reach the _callback on startup, let's not assume anything and just skip loading profiles
-                return;
-            }
-
-            ServiceCommon.Log("Loading PowerShell Profiles");
-            PSObject profiles = _runspace.SessionStateProxy.PSVariable.Get("profile").Value as PSObject;
-
-            foreach (string profileName in DebugEngineConstants.PowerShellProfiles)
-            {
-                PSMemberInfo profileMember = profiles.Members[profileName];
-                var profilePath = (string)profileMember.Value;
-                LoadProfile(profileName, profilePath);
-            }
-        }
-
-        private void LoadProfile(string profileName, string profilePath)
-        {
-            using (PowerShell ps = PowerShell.Create())
-            {
-                ps.Runspace = _runspace;
-                var profileFile = new FileInfo(profilePath);
-
-                if (!profileFile.Exists)
-                {
-                    return;
-                }
-
-                ServiceCommon.Log(string.Format("Profile file for {0} found at {1}.", profileName, profilePath));
-                ps.Commands.Clear();
-                ps.AddScript(string.Format(". '{0}'", profilePath));
-                ps.Invoke();
-            }
         }
 
         private void SetupExecutionPolicy()
@@ -291,13 +247,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     string psHome = (string)_runspace.SessionStateProxy.PSVariable.Get("PsHome").Value;
                     string windowsPowerShell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "WindowsPowerShell");
 
-                    PSObject profile = new PSObject(Path.Combine(windowsPowerShell, "PoshTools_profile.ps1"));
+                    PSObject profile = new PSObject(Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellToolsProfileFileName));
 
                     // 1. All Users, All Hosts, 2. All Users, Current Host, 3. Current User All Hosts, 4. Current User Current Host
-                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[0], Path.Combine(psHome, "Profile.ps1")));
-                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[1], Path.Combine(psHome, "PoshTools_profile.ps1")));
-                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[2], Path.Combine(windowsPowerShell, "Profile.ps1")));
-                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[3], Path.Combine(windowsPowerShell, "PoshTools_profile.ps1")));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[0], Path.Combine(psHome, DebugEngineConstants.PowerShellProfileFiles[0])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[1], Path.Combine(psHome, DebugEngineConstants.PowerShellProfileFiles[1])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[2], Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellProfileFiles[2])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[3], Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellProfileFiles[3])));
 
                     PSVariable profileVar = new PSVariable(ProfileVariableName, profile, ScopedItemOptions.Constant);
                     _runspace.SessionStateProxy.PSVariable.Set(profileVar);

@@ -264,15 +264,5 @@ namespace PowerShellTools.DebugEngine
 
             return width;
         }
-
-        /// <summary>
-        /// Retrieves the option from the dialog page on whether or not to load profiles when we start the host service.
-        /// </summary>
-        /// <returns></returns>
-        public bool ShouldLoadProfiles()
-        {
-            var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
-            return page.ShouldLoadProfiles;
-        }
     }
 }

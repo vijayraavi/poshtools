@@ -78,8 +78,5 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract(IsOneWay = false)]
         int GetREPLWindowWidth();
-
-        [OperationContract]
-        bool ShouldLoadProfiles();
     }
 }

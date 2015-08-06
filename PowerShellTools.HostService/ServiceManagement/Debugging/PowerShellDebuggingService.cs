@@ -1315,6 +1315,33 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
+        public void LoadProfiles()
+        {
+            ServiceCommon.Log("Loading PowerShell Profiles");
+            PSObject profiles = _runspace.SessionStateProxy.PSVariable.Get("profile").Value as PSObject;
+
+            string sourceProfilesCommand = string.Empty;
+
+            // if a file exists at each location of the profiles, add sourcing that profile to the command
+            foreach (string profileName in DebugEngineConstants.PowerShellProfiles)
+            {
+                PSMemberInfo profileMember = profiles.Members[profileName];
+                var profilePath = (string)profileMember.Value;
+                var profileFile = new FileInfo(profilePath);
+
+                if (profileFile.Exists)
+                {
+                    ServiceCommon.Log(string.Format("Profile file for {0} found at {1}.", profileName, profilePath));
+                    sourceProfilesCommand += string.Format(". '{0}';{1}", profilePath, Environment.NewLine);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(sourceProfilesCommand))
+            {
+                Execute(sourceProfilesCommand);
+            }
+        }
+
         #endregion
     }
 }
