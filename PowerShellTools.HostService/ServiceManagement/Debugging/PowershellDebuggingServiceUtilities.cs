@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using EnvDTE80;
 using Microsoft.PowerShell;
 using PowerShellTools.Common.Debugging;
-using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
@@ -102,7 +99,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void DebuggerFinished()
         {
             ServiceCommon.Log("DebuggerFinished");
-           
+
             ClearBreakpoints();
             _psBreakpointTable.Clear();
 
@@ -139,6 +136,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             if (_installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
             {
+                // IsActive denotes debugger being stopped and the presence of breakpoints
                 return debugger.IsActive;
             }
 
