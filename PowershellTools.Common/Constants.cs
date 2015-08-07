@@ -89,5 +89,25 @@ namespace PowerShellTools.Common
         /// Minimal width of REPL output buffer as 80 to keep consistent experience with another PowerShell custom host in VS: Nuget Manager Console
         /// </summary>
         public const int MinimalReplBufferWidth = 80;
+
+        /// <summary>
+        /// This is the GUID in string form for the PowerShell Tools remote debugging port supplier.
+        /// </summary>
+        public const string PortSupplierId = "{c9b338d2-7e0b-42a3-af51-7e33a7e349ba}";
+
+        /// <summary>
+        /// This is the GUID for the PowerShell Tools remote debugging port supplier.
+        /// </summary>
+        public static readonly Guid PortSupplierGuid = new Guid(PortSupplierId);
+
+        /// <summary>
+        /// This is the GUID in string form for the PowerShell Tools unsecured remote debugging port supplier.
+        /// </summary>
+        public const string UnsecuredPortSupplierId = "{44379988-7b12-4cfe-b02a-d56f751d597a}";
+
+        /// <summary>
+        /// This is the GUID for the PowerShell Tools unsecured remote debugging port supplier.
+        /// </summary>
+        public static readonly Guid UnsecuredPortSupplierGuid = new Guid(UnsecuredPortSupplierId);
     }
 }

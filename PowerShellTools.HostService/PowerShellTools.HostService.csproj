@@ -96,6 +96,7 @@
     <Reference Include="System.Management.Automation">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -126,6 +127,7 @@
     <Compile Include="ServiceManagement\Debugging\DteManager.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellBreakpointRecord.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingService.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceAttachValidator.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities40.cs" />

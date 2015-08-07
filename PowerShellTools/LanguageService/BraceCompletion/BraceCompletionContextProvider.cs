@@ -14,14 +14,14 @@
 //
 //*********************************************************//
 
-using System.ComponentModel.Composition;
-using System.Diagnostics;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.BraceCompletion;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
 using PowerShellTools.Intellisense;
+using System.ComponentModel.Composition;
+using System.Diagnostics;
 
 namespace PowerShellTools.LanguageService.BraceCompletion
 {
@@ -36,6 +36,9 @@ namespace PowerShellTools.LanguageService.BraceCompletion
     [BracePair(BraceKind.DoubleQuotes.Open, BraceKind.DoubleQuotes.Close)]
     internal sealed class BraceCompletionContextProvider : IBraceCompletionContextProvider
     {
+        [Import]
+        private IDependencyValidator _validator = null;
+
         [Import]
         private IEditorOperationsFactoryService EditOperationsFactory = null;
 
@@ -53,6 +56,12 @@ namespace PowerShellTools.LanguageService.BraceCompletion
         /// <returns></returns>
         public bool TryCreateContext(ITextView textView, SnapshotPoint openingPoint, char openingBrace, char closingBrace, out IBraceCompletionContext context)
         {
+            if (!_validator.Validate())
+            {
+                context = null;
+                return false;
+            }
+
             var editorOperations = this.EditOperationsFactory.GetEditorOperations(textView);
             var undoHistory = this.UndoHistoryRegistry.GetHistory(textView.TextBuffer);
             if (IsValidBraceCompletionContext(textView, openingPoint))

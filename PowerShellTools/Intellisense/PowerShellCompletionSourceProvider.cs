@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.Composition;
-using log4net;
+﻿using log4net;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
+using System.ComponentModel.Composition;
 
 namespace PowerShellTools.Intellisense
 {
@@ -15,6 +15,9 @@ namespace PowerShellTools.Intellisense
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellCompletionSourceProvider));
 
         [Import]
+        private IDependencyValidator _validator =  null;
+
+        [Import]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
 
         [Import]
@@ -22,6 +25,8 @@ namespace PowerShellTools.Intellisense
 
         public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
         {
+            if (!_validator.Validate()) return null;
+
             Log.Debug("TryCreateCompletionSource");
             return new PowerShellCompletionSource(GlyphService);
         }

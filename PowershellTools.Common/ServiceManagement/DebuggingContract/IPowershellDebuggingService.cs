@@ -7,6 +7,7 @@ using System.Management.Automation.Runspaces;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 {
@@ -21,7 +22,10 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract]
         void RemoveBreakpoint(PowerShellBreakpoint bp);
-
+        
+        [OperationContract]
+        void RemoveBreakpointById(int id);
+        
         [OperationContract]
         void ClearBreakpoints();
 
@@ -44,13 +48,25 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void SetRunspace(bool overrideExecutionPolicy);
 
         [OperationContract]
-        void AttachToRunspace(uint pid);
-
-        [OperationContract]
-        void DetachFromRunspace();
-
-        [OperationContract]
         bool IsAttachable(uint pid);
+
+        [OperationContract]
+        string AttachToRunspace(uint pid);
+
+        [OperationContract]
+        bool DetachFromRunspace();
+
+        [OperationContract]
+        List<KeyValuePair<uint, string>> EnumerateRemoteProcesses(string remoteMachine, ref string errorMessage, bool useSSL);
+
+        [OperationContract]
+        string AttachToRemoteRunspace(uint pid, string remoteName);
+
+        [OperationContract]
+        bool DetachFromRemoteRunspace();
+
+        [OperationContract]
+        DebugScenario CleanupAttach();
 
         [OperationContract]
         Collection<Variable> GetScopedVariable();
@@ -81,6 +97,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract]
         DebugScenario GetDebugScenario();
+
+        [OperationContract]
+        string GetTrueFileName(string file);
     }
 
 }

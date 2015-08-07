@@ -1,12 +1,10 @@
 ﻿using System.ComponentModel.Composition;
-using PowerShellTools.Repl;
-using PowerShellTools.DebugEngine;
 
 namespace PowerShellTools.Repl
 {
 #if POWERSHELL
-    using IReplEvaluatorProvider = IPowerShellReplEvaluatorProvider;
     using IReplEvaluator = IPowerShellReplEvaluator;
+    using IReplEvaluatorProvider = IPowerShellReplEvaluatorProvider;
 #endif
 
     [Export(typeof(IReplEvaluatorProvider))]
@@ -16,8 +14,8 @@ namespace PowerShellTools.Repl
         public PowerShellReplEvaluator psEval;
 
         [Import]
-        internal IDependencyValidator _validator;
-        
+        private IDependencyValidator _validator = null;
+
         public IReplEvaluator GetEvaluator(string replId)
         {
             if (!_validator.Validate()) return null;

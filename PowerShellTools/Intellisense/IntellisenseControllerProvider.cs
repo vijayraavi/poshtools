@@ -12,8 +12,6 @@
  *
  * ***************************************************************************/
 
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Shell;
@@ -22,12 +20,17 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.IncrementalSearch;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
 
 namespace PowerShellTools.Intellisense
 {
     [Export(typeof(IIntellisenseControllerProvider)), ContentType(PowerShellConstants.LanguageName), Order]
     internal class IntellisenseControllerProvider : IIntellisenseControllerProvider
     {
+        [Import]
+        private IDependencyValidator _validator =  null;
+
         [Import]
         public ICompletionBroker CompletionBroker = null; // Set via MEF
 
@@ -41,13 +44,15 @@ namespace PowerShellTools.Intellisense
         public IQuickInfoBroker QuickInfoBroker = null; // Set via MEF
 
         [Import]
-        public IIncrementalSearchFactoryService IncrementalSearch = null; // Set via MEF
+        public IIncrementalSearchFactoryService IncrementalSearch = null; // Set via MEF        
 
         [Import]
         public SVsServiceProvider ServiceProvider { get; set; }
 
         public IIntellisenseController TryCreateIntellisenseController(ITextView textView, IList<ITextBuffer> subjectBuffers)
         {
+            if (!_validator.Validate()) return null;
+
             IntellisenseController controller;
             if (!textView.Properties.TryGetProperty<IntellisenseController>(typeof(IntellisenseController), out controller))
             {

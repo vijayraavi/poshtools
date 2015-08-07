@@ -61,6 +61,15 @@ namespace PowerShellTools.HostService {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to {0}..
+        /// </summary>
+        public static string ConnectionError {
+            get {
+                return ResourceManager.GetString("ConnectionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows PowerShell credential request.
         /// </summary>
         public static string CredentialDialogCaption {
@@ -75,6 +84,24 @@ namespace PowerShellTools.HostService {
         public static string CredentialDialogMessage {
             get {
                 return ResourceManager.GetString("CredentialDialogMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to {0}. Retry?.
+        /// </summary>
+        public static string EnumRemoteConnectionError {
+            get {
+                return ResourceManager.GetString("EnumRemoteConnectionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to attach with current remote PowerShell version ({0}). Please ensure that PowerShell v5 or higher is installed..
+        /// </summary>
+        public static string EnumRemoteVersionError {
+            get {
+                return ResourceManager.GetString("EnumRemoteVersionError", resourceCulture);
             }
         }
         
@@ -106,17 +133,7 @@ namespace PowerShellTools.HostService {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error Attaching to Process.
-        /// </summary>
-        public static string ProcessAttachFailErrorTitle {
-            get {
-                return ResourceManager.GetString("ProcessAttachFailErrorTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to attach to specified process with PowerShell Tools.
-        ///PowerShell version 5.0 or above is required before PowerShell Tools may attach to a local or remote process..
+        ///   Looks up a localized string similar to Unable to attach with current PowerShell version ({0}). Please ensure that PowerShell v5 or higher is installed..
         /// </summary>
         public static string ProcessAttachVersionErrorBody {
             get {
@@ -125,11 +142,11 @@ namespace PowerShellTools.HostService {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid PowerShell Version.
+        ///   Looks up a localized string similar to Error while attempting to debug the specified process..
         /// </summary>
-        public static string ProcessAttachVersionErrorTitle {
+        public static string ProcessDebugError {
             get {
-                return ResourceManager.GetString("ProcessAttachVersionErrorTitle", resourceCulture);
+                return ResourceManager.GetString("ProcessDebugError", resourceCulture);
             }
         }
         

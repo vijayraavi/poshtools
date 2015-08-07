@@ -133,6 +133,7 @@
     <Reference Include="Microsoft.VisualStudio.Threading, Version=$(VSTarget).0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Windows.Design.Host">
       <HintPath>$(MSBuildProgramFiles32)\Microsoft Visual Studio $(VSTarget)\Common7\IDE\PrivateAssemblies\Microsoft.Windows.Design.Host.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -143,6 +144,7 @@
     <Reference Include="System.Management.Automation">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -232,12 +234,15 @@
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
     <Compile Include="Cmdlets\GetVisualStudioServiceCommand.cs" />
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
+    <Compile Include="Commands\ExecuteFromEditorContextMenuCommand.cs" />
+    <Compile Include="Commands\ExecuteFromSolutionExplorerContextMenuCommand.cs" />
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
     <Compile Include="Commands\ExecuteWithParametersAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteWithParametersAsScriptFromSolutionExplorerCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
+    <Compile Include="Commands\ScriptParameterResult.cs" />
     <Compile Include="Commands\UserInterface\Converters\ByteValueConverter.cs" />
     <Compile Include="Commands\UserInterface\ConfigurableBoolToVisibilityConveter.cs" />
     <Compile Include="Commands\UserInterface\DataTypeConstants.cs" />
@@ -275,6 +280,14 @@
       <DependentUpon>ReadHostPromptForChoicesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="DebugEngine\PromptUI\ReadHostPromptForChoicesViewModel.cs" />
+    <Compile Include="DebugEngine\Remote\IPowerShellToolsPortSupplier.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteDebugPort.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteDebugPortSupplier.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteEnumDebugProcess.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteEnumDebugPrograms.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteUnsecuredPortPicker.cs" />
+    <Compile Include="DebugEngine\Remote\RemotePortPicker.cs" />
+    <Compile Include="DebugEngine\Remote\RemoteUnsecuredDebugPortSupplier.cs" />
     <Compile Include="DebugServiceEventHandlerBehaviorAttribute.cs" />
     <Compile Include="DebugEngine\DebugServiceEventsHandlerProxy.cs" />
     <Compile Include="DebugEngine\Definitions\Com.cs" />
@@ -353,7 +366,6 @@
     <Compile Include="LanguageService\TextViewFilter.cs" />
     <Compile Include="LanguageService\EditFilter.cs" />
     <Compile Include="Guids.cs" />
-    <Compile Include="Classification\OutputPaneClassifier.cs" />
     <Compile Include="PackageProperties.cs" />
     <Compile Include="PowerShellConstants.cs" />
     <Compile Include="Classification\PowerShellEditorFactory.cs" />
@@ -534,6 +546,7 @@
     <Compile Include="Project\SharedProject\ProvideDebugEngineAttribute.cs" />
     <Compile Include="Project\SharedProject\ProvideDebugExceptionAttribute.cs" />
     <Compile Include="Project\SharedProject\ProvideDebugLanguageAttribute.cs" />
+    <Compile Include="Project\SharedProject\ProvideDebugPortPickerAttribute.cs" />
     <Compile Include="Project\SharedProject\ProvideDebugPortSupplierAttribute.cs" />
     <Compile Include="Project\SharedProject\PublishFailedException.cs" />
     <Compile Include="Project\SharedProject\PublishFile.cs" />
@@ -730,7 +743,7 @@
     </Content>
     <Content Include="PowerShellToolsProcessHost.exe.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
+      <IncludeInVSIX>false</IncludeInVSIX>
     </Content>
     <None Include="Project\SharedProject\SharedProject.proj" />
     <None Include="Templates\Files\Script.ps1" />
@@ -816,6 +829,8 @@
     <ProjectReference Include="..\PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj">
       <Project>{df4ab4f5-6b06-4aae-aee7-8cab296db5f9}</Project>
       <Name>PowerShellTools.TestAdapter</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\ReplWindow\PowerShellTools.Repl.csproj">
       <Project>{20bb6fac-44d2-4d76-abfe-0c1e163a1a4f}</Project>

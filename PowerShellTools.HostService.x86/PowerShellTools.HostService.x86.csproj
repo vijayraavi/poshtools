@@ -93,6 +93,7 @@
     <Reference Include="System.Management.Automation">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\PowerShell\System.Management.Automation.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -144,6 +145,9 @@
     </Compile>
     <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingService.cs">
       <Link>ServiceManagement\Debugging\PowerShellDebuggingService.cs</Link>
+    </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingServiceAttachValidator.cs">
+      <Link>ServiceManagement\Debugging\PowerShellDebuggingServiceAttachValidator.cs</Link>
     </Compile>
     <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs">
       <Link>ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs</Link>

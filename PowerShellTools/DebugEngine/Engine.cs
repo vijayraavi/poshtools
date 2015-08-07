@@ -106,7 +106,6 @@ namespace PowerShellTools.DebugEngine
             }
 
             Debugger.HostUi.OutputString = _events.OutputString;
-            Debugger.OutputString += Debugger_OutputString;
             Debugger.BreakpointManager.BreakpointHit += Debugger_BreakpointHit;
             Debugger.DebuggingBegin += Debugger_DebuggingBegin;
             Debugger.DebuggingFinished += Debugger_DebuggingFinished;
@@ -242,6 +241,14 @@ namespace PowerShellTools.DebugEngine
             if (_node == null)
             {
                 _node = rgpProgramNodes[0] as ScriptProgramNode;
+
+                // during remote attach, the program node is put in the programs array
+                if (_node == null)
+                {
+                    _node = rgpPrograms[0] as ScriptProgramNode;
+                    _node.IsRemoteProgram = true;
+                }
+
                 _node.IsAttachedProgram = dwReason == enum_ATTACH_REASON.ATTACH_REASON_USER;
             }
 

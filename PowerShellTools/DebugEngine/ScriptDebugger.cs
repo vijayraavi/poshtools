@@ -14,6 +14,7 @@ using DTE80 = EnvDTE80;
 using PowerShellTools.Common.Debugging;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -40,11 +41,6 @@ namespace PowerShellTools.DebugEngine
         /// Event is fired when a debugger is paused.
         /// </summary>
         public event EventHandler<EventArgs<ScriptLocation>> DebuggerPaused;
-
-        /// <summary>
-        /// Event is fired when a string is output from the PowerShell host.
-        /// </summary>
-        public event EventHandler<EventArgs<string>> OutputString;
 
         /// <summary>
         /// Event is fired when the debugger has finished.
@@ -401,7 +397,41 @@ namespace PowerShellTools.DebugEngine
 
             if (node.IsAttachedProgram)
             {
-                    DebuggingService.AttachToRunspace(node.Process.ProcessId);
+                string result = string.Empty;
+                if (!node.IsRemoteProgram)
+                {
+                    result = DebuggingService.AttachToRunspace(node.Process.ProcessId);
+                }
+                else
+                {
+                    result = DebuggingService.AttachToRemoteRunspace(node.Process.ProcessId, node.Process.HostName);
+                }
+
+                if (!string.IsNullOrEmpty(result))
+                {
+                    // if either of the attaches returns an error, let the user know
+                    MessageBox.Show(result, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    // see what state we are in post error, if not in a local state, we need to try and get there
+                    DebugScenario postCleanupScenario = DebuggingService.GetDebugScenario();
+
+                    // try as hard as we can to detach/cleanup the mess for the length of CleanupRetryTimeout
+                    TimeSpan retryTimeSpan = TimeSpan.FromMilliseconds(DebugEngineConstants.CleanupRetryTimeout);
+                    Stopwatch timeElapsed = Stopwatch.StartNew();
+                    while (timeElapsed.Elapsed < retryTimeSpan && postCleanupScenario != DebugScenario.Local)
+                    {
+                        postCleanupScenario = DebuggingService.CleanupAttach();
+                    }
+
+                    // if our efforts to cleanup the mess were unsuccessful, inform the user
+                    if (postCleanupScenario != DebugScenario.Local)
+                    {
+                        MessageBox.Show(Resources.CleanupErrorMessage, Resources.DetachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                    RefreshPrompt();
+                    DebuggerFinished();
+                }
             }
             else
             {
@@ -410,6 +440,7 @@ namespace PowerShellTools.DebugEngine
                 if (node.IsFile)
                 {
                     commandLine = String.Format(DebugEngineConstants.ExecutionCommandFormat, node.FileName, node.Arguments);
+                    HostUi.VsOutputString(string.Format("{0}{1}{2}", GetPrompt(), node.FileName, Environment.NewLine));
                 }
                 Execute(commandLine);
             }
@@ -464,7 +495,7 @@ namespace PowerShellTools.DebugEngine
             {
                 try
                 {
-                    if(!dte2.ItemOperations.IsFileOpen(fullName))
+                    if (!dte2.ItemOperations.IsFileOpen(fullName))
                     {
                         dte2.ItemOperations.OpenFile(fullName);
                     }

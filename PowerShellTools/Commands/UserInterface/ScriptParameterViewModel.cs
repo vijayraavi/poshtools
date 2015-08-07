@@ -18,6 +18,7 @@ namespace PowerShellTools.Commands.UserInterface
 
         private List<object> _allowedValues;
         private object _value;
+        private bool _isMandatory;
 
         public ScriptParameterViewModel(ScriptParameter parameterDefinition)
         {
@@ -78,6 +79,7 @@ namespace PowerShellTools.Commands.UserInterface
             }
 
             _value = parameterDefinition.DefaultValue;
+            _isMandatory = parameterDefinition.IsMandatory;
 
             Validate();
         }
@@ -151,7 +153,7 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 if (this.Value == null)
                 {
-                    return Resources.WatermarkNull;
+                    return Resources.WatermarkNotSet;
                 }
                 else
                 {
@@ -221,12 +223,15 @@ namespace PowerShellTools.Commands.UserInterface
 
             if (!IsValidType())
             {
-                error = Resources.Error_TypeMismatch_2args
-                    .FormatCurrentCulture(this.Name, this.ParameterDefinition.Type);
+                error = Resources.Error_TypeMismatch_2args.FormatCurrentCulture(this.Name, this.ParameterDefinition.Type);
             }
             else if (!IsAllowedValue())
             {
                 error = Resources.Error_DisallowedValue_1arg.FormatCurrentCulture(this.Name);
+            }
+            else if (_isMandatory && (this.Value == null || string.IsNullOrEmpty(this.Value.ToString())))
+            {
+                warning = Resources.Warning_MandatoryValueNotSet_1arg.FormatCurrentCulture(this.Name);
             }
 
             // Set the validation error to either an error or warning
@@ -289,7 +294,7 @@ namespace PowerShellTools.Commands.UserInterface
             {
                 case ParameterType.Boolean:
                 case ParameterType.Switch:
-                    return this.Value is bool;
+                    return this.Value is bool || this.Value is bool?;
 
                 case ParameterType.Enum:
                     return this.AllowedValues.Contains(this.Value);

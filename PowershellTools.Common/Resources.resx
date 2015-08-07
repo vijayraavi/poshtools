@@ -129,13 +129,16 @@
     <comment>PowerShell host process window title format</comment>
   </data>
   <data name="LocalAttachFileOpenError" xml:space="preserve">
-    <value>"Failed to open local file while attaching to local process."</value>
+    <value>Failed to open local file while attaching to local process.</value>
   </data>
   <data name="LocalFileOpenError" xml:space="preserve">
-    <value>"Failed to open local file."</value>
+    <value>Failed to open local file.</value>
+  </data>
+  <data name="RemoteAttachFileOpenError" xml:space="preserve">
+    <value>Failed to open remote file while attaching to a remote process.</value>
   </data>
   <data name="RemoteSessionFileOpenError" xml:space="preserve">
-    <value>"Failed to open remote file through powershell remote session."</value>
+    <value>Failed to open remote file through PowerShell remote session.</value>
   </data>
   <data name="ValidateExactlyOneSpecifiedFailed_2args" xml:space="preserve">
     <value>Exactly one of parameters '{0}' and '{1}' should be specified.</value>
