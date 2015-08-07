@@ -46,6 +46,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Version _installedPowerShellVersion;
         private PowerShellDebuggingServiceAttachValidator _validator;
         private bool _useSSL;
+        private int _thisPid;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -101,6 +102,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             _validator = new PowerShellDebuggingServiceAttachValidator(this);
             _forceStop = false;
+            _thisPid = Process.GetCurrentProcess().Id;
             InitializeRunspace(this);
         }
 
@@ -171,6 +173,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns>True if powershell.exe is a module of the process, false otherwise.</returns>
         public bool IsAttachable(uint pid)
         {
+            // do not let users attach to PowerShellTools
+            if (pid == _thisPid)
+            {
+                return false;
+            }
+
             // make sure we are in a local scenario and that an adequate version of PowerShell is installed
             if (GetDebugScenario() == DebugScenario.Local && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
             {
