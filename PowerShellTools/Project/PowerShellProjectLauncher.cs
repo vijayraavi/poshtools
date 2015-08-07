@@ -35,16 +35,21 @@ namespace PowerShellTools.Project
         public int LaunchProject(bool debug)
         {
             string script = String.Empty;
-            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2 != null)
+            string startupFile = _project.GetStartupFile();
+
+            if (startupFile != null)
             {
-                if (dte2.ActiveDocument != null)
+                script = startupFile;
+            }
+            else
+            {
+                var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+                if (dte2 != null)
                 {
-                    script = dte2.ActiveDocument.FullName;
-                }
-                else
-                {
-                    return VSConstants.E_INVALIDARG;
+                    if (dte2.ActiveDocument != null)
+                    {
+                        script = dte2.ActiveDocument.FullName;
+                    }
                 }
             }
 
