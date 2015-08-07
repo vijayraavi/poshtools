@@ -102,19 +102,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void DebuggerFinished()
         {
             ServiceCommon.Log("DebuggerFinished");
-
-            try
-            {
-                ClearBreakpoints();
-            }
-            catch (Exception ex)
-            {
-                ServiceCommon.Log(string.Format("DebuggerFinished exception: {0}", ex.ToString()));
-            }
-            finally
-            {
-                _psBreakpointTable.Clear();
-            }
+           
+            ClearBreakpoints();
+            _psBreakpointTable.Clear();
 
             if (_callback != null)
             {

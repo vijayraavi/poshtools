@@ -724,49 +724,56 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ServiceCommon.Log("Clearing all breakpoints");
 
-            if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
+            try
             {
-                IEnumerable<PSObject> breakpoints;
-
-                using (var pipeline = (_runspace.CreatePipeline()))
+                if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                 {
-                    var command = new Command("Get-PSBreakpoint");
-                    pipeline.Commands.Add(command);
-                    breakpoints = pipeline.Invoke();
-                }
+                    IEnumerable<PSObject> breakpoints;
 
-                if (!breakpoints.Any()) return;
-
-                using (var pipeline = (_runspace.CreatePipeline()))
-                {
-                    var command = new Command("Remove-PSBreakpoint");
-                    command.Parameters.Add("Breakpoint", breakpoints);
-                    pipeline.Commands.Add(command);
-
-                    pipeline.Invoke();
-                }
-            }
-            else if (IsDebuggerActive(_runspace.Debugger))
-            {
-                // IsActive denotes debugger being stopped and the presence of breakpoints
-                _debuggingCommand = "Get-PSBreakpoint";
-                PSDataCollection<PSObject> breakpoints = ExecuteDebuggingCommand();
-
-                foreach (PSObject pobj in breakpoints)
-                {
-                    if (pobj != null && pobj.BaseObject is LineBreakpoint)
+                    using (var pipeline = (_runspace.CreatePipeline()))
                     {
-                        LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
-                        if (bp != null)
+                        var command = new Command("Get-PSBreakpoint");
+                        pipeline.Commands.Add(command);
+                        breakpoints = pipeline.Invoke();
+                    }
+
+                    if (!breakpoints.Any()) return;
+
+                    using (var pipeline = (_runspace.CreatePipeline()))
+                    {
+                        var command = new Command("Remove-PSBreakpoint");
+                        command.Parameters.Add("Breakpoint", breakpoints);
+                        pipeline.Commands.Add(command);
+
+                        pipeline.Invoke();
+                    }
+                }
+                else if (IsDebuggerActive(_runspace.Debugger))
+                {
+                    // IsActive denotes debugger being stopped and the presence of breakpoints
+                    _debuggingCommand = "Get-PSBreakpoint";
+                    PSDataCollection<PSObject> breakpoints = ExecuteDebuggingCommand();
+
+                    foreach (PSObject pobj in breakpoints)
+                    {
+                        if (pobj != null && pobj.BaseObject is LineBreakpoint)
                         {
-                            ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, bp.Id));
+                            LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
+                            if (bp != null)
+                            {
+                                ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, bp.Id));
+                            }
                         }
                     }
                 }
+                else
+                {
+                    ServiceCommon.Log("Clearing all breakpoints failed due to busy runspace.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ServiceCommon.Log("Clearing all breakpoints failed due to busy runspace.");
+                ServiceCommon.Log(string.Format("ClearBreakpoints exception: {0}", ex.ToString()));
             }
         }
 
