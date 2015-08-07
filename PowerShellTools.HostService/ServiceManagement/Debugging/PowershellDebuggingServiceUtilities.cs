@@ -149,6 +149,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             if (_installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
             {
+                // IsActive denotes debugger being stopped and the presence of breakpoints
                 return debugger.IsActive;
             }
 

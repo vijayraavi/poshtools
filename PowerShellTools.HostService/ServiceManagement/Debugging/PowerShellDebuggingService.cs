@@ -748,21 +748,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             else if (IsDebuggerActive(_runspace.Debugger))
             {
-                // IsActive denotes debugger being stopped and the presence of breakpoints
-                _debuggingCommand = "Get-PSBreakpoint";
-                PSDataCollection<PSObject> breakpoints = ExecuteDebuggingCommand();
-
-                foreach (PSObject pobj in breakpoints)
+                foreach (PowerShellBreakpointRecord bp in _psBreakpointTable)
                 {
-                    if (pobj != null && pobj.BaseObject is LineBreakpoint)
-                    {
-                        LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
-                        if (bp != null)
-                        {
-                            ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, bp.Id));
-                        }
-                    }
+                    ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, bp.Id));
                 }
+
+                _psBreakpointTable.Clear();
             }
             else
             {
