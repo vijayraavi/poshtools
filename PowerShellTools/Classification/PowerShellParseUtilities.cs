@@ -43,103 +43,105 @@ namespace PowerShellTools.Classification
             IDictionary<string, IList<ScriptParameterViewModel>> parameterSetToParametersDict = new Dictionary<string, IList<ScriptParameterViewModel>>();
             IList<string> parameterSetNames = new List<string>();
 
-            // First, filter all parameter types not supported yet.
-            var parametersList = paramBlockAst.Parameters.
-                Where(p => !DataTypeConstants.UnsupportedDataTypes.Contains(p.StaticType.FullName)).
-                ToList();
-
-            foreach (var p in parametersList)
+            if (paramBlockAst != null)
             {
-                HashSet<object> allowedValues = new HashSet<object>();
-                bool isParameterSetDefined = false;
-                string parameterSetName = null;
-                bool isMandatory = false;
+                // First, filter all parameter types not supported yet.
+                var parametersList = paramBlockAst.Parameters.
+                    Where(p => !DataTypeConstants.UnsupportedDataTypes.Contains(p.StaticType.FullName)).
+                    ToList();
 
-                foreach (var a in p.Attributes)
+                foreach (var p in parametersList)
                 {
-                    // Find if there defines attribute ValidateSet
-                    if (a.TypeName.FullName.Equals(ValidateSetTypeName, StringComparison.OrdinalIgnoreCase))
+                    HashSet<object> allowedValues = new HashSet<object>();
+                    bool isParameterSetDefined = false;
+                    string parameterSetName = null;
+                    bool isMandatory = false;
+
+                    foreach (var a in p.Attributes)
                     {
-                        foreach (StringConstantExpressionAst pa in ((AttributeAst)a).PositionalArguments)
+                        // Find if there defines attribute ValidateSet
+                        if (a.TypeName.FullName.Equals(ValidateSetTypeName, StringComparison.OrdinalIgnoreCase))
                         {
-                            allowedValues.Add(pa.Value);
+                            foreach (StringConstantExpressionAst pa in ((AttributeAst)a).PositionalArguments)
+                            {
+                                allowedValues.Add(pa.Value);
+                            }
+                        }
+
+                        // Find if there defines attribute ParameterNameSet
+                        // Find if there defines attribute Mandatory
+                        if (a is AttributeAst)
+                        {
+                            foreach (var arg in ((AttributeAst)a).NamedArguments)
+                            {
+                                if (!isParameterSetDefined)
+                                {
+                                    isParameterSetDefined = arg.ArgumentName.Equals(ParameterSetArgumentName, StringComparison.OrdinalIgnoreCase);
+                                    if (isParameterSetDefined)
+                                    {
+                                        parameterSetName = ((StringConstantExpressionAst)arg.Argument).Value;
+                                    }
+                                }
+
+                                if (!isMandatory)
+                                {
+                                    bool isMandatoryDefined = arg.ArgumentName.Equals(MandatoryArgumentName, StringComparison.OrdinalIgnoreCase);
+                                    if (isMandatoryDefined)
+                                    {
+                                        isMandatory = ((VariableExpressionAst)arg.Argument).VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase);
+                                    }
+                                }
+                            }
                         }
                     }
 
-                    // Find if there defines attribute ParameterNameSet
-                    // Find if there defines attribute Mandatory
-                    if (a is AttributeAst)
+                    // Get parameter type
+                    string type = p.StaticType.FullName;
+                    if (type.EndsWith(DataTypeConstants.ArrayType, StringComparison.OrdinalIgnoreCase))
                     {
-                        foreach(var arg in ((AttributeAst)a).NamedArguments)
-                        {
-                            if (!isParameterSetDefined)
-                            {
-                                isParameterSetDefined = arg.ArgumentName.Equals(ParameterSetArgumentName, StringComparison.OrdinalIgnoreCase);
-                                if (isParameterSetDefined)
-                                {
-                                    parameterSetName = ((StringConstantExpressionAst)arg.Argument).Value;
-                                }
-                            }
+                        type = DataTypeConstants.ArrayType;
+                    }
 
-                            if (!isMandatory)
-                            {
-                                bool isMandatoryDefined = arg.ArgumentName.Equals(MandatoryArgumentName, StringComparison.OrdinalIgnoreCase);
-                                if (isMandatoryDefined)
-                                {
-                                    isMandatory = ((VariableExpressionAst)arg.Argument).VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase);
-                                }
-                            }
+                    // Get parameter name
+                    string name = p.Name.VariablePath.UserPath;
+
+                    // Get paramter default value, null it is if there is none specified 
+                    object defaultValue = null;
+                    if (p.DefaultValue != null)
+                    {
+                        if (p.DefaultValue is ConstantExpressionAst)
+                        {
+                            defaultValue = ((ConstantExpressionAst)p.DefaultValue).Value;
+                        }
+                        else if (p.DefaultValue is VariableExpressionAst)
+                        {
+                            defaultValue = ((VariableExpressionAst)p.DefaultValue).VariablePath.UserPath;
                         }
                     }
-                }
 
-                // Get parameter type
-                string type = p.StaticType.FullName;
-                if (type.EndsWith(DataTypeConstants.ArrayType, StringComparison.OrdinalIgnoreCase))
-                {
-                    type = DataTypeConstants.ArrayType;
-                }
-
-                // Get parameter name
-                string name = p.Name.VariablePath.UserPath;
-
-                // Get paramter default value, null it is if there is none specified 
-                object defaultValue = null;
-                if (p.DefaultValue != null)
-                {
-                    if (p.DefaultValue is ConstantExpressionAst)
+                    // Construct a ScriptParameterViewModel based on whether a parameter set is found
+                    ScriptParameterViewModel newViewModel = null;
+                    if (isParameterSetDefined && parameterSetName != null)
                     {
-                        defaultValue = ((ConstantExpressionAst)p.DefaultValue).Value;
-                    }
-                    else if (p.DefaultValue is VariableExpressionAst)
-                    {
-                        defaultValue = ((VariableExpressionAst)p.DefaultValue).VariablePath.UserPath;
-                    }
-                }
-
-                // Construct a ScriptParameterViewModel based on whether a parameter set is found
-                ScriptParameterViewModel newViewModel = null;
-                if (isParameterSetDefined && parameterSetName != null)
-                {
-                    newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues, parameterSetName, isMandatory));
-                    IList<ScriptParameterViewModel> existingSets;
-                    if (parameterSetToParametersDict.TryGetValue(parameterSetName, out existingSets))
-                    {
-                        existingSets.Add(newViewModel);
+                        newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues, parameterSetName, isMandatory));
+                        IList<ScriptParameterViewModel> existingSets;
+                        if (parameterSetToParametersDict.TryGetValue(parameterSetName, out existingSets))
+                        {
+                            existingSets.Add(newViewModel);
+                        }
+                        else
+                        {
+                            parameterSetNames.Add(parameterSetName);
+                            parameterSetToParametersDict.Add(parameterSetName, new List<ScriptParameterViewModel>() { newViewModel });
+                        }
                     }
                     else
                     {
-                        parameterSetNames.Add(parameterSetName);
-                        parameterSetToParametersDict.Add(parameterSetName, new List<ScriptParameterViewModel>() { newViewModel });
+                        newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues, isMandatory));
+                        scriptParameters.Add(newViewModel);
                     }
                 }
-                else
-                {
-                    newViewModel = new ScriptParameterViewModel(new ScriptParameter(name, type, defaultValue, allowedValues, isMandatory));
-                    scriptParameters.Add(newViewModel);
-                }
             }
-
             // Construct the actual model
             ParameterEditorModel model = new ParameterEditorModel(scriptParameters,
                                                                   GenerateCommonParameters(),

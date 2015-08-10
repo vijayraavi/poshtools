@@ -27,7 +27,7 @@ namespace PowerShellTools.Commands
         {
             get
             {
-                if (_parameterResult == null && HasParameters())
+                if (_parameterResult == null)
                 {
                     _parameterResult = ParameterEditorHelper.GetScriptParamters(_paramBlock);
                 }
