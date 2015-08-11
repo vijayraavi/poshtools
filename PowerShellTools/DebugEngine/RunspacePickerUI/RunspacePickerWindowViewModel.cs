@@ -7,28 +7,11 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.DebugEngine.RunspacePickerUI
 {
-    class RunspacePickerWindowViewModel : INotifyPropertyChanged
+    class RunspacePickerWindowViewModel
     {
-        private string _runspaceName;
-        private IList<string> _runspaces;
+        private IList<RunspaceInfo> _runspaces;
 
-        public string RunspaceName
-        {
-            get
-            {
-                return _runspaceName;
-            }
-            set
-            {
-                if (_runspaceName != value)
-                {
-                    _runspaceName = value;
-                    OnPropertyChanged("RunspaceName");
-                }
-            }
-        }
-
-        public IList<string> Runspaces
+        public IList<RunspaceInfo> Runspaces
         {
             get
             {
@@ -36,23 +19,34 @@ namespace PowerShellTools.DebugEngine.RunspacePickerUI
             }
         }
 
-        public RunspacePickerWindowViewModel(IList<string> runspaces)
+        public RunspacePickerWindowViewModel(IList<RunspaceInfo> runspaces)
         {
             _runspaces = runspaces;
         }
+    }
 
-        private void OnPropertyChanged(string propertyName)
+    /// <summary>
+    /// Wrapper class that contains all of the various runspace properties we want to display.
+    /// </summary>
+    class RunspaceInfo
+    {
+        public int Id { get; set; }
+
+        public string Name  { get; set; }
+
+        public string ComputerName { get; set; }
+
+        public string State { get; set; }
+
+        public string Availability { get; set; }
+
+        public RunspaceInfo(int id, string name, string computerName, string state, string availability)
         {
-            var evt = PropertyChanged;
-            if (evt != null)
-            {
-                evt(this, new PropertyChangedEventArgs(propertyName));
-            }
+            Id = id;
+            Name = name;
+            ComputerName = computerName;
+            State = state;
+            Availability = availability;
         }
-
-        /// <summary>
-        /// Raised when the value of a property changes.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

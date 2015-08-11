@@ -29,12 +29,12 @@ namespace PowerShellTools.DebugEngine.RunspacePickerUI
             }
 
             InitializeComponent();
-            DataContext = viewModel;
+            RunspacesListView.ItemsSource = viewModel.Runspaces;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = (RunspaceList.SelectedIndex != -1);
+            DialogResult = true;
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

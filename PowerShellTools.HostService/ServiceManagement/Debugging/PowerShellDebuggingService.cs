@@ -256,7 +256,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     _pausedEvent.Reset();
                     _forceStop = false;
 
-                    Collection<PSObject> runspaces = InvokeScript(_currentPowerShell, "Get-Runspace");
+                    Collection<PSObject> runspaces = InvokeScript(_currentPowerShell, DebugEngineConstants.GetRunspaces);
                     if (runspaces.Count() <= 2)
                     {
                         // default case, we know that the only valid runspace to debug is the 1st runspace

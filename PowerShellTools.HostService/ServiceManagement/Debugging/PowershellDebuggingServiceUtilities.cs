@@ -449,22 +449,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
-        /// Given a collection of PSObjects which are Runspaces, creates a dialog through the HostUi to prompt user to pick one.
+        /// Sends a collection of runspaces' info to the callback so it can present a dialog to the user
         /// </summary>
-        /// <param name="runspaces">Collection of Runspaces in PSObject format</param>
+        /// <param name="runspaces">Collection of info for various runspaces in PSObject format</param>
         /// <returns>Id of the selected runspace, -1 if user hit cancel</returns>
         private int PromptUserToPickRunspace(Collection<PSObject> runspaces)
         {
-            Dictionary<string, int> runspaceDict = new Dictionary<string, int>();
-            foreach (PSObject obj in runspaces)
-            {
-                string runspaceName = obj.Properties["Name"].Value.ToString();
-                int runspaceId = (int)obj.Properties["Id"].Value;
-                runspaceDict.Add(string.Format("{0} (Id {1})", runspaceName, runspaceId), runspaceId);
-            }
-            string choice = _callback.PromptUserToPickRunspace(runspaceDict.Keys.ToList());
-
-            return choice == null ? -1 : runspaceDict[choice];
+            return _callback.PromptUserToPickRunspace(runspaces);
         }
     }
 }
