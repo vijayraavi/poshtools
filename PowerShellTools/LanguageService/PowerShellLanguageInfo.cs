@@ -1,9 +1,12 @@
 ﻿using System;
 using System.ComponentModel.Design;
+using System.Management.Automation.Language;
 using System.Runtime.InteropServices;
+using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
 
@@ -21,12 +24,14 @@ namespace PowerShellTools.LanguageService
     {
         private readonly IServiceContainer _serviceContainer;
         private readonly IComponentModel _componentModel;
+        private readonly IVsEditorAdaptersFactoryService _editorAdaptersFactoryService;
         private PowerShellLanguagePreferences _langPrefs;
 
         public PowerShellLanguageInfo(IServiceContainer serviceContainer)
         {
             _serviceContainer = serviceContainer;
             _componentModel = serviceContainer.GetService(typeof(SComponentModel)) as IComponentModel;
+            _editorAdaptersFactoryService = _componentModel.GetService<IVsEditorAdaptersFactoryService>();
 
             IVsTextManager textMgr = (IVsTextManager)serviceContainer.GetService(typeof(SVsTextManager));
             if (textMgr != null)
@@ -149,26 +154,34 @@ namespace PowerShellTools.LanguageService
 
         public int ValidateBreakpointLocation(IVsTextBuffer pBuffer, int iLine, int iCol, TextSpan[] pCodeSpan)
         {
-            // per the docs, even if we don't indend to validate, we need to set the span info:
-            // http://msdn.microsoft.com/en-us/library/microsoft.visualstudio.textmanager.interop.ivslanguagedebuginfo.validatebreakpointlocation.aspx
-            // 
-            // Caution
-            // Even if you do not intend to support the ValidateBreakpointLocation method but your 
-            // language does support breakpoints, you must implement this method and return a span 
-            // that contains the specified line and column; otherwise, breakpoints cannot be set 
-            // anywhere except line 1. You can return E_NOTIMPL to indicate that you do not otherwise 
-            // support this method but the span must always be set. The example shows how this can be done.
+            var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            if (dte2.ActiveDocument == null || !LanguageUtilities.IsPowerShellExecutableScriptFile(dte2.ActiveDocument.FullName))
+            {
+                return VSConstants.S_FALSE;
+            }
 
-            // http://pytools.codeplex.com/workitem/787
-            // We were previously returning S_OK here indicating to VS that we have in fact validated
-            // the breakpoint.  Validating breakpoints actually interacts and effectively disables
-            // the "Highlight entire source line for breakpoints and current statement" option as instead
-            // VS highlights the validated region.  So we return E_NOTIMPL here to indicate that we have 
-            // not validated the breakpoint, and then VS will happily respect the option when we're in 
-            // design mode.
-            pCodeSpan[0].iStartLine = iLine;
-            pCodeSpan[0].iEndLine = iLine;
-            return VSConstants.E_NOTIMPL;
+            Ast script = BreakpointValidationHelper.GetScript(_editorAdaptersFactoryService, pBuffer);
+
+            // If there is no ast script found fall back to the default validation
+            if (script == null)
+            {
+                pCodeSpan[0].iStartLine = 0;
+                pCodeSpan[0].iStartIndex = 0;
+
+                return VSConstants.E_NOTIMPL;
+            }
+
+            TextSpan? span;
+            if (BreakpointValidationHelper.IsValidBreakpointPosition(script, iLine, out span))
+            {
+                pCodeSpan[0] = (TextSpan)span;
+
+                return VSConstants.S_OK;
+            }
+            else
+            {
+                return VSConstants.S_FALSE;
+            }
         }
 
         #endregion
