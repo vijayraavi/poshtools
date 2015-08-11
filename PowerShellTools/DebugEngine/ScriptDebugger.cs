@@ -440,6 +440,7 @@ namespace PowerShellTools.DebugEngine
                 if (node.IsFile)
                 {
                     commandLine = String.Format(DebugEngineConstants.ExecutionCommandFormat, node.FileName, node.Arguments);
+                    HostUi.VsOutputString(string.Format("{0}{1}{2}", GetPrompt(), node.FileName, Environment.NewLine));
                 }
                 Execute(commandLine);
             }

@@ -38,11 +38,7 @@ namespace Microsoft.VisualStudioTools.Project {
         [SRDescriptionAttribute(SR.StartupFileDescription)]
         public string StartupFile {
             get {
-                var res = Node.ProjectMgr.GetProjectProperty(CommonConstants.StartupFile, true);
-                if (!Path.IsPathRooted(res)) {
-                    res = CommonUtils.GetAbsoluteFilePath(Node.ProjectMgr.ProjectHome, res);
-            }
-                return res;
+                return Node.ProjectMgr.GetProjectProperty(CommonConstants.StartupFile, true);
             }
             set {
                 this.Node.ProjectMgr.SetProjectProperty(CommonConstants.StartupFile, value);

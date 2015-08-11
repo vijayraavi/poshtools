@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Remoting;
@@ -13,16 +11,10 @@ using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using EnvDTE80;
-using Microsoft.PowerShell;
 using PowerShellTools.Common;
 using PowerShellTools.Common.Debugging;
-using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
@@ -57,7 +49,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
-        private PowerShellRawHostOptions _rawHostOptions = new PowerShellRawHostOptions(); 
+        private PowerShellRawHostOptions _rawHostOptions = new PowerShellRawHostOptions();
 
         /// <summary>
         /// Minimal powershell version required for remote session debugging
@@ -92,8 +84,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="process"></param>
         /// <param name="wow64Process"></param>
         /// <returns></returns>
-        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]  
-        [return: MarshalAs(UnmanagedType.Bool)]  
+        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
 
         public PowerShellDebuggingService()
@@ -502,7 +494,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             DebugScenario scenario = GetDebugScenario();
             _forceStop = true;
-            try {
+            try
+            {
                 switch (scenario)
                 {
                     case DebugScenario.RemoteAttach:
@@ -660,6 +653,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         }
 
         /// <summary>
+        /// Alternative removal of breakpoint for current runspace, does so by executing a debugging command.
+        /// </summary>
+        /// <param name="id"></param>
+        public void RemoveBreakpointById(int id)
+        {
+            ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, id));
+            _psBreakpointTable.RemoveWhere(bp => bp.Id == id);
+        }
+
+        /// <summary>
         /// Enable/Disable breakpoint for the current runspace.
         /// </summary>
         /// <param name="bp">Breakpoint to set</param>
@@ -710,49 +713,47 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ServiceCommon.Log("Clearing all breakpoints");
 
-            if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
+            try
             {
-                IEnumerable<PSObject> breakpoints;
-
-                using (var pipeline = (_runspace.CreatePipeline()))
+                if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                 {
-                    var command = new Command("Get-PSBreakpoint");
-                    pipeline.Commands.Add(command);
-                    breakpoints = pipeline.Invoke();
-                }
+                    IEnumerable<PSObject> breakpoints;
 
-                if (!breakpoints.Any()) return;
-
-                using (var pipeline = (_runspace.CreatePipeline()))
-                {
-                    var command = new Command("Remove-PSBreakpoint");
-                    command.Parameters.Add("Breakpoint", breakpoints);
-                    pipeline.Commands.Add(command);
-
-                    pipeline.Invoke();
-                }
-            }
-            else if (_runspace.Debugger.IsActive)
-            {
-                // IsActive denotes debugger being stopped and the presence of breakpoints
-                _debuggingCommand = "Get-PSBreakpoint";
-                PSDataCollection<PSObject> breakpoints = ExecuteDebuggingCommand();
-
-                foreach (PSObject pobj in breakpoints)
-                {
-                    if (pobj != null && pobj.BaseObject is LineBreakpoint)
+                    using (var pipeline = (_runspace.CreatePipeline()))
                     {
-                        LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
-                        if (bp != null)
-                        {
-                            ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, bp.Id));
-                        }
+                        var command = new Command("Get-PSBreakpoint");
+                        pipeline.Commands.Add(command);
+                        breakpoints = pipeline.Invoke();
+                    }
+
+                    if (!breakpoints.Any()) return;
+
+                    using (var pipeline = (_runspace.CreatePipeline()))
+                    {
+                        var command = new Command("Remove-PSBreakpoint");
+                        command.Parameters.Add("Breakpoint", breakpoints);
+                        pipeline.Commands.Add(command);
+
+                        pipeline.Invoke();
                     }
                 }
+                else if (IsDebuggerActive(_runspace.Debugger))
+                {
+                    foreach (PowerShellBreakpointRecord bp in _psBreakpointTable)
+                    {
+                        ExecuteDebuggingCommandOutNull(string.Format(DebugEngineConstants.RemovePSBreakpoint, bp.Id));
+                    }
+
+                    _psBreakpointTable.Clear();
+                }
+                else
+                {
+                    ServiceCommon.Log("Clearing all breakpoints failed due to busy runspace.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ServiceCommon.Log("Clearing all breakpoints failed due to busy runspace.");
+                ServiceCommon.Log(string.Format("ClearBreakpoints exception: {0}", ex.ToString()));
             }
         }
 
@@ -1030,11 +1031,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                     expandedVariable.Add(
                         new Variable(
-                            String.Format("[{0}]", i), 
-                            obj.ToString(), 
-                            obj.GetType().ToString(), 
-                            obj is IEnumerable, 
-                            obj is PSObject, 
+                            String.Format("[{0}]", i),
+                            obj.ToString(),
+                            obj.GetType().ToString(),
+                            obj is IEnumerable,
+                            obj is PSObject,
                             obj is Enum));
 
                     if (!obj.GetType().IsPrimitive)
@@ -1076,11 +1077,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         {
                             expandedVariable.Add(
                                 new Variable(
-                                    propertyInfo.Name, 
-                                    val.ToString(), 
-                                    val.GetType().ToString(), 
-                                    val is IEnumerable, 
-                                    val is PSObject, 
+                                    propertyInfo.Name,
+                                    val.ToString(),
+                                    val.GetType().ToString(),
+                                    val is IEnumerable,
+                                    val is PSObject,
                                     val is Enum));
 
                             if (!val.GetType().IsPrimitive)
@@ -1139,11 +1140,11 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                     propsVariable.Add(
                         new Variable(
-                            prop.Name, 
-                            val.ToString(), 
-                            val.GetType().ToString(), 
-                            val is IEnumerable, 
-                            val is PSObject, 
+                            prop.Name,
+                            val.ToString(),
+                            val.GetType().ToString(),
+                            val is IEnumerable,
+                            val is PSObject,
                             val is Enum));
 
                     if (!val.GetType().IsPrimitive)
@@ -1196,7 +1197,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                             (string)psFrame.FunctionName.ToString(),
                             (int)psFrame.ScriptLineNumber));
                 }
-                else if(scenario == DebugScenario.RemoteAttach || scenario == DebugScenario.LocalAttach)
+                else if (scenario == DebugScenario.RemoteAttach || scenario == DebugScenario.LocalAttach)
                 {
                     // local and remote process attach debugging
                     string currentCall = psobj.ToString();

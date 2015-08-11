@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using EnvDTE80;
 using Microsoft.PowerShell;
 using PowerShellTools.Common.Debugging;
-using PowerShellTools.Common.IntelliSense;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System.Management.Automation.Remoting;
 
@@ -134,6 +131,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 _callback.DebuggerFinished();
             }
+        }
+
+        private bool IsDebuggerActive(System.Management.Automation.Debugger debugger)
+        {
+            if (_installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+            {
+                // IsActive denotes debugger being stopped and the presence of breakpoints
+                return debugger.IsActive;
+            }
+
+            return false;
         }
 
         private void InitializeRunspace(PSHost psHost)

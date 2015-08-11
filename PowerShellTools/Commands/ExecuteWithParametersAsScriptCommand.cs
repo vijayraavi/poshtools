@@ -11,7 +11,7 @@ namespace PowerShellTools.Commands
     /// </summary>
     internal sealed class ExecuteWithParametersAsScriptCommand : ExecuteFromEditorContextMenuCommand
     {
-        private string _scriptArgs;
+        private ScriptParameterResult _parameterResult;
         private IVsTextManager _textManager;
         private IVsEditorAdaptersFactoryService _adaptersFactory;
         private ParamBlockAst _paramBlock;
@@ -23,15 +23,16 @@ namespace PowerShellTools.Commands
             _textManager = textManager;
         }
 
-        protected override string ScriptArgs
+        protected override ScriptParameterResult ScriptArgs
         {
             get
             {
-                if (_scriptArgs == null)
+                if (_parameterResult == null)
                 {
-                    _scriptArgs = ParameterEditorHelper.GetScriptParamters(_paramBlock);
+                    _parameterResult = ParameterEditorHelper.GetScriptParamters(_paramBlock);
                 }
-                return _scriptArgs;
+
+                return _parameterResult;
             }
         }
 
@@ -47,7 +48,7 @@ namespace PowerShellTools.Commands
 
         private bool HasParameters()
         {
-            _scriptArgs = null;
+            _parameterResult = null;
             return ParameterEditorHelper.HasParameters(_adaptersFactory, _textManager, out _paramBlock);
         }
     }
