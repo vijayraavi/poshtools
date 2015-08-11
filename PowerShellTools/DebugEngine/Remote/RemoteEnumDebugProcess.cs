@@ -55,6 +55,11 @@ namespace PowerShellTools.DebugEngine.Remote
                     MessageBox.Show(Resources.AttachExistingAttachError, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            else if (isLocalHost())
+            {
+                // do not let users to use remote debugging with "localhost" or "127.0.0.1"
+                MessageBox.Show(Resources.LocalHostNotAllowed, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             else
             {
                 // host needs to be initialized before we can connect/enumerate
@@ -74,6 +79,7 @@ namespace PowerShellTools.DebugEngine.Remote
 
                     if (information != null)
                     {
+                        // information now contains list of processes
                         break;
                     }
                     else if (string.IsNullOrEmpty(errorMessage))
@@ -83,6 +89,7 @@ namespace PowerShellTools.DebugEngine.Remote
                     }
                     else
                     {
+                        // error message was returned
                         DialogResult dlgRes = MessageBox.Show(errorMessage, null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                         if (dlgRes != DialogResult.Retry)
                         {
@@ -96,6 +103,12 @@ namespace PowerShellTools.DebugEngine.Remote
                     _runningProcesses.Add(new ScriptDebugProcess(remotePort, info.Key, info.Value, _remoteComputer));
                 }
             }
+        }
+
+        private bool isLocalHost()
+        {
+            string trueName = _remoteComputer.Split(':')[0];
+            return trueName.Equals("localhost") || trueName.Equals("127.0.0.1");
         }
 
         public int Clone(out IEnumDebugProcesses2 ppEnum)

@@ -466,6 +466,15 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot connect to the localhost with remote debugging. Use the default transport to attach to local processes..
+        /// </summary>
+        public static string LocalHostNotAllowed {
+            get {
+                return ResourceManager.GetString("LocalHostNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The file name of the manifest..
         /// </summary>
         public static string ManifestFileName_Description {

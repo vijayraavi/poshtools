@@ -426,4 +426,7 @@ Would you like to download now?</value>
   <data name="Warning_MandatoryValueNotSet_1arg" xml:space="preserve">
     <value>Parameter '{0}' is Mandatory.</value>
   </data>
+  <data name="LocalHostNotAllowed" xml:space="preserve">
+    <value>Cannot connect to the localhost with remote debugging. Use the default transport to attach to local processes.</value>
+  </data>
 </root>

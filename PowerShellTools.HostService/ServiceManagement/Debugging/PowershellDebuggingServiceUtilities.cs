@@ -403,7 +403,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return;
             }
 
-            string port = remoteName.Split(':').ElementAtOrDefault(1);
+            string[] addressParts = remoteName.Split(':');
+            string port = addressParts.ElementAtOrDefault(1);
+            remoteName = addressParts[0];
 
             PSCommand enterSession = new PSCommand();
             enterSession.AddCommand("Enter-PSSession").AddParameter("ComputerName", remoteName).AddParameter("Credential", _savedCredential);

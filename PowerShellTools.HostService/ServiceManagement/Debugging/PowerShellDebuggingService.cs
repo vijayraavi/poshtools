@@ -46,6 +46,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private Version _installedPowerShellVersion;
         private PowerShellDebuggingServiceAttachValidator _validator;
         private bool _useSSL;
+        private int _thisPid;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -78,16 +79,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         private PSCredential _savedCredential;
 
-        /// <summary>
-        /// Used to check bitness of processes
-        /// </summary>
-        /// <param name="process"></param>
-        /// <param name="wow64Process"></param>
-        /// <returns></returns>
-        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
-
         public PowerShellDebuggingService()
         {
             ServiceCommon.Log("Initializing debugging engine service ...");
@@ -101,6 +92,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             _validator = new PowerShellDebuggingServiceAttachValidator(this);
             _forceStop = false;
+            _thisPid = Process.GetCurrentProcess().Id;
             InitializeRunspace(this);
         }
 
@@ -171,6 +163,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns>True if powershell.exe is a module of the process, false otherwise.</returns>
         public bool IsAttachable(uint pid)
         {
+            // do not let users attach to PowerShell Tools directly
+            if (pid == _thisPid)
+            {
+                return false;
+            }
+
             // make sure we are in a local scenario and that an adequate version of PowerShell is installed
             if (GetDebugScenario() == DebugScenario.Local && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
             {
@@ -180,27 +178,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     if (InvokeScript(_currentPowerShell, string.Format("Get-PSHostProcessInfo -Id {0}", pid)).Any())
                     {
                         var process = Process.GetProcessById((int)pid);
-                        ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}", process.ProcessName, process.Id));
-                        bool is64Bit = false;
-
-                        try
+                        if (process != null)
                         {
-                            if (process != null)
-                            {
-                                IsWow64Process(process.Handle, out is64Bit);
-                                if (!Environment.Is64BitProcess && is64Bit)
-                                {
-                                    // cannot examine a 64 bit process' modules from a 32 bit process
-                                    return false;
-                                }
-                                return true;
-                            }
-                        }
-                        catch (Win32Exception ex)
-                        {
-                            // if a process being run as admin IsWow64Process may throw an exception
-                            ServiceCommon.Log(string.Format("Win32Exception while examining process: {1}; id: {1}; ex {2}", process.ProcessName, process.Id, ex.ToString()));
-                            return false;
+                            ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}", process.ProcessName, process.Id));
+                            return true;
                         }
                     }
                 }
