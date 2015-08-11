@@ -32,7 +32,10 @@ namespace PowerShellTools.Commands
 
         protected override int Id
         {
-            get { return (int)GuidList.CmdidExecuteWithParametersAsScript; }
+            get 
+            { 
+                return (int)GuidList.CmdidExecuteWithParametersAsScript; 
+            }
         }
 
         public override void Execute(object sender, EventArgs args)

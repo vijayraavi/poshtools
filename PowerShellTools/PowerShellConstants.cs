@@ -28,5 +28,25 @@ namespace PowerShellTools
                    fileName.EndsWith(PowerShellConstants.PSD1File, StringComparison.OrdinalIgnoreCase) ||
                    fileName.EndsWith(PowerShellConstants.PSM1File, StringComparison.OrdinalIgnoreCase);
         }
+
+        public static bool IsPowerShellExecutableScriptFile(string fileName)
+        {
+            return LanguageUtilities.IsPowerShellScriptFile(fileName);
+        }
+
+        public static bool IsPowerShellScriptFile(string fileName)
+        {
+            return fileName.EndsWith(PowerShellConstants.PS1File, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsPowerShellModuleFile(string fileName)
+        {
+            return fileName.EndsWith(PowerShellConstants.PSM1File, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsPowerShellDataFile(string fileName)
+        {
+            return fileName.EndsWith(PowerShellConstants.PSD1File, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

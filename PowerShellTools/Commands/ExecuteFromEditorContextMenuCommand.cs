@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using EnvDTE;
 using EnvDTE80;
 
 namespace PowerShellTools.Commands
@@ -18,15 +19,56 @@ namespace PowerShellTools.Commands
             get { return (int)GuidList.CmdidExecuteAsScript; }
         }
 
-        protected override string GetTargetFile(DTE2 dte2)
+        protected override string GetTargetFile(DTE2 dte)
         {
-            Debug.Assert(dte2.ActiveDocument != null, "Active document should always be non-null when executing script from editor.");
-            return dte2.ActiveDocument.FullName;
+            var selectedItem = GetSelectedItem(dte);
+
+            if (selectedItem != null && selectedItem.ProjectItem != null)
+                return GetPathOfProjectItem(selectedItem.ProjectItem);
+
+            return null;
         }
 
-        protected override bool ShouldShowCommand(DTE2 dte2)
+        protected override bool ShouldShowCommand(DTE2 dte)
         {
-            return dte2 != null && dte2.ActiveDocument != null && dte2.ActiveDocument.Language == PowerShellConstants.LanguageName;
+            var selectedItem = GetSelectedItem(dte);
+            return selectedItem != null &&
+                   selectedItem.ProjectItem != null &&
+                   LanguageUtilities.IsPowerShellExecutableScriptFile(selectedItem.ProjectItem.Name);
+        }
+
+        protected static SelectedItem GetSelectedItem(DTE2 applicationObject)
+        {
+            if (applicationObject.Solution == null)
+                return null;
+            if (applicationObject.SelectedItems.Count == 1)
+                return applicationObject.SelectedItems.Item(1);
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the path of the project item.  Can return null if path is not found/applicable.
+        /// </summary>
+        /// <param name="projItem">The project Item</param>
+        /// <returns>A string representing the path of the project item.  returns null if path is not found.</returns>
+        private static string GetPathOfProjectItem(ProjectItem projItem)
+        {
+            Debug.Assert(projItem != null, "projItem shouldn't be null");
+
+            Properties projProperties = projItem.Properties;
+
+            try
+            {
+                string path = projProperties.Item("FullPath").Value as string;    //Item throws if not found.
+
+                Debug.Assert(path != null, "Path isn't a string");
+
+                return path;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
