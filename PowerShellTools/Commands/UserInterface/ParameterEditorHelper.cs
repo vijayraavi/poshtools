@@ -13,7 +13,7 @@ namespace PowerShellTools.Commands.UserInterface
     /// </summary>
     internal static class ParameterEditorHelper
     {
-        public static ScriptParameterResult GetScriptParamters(ParamBlockAst paramBlock)
+        public static ScriptParameterResult PromptForScriptParameterValues(ParamBlockAst paramBlock)
         {
             string scriptArgs;
             if (ShowParameterEditor(paramBlock, out scriptArgs) == true)
@@ -114,10 +114,10 @@ namespace PowerShellTools.Commands.UserInterface
             return scriptArgs;
         }
 
-        public static bool HasParameters(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextManager textManager, out ParamBlockAst paramBlock)
+        public static ParamBlockAst GetScriptParameters(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextManager textManager)
         {
             IVsTextView vsTextView;
-            paramBlock = null;
+            ParamBlockAst paramBlock = null;
 
             //Returns the active or previously active view.
             //
@@ -139,7 +139,7 @@ namespace PowerShellTools.Commands.UserInterface
             textManager.GetActiveView(1, null, out vsTextView);
             if (vsTextView == null)
             {
-                return false;
+                return null;
             }
 
             IVsTextLines textLines;
@@ -148,10 +148,11 @@ namespace PowerShellTools.Commands.UserInterface
             Ast scriptAst;
             if (!textBuffer.Properties.TryGetProperty<Ast>(BufferProperties.Ast, out scriptAst))
             {
-                return false;
+                return null;
             }
 
-            return PowerShellParseUtilities.HasParamBlock(scriptAst, out paramBlock);
+            PowerShellParseUtilities.HasParamBlock(scriptAst, out paramBlock);
+            return paramBlock;
         }
 
         private static string WrapParameterName(string name)
