@@ -160,22 +160,11 @@ namespace PowerShellTools.LanguageService
                 return VSConstants.S_FALSE;
             }
 
-            Ast script = BreakpointValidationHelper.GetScript(_editorAdaptersFactoryService, pBuffer);
+            BreakpointPosition position = BreakpointValidationHelper.GetBreakpointPosition(_editorAdaptersFactoryService, pBuffer, iLine);
 
-            // If there is no ast script found fall back to the default validation
-            if (script == null)
+            if(position.IsValid)
             {
-                pCodeSpan[0].iStartLine = 0;
-                pCodeSpan[0].iStartIndex = 0;
-
-                return VSConstants.E_NOTIMPL;
-            }
-
-            TextSpan? span;
-            if (BreakpointValidationHelper.IsValidBreakpointPosition(script, iLine, out span))
-            {
-                pCodeSpan[0] = (TextSpan)span;
-
+                pCodeSpan[0] = position.GetBreakpointSpan();
                 return VSConstants.S_OK;
             }
             else

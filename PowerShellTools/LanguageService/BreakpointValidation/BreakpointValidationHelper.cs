@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Text;
@@ -11,17 +10,23 @@ namespace PowerShellTools.LanguageService
 {
     internal static class BreakpointValidationHelper
     {
-        // Types excluded from breakpoint validation
-        private static List<Type> InvalidBreakpointTypes = new List<Type>()
+        public static BreakpointPosition GetBreakpointPosition(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextBuffer buffer, int lineIndex)
         {
-            typeof(NamedBlockAst),
-            typeof(ParamBlockAst),
-            typeof(ScriptBlockAst)
-        };
+            var script = GetScript(adaptersFactory, buffer);
+            var astLineIndex = lineIndex + 1;
+            var node = GetNodeAtLinePosition(script, astLineIndex);
 
-        public static Ast GetScript(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextBuffer pBuffer)
+            if (node == null)
+            {
+                return BreakpointPosition.InvalidBreakpointPosition;
+            }
+
+            return GetBreakpointPosition(node);
+        }
+
+        internal static Ast GetScript(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextBuffer buffer)
         {
-            ITextBuffer textBuffer = adaptersFactory.GetDataBuffer(pBuffer);
+            ITextBuffer textBuffer = adaptersFactory.GetDataBuffer(buffer);
             Ast scriptAst;
 
             if (!textBuffer.Properties.TryGetProperty<Ast>(BufferProperties.Ast, out scriptAst))
@@ -32,48 +37,155 @@ namespace PowerShellTools.LanguageService
             return scriptAst;
         }
 
-        public static bool IsValidBreakpointPosition(Ast ast, int lineIndex, out TextSpan? textSpan)
+        internal static Ast GetNodeAtLinePosition(Ast script, int lineIndex)
         {
-            Debug.WriteLine("Breakpoint: validate breakpoint line: {0}", lineIndex);
+            // There might be multiple nodes on a single line
+            // so first find them all
+            var lineNodes = (IEnumerable<Ast>)script.FindAll(x => x.Extent != null && x.Extent.StartLineNumber == lineIndex, true);
 
-            textSpan = null;
-
-            if (ast == null)
-            {
-                return false;
-            }
-
-            // Adjust line index as Ast is 1 based and the value from ValidateBreakpointLocation is 0 based
-            lineIndex = lineIndex + 1;
-
-            // Ast.Find doesn't return any empty line or comments so no need to filter them out
-            var command = (Ast)ast.Find(x => !InvalidBreakpointTypes.Contains(x.GetType()) &&
-                x.Extent.StartLineNumber == lineIndex, true);
-
-            textSpan = MapAstPositionToTextSpan(command);
-
-            return textSpan != null;
+            // And then find the first valid position to set the breakpoint on
+            return lineNodes.FirstOrDefault(x => GetBreakpointPosition(x).IsValid);
         }
 
-        private static TextSpan? MapAstPositionToTextSpan(Ast ast)
+        internal static BreakpointPosition GetBreakpointPosition(Ast node)
         {
-            if (ast == null)
+            switch(node.GetType().Name)
             {
-                return null;
+                case AstDataTypeConstants.ArrayExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.ArrayLiteral:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.AssignmentStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Line);
+                case AstDataTypeConstants.Attribute:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.AttributeBase:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.AttributeExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.BinaryExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.BlockStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.BreakStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Line);
+                case AstDataTypeConstants.CatchClause:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Block);
+                case AstDataTypeConstants.Command:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.CommandBase:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.CommandElement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.CommandExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.CommandParameter:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.ConstantExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Line);
+                case AstDataTypeConstants.ContinueStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Line);
+                case AstDataTypeConstants.ConvertExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.DataStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.DoUntilStatement:
+                    return GetBreakpointPosition(((DoUntilStatementAst)node).Condition);
+                case AstDataTypeConstants.DoWhileStatement:
+                    return GetBreakpointPosition(((DoWhileStatementAst)node).Condition);
+                case AstDataTypeConstants.ErrorExpression:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.ErrorStatement:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.ExitStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.ExpandableStringExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.Expression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.FileRedirection:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.ForEachStatement:
+                    return GetBreakpointPosition(((ForEachStatementAst)node).Condition);
+                case AstDataTypeConstants.ForStatement:
+                    return GetBreakpointPosition(((ForStatementAst)node).Initializer);
+                case AstDataTypeConstants.FunctionDefinition:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.FunctionMember:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.HashTable:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Block);
+                case AstDataTypeConstants.IfStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.IndexExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.InvokeMemberExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.LabelStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.LoopStatement:
+                    return GetBreakpointPosition(((LoopStatementAst)node).Condition);
+                case AstDataTypeConstants.MemberExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.MergingRedirection:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.NamedAttributeArgument:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.NamedBlock:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.ParamBlock:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.Parameter:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.ParenExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.Pipeline:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Block);
+                case AstDataTypeConstants.PipelineBase:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Line);
+                case AstDataTypeConstants.Redirection:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.ReturnStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Line);
+                case AstDataTypeConstants.ScriptBlock:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.ScriptBlockExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Block);
+                case AstDataTypeConstants.Statement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Block);
+                case AstDataTypeConstants.StatementBlock:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Block);
+                case AstDataTypeConstants.StringConstantExpression:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.SubExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.SwitchStatement:
+                    return GetBreakpointPosition(((SwitchStatementAst)node).Condition);
+                case AstDataTypeConstants.ThrowStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Line);
+                case AstDataTypeConstants.TrapStatement:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
+                case AstDataTypeConstants.TryStatement:
+                    return GetBreakpointPosition(((TryStatementAst)node).CatchClauses[0]);
+                case AstDataTypeConstants.TypeConstraint:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.TypeExpression:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.UnaryExpression:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Block);
+                case AstDataTypeConstants.UsingExpression:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.VariableExpression:
+                    return BreakpointPosition.InvalidBreakpointPosition;
+                case AstDataTypeConstants.WhileStatement:
+                    return GetBreakpointPosition(((WhileStatementAst)node).Condition);
+
+                // A Ast node will never be a empty line or a comment
+                // so we can safely return a default valid breakpoint position
+                // and default it to the margin of the code window
+                default:
+                    return new BreakpointPosition(node, true, BreakpointDisplayStyle.Margin);
             }
-
-            var span = new TextSpan();
-
-            // Adjust line/column indexes as Ast is 1 based and the value from ValidateBreakpointLocation is 0 based
-            span.iStartLine = ast.Extent.StartLineNumber - 1;
-            span.iEndLine = ast.Extent.EndLineNumber - 1;
-            span.iStartIndex = ast.Extent.StartColumnNumber - 1;
-            span.iEndIndex = ast.Extent.EndColumnNumber - 1;
-
-            Debug.WriteLine("Breakpoint: set on type: {0}, Position -> sline: {1}, sindex: {2}, eline: {3}, eindex: {4}",
-                ast.GetType().ToString(), span.iStartLine, span.iStartIndex, span.iEndLine, span.iEndIndex);
-
-            return span;
         }
     }
 }

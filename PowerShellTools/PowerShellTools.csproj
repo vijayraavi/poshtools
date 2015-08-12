@@ -329,6 +329,9 @@
     <Compile Include="LanguageService\BraceCompletion\BraceCompletionContext.cs" />
     <Compile Include="LanguageService\BraceCompletion\BraceCompletionContextProvider.cs" />
     <Compile Include="LanguageService\BraceCompletion\BraceKind.cs" />
+    <Compile Include="LanguageService\BreakpointValidation\AstDataTypeConstants.cs" />
+    <Compile Include="LanguageService\BreakpointValidation\BreakpointDisplayStyle.cs" />
+    <Compile Include="LanguageService\BreakpointValidation\BreakpointPosition.cs" />
     <Compile Include="LanguageService\BreakpointValidation\BreakpointValidationHelper.cs" />
     <Compile Include="Options\BitnessEventArgs.cs" />
     <Compile Include="Options\BitnessOption.cs" />
