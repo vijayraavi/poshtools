@@ -62,7 +62,7 @@ namespace PowerShellTools.Commands
 
             Utilities.SaveDirtyFiles();
 
-            launcher.LaunchFile(file, true, ScriptArgs != null && ScriptArgs.ShouldExecute ? ScriptArgs.ScriptArgs : null);
+            launcher.LaunchFile(file, true, ScriptArgs != null ? ScriptArgs.ScriptArgs : null);
         }
 
         public void QueryStatus(object sender, EventArgs args)
