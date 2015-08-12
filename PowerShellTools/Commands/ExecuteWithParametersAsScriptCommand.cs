@@ -43,7 +43,10 @@ namespace PowerShellTools.Commands
             ParamBlockAst scriptParameters = ParameterEditorHelper.GetScriptParameters(_adaptersFactory, _textManager);
             ScriptArgs = ParameterEditorHelper.PromptForScriptParameterValues(scriptParameters);
 
-            base.Execute(sender, args);
+            if (ScriptArgs.ShouldExecute)
+            {
+                base.Execute(sender, args);
+            }
         }
     }
 }
