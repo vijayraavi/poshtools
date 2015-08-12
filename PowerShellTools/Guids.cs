@@ -29,14 +29,14 @@ namespace PowerShellTools
 
         //Commands
         public const string CmdSetGuid = "099073C0-B561-4BC1-A847-92657B89A00E";
-        public const uint CmdidExecuteAsScript =  0x0102;
-        public const uint CmdidExecuteSelection = 0x0103;
-        public const uint CmdidGotoDefinition = 0x0104;
-        public const uint CmdidSnippet = 0x0105;
-        public const uint CmdidPrettyPrint = 0x0106;
-        public const uint CmdidDisplayRepl = 0x0107;
-        public const uint CmdidExecuteAsScriptSolution = 0x0108;
-        public const uint CmdidExecuteWithParametersAsScript = 0x0109;
+        public const uint CmdidExecuteSelection = 0x0102;
+        public const uint CmdidExecuteAsScript =  0x0103;
+        public const uint CmdidExecuteWithParametersAsScript = 0x0104;
+        public const uint CmdidGotoDefinition = 0x0105;
+        public const uint CmdidSnippet = 0x0106;
+        public const uint CmdidPrettyPrint = 0x0107;
+        public const uint CmdidDisplayRepl = 0x0108;
+        public const uint CmdidExecuteAsScriptSolution = 0x0109;
         public const uint CmdidExecuteWithParametersAsScriptFromSolutionExplorer = 0x0110;
 
         public const string guidCustomEditorCmdSetString = "73d661d7-c0a7-476c-ad5e-3b36f1e91a8f";

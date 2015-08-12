@@ -1,4 +1,5 @@
-﻿using System.Management.Automation.Language;
+﻿using System;
+using System.Management.Automation.Language;
 using EnvDTE80;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
@@ -11,10 +12,8 @@ namespace PowerShellTools.Commands
     /// </summary>
     internal sealed class ExecuteWithParametersAsScriptCommand : ExecuteFromEditorContextMenuCommand
     {
-        private ScriptParameterResult _parameterResult;
         private IVsTextManager _textManager;
         private IVsEditorAdaptersFactoryService _adaptersFactory;
-        private ParamBlockAst _paramBlock;
 
         internal ExecuteWithParametersAsScriptCommand(IVsEditorAdaptersFactoryService adaptersFactory, IVsTextManager textManager, IDependencyValidator validator)
             : base(validator)
@@ -23,33 +22,31 @@ namespace PowerShellTools.Commands
             _textManager = textManager;
         }
 
-        protected override ScriptParameterResult ScriptArgs
+        protected override bool ShouldExecuteWithScriptArgs
         {
             get
             {
-                if (_parameterResult == null && HasParameters())
-                {
-                    _parameterResult = ParameterEditorHelper.GetScriptParamters(_paramBlock);
-                }
-
-                return _parameterResult;
+                return true;
             }
         }
 
         protected override int Id
         {
-            get { return (int)GuidList.CmdidExecuteWithParametersAsScript; }
+            get 
+            { 
+                return (int)GuidList.CmdidExecuteWithParametersAsScript; 
+            }
         }
 
-        protected override bool ShouldShowCommand(DTE2 dte2)
+        public override void Execute(object sender, EventArgs args)
         {
-            return base.ShouldShowCommand(dte2) && HasParameters();
-        }
+            ParamBlockAst scriptParameters = ParameterEditorHelper.GetScriptParameters(_adaptersFactory, _textManager);
+            ScriptArgs = ParameterEditorHelper.PromptForScriptParameterValues(scriptParameters);
 
-        private bool HasParameters()
-        {
-            _parameterResult = null;
-            return ParameterEditorHelper.HasParameters(_adaptersFactory, _textManager, out _paramBlock);
+            if (ScriptArgs.ShouldExecute)
+            {
+                base.Execute(sender, args);
+            }
         }
     }
 }
