@@ -127,6 +127,17 @@ namespace PowerShellTools.Commands.UserInterface
         }
 
         /// <summary>
+        /// Indicates if there are any parameters to show
+        /// </summary>
+        public bool HasParameters
+        {
+            get
+            {
+                return this.Parameters.Count > 0;
+            }
+        }
+
+        /// <summary>
         /// The save button is disabled if we're in the 
         ///  verify parameters mode and there are errors (warnings don't matter)
         /// </summary>
