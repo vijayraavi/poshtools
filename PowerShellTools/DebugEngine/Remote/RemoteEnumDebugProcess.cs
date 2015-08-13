@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation.Runspaces;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -55,11 +56,6 @@ namespace PowerShellTools.DebugEngine.Remote
                     MessageBox.Show(Resources.AttachExistingAttachError, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            else if (isLocalHost())
-            {
-                // do not let users to use remote debugging with "localhost" or "127.0.0.1"
-                MessageBox.Show(Resources.LocalHostNotAllowed, Resources.AttachErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
             else
             {
                 // host needs to be initialized before we can connect/enumerate
@@ -103,12 +99,6 @@ namespace PowerShellTools.DebugEngine.Remote
                     _runningProcesses.Add(new ScriptDebugProcess(remotePort, info.Key, info.Value, _remoteComputer));
                 }
             }
-        }
-
-        private bool isLocalHost()
-        {
-            string trueName = _remoteComputer.Split(':')[0];
-            return trueName.Equals("localhost") || trueName.Equals("127.0.0.1");
         }
 
         public int Clone(out IEnumDebugProcesses2 ppEnum)

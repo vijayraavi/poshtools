@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
-    public class PowerShellDebuggingServiceAttachValidator
+    public class PowerShellDebuggingServiceAttachUtilities
     {
         private IPowerShellDebuggingService _debuggingService;
 
@@ -25,7 +26,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        public PowerShellDebuggingServiceAttachValidator(IPowerShellDebuggingService service)
+        public PowerShellDebuggingServiceAttachUtilities(IPowerShellDebuggingService service)
         {
             _debuggingService = service;
         }
@@ -114,6 +115,46 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public bool VerifyDetachFromRemoteRunspace()
         {
             return _debuggingService.GetDebugScenario() == DebugScenario.Local;
+        }
+
+        public Tuple<string, int> GetNameAndPort(string remoteName)
+        {
+            IPAddress ip;
+
+            IPAddress.TryParse(remoteName, out ip);
+            string[] parts = remoteName.Split(':');
+            string port = parts.LastOrDefault();
+
+            if (ip != null)
+            {
+                if (port != null)
+                {
+                    if (remoteName.ElementAt(0) == '[')
+                    {
+                        return Tuple.Create(remoteName.Substring(1, remoteName.LastIndexOf(']') - 1), int.Parse(port));
+                    }
+                    return Tuple.Create(remoteName, -1);
+                }
+            }
+
+            string computerName = parts[0];
+            if (port != null && parts.Count() > 1)
+            {
+                return Tuple.Create(computerName, int.Parse(port));
+            }
+
+            return Tuple.Create(remoteName, -1);
+        }
+
+        public bool RemoteIsLoopback(string remoteName)
+        {
+            IPAddress ip;
+            if (IPAddress.TryParse(remoteName, out ip))
+            {
+                return IPAddress.IsLoopback(ip);
+            }
+
+            return string.Compare(remoteName, "localhost", StringComparison.OrdinalIgnoreCase) == 0;
         }
     }
 }

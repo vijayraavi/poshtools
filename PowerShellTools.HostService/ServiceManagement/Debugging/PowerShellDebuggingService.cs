@@ -44,9 +44,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private static readonly Regex validStackLine = new Regex(DebugEngineConstants.ValidCallStackLine, RegexOptions.Compiled);
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
-        private PowerShellDebuggingServiceAttachValidator _validator;
+        private PowerShellDebuggingServiceAttachUtilities _attachUtilities;
         private bool _useSSL;
-        private int _thisPid;
+        private int _currentPid;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -90,9 +90,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _psBreakpointTable = new HashSet<PowerShellBreakpointRecord>();
             _debugOutput = true;
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
-            _validator = new PowerShellDebuggingServiceAttachValidator(this);
+            _attachUtilities = new PowerShellDebuggingServiceAttachUtilities(this);
             _forceStop = false;
-            _thisPid = Process.GetCurrentProcess().Id;
+            _currentPid = Process.GetCurrentProcess().Id;
             InitializeRunspace(this);
         }
 
@@ -164,7 +164,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public bool IsAttachable(uint pid)
         {
             // do not let users attach to PowerShell Tools directly
-            if (pid == _thisPid)
+            if (pid == _currentPid)
             {
                 return false;
             }
@@ -217,7 +217,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     // enter into to-attach process which will swap out the current runspace
                     _attachRequestEvent.Reset();
                     InvokeScript(_currentPowerShell, string.Format("Enter-PSHostProcess -Id {0}", pid.ToString()));
-                    result = _validator.VerifyAttachToRunspace(preScenario, _attachRequestEvent);
+                    result = _attachUtilities.VerifyAttachToRunspace(preScenario, _attachRequestEvent);
 
                     if (!string.IsNullOrEmpty(result))
                     {
@@ -315,7 +315,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _attachRequestEvent.Reset();
                 InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
 
-                if (!_validator.VerifyDetachFromRunspace(preScenario, _attachRequestEvent))
+                if (!_attachUtilities.VerifyDetachFromRunspace(preScenario, _attachRequestEvent))
                 {
                     return false;
                 }
@@ -350,6 +350,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 using (_currentPowerShell = PowerShell.Create())
                 {
+                    Tuple<string, int> parts = _attachUtilities.GetNameAndPort(remoteName);
+                    remoteName = parts.Item1;
+                    int port = parts.Item2;
+
+                    if (_attachUtilities.RemoteIsLoopback(remoteName))
+                    {
+                        // user gave a loopback address which we do not allow
+                        ServiceCommon.Log("User entered a loopback address as their qualifier.");
+                        errorMessage = Resources.LocalHostRemoteDebugError;
+                        return null;
+                    }
+
                     // Grab user credentials and initiate remote session with the remote machine
                     PSObject psobj = InvokeScript(_currentPowerShell, DebugEngineConstants.GetCredentialsCommand).FirstOrDefault();
                     if (psobj != null)
@@ -362,7 +374,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         errorMessage = string.Empty;
                         return null;
                     }
-                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, _useSSL);
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, port, _useSSL);
 
                     if (GetDebugScenario() == DebugScenario.Local)
                     {
@@ -417,9 +429,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 using (_currentPowerShell = PowerShell.Create())
                 {
                     // enter into a remote session
-                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, _useSSL);
+                    Tuple<string, int> parts = _attachUtilities.GetNameAndPort(remoteName);
+                    remoteName = parts.Item1;
+                    int port = parts.Item2;
 
-                    if (!_validator.VerifyAttachToRemoteRunspace())
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, port, _useSSL);
+
+                    if (!_attachUtilities.VerifyAttachToRemoteRunspace())
                     {
                         // bad credentials, couldn't connect to machine, user hit cancel on the auth dialog
                         ServiceCommon.Log("Unable to connect to remote machine.");
@@ -457,7 +473,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 InvokeScript(_currentPowerShell, DebugEngineConstants.ExitRemoteSessionDefaultCommand);
                 _savedCredential = null;
 
-                if (!_validator.VerifyDetachFromRemoteRunspace())
+                if (!_attachUtilities.VerifyDetachFromRemoteRunspace())
                 {
                     // very unlikely for this to happen, but we should make sure to handle the case anyway
                     ServiceCommon.Log("Unable to disconnect from the remote machine.");
