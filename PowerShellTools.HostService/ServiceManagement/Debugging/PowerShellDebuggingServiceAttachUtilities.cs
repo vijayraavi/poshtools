@@ -117,35 +117,54 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             return _debuggingService.GetDebugScenario() == DebugScenario.Local;
         }
 
+        /// <summary>
+        /// Parses out the computer name/address and port from the quallifer given to the remote debugging transport.
+        /// </summary>
+        /// <param name="remoteName">User submitted qualifier, both machine name/address and port</param>
+        /// <returns>Tuple, first item is string containing computer name/address, second item is int port value, -1 if one is not given</returns>
         public Tuple<string, int> GetNameAndPort(string remoteName)
         {
-            IPAddress ip;
-
-            IPAddress.TryParse(remoteName, out ip);
             string[] parts = remoteName.Split(':');
-            string port = parts.LastOrDefault();
+            string stringPort = parts.LastOrDefault();
+            int port;
 
-            if (ip != null)
+            IPAddress ip;
+            if (IPAddress.TryParse(remoteName, out ip))
             {
-                if (port != null)
+                if (stringPort != null)
                 {
                     if (remoteName.ElementAt(0) == '[')
                     {
-                        return Tuple.Create(remoteName.Substring(1, remoteName.LastIndexOf(']') - 1), int.Parse(port));
+                        if (!int.TryParse(stringPort, out port))
+                        {
+                            port = -1;
+                        }
+                        
+                        return Tuple.Create(remoteName.Substring(1, remoteName.LastIndexOf(']') - 1), port);
                     }
                     return Tuple.Create(remoteName, -1);
                 }
             }
 
             string computerName = parts[0];
-            if (port != null && parts.Count() > 1)
+            if (stringPort != null && parts.Count() > 1)
             {
-                return Tuple.Create(computerName, int.Parse(port));
+                if (!int.TryParse(stringPort, out port))
+                {
+                    port = -1;
+                }
+
+                return Tuple.Create(computerName, port);
             }
 
             return Tuple.Create(remoteName, -1);
         }
 
+        /// <summary>
+        /// Determines if the given remote name is a loopback to the localhost
+        /// </summary>
+        /// <param name="remoteName">User submitted qualifier, minus any port value</param>
+        /// <returns>Whether or not it is a loopback</returns>
         public bool RemoteIsLoopback(string remoteName)
         {
             IPAddress ip;
@@ -154,7 +173,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return IPAddress.IsLoopback(ip);
             }
 
-            return string.Compare(remoteName, "localhost", StringComparison.OrdinalIgnoreCase) == 0;
+            return string.Equals(remoteName, "localhost", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
