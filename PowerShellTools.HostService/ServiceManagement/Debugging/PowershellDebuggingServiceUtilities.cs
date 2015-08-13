@@ -250,10 +250,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     PSObject profile = new PSObject(Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellToolsProfileFileName));
 
                     // 1. All Users, All Hosts, 2. All Users, Current Host, 3. Current User All Hosts, 4. Current User Current Host
-                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[0], Path.Combine(psHome, DebugEngineConstants.PowerShellProfileFiles[0])));
-                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[1], Path.Combine(psHome, DebugEngineConstants.PowerShellProfileFiles[1])));
-                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[2], Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellProfileFiles[2])));
-                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[3], Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellProfileFiles[3])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[0][0], Path.Combine(psHome, DebugEngineConstants.PowerShellProfiles[0][1])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[1][0], Path.Combine(psHome, DebugEngineConstants.PowerShellProfiles[1][1])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[2][0], Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellProfiles[2][1])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[3][0], Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellProfiles[3][1])));
 
                     PSVariable profileVar = new PSVariable(ProfileVariableName, profile, ScopedItemOptions.Constant);
                     _runspace.SessionStateProxy.PSVariable.Set(profileVar);

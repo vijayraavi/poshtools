@@ -41,7 +41,7 @@ namespace PowerShellTools.Common.Debugging
         /// <remarks>
         /// Pattern sample: Matching pattern like "wait     {x=6, y=8} script.ps1: line 3"
         /// </remarks>
-        public const string ValidCallStackLine = 
+        public const string ValidCallStackLine =
             @"(\S+)" + // function name which consists of no whitespace characters
             @"\s+" + // spaces between function name and variable list
             @"\{([,\s]?[^\s,]+=\S+)*\}" + // list of parameters which are comma seperated, (note the equals sign)
@@ -175,25 +175,15 @@ param (
         public const string PowerShellToolsProfileFileName = "PoshTools_profile.ps1";
 
         /// <summary>
-        /// Names of the various PowerShell profiles, in the order that they should be loaded.
+        /// Array of tuples in the order that they should be loaded which contain profile names and files for each PowerShell profile type.
+        /// First item is the profile name, second is which profile file to use with said profile.
         /// </summary>
-        public static readonly string[] PowerShellProfiles =
+        public static readonly string[][] PowerShellProfiles =
         {
-            "AllUsersAllHosts",
-            "AllUsersCurrentHost",
-            "CurrentUserAllHosts",
-            "CurrentUserCurrentHost"
-        };
-
-        /// <summary>
-        /// File names that go with each of the profiles in PowerShellProfiles. This ordering is consistent with the ordering of PowerShellProfiles.
-        /// </summary>
-        public static readonly string[] PowerShellProfileFiles =
-        {
-            AllHostsProfileFileName,
-            PowerShellToolsProfileFileName,
-            AllHostsProfileFileName,
-            PowerShellToolsProfileFileName
+            new string[] { "AllUsersAllHosts", AllHostsProfileFileName },
+            new string[] { "AllUsersCurrentHost", PowerShellToolsProfileFileName },
+            new string[] { "CurrentUserAllHosts", AllHostsProfileFileName },
+            new string[] { "CurrentUserCurrentHost", PowerShellToolsProfileFileName }
         };
     }
 }

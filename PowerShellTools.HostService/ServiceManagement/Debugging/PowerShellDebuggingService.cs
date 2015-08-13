@@ -1323,15 +1323,15 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             string sourceProfilesCommand = string.Empty;
 
             // if a file exists at each location of the profiles, add sourcing that profile to the command
-            foreach (string profileName in DebugEngineConstants.PowerShellProfiles)
+            foreach (string[] profile in DebugEngineConstants.PowerShellProfiles)
             {
-                PSMemberInfo profileMember = profiles.Members[profileName];
+                PSMemberInfo profileMember = profiles.Members[profile[0]];
                 var profilePath = (string)profileMember.Value;
                 var profileFile = new FileInfo(profilePath);
 
                 if (profileFile.Exists)
                 {
-                    ServiceCommon.Log(string.Format("Profile file for {0} found at {1}.", profileName, profilePath));
+                    ServiceCommon.Log(string.Format("Profile file for {0} found at {1}.", profile[0], profilePath));
                     sourceProfilesCommand += string.Format(". '{0}';{1}", profilePath, Environment.NewLine);
                 }
             }
