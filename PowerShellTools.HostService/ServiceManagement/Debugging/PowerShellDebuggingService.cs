@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Remoting;
@@ -1300,6 +1301,33 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             else
             {
                 return file;
+            }
+        }
+
+        public void LoadProfiles()
+        {
+            ServiceCommon.Log("Loading PowerShell Profiles");
+            PSObject profiles = _runspace.SessionStateProxy.PSVariable.Get("profile").Value as PSObject;
+
+            string sourceProfilesCommand = string.Empty;
+
+            // if a file exists at each location of the profiles, add sourcing that profile to the command
+            foreach (string[] profile in DebugEngineConstants.PowerShellProfiles)
+            {
+                PSMemberInfo profileMember = profiles.Members[profile[0]];
+                var profilePath = (string)profileMember.Value;
+                var profileFile = new FileInfo(profilePath);
+
+                if (profileFile.Exists)
+                {
+                    ServiceCommon.Log(string.Format("Profile file for {0} found at {1}.", profile[0], profilePath));
+                    sourceProfilesCommand += string.Format(". '{0}';{1}", profilePath, Environment.NewLine);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(sourceProfilesCommand))
+            {
+                Execute(sourceProfilesCommand);
             }
         }
 
