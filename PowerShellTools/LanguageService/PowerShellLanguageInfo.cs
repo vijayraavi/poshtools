@@ -160,17 +160,9 @@ namespace PowerShellTools.LanguageService
                 return VSConstants.S_FALSE;
             }
 
-            BreakpointPosition position = BreakpointValidationHelper.GetBreakpointPosition(_editorAdaptersFactoryService, pBuffer, iLine);
+            var breakpointValidationService = new BreakpointValidationService(_editorAdaptersFactoryService);
 
-            if(position.IsValid)
-            {
-                pCodeSpan[0] = position.GetBreakpointSpan();
-                return VSConstants.S_OK;
-            }
-            else
-            {
-                return VSConstants.S_FALSE;
-            }
+            return breakpointValidationService.ValidateBreakpointLocation(pBuffer, iLine, ref pCodeSpan);
         }
 
         #endregion
