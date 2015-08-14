@@ -234,12 +234,15 @@
     <Compile Include="Classification\PowerShellTokenizationService.cs" />
     <Compile Include="Cmdlets\GetVisualStudioServiceCommand.cs" />
     <Compile Include="Commands\ExecuteAsScriptCommand.cs" />
+    <Compile Include="Commands\ExecuteFromEditorContextMenuCommand.cs" />
+    <Compile Include="Commands\ExecuteFromSolutionExplorerContextMenuCommand.cs" />
     <Compile Include="Commands\ExecuteSelectionCommand.cs" />
     <Compile Include="Commands\ExecuteWithParametersAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteWithParametersAsScriptFromSolutionExplorerCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
+    <Compile Include="Commands\ScriptParameterResult.cs" />
     <Compile Include="Commands\UserInterface\Converters\ByteValueConverter.cs" />
     <Compile Include="Commands\UserInterface\ConfigurableBoolToVisibilityConveter.cs" />
     <Compile Include="Commands\UserInterface\DataTypeConstants.cs" />

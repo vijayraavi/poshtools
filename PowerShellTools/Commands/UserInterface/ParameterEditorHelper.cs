@@ -13,14 +13,14 @@ namespace PowerShellTools.Commands.UserInterface
     /// </summary>
     internal static class ParameterEditorHelper
     {
-        public static string GetScriptParamters(ParamBlockAst paramBlock)
+        public static ScriptParameterResult GetScriptParamters(ParamBlockAst paramBlock)
         {
             string scriptArgs;
             if (ShowParameterEditor(paramBlock, out scriptArgs) == true)
             {
-                return scriptArgs;
+                return new ScriptParameterResult(scriptArgs, true);
             }
-            return String.Empty;
+            return new ScriptParameterResult(null, false);
         }
 
         private static bool? ShowParameterEditor(ParamBlockAst paramBlockAst, out string scriptArgs)
