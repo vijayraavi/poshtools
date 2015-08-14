@@ -396,7 +396,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="powerShell">This should be an already instanstiated PowerShell object, and should be inside of a using. If
         /// powerShell is null, method will return without performing any action.</param>
         /// <param name="remoteName">Machine to connect to.</param>
-        private void EnterCredentialedRemoteSession(PowerShell powerShell, string remoteName, bool useSSL)
+        private void EnterCredentialedRemoteSession(PowerShell powerShell, string remoteName, int port, bool useSSL)
         {
             if (powerShell == null)
             {
@@ -410,12 +410,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return;
             }
 
-            string port = remoteName.Split(':').ElementAtOrDefault(1);
-
             PSCommand enterSession = new PSCommand();
             enterSession.AddCommand("Enter-PSSession").AddParameter("ComputerName", remoteName).AddParameter("Credential", _savedCredential);
 
-            if (port != null)
+            if (port != -1)
             {
                 // check for user specified port
                 enterSession.AddParameter("-Port", port);

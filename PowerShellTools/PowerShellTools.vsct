@@ -5,8 +5,8 @@
   <Extern href="vsshlids.h"/>
 
   <KeyBindings>
-    <KeyBinding guid="guidPoshToolsCmdSet" id="cmdidExecuteAsScript" editor="guidVSStd97" key1="e" key2="VK_F5" mod1="Shift"/>
-    <KeyBinding guid="guidPoshToolsCmdSet" id="cmdidExecuteWithParametersAsScript" editor="guidVSStd97" key1="e" key2="VK_F5" mod1="Shift Alt"/>
+    <KeyBinding guid="guidPoshToolsCmdSet" id="cmdidExecuteAsScript" editor="guidVSStd97" key1="VK_F5" mod1="Alt Shift"/>
+    <KeyBinding guid="guidPoshToolsCmdSet" id="cmdidExecuteWithParametersAsScript" editor="guidVSStd97" key1="VK_F5" mod1="Control Alt Shift"/>
     <KeyBinding guid="guidPoshToolsCmdSet" id="cmdidExecuteSelection" editor="guidVSStd97" key1="VK_F8" mod1="Control"/>
     <KeyBinding guid="guidPoshToolsCmdSet" id="cmdidReplWindow" editor="guidVSStd97" key1="VK_OEM_5" mod1="Control Shift"/>
   </KeyBindings>
@@ -157,14 +157,14 @@
       value="{099073C0-B561-4BC1-A847-92657B89A00E}" >
 
       <!--Buttons-->
-      <IDSymbol name="cmdidExecuteAsScript"  value="0x0102"/>
-      <IDSymbol name="cmdidExecuteSelection" value="0x0103"/>
-      <IDSymbol name="cmdidGotoDefinition" value="0x0104"/>
-      <IDSymbol name="cmdidSnippet" value="0x0105"/>
-      <IDSymbol name="cmdidPrettyPrint" value="0x0106"/>
-      <IDSymbol name="cmdidReplWindow" value="0x0107"/>
-      <IDSymbol name="cmdidExecuteAsScriptSolution"  value="0x0108"/>
-      <IDSymbol name="cmdidExecuteWithParametersAsScript"  value="0x0109"/>
+      <IDSymbol name="cmdidExecuteSelection" value="0x0102"/>
+      <IDSymbol name="cmdidExecuteAsScript"  value="0x0103"/>
+      <IDSymbol name="cmdidExecuteWithParametersAsScript"  value="0x0104"/>   
+      <IDSymbol name="cmdidGotoDefinition" value="0x0105"/>
+      <IDSymbol name="cmdidSnippet" value="0x0106"/>
+      <IDSymbol name="cmdidPrettyPrint" value="0x0107"/>
+      <IDSymbol name="cmdidReplWindow" value="0x0108"/>
+      <IDSymbol name="cmdidExecuteAsScriptSolution"  value="0x0109"/>   
       <IDSymbol name="cmdidExecuteWithParametersAsScriptFromSolutionExplorer"  value="0x0110"/>
       <!--Groups-->
       <IDSymbol name="grpidPoshToolsGroup" value="0x01001"/>

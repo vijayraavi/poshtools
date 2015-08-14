@@ -175,7 +175,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" MinHeight="50"/>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MinHeight="50"/>
             <RowDefinition Height="Auto"/>
@@ -218,6 +218,7 @@
                   HeadersVisibility="Column"
                   SelectionUnit="Cell"
                   SelectionMode="Single"
+                  Visibility="{Binding HasParameters, Converter={StaticResource ResourceKey=BooleanToVisibilityConverter}}"
                   AutomationProperties.Name="{Binding ParameterEditorTip}"
                   Style="{StaticResource DialogDataGridStyle}"
                   ItemsSource="{Binding Path=Parameters, UpdateSourceTrigger=PropertyChanged}">

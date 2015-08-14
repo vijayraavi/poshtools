@@ -34,7 +34,7 @@ namespace PowerShellTools.Commands
             var selectedItem = GetSelectedItem(dte);
             return selectedItem != null &&
                    selectedItem.ProjectItem != null &&
-                   LanguageUtilities.IsPowerShellFile(selectedItem.ProjectItem.Name);
+                   LanguageUtilities.IsPowerShellExecutableScriptFile(selectedItem.ProjectItem.Name);
         }
 
         protected static SelectedItem GetSelectedItem(DTE2 applicationObject)
