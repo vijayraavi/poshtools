@@ -147,7 +147,6 @@
     <Compile Include="PowerShell\FluentExtensions.cs" />
     <Compile Include="PowerShell\PipelineCommand.cs" />
     <Compile Include="PowerShell\PipelineSequence.cs" />
-    <Compile Include="Search\SearchQuery.cs" />
     <Compile Include="Search\SearchTask.cs" />
     <Compile Include="UI\PSCommandDetailsViewModel.cs" />
     <Compile Include="UI\PSCommandDetails.xaml.cs">

@@ -25,57 +25,19 @@ namespace PowerShellTools.Explorer.Search
 
         protected override void OnStartSearch()
         {
-            // Use the original content of the text box as the target of the search. 
             var sourceItems = _searchTarget.SearchSourceData();
             var resultItems = new List<CommandInfo>();
-
-            // Get the search option. 
-            bool matchCase = false;
-            // matchCase = m_toolWindow.MatchCaseOption.Value; 
-
             uint resultCount = 0;
             this.ErrorCode = VSConstants.S_OK;
 
             try
             {
                 string searchString = this.SearchQuery.SearchString;
-
-                IVsSearchToken[] tokens = new IVsSearchToken[2];
-
-                this.SearchQuery.GetTokens(2, tokens);
-
-                var moduleName = string.Empty;
-                var commandName = string.Empty;
-
-                var module = Regex.Match(searchString, @"module:(\w+)", RegexOptions.IgnoreCase);
-                var command = Regex.Match(searchString, @"command:(\w+)", RegexOptions.IgnoreCase);
-
-                if (module.Success)
-                {
-                    moduleName = module.Groups[1].ToString();
-                }
-
-                if (command.Success)
-                {
-                    commandName = command.Groups[1].ToString();
-                }
-
-                // Determine the results. 
                 uint progress = 0;
 
                 foreach (CommandInfo item in sourceItems)
                 {
-                    if (module.Success && item.ModuleName.ToLowerInvariant().Contains(moduleName.ToLowerInvariant()))
-                    {
-                        resultItems.Add(item);
-                        resultCount++;
-                    }
-                    else if (command.Success && item.Name.ToLowerInvariant().Contains(commandName.ToLowerInvariant()))
-                    {
-                        resultItems.Add(item);
-                        resultCount++;
-                    }
-                    else if(item.Name.ToLowerInvariant().Contains(searchString.ToLowerInvariant()))
+                    if (item.Name.ToLowerInvariant().Contains(searchString.ToLowerInvariant()))
                     {
                         resultItems.Add(item);
                         resultCount++;
@@ -98,8 +60,6 @@ namespace PowerShellTools.Explorer.Search
                 this.SearchResults = resultCount;
             }
 
-            // Call the implementation of this method in the base class. 
-            // This sets the task status to complete and reports task completion. 
             base.OnStartSearch();
         }
 

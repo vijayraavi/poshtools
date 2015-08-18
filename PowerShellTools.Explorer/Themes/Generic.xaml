@@ -196,25 +196,6 @@
         </Setter>
     </Style>
 
-
-
-
-
-
-    
-
-
-    <Style x:Key="ExpanderHeaderFocusVisual">
-        <Setter Property="Control.Template">
-            <Setter.Value>
-                <ControlTemplate>
-                    <Border>
-                        <Rectangle Margin="0" SnapsToDevicePixels="true" Stroke="Black" StrokeThickness="1" StrokeDashArray="1 2"/>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
     <Style x:Key="ExpanderDownHeaderStyle" TargetType="{x:Type ToggleButton}">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.AccentDarkKey}}" />
@@ -223,14 +204,27 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
-                    <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding Background}" BorderThickness="0,1,0,0">
+                    <Border Padding="{TemplateBinding Padding}" 
+                            BorderBrush="{TemplateBinding Background}" 
+                            BorderThickness="0,1,0,0">
                         <Grid Background="Transparent" SnapsToDevicePixels="False">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Path StrokeThickness="1" Grid.Column="0" VerticalAlignment="Center" x:Name="indicator" Data="M0.5,0.5L4.5,4.5L0.5,8.5z" Stroke="{TemplateBinding Background}" Fill="{TemplateBinding Background}" />
-                            <ContentPresenter Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
+                            <Path Grid.Column="0" 
+                                  StrokeThickness="1" 
+                                  VerticalAlignment="Center" 
+                                  x:Name="indicator" 
+                                  Data="M0.5,0.5L4.5,4.5L0.5,8.5z" 
+                                  Stroke="{TemplateBinding Background}" 
+                                  Fill="{TemplateBinding Background}" />
+                            <ContentPresenter Grid.Column="1" 
+                                              HorizontalAlignment="Left" 
+                                              Margin="4,0,0,0" 
+                                              RecognizesAccessKey="True" 
+                                              SnapsToDevicePixels="True" 
+                                              VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -268,7 +262,6 @@
                                           DockPanel.Dock="Top" 
                                           Foreground="{TemplateBinding Foreground}" 
                                           FontWeight="{TemplateBinding FontWeight}" 
-                                          FocusVisualStyle="{StaticResource ExpanderHeaderFocusVisual}" 
                                           FontStyle="{TemplateBinding FontStyle}" 
                                           FontStretch="{TemplateBinding FontStretch}" 
                                           FontSize="{TemplateBinding FontSize}" 

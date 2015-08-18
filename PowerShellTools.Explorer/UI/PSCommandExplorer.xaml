@@ -85,8 +85,6 @@
                         <!--<MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />-->
                     </ContextMenu>
                 </local:CommandListView.Resources>
-                
-                
                 <local:CommandListView.ItemContainerStyle>
                     <Style TargetType="{x:Type local:CommandListViewItem}" >
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -107,7 +105,6 @@
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12" />
                                                         <TextBlock Text="{Binding ItemCount}" FontStyle="Italic" Margin="5,0,0,0" />
-                                                        <TextBlock Text="item(s)" FontStyle="Italic" Margin="5,0,0,0" />
                                                     </StackPanel>
                                                 </Expander.Header>
                                                 <ItemsPresenter />
@@ -121,6 +118,5 @@
                 </local:CommandListView.GroupStyle>
             </local:CommandListView>
         </Grid>
-
     </Grid>
 </UserControl>
