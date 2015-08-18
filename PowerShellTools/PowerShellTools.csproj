@@ -809,6 +809,10 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.Explorer\PowerShellTools.Explorer.csproj">
+      <Project>{df5ba825-19af-4b98-af3a-d93d8f026f8d}</Project>
+      <Name>PowerShellTools.Explorer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.HostService.x86\PowerShellTools.HostService.x86.csproj">
       <Project>{528d75e0-71d8-408c-aeae-485d84e08bd2}</Project>
       <Name>PowerShellTools.HostService.x86</Name>

@@ -1,0 +1,102 @@
+﻿<UserControl x:Class="PowerShellTools.Explorer.PSCommandExplorer"
+             xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.12.0"
+             xmlns:local="clr-namespace:PowerShellTools.Explorer"
+             xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.12.0"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             Background="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}"
+             Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300"
+             Name="HostWindow">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <DataTemplate x:Key="CommandDataTemplate">
+                <Grid>
+                    <TextBlock 
+                    HorizontalAlignment="Stretch"
+                    Background="Transparent"
+                    Margin="0"
+                    Padding="0"
+                    Text="{Binding Path=Name, Mode=OneWay}">
+                        <TextBlock.ToolTip>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name: " FontWeight="Bold" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Module: " FontWeight="Bold" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Type: " FontWeight="Bold" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=Name, Mode=OneWay}" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=ModuleName, Mode=OneWay}" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=CommandType, Mode=OneWay}" />
+                            </Grid>
+                        </TextBlock.ToolTip>
+                </TextBlock>
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
+
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <local:SearchControl Grid.Row="0" 
+                      Margin="0"
+                      ItemsSource="{Binding Modules}"                
+                      SelectedItem="{Binding SelectedModule}"
+                      DisplayMemberPath="Name"
+                      SelectedValue="{Binding Path=SelectedModule.Name, Mode=OneWay}"
+                      SelectedValuePath="Name"
+                      local:Watermark.Text="Select PowerShell module..." />
+            <TextBox Grid.Row="1"
+                     Margin="0"
+                     Text="{Binding CommandFilter, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                     local:Watermark.Text="Search PowerShell command" />
+        </Grid>
+        
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <local:CommandListView Grid.Row="0" Background="Transparent" Margin="0" ItemsSource="{Binding Commands}" SelectedItem="{Binding SelectedCommand}" ItemTemplate="{StaticResource CommandDataTemplate}">
+                <local:CommandListView.Resources>
+                    <ContextMenu x:Key="ItemContextMenu">
+                        <MenuItem Header="Filter Module" Command="{Binding Path=DataContext.FilterModuleCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                        <MenuItem Header="View Definition" Command="{Binding Path=DataContext.ShowDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                        <MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                    </ContextMenu>
+                </local:CommandListView.Resources>
+                <local:CommandListView.ItemContainerStyle>
+                    <Style TargetType="{x:Type local:CommandListViewItem}" >
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
+                    </Style>
+                </local:CommandListView.ItemContainerStyle>
+            </local:CommandListView>
+        </Grid>
+
+    </Grid>
+</UserControl>
