@@ -6,6 +6,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              Background="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}"
              Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}"
              mc:Ignorable="d"
@@ -48,6 +49,13 @@
                 </TextBlock>
                 </Grid>
             </DataTemplate>
+
+            <CollectionViewSource x:Key="ViewSource" Source="{Binding Path=Commands}">
+                <CollectionViewSource.GroupDescriptions>
+                    <PropertyGroupDescription PropertyName="ModuleName" />
+                </CollectionViewSource.GroupDescriptions>
+            </CollectionViewSource>
+            
         </ResourceDictionary>
 
     </UserControl.Resources>
@@ -62,18 +70,6 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <local:SearchControl Grid.Row="0" 
-                      Margin="0"
-                      ItemsSource="{Binding Modules}"                
-                      SelectedItem="{Binding SelectedModule}"
-                      DisplayMemberPath="Name"
-                      SelectedValue="{Binding Path=SelectedModule.Name, Mode=OneWay}"
-                      SelectedValuePath="Name"
-                      local:Watermark.Text="Select PowerShell module..." />
-            <TextBox Grid.Row="1"
-                     Margin="0"
-                     Text="{Binding CommandFilter, UpdateSourceTrigger=PropertyChanged, Delay=200}"
-                     local:Watermark.Text="Search PowerShell command" />
         </Grid>
         
         <Grid Grid.Row="1">
@@ -81,20 +77,48 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <local:CommandListView Grid.Row="0" Background="Transparent" Margin="0" ItemsSource="{Binding Commands}" SelectedItem="{Binding SelectedCommand}" ItemTemplate="{StaticResource CommandDataTemplate}">
-                <local:CommandListView.Resources>
+            <local:CommandListView Grid.Row="0" Background="Transparent" Margin="0" ItemsSource="{Binding Source={StaticResource ViewSource}}" SelectedItem="{Binding SelectedCommand}" ItemTemplate="{StaticResource CommandDataTemplate}">
+                <local:CommandListView.Resources>  
                     <ContextMenu x:Key="ItemContextMenu">
-                        <MenuItem Header="Filter Module" Command="{Binding Path=DataContext.FilterModuleCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                        <!--<MenuItem Header="Filter Module" Command="{Binding Path=DataContext.FilterModuleCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />-->
                         <MenuItem Header="View Definition" Command="{Binding Path=DataContext.ShowDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
-                        <MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                        <!--<MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />-->
                     </ContextMenu>
                 </local:CommandListView.Resources>
+                
+                
                 <local:CommandListView.ItemContainerStyle>
                     <Style TargetType="{x:Type local:CommandListViewItem}" >
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
+                        <Setter Property="Margin" Value="16 0 0 0" />
                     </Style>
                 </local:CommandListView.ItemContainerStyle>
+                <local:CommandListView.GroupStyle>
+                    <GroupStyle>     
+                        <GroupStyle.ContainerStyle>
+                            <Style TargetType="{x:Type GroupItem}">
+                                <Setter Property="Margin" Value="0,0,0,10"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                                            <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="False">
+                                                <Expander.Header>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12" />
+                                                        <TextBlock Text="{Binding ItemCount}" FontStyle="Italic" Margin="5,0,0,0" />
+                                                        <TextBlock Text="item(s)" FontStyle="Italic" Margin="5,0,0,0" />
+                                                    </StackPanel>
+                                                </Expander.Header>
+                                                <ItemsPresenter />
+                                            </Expander>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </GroupStyle.ContainerStyle>
+                    </GroupStyle>
+                </local:CommandListView.GroupStyle>
             </local:CommandListView>
         </Grid>
 

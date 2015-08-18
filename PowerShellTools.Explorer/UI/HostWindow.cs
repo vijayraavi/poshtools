@@ -1,8 +1,14 @@
 ﻿using System;
+using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
+using System.Windows.Controls;
 using EnvDTE;
 using EnvDTE80;
+using Microsoft.Internal.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using PowerShellTools.Explorer.Search;
 
 namespace PowerShellTools.Explorer
 {
@@ -40,10 +46,65 @@ namespace PowerShellTools.Explorer
             this.BitmapResourceID = 301;
             this.BitmapIndex = 1;
 
+            //this.ToolBar = new CommandID(GuidList.guidToolWndCmdSet, (int)PkgCmdIDList.ToolbarID);
+            //this.ToolBarLocation = (int)VSTWT_LOCATION.VSTWT_TOP;
+
+            //var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+
+            //if (null != mcs)
+            //{
+            //    var toolbarbtnCmdID = new CommandID(GuidList.guidToolWndCmdSet, (int)PkgCmdIDList.cmdidTestToolbar);
+            //    var menuItem = new MenuCommand(ButtonHandler, toolbarbtnCmdID);
+            //    mcs.AddCommand(menuItem);
+            //}
+
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
             base.Content = new PSCommandExplorer(this, _dataProvider, _exceptionHandler);
+        }
+
+        private void ButtonHandler(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool SearchEnabled
+        {
+            get { return true; }
+        }
+
+        public override IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
+        {
+            ISearchTaskTarget searchTarget = ((UserControl)this.Content).DataContext as ISearchTaskTarget;
+            if (searchTarget == null || pSearchQuery == null || pSearchCallback == null)
+            {
+                return null;
+            }
+
+            return new SearchTask(dwCookie, pSearchQuery, pSearchCallback, searchTarget);
+        }
+
+        public override void ClearSearch()
+        {
+            ISearchTaskTarget searchTarget = ((UserControl)this.Content).DataContext as ISearchTaskTarget;
+            if (searchTarget != null)
+            {
+                searchTarget.ClearSearch();
+            }
+        }
+
+        public override void ProvideSearchSettings(IVsUIDataSource pSearchSettings)
+        {
+            Utilities.SetValue(pSearchSettings,
+                SearchSettingsDataSource.SearchStartTypeProperty.Name,
+                 (uint)VSSEARCHSTARTTYPE.SST_DELAYED);
+            Utilities.SetValue(pSearchSettings,
+                SearchSettingsDataSource.SearchProgressTypeProperty.Name,
+                 (uint)VSSEARCHPROGRESSTYPE.SPT_DETERMINATE);
+            Utilities.SetValue(pSearchSettings,
+                SearchSettingsDataSource.SearchWatermarkProperty.Name,
+                 "Search PowerShell commands");
         }
 
         public void Close()

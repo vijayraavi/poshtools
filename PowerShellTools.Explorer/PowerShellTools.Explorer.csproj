@@ -133,7 +133,6 @@
     <Compile Include="Controls\CommandListView.cs" />
     <Compile Include="Controls\CommandListViewItem.cs" />
     <Compile Include="Controls\ObservableList.cs" />
-    <Compile Include="Controls\SearchControl.cs" />
     <Compile Include="Helpers\DragDropHelper.cs" />
     <Compile Include="Helpers\DTEHelper.cs" />
     <Compile Include="Helpers\ExceptionHandler.cs" />
@@ -144,9 +143,12 @@
     <Compile Include="Interfaces\IHostWindow.cs" />
     <Compile Include="DataProvider\DataProvider.cs" />
     <Compile Include="Interfaces\IDataProvider.cs" />
+    <Compile Include="Interfaces\ISearchTaskTarget.cs" />
     <Compile Include="PowerShell\FluentExtensions.cs" />
     <Compile Include="PowerShell\PipelineCommand.cs" />
     <Compile Include="PowerShell\PipelineSequence.cs" />
+    <Compile Include="Search\SearchQuery.cs" />
+    <Compile Include="Search\SearchTask.cs" />
     <Compile Include="UI\PSCommandDetailsViewModel.cs" />
     <Compile Include="UI\PSCommandDetails.xaml.cs">
       <DependentUpon>PSCommandDetails.xaml</DependentUpon>
@@ -170,8 +172,6 @@
     <Compile Include="PowerShell\PowerShellHost.cs" />
     <Compile Include="UI\ViewModel.cs" />
     <Compile Include="UI\ViewModelCommand.cs" />
-    <Compile Include="Controls\WaterMark.cs" />
-    <Compile Include="Controls\WaterMarkAdorner.cs" />
     <Compile Include="UI\VsShellDialogWindow.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -7,17 +7,14 @@ using System.Windows.Forms;
 
 namespace PowerShellTools.Explorer
 {
-    internal sealed class PSCommandExplorerViewModel : ViewModel, IDisposable
+    internal sealed class PSCommandExplorerViewModel : ViewModel, ISearchTaskTarget, IDisposable
     {
         private readonly IHostWindow _hostWindow;
         private readonly IDataProvider _dataProvider;
         private readonly IExceptionHandler _exceptionHandler;
 
-        private PSModuleInfo _selectedModule = null;
         private CommandInfo _selectedCommand = null;
-        private string _commandFilter = string.Empty;
 
-        private ObservableCollection<PSModuleInfo> _modules = new ObservableCollection<PSModuleInfo>();
         private ObservableList<CommandInfo> _commands = new ObservableList<CommandInfo>();
         private ObservableList<CommandInfo> _filteredCommands = new ObservableList<CommandInfo>();
 
@@ -28,30 +25,13 @@ namespace PowerShellTools.Explorer
             _exceptionHandler = exceptionHandler;
 
             ShowDetailsCommand = new ViewModelCommand<object>(this, ShowDetails, CanShowDetails);
-            FilterModuleCommand = new ViewModelCommand<object>(this, FilterModule, CanFilterModule);
             ShowHelpCommand = new ViewModelCommand<object>(this, ShowHelp, CanShowHelp);
 
             Load(); 
         }
 
         public ViewModelCommand<object> ShowDetailsCommand { get; set; }
-
-        public ViewModelCommand<object> FilterModuleCommand { get; set; }
-
         public ViewModelCommand<object> ShowHelpCommand { get; set; }
-
-        public ObservableCollection<PSModuleInfo> Modules
-        {
-            get
-            {
-                return _modules;
-            }
-
-            set
-            {
-                _modules = value;
-            }
-        }
 
         public ObservableList<CommandInfo> Commands
         {
@@ -63,24 +43,6 @@ namespace PowerShellTools.Explorer
             set
             {
                 _filteredCommands = value;
-            }
-        }
-
-        public PSModuleInfo SelectedModule
-        {
-            get
-            {
-                return _selectedModule;
-            }
-
-            set
-            {
-                if(_selectedModule != value)
-                {
-                    _selectedModule = value;
-                    RaisePropertyChanged();
-                    FilterCommandList();
-                }
             }
         }
 
@@ -101,40 +63,6 @@ namespace PowerShellTools.Explorer
             }
         }
 
-        public string CommandFilter
-        {
-            get
-            {
-                return _commandFilter;
-            }
-
-            set
-            {
-                if(_commandFilter != value)
-                {
-                    _commandFilter = value;
-                    RaisePropertyChanged();
-                    FilterCommandList();
-                }
-            }
-        }
-
-        public bool HasModules
-        {
-            get
-            {
-                return _modules.Count > 0;
-            }
-        }
-
-        public bool HasCommands
-        {
-            get
-            {
-                return _commands.Count > 0;
-            }
-        }
-
         public void Refresh()
         {
         }
@@ -145,7 +73,6 @@ namespace PowerShellTools.Explorer
 
         private void Load()
         {
-            _dataProvider.GetModules(LoadModulesCallback);
             _dataProvider.GetCommands(LoadCommandsCallback);
         }
 
@@ -160,20 +87,8 @@ namespace PowerShellTools.Explorer
             return _selectedCommand != null;
         }
 
-        private void FilterModule(object parameter)
-        {
-            SelectedModule = _selectedCommand.Module;
-        }
-
-        private bool CanFilterModule(object parameter)
-        {
-            return _selectedCommand != null &&
-                !string.IsNullOrWhiteSpace(_selectedCommand.ModuleName);
-        }
-
         private void ShowHelp(object parameter)
         {
-            SelectedModule = _selectedCommand.Module;
         }
 
         private bool CanShowHelp(object parameter)
@@ -181,26 +96,25 @@ namespace PowerShellTools.Explorer
             return _selectedCommand != null;
         }
 
-        private void LoadModulesCallback(PSDataCollection<PSModuleInfo> items)
-        {
-            _modules.AddItems(items, true);
-            FilterCommandList();
-        }
-
         private void LoadCommandsCallback(PSDataCollection<CommandInfo> items)
         {
             _commands.AddItems(items, true);
-            FilterCommandList();
+            _filteredCommands.AddItems(items, true);
         }
 
-        private void FilterCommandList()
+        public List<CommandInfo> SearchSourceData()
         {
-            var result = _commands.Where(x =>
-                (_selectedModule != null ? x.ModuleName == _selectedModule.Name : true) &&
-                (x.Name.ToLowerInvariant().Contains(_commandFilter.ToLowerInvariant())
-                )).OrderBy(x => x.Name);
+            return _commands;
+        }
 
-            _filteredCommands.AddItems(result, true);
+        public void SearchResultData(List<CommandInfo> results)
+        {
+            _filteredCommands.AddItems(results, true);
+        }
+
+        public void ClearSearch()
+        {
+            _filteredCommands.AddItems(_commands, true);
         }
     }
 }

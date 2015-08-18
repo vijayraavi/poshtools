@@ -39,6 +39,20 @@
 
         </Groups>
 
+        <Menus>
+            <Menu guid="guidToolWndCmdSet" id="ToolbarID" priority="0x0000" type="ToolWindowToolbar">
+                <Parent guid="guidToolWndCmdSet" id="ToolbarID"/>
+                <CommandFlag>DefaultDocked</CommandFlag>
+                <CommandFlag>NoToolbarClose</CommandFlag>
+                <CommandFlag>AlwaysCreate</CommandFlag>
+                <CommandFlag>TextChanges</CommandFlag>
+                <Strings>
+                    <ButtonText>Command Explorer Window</ButtonText>
+                    <CommandName>Command Explorer Window</CommandName>
+                </Strings>
+            </Menu>
+        </Menus>
+        
         <!--Buttons section. -->
         <!--This section defines the elements the user can interact with, like a menu command or a button 
         or combo box in a toolbar. -->
@@ -78,10 +92,17 @@
         <!-- This is the package guid. -->
         <GuidSymbol name="guidPowerShellTools_ExplorerPkg" value="{9aeeb29f-9898-4772-8158-5453c38238f8}" />
 
-        <!-- This is the guid used to group the menu commands together -->
+        <GuidSymbol name="guidToolWndCmdSet" value="{05D834F7-40B2-401B-8FB3-2B1D8742D431}">
+            <IDSymbol name="ToolbarID" value="0x1000" />
+            <IDSymbol name="ToolbarGroupID" value="0x1001" />
+            <IDSymbol name="cmdidTestToolbar" value="0x132" />
+        </GuidSymbol>
+            <!-- This is the guid used to group the menu commands together -->
         <GuidSymbol name="guidPowerShellTools_ExplorerCmdSet" value="{26bdb96a-fc2a-42f3-ab08-bbc3e58c134a}">
             <IDSymbol name="MyMenuGroup" value="0x1020" />
             <IDSymbol name="cmdidPSExplorer" value="0x0101" />
+
+
         </GuidSymbol>
 
         <GuidSymbol name="guidImages" value="{05028cd0-5a32-4170-9c5f-bee2b962f741}" >

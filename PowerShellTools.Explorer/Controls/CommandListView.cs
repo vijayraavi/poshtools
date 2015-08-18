@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace PowerShellTools.Explorer
@@ -24,6 +25,8 @@ namespace PowerShellTools.Explorer
 
         public override void OnApplyTemplate()
         {
+
+
             base.OnApplyTemplate();
         }
     }

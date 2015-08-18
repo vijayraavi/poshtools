@@ -10,6 +10,10 @@ namespace PowerShellTools.Explorer
         public const string guidPowerShellTools_ExplorerCmdSetString = "26bdb96a-fc2a-42f3-ab08-bbc3e58c134a";
         public const string guidToolWindowPersistanceString = "dd9b7693-1385-46a9-a054-06566904f861";
 
+        public const string guidToolWndCmdSetString = "05D834F7-40B2-401B-8FB3-2B1D8742D431";
+
         public static readonly Guid guidPowerShellTools_ExplorerCmdSet = new Guid(guidPowerShellTools_ExplorerCmdSetString);
+
+        public static readonly Guid guidToolWndCmdSet = new Guid(guidToolWndCmdSetString);
     };
 }

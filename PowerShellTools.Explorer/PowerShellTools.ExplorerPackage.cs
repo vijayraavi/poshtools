@@ -29,7 +29,10 @@ namespace PowerShellTools.Explorer
     // This attribute is needed to let the shell know that this package exposes some menus.
     [ProvideMenuResource("Menus.ctmenu", 1)]
     // This attribute registers a tool window exposed by this package.
-    [ProvideToolWindow(typeof(HostWindow))]
+    [ProvideToolWindow(
+        typeof(HostWindow),
+        Style = Microsoft.VisualStudio.Shell.VsDockStyle.Tabbed,
+        Window = "dd9b7693-1385-46a9-a054-06566904f861")]
     [Guid(GuidList.guidPowerShellTools_ExplorerPkgString)]
     public sealed class PowerShellTools_ExplorerPackage : Package
     {
