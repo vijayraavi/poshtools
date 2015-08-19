@@ -15,53 +15,6 @@ namespace PowerShellTools.Explorer
         {
         }
 
-        //public Task<PSDataCollection<T>> ExecuteCommandAsync<T>(string command)
-        //{
-        //    return this.ExecuteCommandAsync<T>(command, new Dictionary<string, object>());
-        //}
-
-        //public Task<PSDataCollection<T>> ExecuteCommandAsync<T>(string[] modules, string command)
-        //{
-        //    return this.ExecuteCommandAsync<T>(modules, command, new Dictionary<string, object>());
-        //}
-
-        //public Task<PSDataCollection<T>> ExecuteCommandAsync<T>(string command, Dictionary<string, object> parameters)
-        //{
-        //    return Task.Run<PSDataCollection<T>>(() => ExecuteCommandInternal<T>(command, parameters));
-        //}
-
-        //public Task<PSDataCollection<T>> ExecuteCommandAsync<T>(string[] modules, string command, Dictionary<string, object> parameters)
-        //{
-        //    return Task.Run<PSDataCollection<T>>(() => ExecuteCommandInternal<T>(modules, command, parameters));
-        //}
-
-        //private PSDataCollection<T> ExecuteCommandInternal<T>(string command, Dictionary<string, object> parameters)
-        //{
-        //    return ExecuteCommandInternal<T>(null, command, parameters);
-        //}
-
-        //private PSDataCollection<T> ExecuteCommandInternal<T>(string[] modules, string command, Dictionary<string, object> parameters)
-        //{
-        //    PSDataCollection<T> outputCollection = new PSDataCollection<T>();
-
-        //    InitialSessionState initialState = InitialSessionState.CreateDefault();
-        //    if(modules != null)
-        //    {
-        //        initialState.ImportPSModule(modules);
-        //    }
-
-        //    using (PowerShell ps = PowerShell.Create(initialState))
-        //    {
-        //        ps.AddCommand(command).AddParameters(parameters);
-                
-
-        //        // begin invoke execution on the pipeline
-        //        ps.Invoke<T>(null, outputCollection);
-        //    }
-
-        //    return outputCollection;
-        //}
-
         public Task<PSDataCollection<T>> ExecuteCommandAsync<T>(PipelineSequence sequence)
         {
             return Task.Run<PSDataCollection<T>>(() => ExecuteCommandInternal<T>(null, sequence));
@@ -90,6 +43,30 @@ namespace PowerShellTools.Explorer
             using (PowerShell ps = PowerShell.Create(initialState))
             {
                 ps.AddPipelineSequence(sequence);
+                ps.Invoke<T>(null, outputCollection);
+            }
+
+            return outputCollection;
+        }
+
+        public Task<PSDataCollection<T>> ExecuteScriptAsync<T>(string[] modules, string script)
+        {
+            return Task.Run<PSDataCollection<T>>(() => ExecuteScriptInternal<T>(modules, script));
+        }
+
+        private PSDataCollection<T> ExecuteScriptInternal<T>(string[] modules, string script)
+        {
+            PSDataCollection<T> outputCollection = new PSDataCollection<T>();
+
+            InitialSessionState initialState = InitialSessionState.CreateDefault();
+            if (modules != null)
+            {
+                initialState.ImportPSModule(modules);
+            }
+
+            using (PowerShell ps = PowerShell.Create(initialState))
+            {
+                ps.AddScript(script);
                 ps.Invoke<T>(null, outputCollection);
             }
 

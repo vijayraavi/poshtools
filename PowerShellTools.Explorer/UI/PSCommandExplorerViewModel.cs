@@ -14,6 +14,7 @@ namespace PowerShellTools.Explorer
         private readonly IExceptionHandler _exceptionHandler;
 
         private CommandInfo _selectedCommand = null;
+        private bool _collapseGroups = true;
 
         private ObservableList<CommandInfo> _commands = new ObservableList<CommandInfo>();
         private ObservableList<CommandInfo> _filteredCommands = new ObservableList<CommandInfo>();
@@ -63,6 +64,20 @@ namespace PowerShellTools.Explorer
             }
         }
 
+        public bool CollapseGroups
+        {
+            get
+            {
+                return _collapseGroups;
+            }
+
+            set
+            {
+                _collapseGroups = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public void Refresh()
         {
         }
@@ -89,11 +104,14 @@ namespace PowerShellTools.Explorer
 
         private void ShowHelp(object parameter)
         {
+            var uri = PowerShellHelper.GetCommandInfoHelpUrl(_selectedCommand);
+            DTEHelper.OpenUrlInVSHost(uri);
         }
 
         private bool CanShowHelp(object parameter)
         {
-            return _selectedCommand != null;
+            return _selectedCommand != null &&
+                !string.IsNullOrWhiteSpace(PowerShellHelper.GetCommandInfoHelpUrl(_selectedCommand));
         }
 
         private void LoadCommandsCallback(PSDataCollection<CommandInfo> items)
@@ -110,11 +128,13 @@ namespace PowerShellTools.Explorer
         public void SearchResultData(List<CommandInfo> results)
         {
             _filteredCommands.AddItems(results, true);
+            this.CollapseGroups = false;
         }
 
         public void ClearSearch()
         {
             _filteredCommands.AddItems(_commands, true);
+            this.CollapseGroups = true;
         }
     }
 }

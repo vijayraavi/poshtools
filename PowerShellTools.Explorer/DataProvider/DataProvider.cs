@@ -48,17 +48,29 @@ namespace PowerShellTools.Explorer
             callback(result);
         }
 
-        public async void GetHelp(CommandInfo commandInfo, Action<PSObject> callback)
+        public async void GetCommandMetaData(CommandInfo commandInfo, Action<CommandMetadata> callback)
         {
-            var result = new PSDataCollection<PSObject>();
-            PipelineSequence sequence = new PipelineSequence()
-                .Add(new PipelineCommand("Get-Help")
-                    .AddParameter("Name", commandInfo.Name)
-                    .AddParameter("OutVariable", "a"))
-                .Add(new PipelineCommand("Write-Output")
-                    .AddParameter("PipelineVariable", "a"));
+            var script = string.Format("New-Object System.Management.Automation.CommandMetaData(gcm {0})", commandInfo.Name);
+            var result = new PSDataCollection<CommandMetadata>();
 
-            result = await _host.ExecuteCommandAsync<PSObject>(sequence);
+            result = await _host.ExecuteScriptAsync<CommandMetadata>(null, script);
+
+            if (result.Count > 0)
+            {
+                callback(result[0]);
+            }
+            else
+            {
+                callback(null);
+            }
+        }
+
+        public async void GetCommandHelp(CommandInfo commandInfo, Action<string> callback)
+        {
+            var script = string.Format("Get-Help -Name {0} -Full | Out-String", commandInfo.Name);
+            var result = new PSDataCollection<string>();
+
+            result = await _host.ExecuteScriptAsync<string>(null, script);
 
             if (result.Count > 0)
             {

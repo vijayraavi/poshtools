@@ -17,6 +17,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/Generic.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <local:ModuleNameConverter x:Key="ModuleNameConverter" />
             
             <DataTemplate x:Key="CommandDataTemplate">
                 <Grid>
@@ -42,7 +44,7 @@
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Module: " FontWeight="Bold" />
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Type: " FontWeight="Bold" />
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=Name, Mode=OneWay}" />
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=ModuleName, Mode=OneWay}" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=ModuleName, Mode=OneWay, Converter={StaticResource ModuleNameConverter}}" />
                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=CommandType, Mode=OneWay}" />
                             </Grid>
                         </TextBlock.ToolTip>
@@ -54,6 +56,10 @@
                 <CollectionViewSource.GroupDescriptions>
                     <PropertyGroupDescription PropertyName="ModuleName" />
                 </CollectionViewSource.GroupDescriptions>
+                <CollectionViewSource.SortDescriptions>
+                    <scm:SortDescription PropertyName="ModuleName" />
+                    <scm:SortDescription PropertyName="Name" />
+                </CollectionViewSource.SortDescriptions>
             </CollectionViewSource>
             
         </ResourceDictionary>
@@ -77,12 +83,19 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <local:CommandListView Grid.Row="0" Background="Transparent" Margin="0" ItemsSource="{Binding Source={StaticResource ViewSource}}" SelectedItem="{Binding SelectedCommand}" ItemTemplate="{StaticResource CommandDataTemplate}">
+            <local:CommandListView 
+                Grid.Row="0" 
+                Background="Transparent" 
+                Margin="0"
+                CollapseGroups="{Binding CollapseGroups}"
+                ItemsSource="{Binding Source={StaticResource ViewSource}}" 
+                SelectedItem="{Binding SelectedCommand}" 
+                ItemTemplate="{StaticResource CommandDataTemplate}">
                 <local:CommandListView.Resources>  
                     <ContextMenu x:Key="ItemContextMenu">
                         <!--<MenuItem Header="Filter Module" Command="{Binding Path=DataContext.FilterModuleCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />-->
-                        <MenuItem Header="View Definition" Command="{Binding Path=DataContext.ShowDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
-                        <!--<MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />-->
+                        <MenuItem Header="View Details" Command="{Binding Path=DataContext.ShowDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                        <MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
                     </ContextMenu>
                 </local:CommandListView.Resources>
                 <local:CommandListView.ItemContainerStyle>
@@ -93,7 +106,7 @@
                     </Style>
                 </local:CommandListView.ItemContainerStyle>
                 <local:CommandListView.GroupStyle>
-                    <GroupStyle>     
+                    <GroupStyle>
                         <GroupStyle.ContainerStyle>
                             <Style TargetType="{x:Type GroupItem}">
                                 <Setter Property="Margin" Value="0,0,0,10"/>
@@ -103,7 +116,7 @@
                                             <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="False">
                                                 <Expander.Header>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="12" />
+                                                        <TextBlock Text="{Binding Name, Converter={StaticResource ModuleNameConverter}}" FontWeight="Bold" FontSize="12" />
                                                         <TextBlock Text="{Binding ItemCount}" FontStyle="Italic" Margin="5,0,0,0" />
                                                     </StackPanel>
                                                 </Expander.Header>

@@ -10,6 +10,7 @@ namespace PowerShellTools.Explorer
         void GetModules(Action<PSDataCollection<PSModuleInfo>> callback);
         void GetCommands(Action<PSDataCollection<CommandInfo>> callback);
         void GetCommands(string module, Action<PSDataCollection<CommandInfo>> callback);
-        void GetHelp(CommandInfo commandInfo, Action<PSObject> callback);
+        void GetCommandMetaData(CommandInfo commandInfo, Action<CommandMetadata> callback);
+        void GetCommandHelp(CommandInfo commandInfo, Action<string> callback);
     }
 }

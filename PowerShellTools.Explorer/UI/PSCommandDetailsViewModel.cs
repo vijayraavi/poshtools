@@ -15,18 +15,19 @@ namespace PowerShellTools.Explorer
         private readonly string _title;
 
         private CommandInfo _commandInfo;
-        
-        private PSObject _helpText;
+        private string _helpText;
+        private bool _loading;
 
         public PSCommandDetailsViewModel(IHostWindow hostWindow, IDataProvider dataProvider, CommandInfo commandInfo)
         {
             _hostWindow = hostWindow;
             _dataProvider = dataProvider;
-            _title = string.Format("Details: {0}", commandInfo.Name);
-
             _commandInfo = commandInfo;
-            _dataProvider.GetHelp(_commandInfo, GetHelpCallback);
-            
+            _loading = true;
+
+            _title = string.Format("Details: {0}", _commandInfo.Name);
+            _dataProvider.GetCommandHelp(_commandInfo, GetHelpCallback);
+
             Close = new ViewModelCommand(this, _hostWindow.Close);
         }
 
@@ -40,16 +41,16 @@ namespace PowerShellTools.Explorer
             }
         }
 
-        public PSObject HelpText
+        public bool Loading
         {
             get
             {
-                return _helpText;
+                return _loading;
             }
 
             set
             {
-                _helpText = value;
+                _loading = value;
                 RaisePropertyChanged();
             }
         }
@@ -68,9 +69,24 @@ namespace PowerShellTools.Explorer
             }
         }
 
-        private void GetHelpCallback(PSObject result)
+        public string HelpText
+        {
+            get
+            {
+                return _helpText;
+            }
+
+            set
+            {
+                _helpText = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private void GetHelpCallback(string result)
         {
             HelpText = result;
+            Loading = false;
         }
     }
 }
