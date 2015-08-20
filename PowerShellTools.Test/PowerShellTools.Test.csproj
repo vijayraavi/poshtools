@@ -90,6 +90,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="BreakpointValidation\BreakpointValidationUnitTests.cs" />
     <Compile Include="Classification\PowerShellParseUtilitiesUnitTests.cs" />
     <Compile Include="Commands\ParameterEditorHelperUnitTests.cs" />
     <Compile Include="Common\ScriptParameterViewModelEqualityComparer.cs" />
