@@ -6,31 +6,34 @@
     <Style TargetType="{x:Type TextBlock}">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
         <Setter Property="FontFamily" Value="Segoe UI" />
-        <Setter Property="Margin" Value="3 0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Margin" Value="0" />
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
     <Style TargetType="{x:Type Label}">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
         <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="Margin" Value="0" />
     </Style>
 
     <Style TargetType="{x:Type Control}">
         <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.WindowKey}}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static shell:VsBrushes.AccentDarkKey}}" />
-        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static shell:VsBrushes.AccentDarkKey}}" />     
         <Style.Triggers>
             <Trigger Property="IsFocused" Value="True">
                 <Setter Property="BorderBrush" Value="{DynamicResource {x:Static shell:VsBrushes.HighlightKey}}" />
             </Trigger>
-            <Trigger Property="IsMouseOver" Value="True">
+            <!--<Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.WindowKey}}" />
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource {x:Static shell:VsBrushes.HighlightKey}}" />
-            </Trigger>
+            </Trigger>-->
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.WindowKey}}" />
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
@@ -109,12 +112,11 @@
         </Style.Triggers>
     </Style>
 
-    <Style TargetType="{x:Type local:CommandListView}">
-        <Setter Property="FontFamily" Value="Segoe UI" />
+    <Style TargetType="{x:Type local:CommandListView}" BasedOn="{StaticResource {x:Type Control}}">
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.WindowKey}}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static shell:VsBrushes.WindowKey}}" />
-        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
@@ -131,7 +133,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="{x:Type local:CommandListViewItem}">
+    <Style TargetType="{x:Type local:CommandListViewItem}" BasedOn="{StaticResource {x:Type Control}}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:CommandListViewItem}">
@@ -174,8 +176,8 @@
         <Setter Property="Grid.IsSharedSizeScope" Value="true"/>
         <Setter Property="HasDropShadow" Value="True"/>
         <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.DropDownBackgroundKey}}"/>
-        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static shell:VsBrushes.DropDownBorderKey}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContextMenu">
@@ -196,11 +198,11 @@
         </Setter>
     </Style>
 
-    <Style x:Key="ExpanderDownHeaderStyle" TargetType="{x:Type ToggleButton}">
+    <Style x:Key="ExpanderDownHeaderStyle" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type Control}}">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
         <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.AccentDarkKey}}" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="FontWeight" Value="Bold" />
+        <!--<Setter Property="FontSize" Value="12" />-->
+        <!--<Setter Property="FontWeight" Value="Bold" />-->
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
@@ -217,8 +219,8 @@
                                   VerticalAlignment="Center" 
                                   x:Name="indicator" 
                                   Data="M0.5,0.5L4.5,4.5L0.5,8.5z" 
-                                  Stroke="{TemplateBinding Background}" 
-                                  Fill="{TemplateBinding Background}" />
+                                  Stroke="{TemplateBinding Foreground}" 
+                                  Fill="Transparent" />
                             <ContentPresenter Grid.Column="1" 
                                               HorizontalAlignment="Left" 
                                               Margin="4,0,0,0" 
@@ -230,6 +232,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="true">
                             <Setter Property="Data" TargetName="indicator" Value="M5.5,0.5L0.5,5.5L5.5,5.5z"/>
+                            <Setter Property="Fill" TargetName="indicator" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.HighlightKey}}" />
@@ -240,7 +243,7 @@
         </Setter>
     </Style>
 
-    <Style x:Key="StatusGroupExpander" TargetType="{x:Type Expander}">
+    <Style x:Key="StatusGroupExpander" TargetType="{x:Type Expander}" BasedOn="{StaticResource {x:Type Control}}">
         <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}" />
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -268,7 +271,7 @@
                                           FontFamily="{TemplateBinding FontFamily}" 
                                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                           IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
-                                          Margin="1" 
+                                          Margin="0" 
                                           MinWidth="0" 
                                           MinHeight="0" 
                                           Height="20"
@@ -295,6 +298,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-
     
 </ResourceDictionary>

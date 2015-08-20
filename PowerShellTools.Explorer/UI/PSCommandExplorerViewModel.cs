@@ -15,6 +15,7 @@ namespace PowerShellTools.Explorer
 
         private CommandInfo _selectedCommand = null;
         private bool _collapseGroups = true;
+        private bool _isBusy = true;
 
         private ObservableList<CommandInfo> _commands = new ObservableList<CommandInfo>();
         private ObservableList<CommandInfo> _filteredCommands = new ObservableList<CommandInfo>();
@@ -25,12 +26,14 @@ namespace PowerShellTools.Explorer
             _dataProvider = dataProvider;
             _exceptionHandler = exceptionHandler;
 
+            CopyCommand = new ViewModelCommand<object>(this, Copy, CanCopy);
             ShowDetailsCommand = new ViewModelCommand<object>(this, ShowDetails, CanShowDetails);
             ShowHelpCommand = new ViewModelCommand<object>(this, ShowHelp, CanShowHelp);
 
             Load(); 
         }
 
+        public ViewModelCommand<object> CopyCommand { get; set; }
         public ViewModelCommand<object> ShowDetailsCommand { get; set; }
         public ViewModelCommand<object> ShowHelpCommand { get; set; }
 
@@ -64,6 +67,20 @@ namespace PowerShellTools.Explorer
             }
         }
 
+        public bool IsBusy
+        {
+            get
+            {
+                return _isBusy;
+            }
+
+            set
+            {
+                _isBusy = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public bool CollapseGroups
         {
             get
@@ -89,6 +106,16 @@ namespace PowerShellTools.Explorer
         private void Load()
         {
             _dataProvider.GetCommands(LoadCommandsCallback);
+        }
+
+        public void Copy(object parameter)
+        {
+            ClipboardHelper.SetText(_selectedCommand.Name);
+        }
+
+        public bool CanCopy(object parameter)
+        {
+            return _selectedCommand != null;
         }
 
         public void ShowDetails(object parameter)
@@ -118,6 +145,7 @@ namespace PowerShellTools.Explorer
         {
             _commands.AddItems(items, true);
             _filteredCommands.AddItems(items, true);
+            IsBusy = false;
         }
 
         public List<CommandInfo> SearchSourceData()

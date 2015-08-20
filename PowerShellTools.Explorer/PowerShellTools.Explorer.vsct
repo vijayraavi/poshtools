@@ -39,7 +39,7 @@
 
         </Groups>
 
-        <Menus>
+        <!--<Menus>
             <Menu guid="guidToolWndCmdSet" id="ToolbarID" priority="0x0000" type="ToolWindowToolbar">
                 <Parent guid="guidToolWndCmdSet" id="ToolbarID"/>
                 <CommandFlag>DefaultDocked</CommandFlag>
@@ -51,7 +51,7 @@
                     <CommandName>Command Explorer Window</CommandName>
                 </Strings>
             </Menu>
-        </Menus>
+        </Menus>-->
         
         <!--Buttons section. -->
         <!--This section defines the elements the user can interact with, like a menu command or a button 
@@ -95,7 +95,7 @@
         <GuidSymbol name="guidToolWndCmdSet" value="{05D834F7-40B2-401B-8FB3-2B1D8742D431}">
             <IDSymbol name="ToolbarID" value="0x1000" />
             <IDSymbol name="ToolbarGroupID" value="0x1001" />
-            <IDSymbol name="cmdidTestToolbar" value="0x132" />
+            <!--<IDSymbol name="cmdidTestToolbar" value="0x132" />-->
         </GuidSymbol>
             <!-- This is the guid used to group the menu commands together -->
         <GuidSymbol name="guidPowerShellTools_ExplorerCmdSet" value="{26bdb96a-fc2a-42f3-ab08-bbc3e58c134a}">

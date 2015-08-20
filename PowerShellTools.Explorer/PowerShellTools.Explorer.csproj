@@ -134,6 +134,7 @@
     <Compile Include="Controls\CommandListViewItem.cs" />
     <Compile Include="Controls\ObservableList.cs" />
     <Compile Include="Converters\ModuleNameConverter.cs" />
+    <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Helpers\DragDropHelper.cs" />
     <Compile Include="Helpers\DTEHelper.cs" />
     <Compile Include="Helpers\ExceptionHandler.cs" />

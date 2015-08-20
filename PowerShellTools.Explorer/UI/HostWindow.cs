@@ -66,12 +66,14 @@ namespace PowerShellTools.Explorer
 
         private void ButtonHandler(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
         }
 
         public override bool SearchEnabled
         {
-            get { return true; }
+            get 
+            { 
+                return true; 
+            }
         }
 
         public override IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)

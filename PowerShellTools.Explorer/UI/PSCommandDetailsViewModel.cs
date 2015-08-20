@@ -16,14 +16,14 @@ namespace PowerShellTools.Explorer
 
         private CommandInfo _commandInfo;
         private string _helpText;
-        private bool _loading;
+        private bool _isBusy;
 
         public PSCommandDetailsViewModel(IHostWindow hostWindow, IDataProvider dataProvider, CommandInfo commandInfo)
         {
             _hostWindow = hostWindow;
             _dataProvider = dataProvider;
             _commandInfo = commandInfo;
-            _loading = true;
+            _isBusy = true;
 
             _title = string.Format("Details: {0}", _commandInfo.Name);
             _dataProvider.GetCommandHelp(_commandInfo, GetHelpCallback);
@@ -41,16 +41,16 @@ namespace PowerShellTools.Explorer
             }
         }
 
-        public bool Loading
+        public bool IsBusy
         {
             get
             {
-                return _loading;
+                return _isBusy;
             }
 
             set
             {
-                _loading = value;
+                _isBusy = value;
                 RaisePropertyChanged();
             }
         }
@@ -86,7 +86,7 @@ namespace PowerShellTools.Explorer
         private void GetHelpCallback(string result)
         {
             HelpText = result;
-            Loading = false;
+            IsBusy = false;
         }
     }
 }
