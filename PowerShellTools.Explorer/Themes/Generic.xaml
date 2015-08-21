@@ -81,7 +81,7 @@
         </Style.Triggers>
     </Style>
 
-    <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type Control}}">
+    <!--<Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type Control}}">
         <Setter Property="Padding" Value="4" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.ComboBoxBackgroundKey}}" />
@@ -110,7 +110,7 @@
                 <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.AccentDarkKey}}" />
             </Trigger>
         </Style.Triggers>
-    </Style>
+    </Style>-->
 
     <Style TargetType="{x:Type local:CommandListView}" BasedOn="{StaticResource {x:Type Control}}">
         <Setter Property="BorderThickness" Value="1" />
@@ -298,5 +298,52 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
+    <Style TargetType="{x:Type local:SearchableTextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:SearchableTextBox}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" 
+                                     Grid.ColumnSpan="2" 
+                                     Text="{Binding Path=SearchText, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource TemplatedParent}}" 
+                                     Height="25" 
+                                     Margin="0"
+                                     Background="{TemplateBinding Background}" 
+                                     BorderBrush="{TemplateBinding BorderBrush}" 
+                                     BorderThickness="{TemplateBinding BorderThickness}"/>
+                            <TextBlock Grid.Column="1"
+                                       Margin="4"
+                                       Width="Auto"
+                                       Foreground="DarkGray"
+                                       Padding="4 2 4 2">
+                                <Run Text="{Binding Path=SearchResultCount, RelativeSource={RelativeSource TemplatedParent}}" />
+                                <Run Text=" Results" />
+                            </TextBlock>
+                        </Grid>
+                       
+                        <Border Grid.Row="1" 
+                                Margin="0 10 0 0"
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto">
+                                <TextBlock TextWrapping="Wrap" x:Name="PART_TEXT" />
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>                  
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

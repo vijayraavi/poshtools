@@ -133,6 +133,7 @@
     <Compile Include="Controls\CommandListView.cs" />
     <Compile Include="Controls\CommandListViewItem.cs" />
     <Compile Include="Controls\ObservableList.cs" />
+    <Compile Include="Controls\SearchableTextBox.cs" />
     <Compile Include="Converters\ModuleNameConverter.cs" />
     <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Helpers\DragDropHelper.cs" />
