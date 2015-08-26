@@ -129,6 +129,33 @@ namespace PowerShellTools.Test.BreakpointValidation
             Assert.IsFalse(actual.IsValid);
         }
 
+        [TestMethod]
+        public void BreakpointOnParamBlockIsInvalid()
+        {
+            var ast = GenerateAst(testScript);
+            var actual = BreakpointValidationHelper.GetBreakpointPosition(ast, 28);
+
+            Assert.IsFalse(actual.IsValid);
+        }
+
+        [TestMethod]
+        public void BreakpointOnParameterIsInvalid()
+        {
+            var ast = GenerateAst(testScript);
+            var actual = BreakpointValidationHelper.GetBreakpointPosition(ast, 30);
+
+            Assert.IsFalse(actual.IsValid);
+        }
+
+        [TestMethod]
+        public void BreakpointOnNamedBlockIsValid()
+        {
+            var ast = GenerateAst(testScript);
+            var actual = BreakpointValidationHelper.GetBreakpointPosition(ast, 33);
+
+            Assert.IsTrue(actual.IsValid);
+        }
+
         private Ast GenerateAst(string script)
         {
             Token[] tokens;
@@ -166,6 +193,7 @@ function Get-Bar {
     [CmdletBinding()]
     param
     (
+        [Parameter()]$p
     )
 
     begin {
