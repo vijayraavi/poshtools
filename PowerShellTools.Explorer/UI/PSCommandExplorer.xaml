@@ -95,7 +95,6 @@
                     <ContextMenu x:Key="ItemContextMenu">
                         <MenuItem Header="Copy" Command="{Binding Path=DataContext.CopyCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
                         <MenuItem Header="View Details" Command="{Binding Path=DataContext.ShowDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
-                        <MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
                     </ContextMenu>
                 </local:CommandListView.Resources>
                 <local:CommandListView.ItemContainerStyle>
