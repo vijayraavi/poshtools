@@ -30,11 +30,11 @@ namespace PowerShellTools.Explorer
     [ProvideMenuResource("Menus.ctmenu", 1)]
     // This attribute registers a tool window exposed by this package.
     [ProvideToolWindow(
-        typeof(HostWindow),
+        typeof(PSCommandExplorerWindow),
         Style = Microsoft.VisualStudio.Shell.VsDockStyle.Tabbed,
         Window = "dd9b7693-1385-46a9-a054-06566904f861")]
     [Guid(GuidList.guidPowerShellTools_ExplorerPkgString)]
-    public sealed class PowerShellTools_ExplorerPackage : Package
+    public sealed class ExplorerPackage : Package
     {
         /// <summary>
         /// Default constructor of the package.
@@ -43,7 +43,7 @@ namespace PowerShellTools.Explorer
         /// not sited yet inside Visual Studio environment. The place to do all the other 
         /// initialization is the Initialize method.
         /// </summary>
-        public PowerShellTools_ExplorerPackage()
+        public ExplorerPackage()
         {
         }
 
@@ -52,20 +52,33 @@ namespace PowerShellTools.Explorer
         /// tool window. See the Initialize method to see how the menu item is associated to 
         /// this function using the OleMenuCommandService service and the MenuCommand class.
         /// </summary>
-        private void ShowToolWindow(object sender, EventArgs e)
-        {
-            // Get the instance number 0 of this tool window. This window is single instance so this instance
-            // is actually the only one.
-            // The last flag is set to true so that if the tool window does not exists it will be created.
-            ToolWindowPane window = this.FindToolWindow(typeof(HostWindow), 0, true);
-            if ((null == window) || (null == window.Frame))
-            {
-                throw new NotSupportedException(Resources.CanNotCreateWindow);
-            }
-            IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
-            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
-        }
+        //private void ShowToolWindow(object sender, EventArgs e)
+        //{
+        //    // Get the instance number 0 of this tool window. This window is single instance so this instance
+        //    // is actually the only one.
+        //    // The last flag is set to true so that if the tool window does not exists it will be created.
+        //    ToolWindowPane window = this.FindToolWindow(typeof(PSCommandExplorerWindow), 0, true);
+        //    if ((null == window) || (null == window.Frame))
+        //    {
+        //        throw new NotSupportedException(Resources.CanNotCreateWindow);
+        //    }
+        //    IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
+        //    Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+        //}
 
+        //public void ShowExplorerWindow()
+        //{
+        //    // Get the instance number 0 of this tool window. This window is single instance so this instance
+        //    // is actually the only one.
+        //    // The last flag is set to true so that if the tool window does not exists it will be created.
+        //    ToolWindowPane window = this.FindToolWindow(typeof(PSCommandExplorerWindow), 0, true);
+        //    if ((null == window) || (null == window.Frame))
+        //    {
+        //        throw new NotSupportedException("");
+        //    }
+        //    IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
+        //    Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+        //}
 
         /////////////////////////////////////////////////////////////////////////////
         // Overridden Package Implementation
@@ -79,15 +92,15 @@ namespace PowerShellTools.Explorer
         {
             base.Initialize();
 
-            // Add our command handlers for menu (commands must exist in the .vsct file)
-            OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if ( null != mcs )
-            {
-                // Create the command for the tool window
-                CommandID toolwndCommandID = new CommandID(GuidList.guidPowerShellTools_ExplorerCmdSet, (int)PkgCmdIDList.cmdidPSExplorer);
-                MenuCommand menuToolWin = new MenuCommand(ShowToolWindow, toolwndCommandID);
-                mcs.AddCommand(menuToolWin);
-            }
+            //// Add our command handlers for menu (commands must exist in the .vsct file)
+            //OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            //if ( null != mcs )
+            //{
+            //    // Create the command for the tool window
+            //    CommandID toolwndCommandID = new CommandID(GuidList.guidPowerShellTools_ExplorerCmdSet, (int)PkgCmdIDList.cmdidPSExplorer);
+            //    MenuCommand menuToolWin = new MenuCommand(ShowToolWindow, toolwndCommandID);
+            //    mcs.AddCommand(menuToolWin);
+            //}
         }
         #endregion
 

@@ -37,6 +37,7 @@ using Threading = System.Threading.Tasks;
 using Microsoft.VisualStudio.Debugger;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerShellTools.DebugEngine.Remote;
+using PowerShellTools.Explorer;
 
 namespace PowerShellTools
 {
@@ -115,7 +116,10 @@ namespace PowerShellTools
     [ProvideDebugPortSupplier("Powershell Remote Debugging (SSL Required)", typeof(RemoteDebugPortSupplier), PowerShellTools.Common.Constants.PortSupplierId, typeof(RemotePortPicker))]
     [ProvideDebugPortSupplier("Powershell Remote Debugging", typeof(RemoteUnsecuredDebugPortSupplier), PowerShellTools.Common.Constants.UnsecuredPortSupplierId, typeof(RemoteUnsecuredPortPicker))]
     [ProvideDebugPortPicker(typeof(RemotePortPicker))]
-
+    [ProvideToolWindow(
+        typeof(PSCommandExplorerWindow),
+        Style = Microsoft.VisualStudio.Shell.VsDockStyle.Tabbed,
+        Window = "dd9b7693-1385-46a9-a054-06566904f861")]
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
@@ -316,7 +320,8 @@ namespace PowerShellTools
                             new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
                             new ExecuteWithParametersAsScriptFromSolutionExplorerCommand(adaptersFactory, textManager, this.DependencyValidator),
                             new PrettyPrintCommand(),
-                            new OpenDebugReplCommand());
+                            new OpenDebugReplCommand(),
+                            new OpenExplorerCommand());
 
             try
             {
@@ -338,6 +343,34 @@ namespace PowerShellTools
                 throw ae.Flatten();
             }
         }
+
+        internal void ShowExplorerWindow()
+        {
+            // Get the instance number 0 of this tool window. This window is single instance so this instance
+            // is actually the only one.
+            // The last flag is set to true so that if the tool window does not exists it will be created.
+            ToolWindowPane window = this.FindToolWindow(typeof(PSCommandExplorerWindow), 0, true);
+            if ((null == window) || (null == window.Frame))
+            {
+                throw new NotSupportedException("");
+            }
+            IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+        }
+
+        //private void ShowToolWindow(object sender, EventArgs e)
+        //{
+        //    // Get the instance number 0 of this tool window. This window is single instance so this instance
+        //    // is actually the only one.
+        //    // The last flag is set to true so that if the tool window does not exists it will be created.
+        //    ToolWindowPane window = this.FindToolWindow(typeof(PSCommandExplorerWindow), 0, true);
+        //    if ((null == window) || (null == window.Frame))
+        //    {
+        //        throw new NotSupportedException("");
+        //    }
+        //    IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
+        //    Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+        //}
 
         private void RefreshCommands(params ICommand[] commands)
         {

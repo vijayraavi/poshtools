@@ -22,7 +22,7 @@ namespace PowerShellTools.Explorer
     /// implementation of the IVsUIElementPane interface.
     /// </summary>
     [Guid("dd9b7693-1385-46a9-a054-06566904f861")]
-    public class HostWindow : ToolWindowPane, IHostWindow
+    public class PSCommandExplorerWindow : ToolWindowPane, IHostWindow
     {
         private readonly IExceptionHandler _exceptionHandler;
         private readonly IDataProvider _dataProvider;
@@ -30,7 +30,7 @@ namespace PowerShellTools.Explorer
         /// <summary>
         /// Standard constructor for the tool window.
         /// </summary>
-        public HostWindow() :
+        public PSCommandExplorerWindow() :
             base(null)
         {
             _exceptionHandler = new ExceptionHandler();
@@ -46,26 +46,10 @@ namespace PowerShellTools.Explorer
             this.BitmapResourceID = 301;
             this.BitmapIndex = 1;
 
-            //this.ToolBar = new CommandID(GuidList.guidToolWndCmdSet, (int)PkgCmdIDList.ToolbarID);
-            //this.ToolBarLocation = (int)VSTWT_LOCATION.VSTWT_TOP;
-
-            //var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-
-            //if (null != mcs)
-            //{
-            //    var toolbarbtnCmdID = new CommandID(GuidList.guidToolWndCmdSet, (int)PkgCmdIDList.cmdidTestToolbar);
-            //    var menuItem = new MenuCommand(ButtonHandler, toolbarbtnCmdID);
-            //    mcs.AddCommand(menuItem);
-            //}
-
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
             base.Content = new PSCommandExplorer(this, _dataProvider, _exceptionHandler);
-        }
-
-        private void ButtonHandler(object sender, EventArgs e)
-        {
         }
 
         public override bool SearchEnabled
