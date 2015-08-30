@@ -196,6 +196,7 @@
     <Compile Include="DataProvider\DataProvider.cs" />
     <Compile Include="Interfaces\IDataProvider.cs" />
     <Compile Include="Interfaces\ISearchTaskTarget.cs" />
+    <Compile Include="Parameter\BindingProxy.cs" />
     <Compile Include="Parameter\CommandModel.cs" />
     <Compile Include="Parameter\CommandModelFactory.cs" />
     <Compile Include="Parameter\ParameterEditorTemplateSelector.cs" />

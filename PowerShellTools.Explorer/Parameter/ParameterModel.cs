@@ -51,34 +51,61 @@ namespace PowerShellTools.Explorer
                 case ParameterType.Unsupported:
                     return string.Empty;
                 case ParameterType.Array:
-                    return string.Format("-{0} {1}", Name, _value);
+                    return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Float:
-                    return string.Format("-{0} {1}", Name, _value);
+                    return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Double:
-                    return string.Format("-{0} {1}", Name, _value);
+                    return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Decimal:
-                    return string.Format("-{0} {1}", Name, _value);
+                    return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Char:
-                    return string.Format("-{0} {1}", Name, _value);
+                    return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Boolean:
-                    return string.Format("-{0} {1}", Name, _value == "True" ? "$true" : "$false");
+                    return FormatBool(Name, Value);
                 case ParameterType.Switch:
-                    return string.Format("-{0}", Name);
+                    return FormatSwitch(Name, Value);
                 case ParameterType.Enum:
                     break;
                 case ParameterType.Byte:
-                    return string.Format("-{0} {1}", Name, _value);
+                    return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Int32:
-                    return string.Format("-{0} {1}", Name, _value);
+                    return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Int64:
-                    return string.Format("-{0} {1}", Name, _value);
+                    return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.String:
-                    return string.Format("-{0} \"{1}\"", Name, _value);
+                    return string.Format("-{0} \"{1}\"", Name, Value);
                 default:
                     return string.Empty;
             }
 
             return string.Empty;
+        }
+
+        private string FormatBool(string name, string value)
+        {
+            bool set;
+            if (bool.TryParse(value, out set) && set)
+            {
+                return string.Format("-{0} {1}", name, "$true");
+            }
+
+            return string.Format("-{0} {1}", name, "$false"); ;
+        }
+
+        private string FormatSwitch(string name, string value)
+        {
+            bool set;
+            if (bool.TryParse(value, out set) && set)
+            {
+                return string.Format("-{0}", name);
+            }
+
+            return string.Empty;
+        }
+
+        private string QuotedString(string value)
+        {
+            return string.Format("\"{0}\"", value);
         }
     }
 }

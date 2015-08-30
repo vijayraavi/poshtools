@@ -5,11 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer
 {
     internal class ParameterEditorTemplateSelector : DataTemplateSelector
     {
+        public DataTemplate UnsupportedTemplete { get; set; }
+
         /// <summary>
         /// The DataTemplate to use for string parameters
         /// </summary>
@@ -42,53 +45,39 @@ namespace PowerShellTools.Explorer
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-            ContentPresenter presenter = container as ContentPresenter;
-            DataGridCell cell = presenter.Parent as DataGridCell;
-
-            // TODO: Figure out why item is always null
-            return StringTemplate;
-            if (item != null && item is ParameterEditorViewModel)
+            if (item != null && item is ParameterModel)
             {
-                var paramViewModel = item as ParameterEditorViewModel;
-                if (paramViewModel != null)
+                var parameter = item as ParameterModel;
+
+                switch (parameter.Type)
                 {
-                    return StringTemplate;
-                    //if (paramViewModel.AllowedValues.Any())
-                    //{
-                    //    return ChoiceTemplate;
-                    //}
+                    case ParameterType.Boolean:
+                        return SwitchTemplate;
 
-                    //switch (paramViewModel.Type)
-                    //{
-                    //    case ParameterType.Boolean:
-                    //        Debug.Fail("Booleans should have allowed choices");
-                    //        goto case ParameterType.Unknown;
+                    case ParameterType.Switch:
+                        return SwitchTemplate;
 
-                    //    case ParameterType.Switch:
-                    //        return SwitchTemplate;
+                    case ParameterType.Byte:
+                        return ByteTemplate;
 
-                    //    case ParameterType.Byte:
-                    //        return ByteTemplate;
+                    case ParameterType.Int32:
+                        return IntTemplate;
 
-                    //    case ParameterType.Int32:
-                    //        return IntTemplate;
+                    case ParameterType.Int64:
+                        return LongTemplate;
 
-                    //    case ParameterType.Int64:
-                    //        return LongTemplate;
+                    case ParameterType.Float:
+                    case ParameterType.Double:
+                    case ParameterType.Decimal:
+                    case ParameterType.Char:
+                    case ParameterType.String:
+                    case ParameterType.Array:
+                        return StringTemplate;
+                    case ParameterType.Unsupported:
+                        return UnsupportedTemplete;
 
-                    //    case ParameterType.Float:
-                    //    case ParameterType.Double:
-                    //    case ParameterType.Decimal:
-                    //    case ParameterType.Char:
-                    //    case ParameterType.String:
-                    //    case ParameterType.Array:
-                    //    case ParameterType.Unknown:
-                    //        return StringTemplate;
-
-                    //    default:
-                    //        Debug.Fail("Shouldn't reach here, should reach Unknown case instead");
-                    //        goto case ParameterType.Unknown;
-                    //}
+                    default:
+                        goto case ParameterType.Unsupported;
                 }
             }
 
