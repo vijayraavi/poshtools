@@ -1,5 +1,6 @@
 ﻿using System.Management.Automation;
 using System.Windows;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer
 {
@@ -8,7 +9,7 @@ namespace PowerShellTools.Explorer
     /// </summary>
     public partial class PSCommandDetails : Window, IHostWindow
     {
-        public PSCommandDetails(IDataProvider dataProvider, CommandInfo commandInfo)
+        public PSCommandDetails(IDataProvider dataProvider, IPowerShellCommand commandInfo)
         {
             InitializeComponent();
 

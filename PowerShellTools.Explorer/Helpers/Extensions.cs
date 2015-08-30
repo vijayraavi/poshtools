@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Management.Automation;
 
 namespace PowerShellTools.Explorer
 {
@@ -34,6 +35,5 @@ namespace PowerShellTools.Explorer
 
             list.AddRange(items);
         }
-
     }
 }

@@ -5,21 +5,20 @@ using System.Management.Automation;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer
 {
     internal static class DragDropHelper
     {
-        public static void DoDragDrop(DependencyObject element, object item, DragDropEffects effects)
+        public static void DoDragDrop(DependencyObject element, object obj, DragDropEffects effects)
         {
-            if (item is FunctionInfo)
+            var item = obj as IPowerShellCommand;
+
+            if (item != null)
             {
-                var content = string.IsNullOrWhiteSpace(((FunctionInfo)item).ScriptBlock.ToString()) ? ((FunctionInfo)item).ToString() : ((FunctionInfo)item).ScriptBlock.ToString();
+                var content = item.ToString();
                 DragDrop.DoDragDrop(element, content, DragDropEffects.Copy);
-            }
-            else
-            {
-                DragDrop.DoDragDrop(element, item.ToString(), DragDropEffects.Copy);
             }
         }
     }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Text;
 using System.Threading.Tasks;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer
 {
@@ -14,11 +15,11 @@ namespace PowerShellTools.Explorer
         private readonly IDataProvider _dataProvider;
         private readonly string _title;
 
-        private CommandInfo _commandInfo;
+        private IPowerShellCommand _commandInfo;
         private string _helpText;
         private bool _isBusy;
 
-        public PSCommandDetailsViewModel(IHostWindow hostWindow, IDataProvider dataProvider, CommandInfo commandInfo)
+        public PSCommandDetailsViewModel(IHostWindow hostWindow, IDataProvider dataProvider, IPowerShellCommand commandInfo)
         {
             _hostWindow = hostWindow;
             _dataProvider = dataProvider;
@@ -50,12 +51,15 @@ namespace PowerShellTools.Explorer
 
             set
             {
-                _isBusy = value;
-                RaisePropertyChanged();
+                if (_isBusy != value)
+                {
+                    _isBusy = value;
+                    RaisePropertyChanged();
+                }
             }
         }
 
-        public CommandInfo Info
+        public IPowerShellCommand Info
         {
             get
             {
@@ -64,8 +68,11 @@ namespace PowerShellTools.Explorer
 
             set
             {
-                _commandInfo = value;
-                RaisePropertyChanged();
+                if (_commandInfo != value)
+                {
+                    _commandInfo = value;
+                    RaisePropertyChanged();
+                }
             }
         }
 
@@ -78,8 +85,11 @@ namespace PowerShellTools.Explorer
 
             set
             {
-                _helpText = value;
-                RaisePropertyChanged();
+                if (_helpText != value)
+                {
+                    _helpText = value;
+                    RaisePropertyChanged();
+                }
             }
         }
 

@@ -10,7 +10,10 @@ namespace PowerShellTools.Explorer
     {
         public ExceptionHandler()
         {
+        }
 
+        public void HandleException(Exception exception)
+        {
         }
     }
 }

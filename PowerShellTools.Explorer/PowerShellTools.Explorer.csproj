@@ -173,10 +173,15 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\Command.cs" />
     <Compile Include="Controls\CommandListView.cs" />
     <Compile Include="Controls\CommandListViewItem.cs" />
     <Compile Include="Controls\ObservableList.cs" />
+    <Compile Include="Controls\ObservableObject.cs" />
     <Compile Include="Controls\SearchableTextBox.cs" />
+    <Compile Include="Controls\ViewModel.cs" />
+    <Compile Include="Controls\ViewModelCommand.cs" />
+    <Compile Include="Controls\VsShellDialogWindow.cs" />
     <Compile Include="Converters\ModuleNameConverter.cs" />
     <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Helpers\DragDropHelper.cs" />
@@ -191,16 +196,21 @@
     <Compile Include="DataProvider\DataProvider.cs" />
     <Compile Include="Interfaces\IDataProvider.cs" />
     <Compile Include="Interfaces\ISearchTaskTarget.cs" />
-    <Compile Include="PowerShell\FluentExtensions.cs" />
-    <Compile Include="PowerShell\PipelineCommand.cs" />
-    <Compile Include="PowerShell\PipelineSequence.cs" />
+    <Compile Include="Parameter\CommandModel.cs" />
+    <Compile Include="Parameter\CommandModelFactory.cs" />
+    <Compile Include="Parameter\ParameterEditorTemplateSelector.cs" />
+    <Compile Include="Parameter\ParameterModel.cs" />
     <Compile Include="Search\SearchTask.cs" />
     <Compile Include="Themes\ThemeResources.cs" />
+    <Compile Include="UI\HostWindow.cs" />
+    <Compile Include="UI\ParameterEditor.xaml.cs">
+      <DependentUpon>ParameterEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\ParameterEditorViewModel.cs" />
     <Compile Include="UI\PSCommandDetailsViewModel.cs" />
     <Compile Include="UI\PSCommandDetails.xaml.cs">
       <DependentUpon>PSCommandDetails.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Command.cs" />
     <Compile Include="UI\PSCommandExplorer.xaml.cs">
       <DependentUpon>PSCommandExplorer.xaml</DependentUpon>
     </Compile>
@@ -216,10 +226,6 @@
     <Compile Include="ExplorerPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PkgCmdID.cs" />
-    <Compile Include="PowerShell\PowerShellHost.cs" />
-    <Compile Include="UI\ViewModel.cs" />
-    <Compile Include="UI\ViewModelCommand.cs" />
-    <Compile Include="UI\VsShellDialogWindow.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -251,6 +257,10 @@
     <Resource Include="Resources\PowerShell.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="UI\ParameterEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\PSCommandDetails.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -263,6 +273,16 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PowershellTools.Common\PowerShellTools.Common.csproj">
+      <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
+      <Name>PowerShellTools.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.Contracts\PowerShellTools.Contracts.csproj">
+      <Project>{103c9af2-f8a5-4bf0-a341-a43147c320aa}</Project>
+      <Name>PowerShellTools.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>

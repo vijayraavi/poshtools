@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
 using System.Windows.Forms;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer
 {
@@ -13,12 +14,12 @@ namespace PowerShellTools.Explorer
         private readonly IDataProvider _dataProvider;
         private readonly IExceptionHandler _exceptionHandler;
 
-        private CommandInfo _selectedCommand = null;
-        private bool _collapseGroups = true;
+        private IPowerShellCommand _selectedCommand = null;
+        private bool _isFiltered = false;
         private bool _isBusy = true;
 
-        private ObservableList<CommandInfo> _commands = new ObservableList<CommandInfo>();
-        private ObservableList<CommandInfo> _filteredCommands = new ObservableList<CommandInfo>();
+        private ObservableList<IPowerShellCommand> _commands = new ObservableList<IPowerShellCommand>();
+        private ObservableList<IPowerShellCommand> _filteredCommands = new ObservableList<IPowerShellCommand>();
 
         public PSCommandExplorerViewModel(IHostWindow hostWindow, IDataProvider dataProvider, IExceptionHandler exceptionHandler)
         {
@@ -30,6 +31,7 @@ namespace PowerShellTools.Explorer
             ShowDetailsCommand = new ViewModelCommand<object>(this, ShowDetails, CanShowDetails);
             ShowHelpCommand = new ViewModelCommand<object>(this, ShowHelp, CanShowHelp);
 
+            UseCommandCommand = new ViewModelCommand(this, UseCommand);
             Load(); 
         }
 
@@ -37,7 +39,15 @@ namespace PowerShellTools.Explorer
         public ViewModelCommand<object> ShowDetailsCommand { get; set; }
         public ViewModelCommand<object> ShowHelpCommand { get; set; }
 
-        public ObservableList<CommandInfo> Commands
+        public ViewModelCommand UseCommandCommand { get; set; }
+
+        public void UseCommand()
+        {
+            ParameterEditor editor = new ParameterEditor(_dataProvider, _selectedCommand);
+            editor.Show();
+        }
+
+        public ObservableList<IPowerShellCommand> Commands
         {
             get
             {
@@ -50,7 +60,7 @@ namespace PowerShellTools.Explorer
             }
         }
 
-        public CommandInfo SelectedCommand
+        public IPowerShellCommand SelectedCommand
         {
             get
             {
@@ -76,27 +86,34 @@ namespace PowerShellTools.Explorer
 
             set
             {
-                _isBusy = value;
-                RaisePropertyChanged();
+                if (_isBusy != value)
+                {
+                    _isBusy = value;
+                    RaisePropertyChanged();
+                }
             }
         }
 
-        public bool CollapseGroups
+        public bool IsFiltered
         {
             get
             {
-                return _collapseGroups;
+                return _isFiltered;
             }
 
             set
             {
-                _collapseGroups = value;
-                RaisePropertyChanged();
+                if (_isFiltered != value)
+                {
+                    _isFiltered = value;
+                    RaisePropertyChanged();
+                }
             }
         }
 
         public void Refresh()
         {
+            Load();
         }
 
         public void Dispose()
@@ -105,12 +122,13 @@ namespace PowerShellTools.Explorer
 
         private void Load()
         {
+            IsBusy = true;
             _dataProvider.GetCommands(LoadCommandsCallback);
         }
 
         public void Copy(object parameter)
         {
-            ClipboardHelper.SetText(_selectedCommand.Name);
+            ClipboardHelper.SetText(_selectedCommand.ToString());
         }
 
         public bool CanCopy(object parameter)
@@ -131,38 +149,39 @@ namespace PowerShellTools.Explorer
 
         private void ShowHelp(object parameter)
         {
-            var uri = PowerShellHelper.GetCommandInfoHelpUrl(_selectedCommand);
-            DTEHelper.OpenUrlInVSHost(uri);
+            //var uri = PowerShellHelper.GetCommandInfoHelpUrl(_selectedCommand);
+            //DTEHelper.OpenUrlInVSHost(uri);
         }
 
         private bool CanShowHelp(object parameter)
         {
-            return _selectedCommand != null &&
-                !string.IsNullOrWhiteSpace(PowerShellHelper.GetCommandInfoHelpUrl(_selectedCommand));
+            return false;
+            //return _selectedCommand != null &&
+            //    !string.IsNullOrWhiteSpace(PowerShellHelper.GetCommandInfoHelpUrl(_selectedCommand));
         }
 
-        private void LoadCommandsCallback(PSDataCollection<CommandInfo> items)
+        private void LoadCommandsCallback(List<IPowerShellCommand> items)
         {
             _commands.AddItems(items, true);
             _filteredCommands.AddItems(items, true);
             IsBusy = false;
         }
 
-        public List<CommandInfo> SearchSourceData()
+        public List<IPowerShellCommand> SearchSourceData()
         {
             return _commands;
         }
 
-        public void SearchResultData(List<CommandInfo> results)
+        public void SearchResultData(List<IPowerShellCommand> results)
         {
             _filteredCommands.AddItems(results, true);
-            this.CollapseGroups = false;
+            IsFiltered = true;
         }
 
         public void ClearSearch()
         {
             _filteredCommands.AddItems(_commands, true);
-            this.CollapseGroups = true;
+            IsFiltered = false;
         }
     }
 }

@@ -38,6 +38,7 @@ using Microsoft.VisualStudio.Debugger;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerShellTools.DebugEngine.Remote;
 using PowerShellTools.Explorer;
+using PowerShellTools.Common.ServiceManagement.ExplorerContract;
 
 namespace PowerShellTools
 {
@@ -67,6 +68,7 @@ namespace PowerShellTools
     [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellReplCreationUiContextString)]
     // 5. PowerShell service execution
     [ProvideService(typeof(IPowerShellService))]
+    [ProvideService(typeof(IPowerShellHostClientService))]
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
                             101,
@@ -124,6 +126,7 @@ namespace PowerShellTools
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
         private Lazy<PowerShellService> _powerShellService;
+        private Lazy<PowerShellHostClientService> _powerShellHostClientService;
         private static ScriptDebugger _debugger;
         private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
@@ -233,6 +236,14 @@ namespace PowerShellTools
             }
         }
 
+        public static IPowerShellExplorerService ExplorerService
+        {
+            get
+            {
+                return ConnectionManager.Instance.PowerShellExplorerService;
+            }
+        }
+
         internal DependencyValidator DependencyValidator { get; set; }
 
         internal override LibraryManager CreateLibraryManager(CommonPackage package)
@@ -275,7 +286,8 @@ namespace PowerShellTools
                 InitializeInternal();
 
                 _powerShellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
-
+                _powerShellHostClientService = new Lazy<PowerShellHostClientService> (() => { return new PowerShellHostClientService(); });
+                
                 RegisterServices();
             }
             catch (Exception ex)
@@ -397,6 +409,7 @@ namespace PowerShellTools
 
             var serviceContainer = (IServiceContainer)this;
             serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powerShellService.Value, true);
+            serviceContainer.AddService(typeof(IPowerShellHostClientService), (c, t) => _powerShellHostClientService.Value, true);
         }
 
         private void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)

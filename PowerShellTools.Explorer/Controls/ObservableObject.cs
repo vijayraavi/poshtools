@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace PowerShellTools.Explorer
 {
-    internal abstract class ViewModel : INotifyPropertyChanged
+    internal abstract class ObservableObject : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

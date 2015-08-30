@@ -4,6 +4,7 @@ using System.Runtime.InteropServices.ComTypes;
 using EnvDTE;
 using EnvDTE80;
 using System.Text.RegularExpressions;
+using Microsoft.VisualStudio.Shell;
 
 namespace PowerShellTools.Explorer
 {

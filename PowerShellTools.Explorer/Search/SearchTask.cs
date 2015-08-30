@@ -3,6 +3,7 @@ using System.Management.Automation;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer.Search
 {
@@ -19,16 +20,16 @@ namespace PowerShellTools.Explorer.Search
         protected override void OnStartSearch()
         {
             var sourceItems = _searchTarget.SearchSourceData();
-            var resultItems = new List<CommandInfo>();
+            var resultItems = new List<IPowerShellCommand>();
             uint resultCount = 0;
-            this.ErrorCode = VSConstants.S_OK;
+            ErrorCode = VSConstants.S_OK;
 
             try
             {
                 string searchString = this.SearchQuery.SearchString;
                 uint progress = 0;
 
-                foreach (CommandInfo item in sourceItems)
+                foreach (IPowerShellCommand item in sourceItems)
                 {
                     if (item.Name.ToLowerInvariant().Contains(searchString.ToLowerInvariant()))
                     {
@@ -41,7 +42,7 @@ namespace PowerShellTools.Explorer.Search
             }
             catch
             {
-                this.ErrorCode = VSConstants.E_FAIL;
+                ErrorCode = VSConstants.E_FAIL;
             }
             finally
             {
@@ -50,7 +51,7 @@ namespace PowerShellTools.Explorer.Search
                     _searchTarget.SearchResultData(resultItems); 
                 });
 
-                this.SearchResults = resultCount;
+                SearchResults = resultCount;
             }
 
             base.OnStartSearch();
@@ -58,7 +59,7 @@ namespace PowerShellTools.Explorer.Search
 
         protected override void OnStopSearch()
         {
-            this.SearchResults = 0;
+            SearchResults = 0;
         }
     }
 }

@@ -167,6 +167,9 @@
     <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellServiceHost.cs">
       <Link>ServiceManagement\Debugging\PowerShellServiceHost.cs</Link>
     </Compile>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Explorer\PowerShellExplorerService.cs">
+      <Link>ServiceManagement\Explorer\PowerShellExplorerService.cs</Link>
+    </Compile>
     <Compile Include="..\PowerShellTools.HostService\ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs">
       <Link>ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs</Link>
     </Compile>

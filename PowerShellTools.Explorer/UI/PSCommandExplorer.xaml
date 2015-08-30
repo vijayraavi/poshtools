@@ -10,6 +10,7 @@
              Name="HostWindow">
     <UserControl.Resources>
         <ResourceDictionary>
+            
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/Generic.xaml"/>
             </ResourceDictionary.MergedDictionaries>
@@ -42,7 +43,7 @@
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Type: " FontWeight="Bold" />
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=Name, Mode=OneWay}" />
                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=ModuleName, Mode=OneWay, Converter={StaticResource ModuleNameConverter}}" />
-                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=CommandType, Mode=OneWay}" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=Type, Mode=OneWay}" />
                             </Grid>
                         </TextBlock.ToolTip>
                 </TextBlock>
@@ -83,7 +84,6 @@
                 Grid.Row="0" 
                 Background="Transparent" 
                 Margin="0"
-                CollapseGroups="{Binding CollapseGroups}"
                 ItemsSource="{Binding Source={StaticResource ViewSource}}" 
                 SelectedItem="{Binding SelectedCommand}" 
                 ItemTemplate="{StaticResource CommandDataTemplate}">
@@ -91,6 +91,9 @@
                     <ContextMenu x:Key="ItemContextMenu">
                         <MenuItem Header="Copy" Command="{Binding Path=DataContext.CopyCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
                         <MenuItem Header="View Details" Command="{Binding Path=DataContext.ShowDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                        <MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                        <Separator />
+                        <MenuItem Header="Use Command" Command="{Binding Path=DataContext.UseCommandCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
                     </ContextMenu>
                 </local:CommandListView.Resources>
                 <local:CommandListView.ItemContainerStyle>

@@ -326,6 +326,7 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="ExplorerServiceEventsHandlerProxy.cs" />
     <Compile Include="Intellisense\EdgeTrackingMode.cs" />
     <Compile Include="Intellisense\ProvideBraceCompletion.cs" />
     <Compile Include="LanguageService\BraceCompletion\BraceCompletionContext.cs" />
@@ -609,6 +610,7 @@
     <Compile Include="ServiceManagement\PowershellHostProcessHelper.cs" />
     <Compile Include="Service\ExecutionEngine.cs" />
     <Compile Include="Service\IExecutionEngine.cs" />
+    <Compile Include="Service\PowerShellHostClientService.cs" />
     <Compile Include="Service\PowerShellService.cs" />
   </ItemGroup>
   <ItemGroup>

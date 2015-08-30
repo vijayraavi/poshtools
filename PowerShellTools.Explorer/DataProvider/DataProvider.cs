@@ -1,84 +1,89 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using PowerShellTools.Common;
+using PowerShellTools.Contracts;
 
 namespace PowerShellTools.Explorer
 {
     internal sealed class DataProvider : IDataProvider
     {
-        private readonly PowerShellHost _host;
         private readonly IExceptionHandler _exceptionHandler;
+        private IPowerShellHostClientService _powerShellHostClientService;
 
         public DataProvider(IExceptionHandler exceptionHandler)
         {
-            _host = new PowerShellHost();
             _exceptionHandler = exceptionHandler;
         }
 
-        public async void GetModules(Action<PSDataCollection<PSModuleInfo>> callback)
+        public IPowerShellHostClientService Host
         {
-            var result = new PSDataCollection<PSModuleInfo>();
-            PipelineSequence sequence = new PipelineSequence()
-                .Add(new PipelineCommand("Get-Module")
-                .AddSwitchParameter("ListAvailable"));
-
-            result = await _host.ExecuteCommandAsync<PSModuleInfo>(sequence);
-
-            callback(result);
-        }
-
-        public async void GetCommands(Action<PSDataCollection<CommandInfo>> callback)
-        {
-            var result = new PSDataCollection<CommandInfo>();
-            PipelineSequence sequence = new PipelineSequence().Add(new PipelineCommand("Get-Command"));
-
-            result = await _host.ExecuteCommandAsync<CommandInfo>(sequence);
-
-            callback(result);
-        }
-
-        public async void GetCommands(string module, Action<PSDataCollection<CommandInfo>> callback)
-        {
-            var result = new PSDataCollection<CommandInfo>();
-            PipelineSequence sequence = new PipelineSequence().Add(new PipelineCommand("Get-Command"));
-
-            result = await _host.ExecuteCommandAsync<CommandInfo>(module, sequence);
-
-            callback(result);
-        }
-
-        public async void GetCommandMetaData(CommandInfo commandInfo, Action<CommandMetadata> callback)
-        {
-            var script = string.Format("New-Object System.Management.Automation.CommandMetaData(gcm {0})", commandInfo.Name);
-            var result = new PSDataCollection<CommandMetadata>();
-
-            result = await _host.ExecuteScriptAsync<CommandMetadata>(null, script);
-
-            if (result.Count > 0)
+            get
             {
-                callback(result[0]);
-            }
-            else
-            {
-                callback(null);
+                if (_powerShellHostClientService == null)
+                {
+                    _powerShellHostClientService = Package.GetGlobalService(typeof(IPowerShellHostClientService)) as IPowerShellHostClientService;
+                }
+
+                return _powerShellHostClientService;
             }
         }
 
-        public async void GetCommandHelp(CommandInfo commandInfo, Action<string> callback)
+        public async void GetModules(Action<List<IPowerShellModule>> callback)
         {
-            var script = string.Format("Get-Help -Name {0} -Full | Out-String", commandInfo.Name);
-            var result = new PSDataCollection<string>();
-
-            result = await _host.ExecuteScriptAsync<string>(null, script);
-
-            if (result.Count > 0)
+            try
             {
-                callback(result[0]);
+                var data = await Host.ExplorerService.GetModules();
+
+                callback(data);
             }
-            else
+            catch (Exception e)
             {
-                callback(null);
+                _exceptionHandler.HandleException(e);
+            }
+        }
+
+        public async void GetCommands(Action<List<IPowerShellCommand>> callback)
+        {
+            try
+            {
+                var data = await Host.ExplorerService.GetCommands();
+
+                callback(data);
+            }
+            catch (Exception e)
+            {
+                _exceptionHandler.HandleException(e);
+            }
+        }
+
+        public async void GetCommandHelp(IPowerShellCommand command, Action<string> callback)
+        {
+            try
+            {
+                var data = await Host.ExplorerService.GetCommandHelp(command);
+
+                callback(data);
+            }
+            catch (Exception e)
+            {
+                _exceptionHandler.HandleException(e);
+            }
+        }
+
+        public async void GetCommandMetaData(IPowerShellCommand command, Action<IPowerShellCommandMetadata> callback)
+        {
+            try
+            {
+                var data = await Host.ExplorerService.GetCommandMetadata(command);
+
+                callback(data);
+            }
+            catch (Exception e)
+            {
+                _exceptionHandler.HandleException(e);
             }
         }
     }
