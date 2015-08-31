@@ -13,6 +13,9 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <local:ModuleNameConverter x:Key="ModuleNameConverter" />
+        <local:ByteValueConverter x:Key="ByteValueConverter" />
+        <local:IntValueConverter x:Key="IntValueConverter"/>
+        <local:LongValueConverter x:Key="LongValueConverter" />
 
         <Style x:Key="DialogDataGridStyle" TargetType="{x:Type DataGrid}">
             <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" />
@@ -47,26 +50,22 @@
         <DataTemplate x:Key="StringParameterValueTemplate">
             <TextBox 
                     BorderThickness="0"
-                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
-                    />
+                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
         </DataTemplate>
         <DataTemplate x:Key="ByteParameterValueTemplate">
             <TextBox 
                     BorderThickness="0" 
-                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
-                    />
+                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=ByteValueConverter}}" />
         </DataTemplate>
         <DataTemplate x:Key="IntParameterValueTemplate">
             <TextBox 
                     BorderThickness="0" 
-                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
-                    />
+                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=IntValueConverter}}" />
         </DataTemplate>
         <DataTemplate x:Key="LongParameterValueTemplate">
             <TextBox 
                     BorderThickness="0" 
-                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
-                    />
+                    Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=LongValueConverter}}" />
         </DataTemplate>
         <DataTemplate x:Key="ChoiceParameterValueTemplate">
             <!-- CONSIDER: If we needed to show watermarks with choice parameters, we should

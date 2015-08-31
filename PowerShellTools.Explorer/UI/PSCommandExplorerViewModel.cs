@@ -30,6 +30,7 @@ namespace PowerShellTools.Explorer
             CopyCommand = new ViewModelCommand<object>(this, Copy, CanCopy);
             ShowDetailsCommand = new ViewModelCommand<object>(this, ShowDetails, CanShowDetails);
             ShowHelpCommand = new ViewModelCommand<object>(this, ShowHelp, CanShowHelp);
+            EditParametersCommand = new ViewModelCommand(this, EditParameters);
 
             UseCommandCommand = new ViewModelCommand(this, UseCommand);
             Load(); 
@@ -38,6 +39,7 @@ namespace PowerShellTools.Explorer
         public ViewModelCommand<object> CopyCommand { get; set; }
         public ViewModelCommand<object> ShowDetailsCommand { get; set; }
         public ViewModelCommand<object> ShowHelpCommand { get; set; }
+        public ViewModelCommand EditParametersCommand { get; set; }
 
         public ViewModelCommand UseCommandCommand { get; set; }
 
@@ -45,6 +47,11 @@ namespace PowerShellTools.Explorer
         {
             ParameterEditor editor = new ParameterEditor(_dataProvider, _selectedCommand);
             editor.Show();
+        }
+
+        public void EditParameters()
+        {
+            _hostWindow.ShowParameterEditor(_selectedCommand);
         }
 
         public ObservableList<IPowerShellCommand> Commands

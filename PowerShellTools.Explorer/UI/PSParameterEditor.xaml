@@ -1,0 +1,227 @@
+﻿<UserControl x:Class="PowerShellTools.Explorer.PSParameterEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:PowerShellTools.Explorer"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Themes/Generic.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <local:ModuleNameConverter x:Key="ModuleNameConverter" />
+            <local:ByteValueConverter x:Key="ByteValueConverter" />
+            <local:IntValueConverter x:Key="IntValueConverter"/>
+            <local:LongValueConverter x:Key="LongValueConverter" />
+
+            <Style x:Key="DialogDataGridStyle" TargetType="{x:Type DataGrid}">
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+                <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
+                <Setter Property="HorizontalGridLinesBrush" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="RowBackground" Value="Transparent" />
+                <Setter Property="Background" Value="Transparent" />
+            </Style>
+
+            <Style x:Key="DataGridCellNoEditingStyle" TargetType="{x:Type DataGridCell}" >
+                <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="MinHeight" Value="18"/>
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="2" />
+            </Style>
+
+            <Style x:Key="DataGridCellEditingStyle" TargetType="{x:Type DataGridCell}" >
+                <!-- Without this, editable cells have two tabstops 
+                (one for the cell, one for the editing control) -->
+                <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="MinHeight" Value="18"/>
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="2" />
+                
+                <!-- Due to WPF bug(981654), when we tab out of data grid and tab back in, 
+                the selected cell is not the same as cell in focus.
+                So we need to clean up the borders for the selected cell by setting the border thickness to 0. 
+                This will remove highlighting on the cell not in focus -->
+                <Style.Triggers>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsSelected" Value="True"/>
+                            <Condition Property="IsKeyboardFocusWithin" Value="False"/>
+                        </MultiTrigger.Conditions>
+                        <Setter Property="BorderThickness" Value="0"></Setter>
+                    </MultiTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="InLineTextBoxStyle" TargetType="{x:Type TextBox}">
+                <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.AccentDark}}" />
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+                <Setter Property="CaretBrush" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBorder}}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="2" />
+            </Style>
+            
+            <!-- DataTemplates for the individual editing controls based on parameter type -->
+            <DataTemplate x:Key="UnsupportedParameterTemplate">
+                <TextBlock Text="Unsupported" HorizontalAlignment="Left" Foreground="DarkGray" Margin="2" Padding="2" />
+            </DataTemplate>
+            <DataTemplate x:Key="StringParameterValueTemplate">
+                <TextBox Style="{StaticResource InLineTextBoxStyle}" 
+                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+            </DataTemplate>
+            <DataTemplate x:Key="ByteParameterValueTemplate">
+                <TextBox Style="{StaticResource InLineTextBoxStyle}" 
+                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=ByteValueConverter}}" />
+            </DataTemplate>
+            <DataTemplate x:Key="IntParameterValueTemplate">
+                <TextBox Style="{StaticResource InLineTextBoxStyle}" 
+                        Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=IntValueConverter}}" />
+            </DataTemplate>
+            <DataTemplate x:Key="LongParameterValueTemplate">
+                <TextBox Style="{StaticResource InLineTextBoxStyle}" 
+                        Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=LongValueConverter}}" />
+            </DataTemplate>
+            <DataTemplate x:Key="ChoiceParameterValueTemplate">
+                <!-- CONSIDER: If we needed to show watermarks with choice parameters, we should
+                            do that by adding a new entry to the combobox. Not needed for now -->
+                <ComboBox 
+                        BorderThickness="0"
+                        Padding="2,0,2,0"
+                        SelectedValue="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
+                        ItemsSource="{Binding Path=AllowedValues}" 
+                        HorizontalAlignment="Stretch"
+                        />
+            </DataTemplate>
+            <DataTemplate x:Key="SwitchParameterValueTemplate">
+                <CheckBox BorderThickness="1"
+                          Margin="2"
+                          IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
+                          HorizontalAlignment="Left" />
+                </DataTemplate>
+
+            <CollectionViewSource x:Key="ViewSource" Source="{Binding Path=Model.Parameters}">
+                <CollectionViewSource.SortDescriptions>
+                    <scm:SortDescription PropertyName="Name" />
+                </CollectionViewSource.SortDescriptions>
+            </CollectionViewSource>
+
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Busy indicator -->
+        <ProgressBar Grid.Row="0" 
+                     Height="2"
+                     Margin="0" 
+                     IsIndeterminate="{Binding IsBusy}" 
+                     Visibility="{Binding RelativeSource={RelativeSource Self}, 
+                                          Path=IsIndeterminate, 
+                                          Converter={StaticResource BoolToVisibilityConverter}}" />
+        
+        <!-- Command information -->
+        <!--<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0 5 0 5">
+            <TextBlock Text="{Binding Info.Type, Mode=OneWay}" />
+            <TextBlock Text=":" />
+            <TextBlock Text="{Binding Info.Name, Mode=OneWay}" FontWeight="Bold" Margin="5 0 5 0" />
+            <TextBlock Text="(" />
+            <TextBlock Text="{Binding Info.ModuleName, Mode=OneWay, Converter={StaticResource ModuleNameConverter}}" />
+            <TextBlock Text=")" />
+        </StackPanel>-->
+
+        <ComboBox Grid.Row="2" 
+                  VerticalAlignment="Stretch" 
+                  HorizontalAlignment="Stretch" 
+                  Margin="0" 
+                  ItemsSource="{Binding Path=Model.ParameterSets, Mode=OneWay}"
+                  SelectedIndex="{Binding Path=SelectedIndex}"
+                  SelectedItem="{Binding Path=SelectedItem}" />
+        
+        <DataGrid Grid.Row="3"
+                  Margin="5 20 5 5" 
+                  BorderThickness="0" 
+                  Background="Transparent"
+                  AutoGenerateColumns="False"
+                  HeadersVisibility="None"
+                  SelectionUnit="Cell"
+                  SelectionMode="Single"
+                  Style="{StaticResource DialogDataGridStyle}"
+                  DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
+                  ItemsSource="{Binding Source={StaticResource ViewSource}}">
+            <DataGrid.Resources>
+                <local:BindingProxy x:Key="proxy" Data="{Binding}" />
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn CellStyle="{StaticResource DataGridCellNoEditingStyle}" 
+                                        IsReadOnly="True"
+                                        Width="Auto"
+                                        MinWidth="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn IsReadOnly="False"                                      
+                                        MinWidth="150"
+                                        Width="*"
+                                        CellStyle="{StaticResource DataGridCellEditingStyle}">
+                    <DataGridTemplateColumn.CellTemplateSelector>
+                        <local:ParameterEditorTemplateSelector
+                                        UnsupportedTemplete="{StaticResource UnsupportedParameterTemplate}"
+                                        StringTemplate="{StaticResource StringParameterValueTemplate}"
+                                        ChoiceTemplate="{StaticResource ChoiceParameterValueTemplate}"
+                                        ByteTemplate="{StaticResource ByteParameterValueTemplate}"
+                                        IntTemplate="{StaticResource IntParameterValueTemplate}"
+                                        LongTemplate="{StaticResource LongParameterValueTemplate}"
+                                        SwitchTemplate="{StaticResource SwitchParameterValueTemplate}"/>
+                    </DataGridTemplateColumn.CellTemplateSelector>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBox Grid.Row="4" 
+                 Height="100"
+                 Margin="5" 
+                 IsReadOnly="True" 
+                 Text="{Binding Path=CommandPreview, Mode=OneWay}" 
+                 TextWrapping="WrapWithOverflow" />
+
+        <!-- Dialog buttons -->
+        <StackPanel x:Name="ButtonsPanel"
+                   Grid.Row="5"
+                   Margin="10">
+            <StackPanel 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right">
+                <Button x:Name="DetailsButton" 
+                        Width="80"
+                        Height="30"
+                        Content="Details..."
+                        Command="{Binding ShowDetailsCommand}" Margin="0 0 5 0" />
+                <Button x:Name="CancelButton" 
+                        Width="80"
+                        Height="30"
+                        IsDefault="True"
+                        Content="Cancel"
+                        Command="{Binding CancelCommand}" Margin="0 0 0 0" />
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

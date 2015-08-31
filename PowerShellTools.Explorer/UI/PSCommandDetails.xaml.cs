@@ -7,7 +7,7 @@ namespace PowerShellTools.Explorer
     /// <summary>
     /// Interaction logic for PSCommandDetails.xaml
     /// </summary>
-    public partial class PSCommandDetails : Window, IHostWindow
+    public partial class PSCommandDetails : Window, IDialog
     {
         public PSCommandDetails(IDataProvider dataProvider, IPowerShellCommand commandInfo)
         {

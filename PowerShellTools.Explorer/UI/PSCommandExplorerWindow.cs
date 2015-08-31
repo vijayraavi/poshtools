@@ -8,6 +8,7 @@ using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using PowerShellTools.Common;
 using PowerShellTools.Explorer.Search;
 
 namespace PowerShellTools.Explorer
@@ -26,6 +27,7 @@ namespace PowerShellTools.Explorer
     {
         private readonly IExceptionHandler _exceptionHandler;
         private readonly IDataProvider _dataProvider;
+        private readonly PSCommandExplorer _commandExplorer;
 
         /// <summary>
         /// Standard constructor for the tool window.
@@ -35,6 +37,7 @@ namespace PowerShellTools.Explorer
         {
             _exceptionHandler = new ExceptionHandler();
             _dataProvider = new DataProvider(_exceptionHandler);
+            _commandExplorer = new PSCommandExplorer(this, _dataProvider, _exceptionHandler);
 
             // Set the window title reading it from the resources.
             this.Caption = Resources.ToolWindowTitle;
@@ -49,20 +52,45 @@ namespace PowerShellTools.Explorer
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
-            base.Content = new PSCommandExplorer(this, _dataProvider, _exceptionHandler);
+            base.Content = new HostControl();
+            ShowCommandExplorer();
+        }
+
+        public HostControl ContentHost
+        {
+            get
+            {
+                return (HostControl)base.Content;
+            }
+            set
+            {
+                ((HostControl)base.Content).Content = value;
+            }
+        }
+
+        public void ShowCommandExplorer()
+        {
+            ContentHost.Content = _commandExplorer;
+        }
+
+        public void ShowParameterEditor(IPowerShellCommand command)
+        {
+            var view = new PSParameterEditor(this, _dataProvider, _exceptionHandler);
+            ContentHost.Content = view;
+            ((PSParameterEditorViewModel)view.DataContext).LoadCommand(command);
         }
 
         public override bool SearchEnabled
         {
             get 
-            { 
-                return true; 
+            {
+                return ContentHost.IsHostingSearchTarget; 
             }
         }
 
         public override IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
-            ISearchTaskTarget searchTarget = ((UserControl)this.Content).DataContext as ISearchTaskTarget;
+            ISearchTaskTarget searchTarget = ((UserControl)ContentHost.Content).DataContext as ISearchTaskTarget;
             if (searchTarget == null || pSearchQuery == null || pSearchCallback == null)
             {
                 return null;
@@ -73,7 +101,7 @@ namespace PowerShellTools.Explorer
 
         public override void ClearSearch()
         {
-            ISearchTaskTarget searchTarget = ((UserControl)this.Content).DataContext as ISearchTaskTarget;
+            ISearchTaskTarget searchTarget = ((UserControl)ContentHost.Content).DataContext as ISearchTaskTarget;
             if (searchTarget != null)
             {
                 searchTarget.ClearSearch();
@@ -91,11 +119,6 @@ namespace PowerShellTools.Explorer
             Utilities.SetValue(pSearchSettings,
                 SearchSettingsDataSource.SearchWatermarkProperty.Name,
                  "Search PowerShell commands");
-        }
-
-        public void Close()
-        {
-            // For IHostWindow implementation only
         }
     }
 }

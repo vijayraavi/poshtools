@@ -2,49 +2,43 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Management.Automation;
 using System.Text;
 using System.Threading.Tasks;
 using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer
 {
-    internal class ParameterEditorViewModel : ViewModel
+    internal class PSParameterEditorViewModel : ViewModel
     {
-        private readonly IDialog _window;
+        private readonly IHostWindow _hostWindow;
         private readonly IDataProvider _dataProvider;
-        private readonly string _title;
+        private readonly IExceptionHandler _exceptionHandler;
 
-        private IPowerShellCommand _commandInfo;
+        private IPowerShellCommand _command;
         private CommandModel _commandModel;
         private string _commandPreview = string.Empty;
         private int _selectedIndex = 0;
         private string _selectedItem = string.Empty;
         private bool _isBusy;
 
-        public ParameterEditorViewModel(IDialog window, IDataProvider dataProvider, IPowerShellCommand commandInfo)
+        public PSParameterEditorViewModel(IHostWindow hostWindow, IDataProvider dataProvider, IExceptionHandler exceptionHandler)
         {
-            _window = window;
+            _hostWindow = hostWindow;
             _dataProvider = dataProvider;
-            _commandInfo = commandInfo;
-            _isBusy = true;
+            _exceptionHandler = exceptionHandler;
 
-            _title = string.Format("Parameters: {0}", _commandInfo.Name);
-            _dataProvider.GetCommandMetaData(_commandInfo, GetCommandMetadataCallback);
+            CancelCommand = new ViewModelCommand(this, Cancel);
 
-            ShowDetailsCommand = new ViewModelCommand<object>(this, ShowDetails, CanShowDetails);
-            Close = new ViewModelCommand(this, _window.Close);
+            
         }
 
-        public ViewModelCommand<object> ShowDetailsCommand { get; set; }
-        public ViewModelCommand Close { get; set; }
+        public ViewModelCommand CancelCommand { get; set; }
 
-        public string Title
+        public void LoadCommand(IPowerShellCommand command)
         {
-            get
-            {
-                return _title;
-            }
+            _isBusy = true;
+            _command = command;
+            _dataProvider.GetCommandMetaData(_command, GetCommandMetadataCallback);
         }
 
         public bool IsBusy
@@ -68,14 +62,14 @@ namespace PowerShellTools.Explorer
         {
             get
             {
-                return _commandInfo;
+                return _command;
             }
 
             set
             {
-                if (_commandInfo != value)
+                if (_command != value)
                 {
-                    _commandInfo = value;
+                    _command = value;
                     RaisePropertyChanged();
                 }
             }
@@ -147,17 +141,6 @@ namespace PowerShellTools.Explorer
             }
         }
 
-        public void ShowDetails(object parameter)
-        {
-            var window = new PSCommandDetails(_dataProvider, _commandInfo);
-            window.Show();
-        }
-
-        private bool CanShowDetails(object parameter)
-        {
-            return _commandInfo != null;
-        }
-
         private void GetCommandMetadataCallback(IPowerShellCommandMetadata result)
         {
             Model = CommandModelFactory.GenerateCommandModel(result);
@@ -179,6 +162,11 @@ namespace PowerShellTools.Explorer
         private void UpdateCommandPreview()
         {
             CommandPreview = Model.ToString(_selectedItem);
+        }
+
+        private void Cancel()
+        {
+            _hostWindow.ShowCommandExplorer();
         }
     }
 }

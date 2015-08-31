@@ -176,21 +176,27 @@
     <Compile Include="Controls\Command.cs" />
     <Compile Include="Controls\CommandListView.cs" />
     <Compile Include="Controls\CommandListViewItem.cs" />
+    <Compile Include="Controls\HostControl.cs" />
     <Compile Include="Controls\ObservableList.cs" />
     <Compile Include="Controls\ObservableObject.cs" />
     <Compile Include="Controls\SearchableTextBox.cs" />
     <Compile Include="Controls\ViewModel.cs" />
     <Compile Include="Controls\ViewModelCommand.cs" />
     <Compile Include="Controls\VsShellDialogWindow.cs" />
+    <Compile Include="Converters\ByteValueConverter.cs" />
+    <Compile Include="Converters\IntValueConverter.cs" />
+    <Compile Include="Converters\LongValueConverter.cs" />
     <Compile Include="Converters\ModuleNameConverter.cs" />
     <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Helpers\DragDropHelper.cs" />
     <Compile Include="Helpers\DTEHelper.cs" />
     <Compile Include="Helpers\ExceptionHandler.cs" />
     <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\MouseDoubleClickBehaviour.cs" />
     <Compile Include="Helpers\NotifiyTaskCompletion.cs" />
     <Compile Include="Helpers\PowerShellHelper.cs" />
     <Compile Include="Helpers\WpfHelper.cs" />
+    <Compile Include="Interfaces\IDialog.cs" />
     <Compile Include="Interfaces\IExceptionHandler.cs" />
     <Compile Include="Interfaces\IHostWindow.cs" />
     <Compile Include="DataProvider\DataProvider.cs" />
@@ -201,9 +207,11 @@
     <Compile Include="Parameter\CommandModelFactory.cs" />
     <Compile Include="Parameter\ParameterEditorTemplateSelector.cs" />
     <Compile Include="Parameter\ParameterModel.cs" />
+    <Compile Include="UI\PSParameterEditor.xaml.cs">
+      <DependentUpon>PSParameterEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Search\SearchTask.cs" />
     <Compile Include="Themes\ThemeResources.cs" />
-    <Compile Include="UI\HostWindow.cs" />
     <Compile Include="UI\ParameterEditor.xaml.cs">
       <DependentUpon>ParameterEditor.xaml</DependentUpon>
     </Compile>
@@ -227,6 +235,7 @@
     <Compile Include="ExplorerPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PkgCmdID.cs" />
+    <Compile Include="UI\PSParameterEditorViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -258,6 +267,10 @@
     <Resource Include="Resources\PowerShell.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="UI\PSParameterEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\ParameterEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

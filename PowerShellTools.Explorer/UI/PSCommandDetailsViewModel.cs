@@ -11,7 +11,7 @@ namespace PowerShellTools.Explorer
 {
     internal class PSCommandDetailsViewModel : ViewModel
     {
-        private readonly IHostWindow _hostWindow;
+        private readonly IDialog _window;
         private readonly IDataProvider _dataProvider;
         private readonly string _title;
 
@@ -19,9 +19,9 @@ namespace PowerShellTools.Explorer
         private string _helpText;
         private bool _isBusy;
 
-        public PSCommandDetailsViewModel(IHostWindow hostWindow, IDataProvider dataProvider, IPowerShellCommand commandInfo)
+        public PSCommandDetailsViewModel(IDialog window, IDataProvider dataProvider, IPowerShellCommand commandInfo)
         {
-            _hostWindow = hostWindow;
+            _window = window;
             _dataProvider = dataProvider;
             _commandInfo = commandInfo;
             _isBusy = true;
@@ -29,7 +29,7 @@ namespace PowerShellTools.Explorer
             _title = string.Format("Details: {0}", _commandInfo.Name);
             _dataProvider.GetCommandHelp(_commandInfo, GetHelpCallback);
 
-            Close = new ViewModelCommand(this, _hostWindow.Close);
+            Close = new ViewModelCommand(this, _window.Close);
         }
 
         public ViewModelCommand Close { get; set; }

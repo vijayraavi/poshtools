@@ -10,21 +10,22 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer
 {
     /// <summary>
-    /// Interaction logic for ParameterEditor.xaml
+    /// Interaction logic for PSParameterEditor.xaml
     /// </summary>
-    public partial class ParameterEditor : Window, IDialog
+    public partial class PSParameterEditor : UserControl
     {
-        public ParameterEditor(IDataProvider dataProvider, IPowerShellCommand commandInfo)
+        public PSParameterEditor(IHostWindow hostWindow, IDataProvider dataProvider, IExceptionHandler exceptionHandler)
         {
             InitializeComponent();
 
-            this.DataContext = new ParameterEditorViewModel(this, dataProvider, commandInfo);
+            this.DataContext = new PSParameterEditorViewModel(hostWindow, dataProvider, exceptionHandler);
         }
     }
 }
