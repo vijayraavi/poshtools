@@ -28,10 +28,12 @@ namespace PowerShellTools.Explorer
             _exceptionHandler = exceptionHandler;
 
             ViewDetailsCommand = new ViewModelCommand(this, ViewDetails);
+            CopyCommand = new ViewModelCommand(this, Copy);
             CancelCommand = new ViewModelCommand(this, Cancel);
         }
 
         public ViewModelCommand ViewDetailsCommand { get; set; }
+        public ViewModelCommand CopyCommand { get; set; }
         public ViewModelCommand CancelCommand { get; set; }
 
         public void LoadCommand(IPowerShellCommand command)
@@ -169,6 +171,12 @@ namespace PowerShellTools.Explorer
         {
             var window = new PSCommandDetails(_dataProvider, _command);
             window.Show();
+        }
+
+        private void Copy()
+        {
+            var command = Model.ToString(_selectedItem);
+            ClipboardHelper.SetText(command);
         }
 
         private void Cancel()

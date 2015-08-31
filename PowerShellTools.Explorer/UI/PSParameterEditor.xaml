@@ -218,6 +218,9 @@
                 <Button x:Name="DetailsButton"
                         Content="Details..."
                         Command="{Binding ViewDetailsCommand}" Margin="0 0 5 0" />
+                <Button x:Name="CopyButton"
+                        Content="Copy"
+                        Command="{Binding CopyCommand}" Margin="0 0 5 0" />
                 <Button x:Name="CancelButton"
                         IsDefault="True"
                         Content="Back"
