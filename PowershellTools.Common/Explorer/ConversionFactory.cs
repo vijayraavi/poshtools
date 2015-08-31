@@ -72,7 +72,7 @@ namespace PowerShellTools.Common
                 case "switchparameter":
                     return ParameterType.Switch;
                 case "enum":
-                    return ParameterType.Unsupported;
+                    return ParameterType.Enum;
                 default:
                     return ParameterType.Unsupported;
             }

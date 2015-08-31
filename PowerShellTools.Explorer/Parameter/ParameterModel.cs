@@ -49,7 +49,7 @@ namespace PowerShellTools.Explorer
             switch (Type)
             {
                 case ParameterType.Unsupported:
-                    return string.Empty;
+                    return string.Format("-{0} {1}", Name, QuotedString(Value));
                 case ParameterType.Array:
                     return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Float:
@@ -65,7 +65,7 @@ namespace PowerShellTools.Explorer
                 case ParameterType.Switch:
                     return FormatSwitch(Name, Value);
                 case ParameterType.Enum:
-                    break;
+                    return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Byte:
                     return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.Int32:
@@ -73,12 +73,10 @@ namespace PowerShellTools.Explorer
                 case ParameterType.Int64:
                     return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.String:
-                    return string.Format("-{0} \"{1}\"", Name, Value);
+                    return string.Format("-{0} {1}", Name, QuotedString(Value));
                 default:
                     return string.Empty;
             }
-
-            return string.Empty;
         }
 
         private string FormatBool(string name, string value)
@@ -105,7 +103,14 @@ namespace PowerShellTools.Explorer
 
         private string QuotedString(string value)
         {
-            return string.Format("\"{0}\"", value);
+            if (value.Contains(' '))
+            {
+                return string.Format("\"{0}\"", value);
+            }
+            else
+            {
+                return value;
+            }
         }
     }
 }
