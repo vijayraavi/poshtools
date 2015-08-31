@@ -70,6 +70,7 @@ namespace PowerShellTools.Explorer
 
         public void ShowCommandExplorer()
         {
+            SetCaption(string.Empty);
             ContentHost.Content = _commandExplorer;
         }
 
@@ -78,6 +79,18 @@ namespace PowerShellTools.Explorer
             var view = new PSParameterEditor(this, _dataProvider, _exceptionHandler);
             ContentHost.Content = view;
             ((PSParameterEditorViewModel)view.DataContext).LoadCommand(command);
+        }
+
+        public void SetCaption(string caption)
+        {
+            if (string.IsNullOrWhiteSpace(caption))
+            {
+                Caption = Resources.ToolWindowTitle;
+            }
+            else
+            {
+                Caption = string.Format("{0} - {1}", Resources.ToolWindowTitle, caption);
+            }
         }
 
         public override bool SearchEnabled

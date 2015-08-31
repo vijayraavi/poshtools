@@ -8,7 +8,7 @@ using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer
 {
-    internal class PSParameterEditorViewModel : ViewModel
+    internal class PSParameterEditorViewModel : ViewModel, IHostWindowContent
     {
         private readonly IHostWindow _hostWindow;
         private readonly IDataProvider _dataProvider;
@@ -27,11 +27,11 @@ namespace PowerShellTools.Explorer
             _dataProvider = dataProvider;
             _exceptionHandler = exceptionHandler;
 
+            ViewDetailsCommand = new ViewModelCommand(this, ViewDetails);
             CancelCommand = new ViewModelCommand(this, Cancel);
-
-            
         }
 
+        public ViewModelCommand ViewDetailsCommand { get; set; }
         public ViewModelCommand CancelCommand { get; set; }
 
         public void LoadCommand(IPowerShellCommand command)
@@ -147,6 +147,7 @@ namespace PowerShellTools.Explorer
 
             if (Model != null)
             {
+                _hostWindow.SetCaption(Model.Name);
                 UpdateCommandPreview();
                 Model.PropertyChanged += OnCommandModelPropertyChanged;
             }
@@ -164,9 +165,23 @@ namespace PowerShellTools.Explorer
             CommandPreview = Model.ToString(_selectedItem);
         }
 
+        private void ViewDetails()
+        {
+            var window = new PSCommandDetails(_dataProvider, _command);
+            window.Show();
+        }
+
         private void Cancel()
         {
             _hostWindow.ShowCommandExplorer();
+        }
+
+        internal void Activated()
+        {
+        }
+
+        void IHostWindowContent.Activated()
+        {
         }
     }
 }

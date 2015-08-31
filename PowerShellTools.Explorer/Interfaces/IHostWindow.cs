@@ -12,5 +12,6 @@ namespace PowerShellTools.Explorer
         HostControl ContentHost { get; set; }
         void ShowCommandExplorer();
         void ShowParameterEditor(IPowerShellCommand command);
+        void SetCaption(string caption);
     }
 }

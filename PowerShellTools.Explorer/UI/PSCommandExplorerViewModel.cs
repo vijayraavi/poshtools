@@ -8,7 +8,7 @@ using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer
 {
-    internal sealed class PSCommandExplorerViewModel : ViewModel, ISearchTaskTarget, IDisposable
+    internal sealed class PSCommandExplorerViewModel : ViewModel, IHostWindowContent, ISearchTaskTarget
     {
         private readonly IHostWindow _hostWindow;
         private readonly IDataProvider _dataProvider;
@@ -28,7 +28,7 @@ namespace PowerShellTools.Explorer
             _exceptionHandler = exceptionHandler;
 
             CopyCommand = new ViewModelCommand<object>(this, Copy, CanCopy);
-            ShowDetailsCommand = new ViewModelCommand<object>(this, ShowDetails, CanShowDetails);
+            ViewDetailsCommand = new ViewModelCommand<object>(this, ViewDetails, CanViewDetails);
             ShowHelpCommand = new ViewModelCommand<object>(this, ShowHelp, CanShowHelp);
             EditParametersCommand = new ViewModelCommand(this, EditParameters);
 
@@ -37,7 +37,7 @@ namespace PowerShellTools.Explorer
         }
 
         public ViewModelCommand<object> CopyCommand { get; set; }
-        public ViewModelCommand<object> ShowDetailsCommand { get; set; }
+        public ViewModelCommand<object> ViewDetailsCommand { get; set; }
         public ViewModelCommand<object> ShowHelpCommand { get; set; }
         public ViewModelCommand EditParametersCommand { get; set; }
 
@@ -123,10 +123,6 @@ namespace PowerShellTools.Explorer
             Load();
         }
 
-        public void Dispose()
-        {
-        }
-
         private void Load()
         {
             IsBusy = true;
@@ -143,13 +139,13 @@ namespace PowerShellTools.Explorer
             return _selectedCommand != null;
         }
 
-        public void ShowDetails(object parameter)
+        public void ViewDetails(object parameter)
         {
             var window = new PSCommandDetails(_dataProvider, _selectedCommand);
             window.Show();
         }
 
-        private bool CanShowDetails(object parameter)
+        private bool CanViewDetails(object parameter)
         {
             return _selectedCommand != null;
         }
@@ -189,6 +185,10 @@ namespace PowerShellTools.Explorer
         {
             _filteredCommands.AddItems(_commands, true);
             IsFiltered = false;
+        }
+
+        void IHostWindowContent.Activated()
+        {
         }
     }
 }

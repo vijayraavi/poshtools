@@ -1,5 +1,4 @@
-﻿using System.Management.Automation;
-using System.Windows;
+﻿using System.Windows;
 using PowerShellTools.Common;
 
 namespace PowerShellTools.Explorer

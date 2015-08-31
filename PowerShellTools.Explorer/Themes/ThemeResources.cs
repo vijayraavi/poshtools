@@ -46,7 +46,7 @@ namespace PowerShellTools.Explorer
         {
             get
             {
-                return VsBrushes.AccentDarkKey;
+                return VsBrushes.ControlOutlineKey;
             }
         }
 
@@ -63,6 +63,22 @@ namespace PowerShellTools.Explorer
             get
             {
                 return VsBrushes.GrayTextKey;
+            }
+        }
+
+        public static object ComboBoxBorder
+        {
+            get
+            {
+                return VsBrushes.ComboBoxBorderKey;
+            }
+        }
+
+        public static object ComboBoxBackground
+        {
+            get
+            {
+                return VsBrushes.ComboBoxBackgroundKey;
             }
         }
 

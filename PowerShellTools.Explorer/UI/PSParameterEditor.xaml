@@ -59,13 +59,38 @@
                 </Style.Triggers>
             </Style>
 
+            <Style x:Key="PanelButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBackground}}" />
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBorder}}" />
+                <Setter Property="Margin" Value="6 0 0 0" />
+                <Setter Property="Padding" Value="4 0 4 0" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="MinHeight" Value="25" />
+                <Setter Property="MinWidth" Value="75" />
+            </Style>
+            
             <Style x:Key="InLineTextBoxStyle" TargetType="{x:Type TextBox}">
-                <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.AccentDark}}" />
+                <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBackground}}" />
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
                 <Setter Property="CaretBrush" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBorder}}" />
                 <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Margin" Value="2" />
                 <Setter Property="Padding" Value="2" />
+            </Style>
+            
+            <Style x:Key="CommandPreview" TargetType="{x:Type TextBox}">
+                <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBackground}}" />
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBorder}}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Margin" Value="10" />
+                <Setter Property="Padding" Value="2" />
+                <Setter Property="IsReadOnly" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWithOverflow" />
             </Style>
             
             <!-- DataTemplates for the individual editing controls based on parameter type -->
@@ -173,7 +198,12 @@
                                         MinWidth="150">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
+                            <Grid>
+                                <TextBlock VerticalAlignment="Center">
+                                    <Run Text="{Binding Path=Name, Mode=OneWay}" />
+                                    <Run Text=":" />
+                                </TextBlock>
+                            </Grid>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -196,11 +226,9 @@
         </DataGrid>
 
         <TextBox Grid.Row="4" 
-                 Height="100"
-                 Margin="5" 
-                 IsReadOnly="True" 
-                 Text="{Binding Path=CommandPreview, Mode=OneWay}" 
-                 TextWrapping="WrapWithOverflow" />
+                 Height="80"
+                 Style="{StaticResource CommandPreview}"
+                 Text="{Binding Path=CommandPreview, Mode=OneWay}" />
 
         <!-- Dialog buttons -->
         <StackPanel x:Name="ButtonsPanel"
@@ -210,13 +238,11 @@
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right">
                 <Button x:Name="DetailsButton" 
-                        Width="80"
-                        Height="30"
+                        Style="{StaticResource PanelButton}"
                         Content="Details..."
-                        Command="{Binding ShowDetailsCommand}" Margin="0 0 5 0" />
+                        Command="{Binding ViewDetailsCommand}" Margin="0 0 5 0" />
                 <Button x:Name="CancelButton" 
-                        Width="80"
-                        Height="30"
+                        Style="{StaticResource PanelButton}"
                         IsDefault="True"
                         Content="Cancel"
                         Command="{Binding CancelCommand}" Margin="0 0 0 0" />

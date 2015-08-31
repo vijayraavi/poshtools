@@ -20,12 +20,11 @@
             
             <DataTemplate x:Key="CommandDataTemplate">
                 <Grid>
-                    <TextBlock 
-                    HorizontalAlignment="Stretch"
-                    Background="Transparent"
-                    Margin="0"
-                    Padding="0"
-                    Text="{Binding Path=Name, Mode=OneWay}">
+                    <TextBlock HorizontalAlignment="Stretch"
+                               Background="Transparent"
+                               Margin="0"
+                               Padding="0"
+                               Text="{Binding Path=Name, Mode=OneWay}">
                         <TextBlock.ToolTip>
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -46,7 +45,7 @@
                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=Type, Mode=OneWay}" />
                             </Grid>
                         </TextBlock.ToolTip>
-                </TextBlock>
+                    </TextBlock>
                 </Grid>
             </DataTemplate>
 
@@ -80,20 +79,19 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <local:CommandListView 
-                Grid.Row="0" 
-                Background="Transparent" 
-                Margin="0"
-                ItemsSource="{Binding Source={StaticResource ViewSource}}" 
-                SelectedItem="{Binding SelectedCommand}" 
-                ItemTemplate="{StaticResource CommandDataTemplate}">
+            <local:CommandListView Grid.Row="0"
+                                   Background="Transparent"
+                                   Margin="0"
+                                   ItemsSource="{Binding Source={StaticResource ViewSource}}"
+                                   SelectedItem="{Binding SelectedCommand}" 
+                                   ItemTemplate="{StaticResource CommandDataTemplate}">
                 <local:CommandListView.Resources>  
                     <ContextMenu x:Key="ItemContextMenu">
                         <MenuItem Header="Copy" Command="{Binding Path=DataContext.CopyCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
-                        <MenuItem Header="View Details" Command="{Binding Path=DataContext.ShowDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
-                        <MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
-                        <Separator />
-                        <MenuItem Header="Use Command" Command="{Binding Path=DataContext.UseCommandCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                        <MenuItem Header="View Details" Command="{Binding Path=DataContext.ViewDetailsCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />
+                        <!--<MenuItem Header="View Help" Command="{Binding Path=DataContext.ShowHelpCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />-->
+                        <!--<Separator />
+                        <MenuItem Header="Use Command" Command="{Binding Path=DataContext.UseCommandCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" />-->
                     </ContextMenu>
                 </local:CommandListView.Resources>
                 <local:CommandListView.ItemContainerStyle>

@@ -289,7 +289,7 @@
                                           FontFamily="{TemplateBinding FontFamily}" 
                                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                           IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
-                                          Margin="0" 
+                                          Margin="4 0 0 0" 
                                           MinWidth="0" 
                                           MinHeight="0" 
                                           Height="20"
@@ -365,7 +365,7 @@
     </Style>
 
     <Style TargetType="{x:Type ComboBox}">
-        <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.WindowBackground}}" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBackground}}" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBorder}}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
         <Setter Property="BorderThickness" Value="1" />
