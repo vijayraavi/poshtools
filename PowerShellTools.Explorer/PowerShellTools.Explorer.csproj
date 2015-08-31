@@ -176,6 +176,7 @@
     <Compile Include="Controls\Command.cs" />
     <Compile Include="Controls\CommandListView.cs" />
     <Compile Include="Controls\CommandListViewItem.cs" />
+    <Compile Include="Controls\CommandPreview.cs" />
     <Compile Include="Controls\HostControl.cs" />
     <Compile Include="Controls\ObservableList.cs" />
     <Compile Include="Controls\ObservableObject.cs" />

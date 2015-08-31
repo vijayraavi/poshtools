@@ -98,7 +98,7 @@
                     <Style TargetType="{x:Type local:CommandListViewItem}" >
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
-                        <Setter Property="Margin" Value="16 0 0 0" />
+                        <Setter Property="Margin" Value="14 0 0 0" />
                         <Setter Property="local:ClickBehavior.DoubleClick" Value="{Binding Path=DataContext.EditParametersCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}"/>
                     </Style>
                 </local:CommandListView.ItemContainerStyle>

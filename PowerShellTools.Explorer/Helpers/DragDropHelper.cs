@@ -21,5 +21,13 @@ namespace PowerShellTools.Explorer
                 DragDrop.DoDragDrop(element, content, DragDropEffects.Copy);
             }
         }
+
+        public static void DoDragDrop(DependencyObject element, string text, DragDropEffects effects)
+        {
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                DragDrop.DoDragDrop(element, text, DragDropEffects.Copy);
+            }
+        }
     }
 }
