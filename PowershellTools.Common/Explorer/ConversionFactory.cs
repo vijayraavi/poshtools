@@ -47,6 +47,8 @@ namespace PowerShellTools.Common
             {
                 case "string":
                     return ParameterType.String;
+                case "object":
+                    return ParameterType.Object;
                 case "char":
                     return ParameterType.Char;
                 case "byte":

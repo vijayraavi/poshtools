@@ -9,6 +9,7 @@ namespace PowerShellTools.Common
     public enum ParameterType
     {
         Unsupported,
+        Object,
         Array,
         Float,
         Double,

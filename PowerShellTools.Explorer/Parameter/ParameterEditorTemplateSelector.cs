@@ -72,6 +72,7 @@ namespace PowerShellTools.Explorer
                     case ParameterType.Char:
                     case ParameterType.String:
                     case ParameterType.Array:
+                    case ParameterType.Object:
                         return StringTemplate;
                     case ParameterType.Unsupported:
                         return UnsupportedTemplete;
