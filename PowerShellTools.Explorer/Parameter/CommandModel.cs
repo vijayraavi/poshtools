@@ -19,6 +19,8 @@ namespace PowerShellTools.Explorer
             _parameters = parameters;
             Parameters = new ObservableCollection<ParameterModel>();
             ParameterSets = parameterSets;
+
+            SelectParameterSetByName(string.Empty);
         }
 
         public string Name { get; private set; }

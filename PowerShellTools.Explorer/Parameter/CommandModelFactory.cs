@@ -66,7 +66,7 @@ namespace PowerShellTools.Explorer
             {
                 foreach (IPowerShellParameterSetMetadata set in parameter.ParameterSets)
                 {
-                    if (!sets.Contains(set.Name))
+                    if (set.Name != AllParameterSets && !sets.Contains(set.Name))
                     {
                         sets.Add(set.Name);
                     }
