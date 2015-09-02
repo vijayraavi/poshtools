@@ -16,6 +16,8 @@ using System.ServiceModel;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using PowerShellTools.Common.ServiceManagement.ExplorerContract;
+using PowerShellTools.HostService.ServiceManagement;
 
 namespace PowerShellTools.HostService
 {
@@ -26,6 +28,7 @@ namespace PowerShellTools.HostService
     {
         private static ServiceHost _powerShellServiceHost;
         private static ServiceHost _powerShellDebuggingServiceHost;
+        private static ServiceHost _powerShellExplorerServiceHost;
 
         public static int VsProcessId { get; private set; }
 
@@ -79,6 +82,7 @@ namespace PowerShellTools.HostService
             // Step 2: Create the service host.
             CreatePowerShellIntelliSenseServiceHost(baseAddress, binding);
             CreatePowerShellDebuggingServiceHost(baseAddress, binding);
+            CreatePowerShellExplorerServiceHost(baseAddress, binding);
 
             // Step 3: Signal parent process that host is ready so that it can proceed.
             EventWaitHandle readyEvent = new EventWaitHandle(false, EventResetMode.ManualReset, readyEventName);
@@ -106,6 +110,11 @@ namespace PowerShellTools.HostService
                             {
                                 _powerShellDebuggingServiceHost.Close();
                                 _powerShellDebuggingServiceHost = null;
+                            }
+                            if (_powerShellExplorerServiceHost != null)
+                            {
+                                _powerShellExplorerServiceHost.Close();
+                                _powerShellExplorerServiceHost = null;
                             }
 
                             Environment.Exit(0);
@@ -137,5 +146,15 @@ namespace PowerShellTools.HostService
             _powerShellDebuggingServiceHost.Open();
         }
 
+        private static void CreatePowerShellExplorerServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
+        {
+            _powerShellExplorerServiceHost = new ServiceHost(typeof(PowerShellExplorerService), baseAddress);
+
+            _powerShellExplorerServiceHost.AddServiceEndpoint(typeof(IPowerShellExplorerService),
+                binding,
+                Constants.ExplorerHostRelativeUri);
+
+            _powerShellExplorerServiceHost.Open();
+        }
     }
 }
