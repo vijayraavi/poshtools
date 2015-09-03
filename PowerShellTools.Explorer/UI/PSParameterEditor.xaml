@@ -16,6 +16,14 @@
             <local:IntValueConverter x:Key="IntValueConverter"/>
             <local:LongValueConverter x:Key="LongValueConverter" />
 
+            <ControlTemplate x:Key="ErrorTemplate">
+                <Grid>
+                    <Border BorderThickness="1" BorderBrush="{DynamicResource {x:Static local:ThemeResources.RequiredHighlight}}">
+                        <AdornedElementPlaceholder x:Name="adorner" Margin="-1" />
+                    </Border>
+                </Grid>
+            </ControlTemplate>
+            
             <Style x:Key="DialogDataGridStyle" TargetType="{x:Type DataGrid}">
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
                 <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
@@ -24,6 +32,8 @@
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="RowBackground" Value="Transparent" />
                 <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+                <Setter Property="RowValidationErrorTemplate" Value="{x:Null}" />
             </Style>
 
             <Style x:Key="DataGridCellNoEditingStyle" TargetType="{x:Type DataGridCell}" >
@@ -33,6 +43,11 @@
                 <Setter Property="MinHeight" Value="18"/>
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Padding" Value="2" />
+                <Style.Resources>
+                    <Style TargetType="{x:Type ContentPresenter}">
+                        <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+                    </Style>
+                </Style.Resources>
             </Style>
 
             <Style x:Key="DataGridCellEditingStyle" TargetType="{x:Type DataGridCell}" >
@@ -43,7 +58,11 @@
                 <Setter Property="MinHeight" Value="18"/>
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Padding" Value="2" />
-                
+                <Style.Resources>
+                    <Style TargetType="{x:Type ContentPresenter}">
+                        <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+                    </Style>
+                </Style.Resources>
                 <!-- Due to WPF bug(981654), when we tab out of data grid and tab back in, 
                 the selected cell is not the same as cell in focus.
                 So we need to clean up the borders for the selected cell by setting the border thickness to 0. 
@@ -67,6 +86,7 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Margin" Value="2" />
                 <Setter Property="Padding" Value="2" />
+                <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ErrorTemplate}" />
             </Style>
             
             <Style x:Key="CommandPreview" TargetType="{x:Type TextBox}">
@@ -100,22 +120,12 @@
                 <TextBox Style="{StaticResource InLineTextBoxStyle}" 
                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=LongValueConverter}}" />
             </DataTemplate>
-            <DataTemplate x:Key="ChoiceParameterValueTemplate">
-                <!-- CONSIDER: If we needed to show watermarks with choice parameters, we should
-                            do that by adding a new entry to the combobox. Not needed for now -->
-                <ComboBox 
-                        BorderThickness="0"
-                        Padding="2,0,2,0"
-                        SelectedValue="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
-                        ItemsSource="{Binding Path=AllowedValues}" 
-                        HorizontalAlignment="Stretch"
-                        />
-            </DataTemplate>
             <DataTemplate x:Key="SwitchParameterValueTemplate">
                 <CheckBox BorderThickness="1"
                           Margin="2"
                           IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
-                          HorizontalAlignment="Left" />
+                          HorizontalAlignment="Left"
+                          Validation.ErrorTemplate="{StaticResource ErrorTemplate}" />
                 </DataTemplate>
 
             <CollectionViewSource x:Key="ViewSource" Source="{Binding Path=Model.Parameters}">
@@ -162,6 +172,8 @@
                   HeadersVisibility="None"
                   SelectionUnit="Cell"
                   SelectionMode="Single"
+                  Validation.ErrorTemplate="{x:Null}"
+                  RowValidationErrorTemplate="{x:Null}"
                   Style="{StaticResource DialogDataGridStyle}"
                   DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
                   ItemsSource="{Binding Source={StaticResource ViewSource}}">
@@ -172,7 +184,8 @@
                 <DataGridTemplateColumn CellStyle="{StaticResource DataGridCellNoEditingStyle}" 
                                         IsReadOnly="True"
                                         Width="Auto"
-                                        MinWidth="150">
+                                        MinWidth="150" 
+                                        Validation.ErrorTemplate="{x:Null}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid>
@@ -187,12 +200,12 @@
                 <DataGridTemplateColumn IsReadOnly="False"                                      
                                         MinWidth="150"
                                         Width="*"
+                                        Validation.ErrorTemplate="{x:Null}"
                                         CellStyle="{StaticResource DataGridCellEditingStyle}">
                     <DataGridTemplateColumn.CellTemplateSelector>
                         <local:ParameterEditorTemplateSelector
                                         UnsupportedTemplete="{StaticResource UnsupportedParameterTemplate}"
                                         StringTemplate="{StaticResource StringParameterValueTemplate}"
-                                        ChoiceTemplate="{StaticResource ChoiceParameterValueTemplate}"
                                         ByteTemplate="{StaticResource ByteParameterValueTemplate}"
                                         IntTemplate="{StaticResource IntParameterValueTemplate}"
                                         LongTemplate="{StaticResource LongParameterValueTemplate}"

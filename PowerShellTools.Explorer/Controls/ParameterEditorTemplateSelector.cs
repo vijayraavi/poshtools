@@ -19,11 +19,6 @@ namespace PowerShellTools.Explorer
         public DataTemplate StringTemplate { get; set; }
 
         /// <summary>
-        /// The DataTemplate to use for parameters with allowable values
-        /// </summary>
-        public DataTemplate ChoiceTemplate { get; set; }
-
-        /// <summary>
         /// The DataTemplate to use for Switch parameters
         /// </summary>
         public DataTemplate SwitchTemplate { get; set; }

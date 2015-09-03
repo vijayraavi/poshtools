@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -9,7 +11,7 @@ using PowerShellTools.Common;
 namespace PowerShellTools.Explorer
 {
     [DebuggerDisplay("{Name}:{Type}")]
-    internal class ParameterModel : ObservableObject
+    internal class ParameterModel : ObservableObject, INotifyDataErrorInfo
     {
         private string _value =  string.Empty;
 
@@ -22,9 +24,11 @@ namespace PowerShellTools.Explorer
             HelpMessage = helpMesssage ?? string.Empty;
         }
 
+        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+
         public string Set { get; private set; }
         public string Name { get; private set; }
-        public ParameterType Type {get; private set;}
+        public ParameterType Type { get; private set; }
         public bool IsMandatory { get; private set; }
         public string HelpMessage { get; private set; }
         public string Value
@@ -40,8 +44,22 @@ namespace PowerShellTools.Explorer
                 {
                     _value = value;
                     RaisePropertyChanged();
+                    RaiseErrorsChanged();
                 }
             }
+        }
+
+        public bool HasErrors
+        {
+            get
+            {
+                return IsMandatory && string.IsNullOrWhiteSpace(_value);
+            }
+        }
+
+        public IEnumerable GetErrors(string propertyName)
+        {
+            yield return propertyName;
         }
 
         public override string ToString()
@@ -110,6 +128,15 @@ namespace PowerShellTools.Explorer
             else
             {
                 return value;
+            }
+        }
+
+        private void RaiseErrorsChanged()
+        {
+            EventHandler<DataErrorsChangedEventArgs> handler = ErrorsChanged;
+            if(handler != null)
+            {
+                handler(this, new DataErrorsChangedEventArgs("Value"));
             }
         }
     }

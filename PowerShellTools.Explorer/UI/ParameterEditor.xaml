@@ -67,17 +67,6 @@
                     BorderThickness="0" 
                     Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=LongValueConverter}}" />
         </DataTemplate>
-        <DataTemplate x:Key="ChoiceParameterValueTemplate">
-            <!-- CONSIDER: If we needed to show watermarks with choice parameters, we should
-                        do that by adding a new entry to the combobox. Not needed for now -->
-            <ComboBox 
-                    BorderThickness="0"
-                    Padding="2,0,2,0"
-                    SelectedValue="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
-                    ItemsSource="{Binding Path=AllowedValues}" 
-                    HorizontalAlignment="Stretch"
-                    />
-        </DataTemplate>
         <DataTemplate x:Key="SwitchParameterValueTemplate">
             <CheckBox 
                     BorderThickness="1"
@@ -150,7 +139,6 @@
                                     <local:ParameterEditorTemplateSelector
                                         UnsupportedTemplete="{StaticResource UnsupportedParameterTemplate}"
                                         StringTemplate="{StaticResource StringParameterValueTemplate}"
-                                        ChoiceTemplate="{StaticResource ChoiceParameterValueTemplate}"
                                         ByteTemplate="{StaticResource ByteParameterValueTemplate}"
                                         IntTemplate="{StaticResource IntParameterValueTemplate}"
                                         LongTemplate="{StaticResource LongParameterValueTemplate}"
