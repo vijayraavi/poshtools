@@ -37,7 +37,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Attribute")]
     [DisplayName("PowerShell Attribute")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellAttributeFormat : ClassificationFormatDefinition
     {
         public PowerShellAttributeFormat()
@@ -51,7 +51,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Command")]
     [DisplayName("PowerShell Command")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellCommandFormat : ClassificationFormatDefinition
     {
         public PowerShellCommandFormat()
@@ -65,7 +65,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Command Argument")]
     [DisplayName("PowerShell Command Argument")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellCommandArgumentFormat : ClassificationFormatDefinition
     {
         public PowerShellCommandArgumentFormat()
@@ -79,7 +79,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Command Parameter")]
     [DisplayName("PowerShell Command Parameter")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellCommandParameterFormat : ClassificationFormatDefinition
     {
         public PowerShellCommandParameterFormat()
@@ -93,7 +93,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Comment")]
     [DisplayName("PowerShell Comment")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellCommentFormat : ClassificationFormatDefinition
     {
         public PowerShellCommentFormat()
@@ -107,7 +107,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Keyword")]
     [DisplayName("PowerShell Keyword")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellKeywordFormat : ClassificationFormatDefinition
     {
         public PowerShellKeywordFormat()
@@ -121,7 +121,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Number")]
     [DisplayName("PowerShell Number")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellNumberFormat : ClassificationFormatDefinition
     {
         public PowerShellNumberFormat()
@@ -135,7 +135,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Operator")]
     [DisplayName("PowerShell Operator")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellOperatorsFormat : ClassificationFormatDefinition
     {
         public PowerShellOperatorsFormat()
@@ -149,7 +149,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell String")]
     [DisplayName("PowerShell String")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellStringFormat : ClassificationFormatDefinition
     {
         public PowerShellStringFormat()
@@ -163,7 +163,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Type")]
     [DisplayName("PowerShell Types")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellTypeFormat : ClassificationFormatDefinition
     {
         public PowerShellTypeFormat()
@@ -177,7 +177,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Variable")]
     [DisplayName("PowerShell Variable")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellVariablesFormat : ClassificationFormatDefinition
     {
         public PowerShellVariablesFormat()
@@ -191,7 +191,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Member")]
     [DisplayName("PowerShell Member")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellMemberFormat : ClassificationFormatDefinition
     {
         public PowerShellMemberFormat()
@@ -205,7 +205,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Group Start")]
     [DisplayName("PowerShell Group Start")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellGroupStartFormat: ClassificationFormatDefinition
     {
         public PowerShellGroupStartFormat()
@@ -219,7 +219,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Group End")]
     [DisplayName("PowerShell Group End")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellGroupEndFormat : ClassificationFormatDefinition
     {
         public PowerShellGroupEndFormat()
@@ -233,7 +233,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Line Continuation")]
     [DisplayName("PowerShell Line Continuation (Backtick)")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellLineContinuationFormat : ClassificationFormatDefinition
     {
         public PowerShellLineContinuationFormat()
@@ -247,7 +247,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Loop Label")]
     [DisplayName("PowerShell Loop Label")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellLoopLabelFormat : ClassificationFormatDefinition
     {
         public PowerShellLoopLabelFormat()
@@ -261,7 +261,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Statement Separator")]
     [DisplayName("PowerShell Statement Separator (Semicolon)")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellStatementSeparatorFormat : ClassificationFormatDefinition
     {
         public PowerShellStatementSeparatorFormat()
@@ -275,7 +275,7 @@ namespace PowerShellTools.Classification
     [Name("PowerShell Unknown")]
     [DisplayName("PowerShell Unknown")]
     [UserVisible(true)]
-    [Order(After = Priority.Default, Before = Priority.High)]
+    [Order(Before = Priority.Default)]
     internal sealed class PowerShellUnknownFormat : ClassificationFormatDefinition
     {
         public PowerShellUnknownFormat()
