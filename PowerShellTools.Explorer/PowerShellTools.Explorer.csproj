@@ -191,7 +191,6 @@
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\MouseDoubleClickBehaviour.cs" />
     <Compile Include="Helpers\NotifiyTaskCompletion.cs" />
-    <Compile Include="Helpers\PowerShellHelper.cs" />
     <Compile Include="Helpers\WpfHelper.cs" />
     <Compile Include="Interfaces\IDialog.cs" />
     <Compile Include="Interfaces\IExceptionHandler.cs" />
@@ -212,7 +211,7 @@
     <Compile Include="Parameter\CommandFormatter.cs" />
     <Compile Include="Parameter\CommonParameterModel.cs" />
     <Compile Include="Parameter\ParameterModel.cs" />
-    <Compile Include="UI\OptionsPanel.xaml.cs">
+    <Compile Include="Controls\OptionsPanel.xaml.cs">
       <DependentUpon>OptionsPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\PSParameterEditor.xaml.cs">
@@ -275,7 +274,7 @@
     <Resource Include="Resources\PowerShell.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="UI\OptionsPanel.xaml">
+    <Page Include="Controls\OptionsPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

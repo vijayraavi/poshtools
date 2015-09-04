@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -21,6 +17,10 @@ namespace PowerShellTools.Explorer
             base.OnApplyTemplate();
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the current control,
+        /// hosted by this HostControl, is a ISearchTaskTarget.
+        /// </summary>
         public bool IsHostingSearchTarget
         {
             get
