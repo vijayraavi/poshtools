@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.Explorer
 {
-    internal sealed class CommandModelStringFormatter
+    internal enum OptionType
     {
-        internal static string FormatCommandModel(CommandModel model)
-        {
-            return string.Empty;
-        }
+        Bool,
+        Choice
     }
 }

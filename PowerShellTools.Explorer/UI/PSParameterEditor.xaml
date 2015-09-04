@@ -166,6 +166,7 @@
             <RowDefinition Height="Auto" /> <!-- Parameterset selection -->
             <RowDefinition Height="Auto" /> <!-- Parameters -->
             <RowDefinition Height="Auto" /> <!-- Common parameters -->
+            <RowDefinition Height="Auto" /> <!-- Options -->
             <RowDefinition Height="*" /> <!-- Place holder -->
             <RowDefinition Height="Auto" /> <!-- Preview label -->
             <RowDefinition Height="Auto" /> <!-- Preview -->
@@ -305,19 +306,28 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Expander>
+
+        <Expander Grid.Row="4" Style="{StaticResource StatusGroupExpander}" IsExpanded="False">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Options" FontWeight="SemiBold" />
+                </StackPanel>
+            </Expander.Header>
+            <local:OptionsPanel DataContext="{Binding Path=Options, Mode=OneWay}" />
+        </Expander>
         
-        <Grid Grid.Row="4"><!-- Placeholder --></Grid>
+        <Grid Grid.Row="5"><!-- Placeholder --></Grid>
         
-        <Label Grid.Row="5" Content="Preview (Drag to insert)" Margin="10 10 10 5" />
+        <Label Grid.Row="6" Content="Preview (Drag to insert)" Margin="10 10 10 5" />
         
-        <local:CommandPreview Grid.Row="6" 
+        <local:CommandPreview Grid.Row="7" 
                               Margin="10 0 10 0"
                               Height="80"
                               Text="{Binding Path=CommandPreview, Mode=OneWay}" />
 
         <!-- Dialog buttons -->
         <StackPanel x:Name="ButtonsPanel"
-                   Grid.Row="7"
+                   Grid.Row="8"
                    Margin="10">
             <StackPanel 
                     Orientation="Horizontal" 

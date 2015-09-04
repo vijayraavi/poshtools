@@ -175,6 +175,7 @@
     <Compile Include="Controls\HostControl.cs" />
     <Compile Include="Controls\ObservableList.cs" />
     <Compile Include="Controls\ObservableObject.cs" />
+    <Compile Include="Controls\OptionTemplateSelector.cs" />
     <Compile Include="Controls\SearchableTextBox.cs" />
     <Compile Include="Controls\ViewModel.cs" />
     <Compile Include="Controls\ViewModelCommand.cs" />
@@ -200,12 +201,20 @@
     <Compile Include="Interfaces\IHostWindowContent.cs" />
     <Compile Include="Interfaces\ISearchTaskTarget.cs" />
     <Compile Include="Controls\BindingProxy.cs" />
+    <Compile Include="Options\OptionModel.cs" />
+    <Compile Include="Options\OptionSet.cs" />
+    <Compile Include="Options\OptionType.cs" />
+    <Compile Include="Options\PSParameterEditorOptionSet.cs" />
+    <Compile Include="Parameter\CommandFormatterOptions.cs" />
     <Compile Include="Parameter\CommandModel.cs" />
     <Compile Include="Parameter\CommandModelFactory.cs" />
     <Compile Include="Controls\ParameterEditorTemplateSelector.cs" />
-    <Compile Include="Parameter\CommandModelStringFormatter.cs" />
+    <Compile Include="Parameter\CommandFormatter.cs" />
     <Compile Include="Parameter\CommonParameterModel.cs" />
     <Compile Include="Parameter\ParameterModel.cs" />
+    <Compile Include="UI\OptionsPanel.xaml.cs">
+      <DependentUpon>OptionsPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\PSParameterEditor.xaml.cs">
       <DependentUpon>PSParameterEditor.xaml</DependentUpon>
     </Compile>
@@ -266,6 +275,10 @@
     <Resource Include="Resources\PowerShell.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="UI\OptionsPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\PSParameterEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

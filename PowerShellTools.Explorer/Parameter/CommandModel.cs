@@ -46,36 +46,6 @@ namespace PowerShellTools.Explorer
             }
         }
 
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        public string ToString(string parameterSet)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(Name);
-
-            foreach (ParameterModel parameter in Parameters)
-            {
-                if ((parameter.Set == parameterSet | parameter.Set == "__AllParameterSets") && 
-                    !string.IsNullOrWhiteSpace(parameter.Value))
-                {
-                    sb.AppendFormat(" {0}", parameter.ToString());
-                }
-            }
-
-            foreach (CommonParameterModel parameter in CommonParameters)
-            {
-                if (!string.IsNullOrWhiteSpace(parameter.Value))
-                {
-                    sb.AppendFormat(" {0}", parameter.ToString());
-                }
-            }
-
-            return sb.ToString();
-        }
-
         private void OnParameterPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "Value")

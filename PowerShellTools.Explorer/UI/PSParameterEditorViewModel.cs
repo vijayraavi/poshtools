@@ -16,6 +16,7 @@ namespace PowerShellTools.Explorer
 
         private IPowerShellCommand _command;
         private CommandModel _commandModel;
+        private PSParameterEditorOptionSet _options = new PSParameterEditorOptionSet();
         private string _commandPreview = string.Empty;
         private int _selectedIndex = 0;
         private string _selectedItem = string.Empty;
@@ -27,6 +28,8 @@ namespace PowerShellTools.Explorer
             _dataProvider = dataProvider;
             _exceptionHandler = exceptionHandler;
 
+            _options.Options.ForEach(x => x.PropertyChanged += OnOptionChanged);
+
             ViewDetailsCommand = new ViewModelCommand(this, ViewDetails);
             CopyCommand = new ViewModelCommand(this, Copy);
             CancelCommand = new ViewModelCommand(this, Cancel);
@@ -35,6 +38,14 @@ namespace PowerShellTools.Explorer
         public ViewModelCommand ViewDetailsCommand { get; set; }
         public ViewModelCommand CopyCommand { get; set; }
         public ViewModelCommand CancelCommand { get; set; }
+
+        public List<OptionModel> Options
+        {
+            get
+            {
+                return _options.Options;
+            }
+        }
 
         public void LoadCommand(IPowerShellCommand command)
         {
@@ -162,9 +173,20 @@ namespace PowerShellTools.Explorer
             UpdateCommandPreview();
         }
 
+        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
+        {
+            UpdateCommandPreview();
+        }
+
         private void UpdateCommandPreview()
         {
-            CommandPreview = Model.ToString(_selectedItem);
+            CommandFormatterOptions options = new CommandFormatterOptions()
+            {
+                AsHashTable = _options.FormatAsHashTable,
+                ParameterSet = _selectedItem
+            };
+
+            CommandPreview = CommandFormatter.FormatCommandModel(Model, options);
         }
 
         private void ViewDetails()
@@ -175,7 +197,14 @@ namespace PowerShellTools.Explorer
 
         private void Copy()
         {
-            var command = Model.ToString(_selectedItem);
+            CommandFormatterOptions options = new CommandFormatterOptions()
+            {
+                AsHashTable = true,
+                ParameterSet = _selectedItem
+            };
+
+            var command = CommandFormatter.FormatCommandModel(Model, options);
+
             ClipboardHelper.SetText(command);
         }
 
