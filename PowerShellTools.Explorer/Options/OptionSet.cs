@@ -8,7 +8,7 @@ namespace PowerShellTools.Explorer
 {
     internal abstract class OptionSet
     {
-        private List<OptionModel> _options = new List<OptionModel>();
+        private Dictionary<string, OptionModel> _options = new Dictionary<string, OptionModel>();
 
         public OptionSet()
         {
@@ -18,8 +18,23 @@ namespace PowerShellTools.Explorer
         {
             get
             {
-                return _options;
+                return _options.Select(x=>x.Value).ToList<OptionModel>();
             }
+        }
+
+        public void AddOption(string key, OptionModel value)
+        {
+            _options.Add(key, value);
+        }
+
+        public bool ContainsOption(string key)
+        {
+            return _options.ContainsKey(key);
+        }
+
+        public OptionModel GetOption(string key)
+        {
+            return _options[key];
         }
     }
 }

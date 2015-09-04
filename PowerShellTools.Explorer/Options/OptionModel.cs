@@ -10,16 +10,14 @@ namespace PowerShellTools.Explorer
     {
         private string _value = string.Empty;
 
-        public OptionModel(string id, string caption, OptionType type, string helpMessage, HashSet<string> choices)
+        public OptionModel(string caption, OptionType type, string helpMessage, HashSet<string> choices)
         {
-            Id = id;
             Caption = caption;
             Type = type;
             HelpMessage = helpMessage;
             Choices = choices ?? new HashSet<string>();
         }
 
-        public string Id { get; private set; }
         public string Caption { get; private set; }
         public OptionType Type { get; private set; }
         public HashSet<string> Choices { get; private set; }

@@ -10,16 +10,23 @@ namespace PowerShellTools.Explorer
     {
         public PSParameterEditorOptionSet()
         {
-            Options.Add(new OptionModel("HashTable", "Format as Hashtable", OptionType.Bool, "Format command as hashtable", null));
+            AddOption("HashTable", new OptionModel("Format as Hashtable", OptionType.Bool, "Format command as hashtable", null));
         }
 
         public bool FormatAsHashTable
         {
             get
             {
-                var s = Options.Find(x => x.Id.Equals("HashTable", StringComparison.OrdinalIgnoreCase));
-                bool v;
-                return bool.TryParse(s.Value, out v) && v;
+                try
+                {
+                    var s = GetOption("HashTable");
+                    bool v;
+                    return bool.TryParse(s.Value, out v) && v;
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
     }
