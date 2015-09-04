@@ -33,7 +33,6 @@
     </When>
   </Choose>
   <Import Project="..\Build\ProjectBefore.settings" />
-
   <PropertyGroup>
     <DelaySign>false</DelaySign>
   </PropertyGroup>
@@ -204,6 +203,8 @@
     <Compile Include="Parameter\CommandModel.cs" />
     <Compile Include="Parameter\CommandModelFactory.cs" />
     <Compile Include="Controls\ParameterEditorTemplateSelector.cs" />
+    <Compile Include="Parameter\CommandModelStringFormatter.cs" />
+    <Compile Include="Parameter\CommonParameterModel.cs" />
     <Compile Include="Parameter\ParameterModel.cs" />
     <Compile Include="UI\PSParameterEditor.xaml.cs">
       <DependentUpon>PSParameterEditor.xaml</DependentUpon>

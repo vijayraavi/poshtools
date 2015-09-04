@@ -20,12 +20,16 @@ namespace PowerShellTools.Explorer
             Parameters = new ObservableCollection<ParameterModel>();
             ParameterSets = parameterSets;
 
+            CommonParameters = CommonParameterModel.GetCommonParameters();
+            CommonParameters.ForEach(x => x.PropertyChanged += OnParameterPropertyChanged);
+
             SelectParameterSetByName(string.Empty);
         }
 
         public string Name { get; private set; }
         public ObservableCollection<ParameterModel> Parameters { get; private set; }
         public List<string> ParameterSets { get; private set; }
+        public List<CommonParameterModel> CommonParameters { get; private set; }
 
         public void SelectParameterSetByName(string parameterSet)
         {
@@ -56,6 +60,14 @@ namespace PowerShellTools.Explorer
             {
                 if ((parameter.Set == parameterSet | parameter.Set == "__AllParameterSets") && 
                     !string.IsNullOrWhiteSpace(parameter.Value))
+                {
+                    sb.AppendFormat(" {0}", parameter.ToString());
+                }
+            }
+
+            foreach (CommonParameterModel parameter in CommonParameters)
+            {
+                if (!string.IsNullOrWhiteSpace(parameter.Value))
                 {
                     sb.AppendFormat(" {0}", parameter.ToString());
                 }

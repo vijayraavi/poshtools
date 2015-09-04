@@ -49,7 +49,7 @@ namespace PowerShellTools.Explorer
             }
         }
 
-        public bool HasErrors
+        public virtual bool HasErrors
         {
             get
             {
@@ -92,6 +92,8 @@ namespace PowerShellTools.Explorer
                     return string.Format("-{0} {1}", Name, Value);
                 case ParameterType.String:
                     return string.Format("-{0} {1}", Name, QuotedString(Value));
+                case ParameterType.Choice:
+                    return string.Format("-{0} {1}", Name, Value);
                 default:
                     return string.Empty;
             }

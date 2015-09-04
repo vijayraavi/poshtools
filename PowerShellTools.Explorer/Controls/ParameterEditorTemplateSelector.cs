@@ -38,6 +38,8 @@ namespace PowerShellTools.Explorer
         /// </summary>
         public DataTemplate LongTemplate { get; set; }
 
+        public DataTemplate ChoiceTemplate { get; set; }
+
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
             if (item != null && item is ParameterModel)
@@ -61,6 +63,7 @@ namespace PowerShellTools.Explorer
                     case ParameterType.Int64:
                         return LongTemplate;
 
+                    case ParameterType.Enum:
                     case ParameterType.Float:
                     case ParameterType.Double:
                     case ParameterType.Decimal:
@@ -70,7 +73,8 @@ namespace PowerShellTools.Explorer
                     case ParameterType.Object:
                     case ParameterType.Unsupported:
                         return StringTemplate;
-
+                    case ParameterType.Choice:
+                        return ChoiceTemplate;
                     default:
                         return StringTemplate;;
                 }

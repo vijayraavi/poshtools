@@ -18,6 +18,7 @@ namespace PowerShellTools.Common
         Boolean,
         Switch,
         Enum,
+        Choice,
         Byte,
         Int32,
         Int64,
