@@ -216,7 +216,7 @@
                     <DataGridTemplateColumn CellStyle="{StaticResource DataGridCellNoEditingStyle}" 
                                         IsReadOnly="True"
                                         Width="Auto"
-                                        MinWidth="150" 
+                                        MinWidth="100" 
                                         Validation.ErrorTemplate="{x:Null}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -230,7 +230,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn IsReadOnly="False"                                      
-                                        MinWidth="150"
+                                        MinWidth="100"
                                         Width="*"
                                         Validation.ErrorTemplate="{x:Null}"
                                         CellStyle="{StaticResource DataGridCellEditingStyle}">
@@ -274,7 +274,7 @@
                     <DataGridTemplateColumn CellStyle="{StaticResource DataGridCellNoEditingStyle}" 
                                         IsReadOnly="True"
                                         Width="Auto"
-                                        MinWidth="150" 
+                                        MinWidth="100" 
                                         Validation.ErrorTemplate="{x:Null}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -288,7 +288,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn IsReadOnly="False"                                      
-                                        MinWidth="150"
+                                        MinWidth="100"
                                         Width="*"
                                         Validation.ErrorTemplate="{x:Null}"
                                         CellStyle="{StaticResource DataGridCellEditingStyle}">
