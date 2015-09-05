@@ -40,9 +40,10 @@
                 <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
                 <Setter Property="Background" Value="Transparent" />
-                <Setter Property="MinHeight" Value="18"/>
+                <Setter Property="Height" Value="25"/>
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Padding" Value="2" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
                 <Style.Resources>
                     <Style TargetType="{x:Type ContentPresenter}">
                         <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
@@ -55,9 +56,10 @@
                 (one for the cell, one for the editing control) -->
                 <Setter Property="KeyboardNavigation.IsTabStop" Value="False" />
                 <Setter Property="Background" Value="Transparent" />
-                <Setter Property="MinHeight" Value="18"/>
+                <Setter Property="Height" Value="25"/>
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Padding" Value="2" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
                 <Style.Resources>
                     <Style TargetType="{x:Type ContentPresenter}">
                         <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
@@ -96,6 +98,19 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Margin" Value="2" />
                 <Setter Property="Padding" Value="2" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ErrorTemplate}" />
+            </Style>
+
+            <Style x:Key="InLineCheckBoxStyle" TargetType="{x:Type CheckBox}">
+                <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBackground}}" />
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBorder}}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Margin" Value="2" />
+                <Setter Property="Padding" Value="2" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ErrorTemplate}" />
             </Style>
             
@@ -131,17 +146,13 @@
                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=LongValueConverter}}" />
             </DataTemplate>
             <DataTemplate x:Key="SwitchParameterValueTemplate">
-                <CheckBox BorderThickness="1"
-                          Margin="2"
-                          IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
-                          HorizontalAlignment="Left"
-                          Validation.ErrorTemplate="{StaticResource ErrorTemplate}" />
+                <CheckBox Style="{StaticResource InLineCheckBoxStyle}" 
+                          IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
             </DataTemplate>
             <DataTemplate x:Key="ChoiceParameterValueTemplate">
                 <ComboBox Style="{StaticResource InLineComboBoxStyle}"
                           SelectedValue="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
                           ItemsSource="{Binding Path=Choices}" 
-                          HorizontalAlignment="Stretch"
                           Validation.ErrorTemplate="{StaticResource ErrorTemplate}" />
             </DataTemplate>
             
