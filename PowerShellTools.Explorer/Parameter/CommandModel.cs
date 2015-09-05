@@ -30,6 +30,14 @@ namespace PowerShellTools.Explorer
         public ObservableCollection<ParameterModel> Parameters { get; private set; }
         public List<string> ParameterSets { get; private set; }
         public List<CommonParameterModel> CommonParameters { get; private set; }
+        public bool HasParameterSets
+        {
+            get
+            {
+                return ParameterSets != null && 
+                    ParameterSets.Count > 0;
+            }
+        }
 
         public void SelectParameterSetByName(string parameterSet)
         {

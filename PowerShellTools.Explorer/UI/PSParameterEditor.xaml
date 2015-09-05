@@ -197,8 +197,8 @@
                   Margin="0" 
                   ItemsSource="{Binding Path=Model.ParameterSets, Mode=OneWay}"
                   SelectedIndex="{Binding Path=SelectedIndex}"
-                  SelectedItem="{Binding Path=SelectedItem}" />
-
+                  SelectedItem="{Binding Path=SelectedItem}" 
+                  IsEnabled="{Binding Path=Model.HasParameterSets, Mode=OneWay}" />
         <ScrollViewer Grid.Row="2">
             <StackPanel>
                 <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="True">
