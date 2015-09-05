@@ -156,7 +156,7 @@
                     <scm:SortDescription PropertyName="Name" />
                 </CollectionViewSource.SortDescriptions>
             </CollectionViewSource>
-
+            
         </ResourceDictionary>
     </UserControl.Resources>
     
@@ -164,10 +164,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- ProgressBar -->
             <RowDefinition Height="Auto" /> <!-- Parameterset selection -->
-            <RowDefinition Height="Auto" /> <!-- Parameters -->
-            <RowDefinition Height="Auto" /> <!-- Common parameters -->
-            <RowDefinition Height="Auto" /> <!-- Options -->
-            <RowDefinition Height="*" /> <!-- Place holder -->
+            <RowDefinition Height="*" /> <!-- Parameters/Options -->
             <RowDefinition Height="Auto" /> <!-- Preview label -->
             <RowDefinition Height="Auto" /> <!-- Preview -->
             <RowDefinition Height="Auto" /> <!-- Buttons -->
@@ -191,51 +188,54 @@
                   SelectedIndex="{Binding Path=SelectedIndex}"
                   SelectedItem="{Binding Path=SelectedItem}" />
 
-        <Expander Grid.Row="2" Style="{StaticResource StatusGroupExpander}" IsExpanded="True">
-            <Expander.Header>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Parameters" FontWeight="SemiBold" />
-                </StackPanel>
-            </Expander.Header>
-            <DataGrid Margin="15 5 5 5" 
-                  BorderThickness="0" 
-                  Background="Transparent"
-                  AutoGenerateColumns="False"
-                  HeadersVisibility="None"
-                  SelectionUnit="Cell"
-                  SelectionMode="Single"
-                  Validation.ErrorTemplate="{x:Null}"
-                  RowValidationErrorTemplate="{x:Null}"
-                  Style="{StaticResource DialogDataGridStyle}"
-                  DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
-                  ItemsSource="{Binding Source={StaticResource ParametersViewSource}}">
-                <DataGrid.Resources>
-                    <local:BindingProxy x:Key="proxy" Data="{Binding}" />
-                </DataGrid.Resources>
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn CellStyle="{StaticResource DataGridCellNoEditingStyle}" 
+        <ScrollViewer Grid.Row="2">
+            <StackPanel>
+                <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="True">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Parameters" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Expander.Header>
+                    <DataGrid Margin="15 5 5 5"
+                              Height="Auto"
+                              BorderThickness="0" 
+                              Background="Transparent"
+                              AutoGenerateColumns="False"
+                              HeadersVisibility="None"
+                              SelectionUnit="Cell"
+                              SelectionMode="Single"
+                              Validation.ErrorTemplate="{x:Null}"
+                              RowValidationErrorTemplate="{x:Null}"
+                              Style="{StaticResource DialogDataGridStyle}"
+                              DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
+                              ItemsSource="{Binding Source={StaticResource ParametersViewSource}}">
+                        <DataGrid.Resources>
+                            <local:BindingProxy x:Key="proxy" Data="{Binding}" />
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn CellStyle="{StaticResource DataGridCellNoEditingStyle}" 
                                         IsReadOnly="True"
                                         Width="Auto"
                                         MinWidth="100" 
                                         Validation.ErrorTemplate="{x:Null}">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <TextBlock VerticalAlignment="Center">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Path=Name, Mode=OneWay}" />
                                     <Run Text=":" />
-                                    </TextBlock>
-                                </Grid>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn IsReadOnly="False"                                      
+                                            </TextBlock>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn IsReadOnly="False"                                      
                                         MinWidth="100"
                                         Width="*"
                                         Validation.ErrorTemplate="{x:Null}"
                                         CellStyle="{StaticResource DataGridCellEditingStyle}">
-                        <DataGridTemplateColumn.CellTemplateSelector>
-                            <local:ParameterEditorTemplateSelector
+                                <DataGridTemplateColumn.CellTemplateSelector>
+                                    <local:ParameterEditorTemplateSelector
                                         UnsupportedTemplete="{StaticResource UnsupportedParameterTemplate}"
                                         StringTemplate="{StaticResource StringParameterValueTemplate}"
                                         ByteTemplate="{StaticResource ByteParameterValueTemplate}"
@@ -243,57 +243,57 @@
                                         LongTemplate="{StaticResource LongParameterValueTemplate}"
                                         SwitchTemplate="{StaticResource SwitchParameterValueTemplate}"
                                         ChoiceTemplate="{StaticResource ChoiceParameterValueTemplate}" />
-                        </DataGridTemplateColumn.CellTemplateSelector>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Expander>
+                                </DataGridTemplateColumn.CellTemplateSelector>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Expander>
 
-        <Expander Grid.Row="3" Style="{StaticResource StatusGroupExpander}" IsExpanded="False">
-            <Expander.Header>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Common Parameters" FontWeight="SemiBold" />
-                </StackPanel>
-            </Expander.Header>
-            <DataGrid Margin="15 5 5 5" 
-                  BorderThickness="0" 
-                  Background="Transparent"
-                  AutoGenerateColumns="False"
-                  HeadersVisibility="None"
-                  SelectionUnit="Cell"
-                  SelectionMode="Single"
-                  Validation.ErrorTemplate="{x:Null}"
-                  RowValidationErrorTemplate="{x:Null}"
-                  Style="{StaticResource DialogDataGridStyle}"
-                  DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
-                  ItemsSource="{Binding Source={StaticResource CommonParametersViewSource}}">
-                <DataGrid.Resources>
-                    <local:BindingProxy x:Key="proxy" Data="{Binding}" />
-                </DataGrid.Resources>
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn CellStyle="{StaticResource DataGridCellNoEditingStyle}" 
+                <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="False">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Common Parameters" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Expander.Header>
+                    <DataGrid Margin="15 5 5 5" 
+                              BorderThickness="0" 
+                              Background="Transparent"
+                              AutoGenerateColumns="False"
+                              HeadersVisibility="None"
+                              SelectionUnit="Cell"
+                              SelectionMode="Single"
+                              Validation.ErrorTemplate="{x:Null}"
+                              RowValidationErrorTemplate="{x:Null}"
+                              Style="{StaticResource DialogDataGridStyle}"
+                              DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext}"
+                              ItemsSource="{Binding Source={StaticResource CommonParametersViewSource}}">
+                        <DataGrid.Resources>
+                            <local:BindingProxy x:Key="proxy" Data="{Binding}" />
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn CellStyle="{StaticResource DataGridCellNoEditingStyle}" 
                                         IsReadOnly="True"
                                         Width="Auto"
                                         MinWidth="100" 
                                         Validation.ErrorTemplate="{x:Null}">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <TextBlock VerticalAlignment="Center">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <TextBlock VerticalAlignment="Center">
                                     <Run Text="{Binding Path=Name, Mode=OneWay}" />
                                     <Run Text=":" />
-                                    </TextBlock>
-                                </Grid>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn IsReadOnly="False"                                      
+                                            </TextBlock>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn IsReadOnly="False"                                      
                                         MinWidth="100"
                                         Width="*"
                                         Validation.ErrorTemplate="{x:Null}"
                                         CellStyle="{StaticResource DataGridCellEditingStyle}">
-                        <DataGridTemplateColumn.CellTemplateSelector>
-                            <local:ParameterEditorTemplateSelector
+                                <DataGridTemplateColumn.CellTemplateSelector>
+                                    <local:ParameterEditorTemplateSelector
                                         UnsupportedTemplete="{StaticResource UnsupportedParameterTemplate}"
                                         StringTemplate="{StaticResource StringParameterValueTemplate}"
                                         ByteTemplate="{StaticResource ByteParameterValueTemplate}"
@@ -301,33 +301,34 @@
                                         LongTemplate="{StaticResource LongParameterValueTemplate}"
                                         SwitchTemplate="{StaticResource SwitchParameterValueTemplate}"
                                         ChoiceTemplate="{StaticResource ChoiceParameterValueTemplate}" />
-                        </DataGridTemplateColumn.CellTemplateSelector>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Expander>
+                                </DataGridTemplateColumn.CellTemplateSelector>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Expander>
 
-        <Expander Grid.Row="4" Style="{StaticResource StatusGroupExpander}" IsExpanded="False">
-            <Expander.Header>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Options" FontWeight="SemiBold" />
-                </StackPanel>
-            </Expander.Header>
-            <local:OptionsPanel DataContext="{Binding Path=Options, Mode=OneWay}" />
-        </Expander>
+                <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="False">
+                    <Expander.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Options" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Expander.Header>
+                    <local:OptionsPanel DataContext="{Binding Path=Options, Mode=OneWay}" />
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
         
-        <Grid Grid.Row="5"><!-- Placeholder --></Grid>
+
+        <Label Grid.Row="3" Content="Preview (Drag to insert)" Margin="10 10 10 5" />
         
-        <Label Grid.Row="6" Content="Preview (Drag to insert)" Margin="10 10 10 5" />
-        
-        <local:CommandPreview Grid.Row="7" 
+        <local:CommandPreview Grid.Row="4" 
                               Margin="10 0 10 0"
                               Height="80"
                               Text="{Binding Path=CommandPreview, Mode=OneWay}" />
 
         <!-- Dialog buttons -->
         <StackPanel x:Name="ButtonsPanel"
-                   Grid.Row="8"
+                   Grid.Row="5"
                    Margin="10">
             <StackPanel 
                     Orientation="Horizontal" 
