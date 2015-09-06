@@ -308,7 +308,9 @@
                     </DataGrid>
                 </Expander>
 
-                <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="False">
+                <Expander Style="{StaticResource StatusGroupExpander}" 
+                          IsExpanded="False" 
+                          Visibility="{Binding Path=Info.SupportsCommonParameters, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Expander.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Common Parameters" FontWeight="SemiBold" />

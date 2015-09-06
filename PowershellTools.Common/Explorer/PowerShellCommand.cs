@@ -23,6 +23,9 @@ namespace PowerShellTools.Common
             ModuleName = command.ModuleName ?? string.Empty;
             Definition = command.Definition ?? string.Empty;
             Type = command.CommandType;
+            SupportsCommonParameters = 
+                (Type & CommandTypes.Cmdlet) == CommandTypes.Cmdlet | 
+                (Type & CommandTypes.Function) == CommandTypes.Function;
         }
 
         [DataMember]
@@ -48,6 +51,13 @@ namespace PowerShellTools.Common
 
         [DataMember]
         public CommandTypes Type
+        {
+            get;
+            set;
+        }
+
+        [DataMember]
+        public bool SupportsCommonParameters
         {
             get;
             set;

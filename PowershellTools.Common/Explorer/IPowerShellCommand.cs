@@ -13,5 +13,6 @@ namespace PowerShellTools.Common
         string ModuleName { get; set; }
         string Definition { get; set; }
         CommandTypes Type { get; set; }
+        bool SupportsCommonParameters { get; set; }
     }
 }
