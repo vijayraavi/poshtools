@@ -21,7 +21,7 @@ namespace PowerShellTools.Explorer
             Name = name;
             Type = type;
             IsMandatory = isMandatory;
-            HelpMessage = helpMesssage ?? string.Empty;
+            HelpMessage = string.IsNullOrWhiteSpace(helpMesssage) ? Name : helpMesssage;
         }
 
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;

@@ -76,7 +76,6 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Margin" Value="2" />
                 <Setter Property="Padding" Value="2" />
-                <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ErrorTemplate}" />
             </Style>
 
             <Style x:Key="InLineComboBoxStyle" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ComboBox}">
@@ -87,7 +86,6 @@
                 <Setter Property="Margin" Value="2" />
                 <Setter Property="Padding" Value="2" />
                 <Setter Property="HorizontalAlignment" Value="Stretch" />
-                <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ErrorTemplate}" />
             </Style>
 
             <Style x:Key="InLineCheckBoxStyle" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource CheckBox}">
@@ -103,14 +101,15 @@
 
             <DataTemplate x:Key="BoolOptionValueTemplate">
                 <CheckBox Style="{StaticResource InLineCheckBoxStyle}" 
-                          IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+                          IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
+                          ToolTip="{Binding Path=HelpMessage, Mode=OneWay}" />
             </DataTemplate>
 
             <DataTemplate x:Key="ChoiceOptionValueTemplate">
                 <ComboBox Style="{StaticResource InLineComboBoxStyle}"
                           SelectedValue="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
                           ItemsSource="{Binding Path=Choices}" 
-                          HorizontalAlignment="Stretch" />
+                          ToolTip="{Binding Path=HelpMessage, Mode=OneWay}" />
             </DataTemplate>
 
             <CollectionViewSource x:Key="OptionsViewSource" Source="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext}">

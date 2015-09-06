@@ -173,29 +173,35 @@
             </DataTemplate>
             <DataTemplate x:Key="StringParameterValueTemplate">
                 <TextBox Style="{StaticResource InLineTextBoxStyle}" 
-                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" 
+                         ToolTip="{Binding Path=HelpMessage, Mode=OneWay}" />
             </DataTemplate>
             <DataTemplate x:Key="ByteParameterValueTemplate">
                 <TextBox Style="{StaticResource InLineTextBoxStyle}" 
-                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=ByteValueConverter}}" />
+                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=ByteValueConverter}}"
+                         ToolTip="{Binding Path=HelpMessage, Mode=OneWay}" />
             </DataTemplate>
             <DataTemplate x:Key="IntParameterValueTemplate">
                 <TextBox Style="{StaticResource InLineTextBoxStyle}" 
-                        Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=IntValueConverter}}" />
+                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=IntValueConverter}}"
+                         ToolTip="{Binding Path=HelpMessage, Mode=OneWay}" />
             </DataTemplate>
             <DataTemplate x:Key="LongParameterValueTemplate">
                 <TextBox Style="{StaticResource InLineTextBoxStyle}" 
-                        Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=LongValueConverter}}" />
+                         Text="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ResourceKey=LongValueConverter}}"
+                         ToolTip="{Binding Path=HelpMessage, Mode=OneWay}" />
             </DataTemplate>
             <DataTemplate x:Key="SwitchParameterValueTemplate">
                 <CheckBox Style="{StaticResource InLineCheckBoxStyle}" 
-                          IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
+                          IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
+                          ToolTip="{Binding Path=HelpMessage, Mode=OneWay}" />
             </DataTemplate>
             <DataTemplate x:Key="ChoiceParameterValueTemplate">
                 <ComboBox Style="{StaticResource InLineComboBoxStyle}"
                           SelectedValue="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
                           ItemsSource="{Binding Path=Choices}" 
-                          Validation.ErrorTemplate="{StaticResource ErrorTemplate}" />
+                          Validation.ErrorTemplate="{StaticResource ErrorTemplate}"
+                          ToolTip="{Binding Path=HelpMessage, Mode=OneWay}" />
             </DataTemplate>
             
             <CollectionViewSource x:Key="ParametersViewSource" Source="{Binding Path=Model.Parameters}">
