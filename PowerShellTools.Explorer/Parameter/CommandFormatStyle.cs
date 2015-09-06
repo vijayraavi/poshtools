@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.Explorer
 {
-    internal struct CommandFormatterOptions
+    internal enum CommandFormatStyle
     {
-        public CommandFormatStyle FormateStyle { get; set; }
-        public string ParameterSet { get; set; }
+        Inline,
+        HashTable
     }
 }

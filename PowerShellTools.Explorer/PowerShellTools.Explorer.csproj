@@ -204,6 +204,7 @@
     <Compile Include="Options\OptionSet.cs" />
     <Compile Include="Options\OptionType.cs" />
     <Compile Include="Options\PSParameterEditorOptionSet.cs" />
+    <Compile Include="Parameter\CommandFormatStyle.cs" />
     <Compile Include="Parameter\CommandFormatterOptions.cs" />
     <Compile Include="Parameter\CommandModel.cs" />
     <Compile Include="Parameter\CommandModelFactory.cs" />

@@ -10,38 +10,66 @@ namespace PowerShellTools.Explorer
     internal sealed class CommandFormatter
     {
         private const string DefaultHashTableName = "params";
+        private const string AllParameterSets = "__AllParameterSets";
+        private static readonly char[] ArraySplitTokens = new char[] { ',', ';' };
 
         internal static string FormatCommandModel(CommandModel model, CommandFormatterOptions options)
         {
-            var asHashTable = options.AsHashTable;
-            var parameterSet = options.ParameterSet;
-
-            StringBuilder sb = new StringBuilder();
-
-            if (asHashTable)
+            if (model == null)
             {
-                sb.AppendLine(FormatParametersAsHashTable(model, parameterSet));
-                sb.AppendLine(string.Format("{0} @{1}", model.Name, DefaultHashTableName));
+                return string.Empty;
             }
-            else
+
+            var formatStyle = options.FormateStyle;
+            var parameterSet = options.ParameterSet;
+            var sb = new StringBuilder();
+
+            switch (formatStyle)
             {
-                sb.Append(model.Name);
-                sb.Append(FormatParameters(model, parameterSet));
+                case CommandFormatStyle.Inline:
+                    FormatCommandModelAsInlne(sb, model, parameterSet);
+                    break;
+                case CommandFormatStyle.HashTable:
+                    FormatCommandModelAsHashTable(sb, model, parameterSet);
+                    break;
+                default:
+                    FormatCommandModelAsInlne(sb, model, parameterSet);
+                    break;
             }
 
             return sb.ToString();
         }
 
-        private static string FormatParameters(CommandModel model, string parameterSet)
+        private static void FormatCommandModelAsInlne(StringBuilder sb, CommandModel model, string parameterSet)
         {
-            StringBuilder sb = new StringBuilder();
+            // Add the command name
+            sb.Append(model.Name);
 
+            // Add all parameters
+            FormatParametersAsInline(sb, model, parameterSet);
+        }
+
+        private static void FormatCommandModelAsHashTable(StringBuilder sb, CommandModel model, string parameterSet)
+        {
+            // Create a hashtable block
+            FormatParametersAsHashTable(sb, model, parameterSet);
+
+            // Add the command with the name of the hashtable
+            sb.AppendLine(string.Format("{0} @{1}", model.Name, DefaultHashTableName));
+        }
+
+        private static void FormatParametersAsInline(StringBuilder sb, CommandModel model, string parameterSet)
+        {
             foreach (ParameterModel parameter in model.Parameters)
             {
-                if ((parameter.Set == parameterSet | parameter.Set == "__AllParameterSets") &&
+                if ((parameter.Set == parameterSet | parameter.Set == AllParameterSets) &&
                     !string.IsNullOrWhiteSpace(parameter.Value))
                 {
-                    sb.Append(FormatParameter(parameter, false));
+                    var item = FormatParameter(parameter, false);
+                    if (!string.IsNullOrWhiteSpace(item))
+                    {
+                        sb.Append(item);
+                    }
                 }
             }
 
@@ -49,24 +77,29 @@ namespace PowerShellTools.Explorer
             {
                 if (!string.IsNullOrWhiteSpace(parameter.Value))
                 {
-                    sb.Append(FormatParameter(parameter, false));
+                    var item = FormatParameter(parameter, false);
+                    if (!string.IsNullOrWhiteSpace(item))
+                    {
+                        sb.Append(item);
+                    }
                 }
             }
-
-            return sb.ToString();
         }
 
-        private static string FormatParametersAsHashTable(CommandModel model, string parameterSet)
+        private static void FormatParametersAsHashTable(StringBuilder sb, CommandModel model, string parameterSet)
         {
-            StringBuilder sb = new StringBuilder();
             sb.AppendLine("$params=@{");
 
             foreach (ParameterModel parameter in model.Parameters)
             {
-                if ((parameter.Set == parameterSet | parameter.Set == "__AllParameterSets") &&
+                if ((parameter.Set == parameterSet | parameter.Set == AllParameterSets) &&
                     !string.IsNullOrWhiteSpace(parameter.Value))
                 {
-                    sb.AppendLine(FormatParameter(parameter, true));
+                    var item = FormatParameter(parameter, true);
+                    if (!string.IsNullOrWhiteSpace(item))
+                    {
+                        sb.AppendLine(item);
+                    }
                 }
             }
 
@@ -74,13 +107,15 @@ namespace PowerShellTools.Explorer
             {
                 if (!string.IsNullOrWhiteSpace(parameter.Value))
                 {
-                    sb.AppendLine(FormatParameter(parameter, true));
+                    var item = FormatParameter(parameter, true);
+                    if (!string.IsNullOrWhiteSpace(item))
+                    {
+                        sb.AppendLine(item);
+                    }
                 }
             }
 
             sb.AppendLine("}");
-
-            return sb.ToString();
         }
 
         private static string FormatParameter(ParameterModel parameter, bool hash)
@@ -92,7 +127,6 @@ namespace PowerShellTools.Explorer
             switch (type)
             {
                 case ParameterType.Unsupported:
-                case ParameterType.Array:
                 case ParameterType.Float:
                 case ParameterType.Double:
                 case ParameterType.Decimal:
@@ -108,6 +142,8 @@ namespace PowerShellTools.Explorer
                     return FormatBool(name, value, hash);
                 case ParameterType.Switch:
                     return FormatSwitch(name, value, hash);
+                case ParameterType.Array:
+                    return FormatArray(name, value, hash);
                 default:
                     return string.Empty;
             }
@@ -115,7 +151,7 @@ namespace PowerShellTools.Explorer
 
         private static string FormatString(string name, string value, bool hash)
         {
-            return hash ? string.Format("{0}={1};", name, QuotedString(value)) : string.Format("-{0} {1}", name, QuotedString(value));
+            return hash ? string.Format("{0}={1};", name, QuotedString(value)) : string.Format(" -{0} {1}", name, QuotedString(value));
         }
 
         private static string FormatBool(string name, string value, bool hash)
@@ -123,10 +159,10 @@ namespace PowerShellTools.Explorer
             bool set;
             if (bool.TryParse(value, out set) && set)
             {
-                return hash ? string.Format("{0}={1};", name, "$true") : string.Format("-{0} {1}", name, "$true");
+                return hash ? string.Format("{0}={1};", name, "$true") : string.Format(" -{0} {1}", name, "$true");
             }
 
-            return hash ? string.Format("{0}={1};", name, "$false") : string.Format("-{0} {1}", name, "$false");
+            return hash ? string.Format("{0}={1};", name, "$false") : string.Format(" -{0} {1}", name, "$false");
         }
 
         private static string FormatSwitch(string name, string value, bool hash)
@@ -134,15 +170,49 @@ namespace PowerShellTools.Explorer
             bool set;
             if (bool.TryParse(value, out set) && set)
             {
-                return hash ? string.Format("{0}={1};", name, "$true") : string.Format("-{0}", name);
+                return hash ? string.Format("{0}={1};", name, "$true") : string.Format(" -{0}", name);
             }
 
             return string.Empty;
         }
 
-        private static string QuotedString(string value)
+        private static string FormatArray(string name, string value, bool hash)
         {
-            if (value.Contains(' '))
+            var parts = GetArrayParts(value);
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var part = QuotedString(parts[i], true);
+                sb.Append(part);
+
+                if(i < parts.Length - 1)
+                {
+                    sb.Append(", ");
+                }
+            }
+
+            var arr = sb.ToString();
+
+            return hash ? string.Format("{0}={1};", name, arr) : string.Format(" -{0} {1}", name, arr); ;
+        }
+
+        
+        private static string[] GetArrayParts(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return new string[] { string.Empty };
+            }
+
+            return value.Split(ArraySplitTokens, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        private static string QuotedString(string value, bool forceQuotes = false)
+        {
+            value = value.Trim();
+
+            if (value.Contains(' ') || forceQuotes)
             {
                 return string.Format("\"{0}\"", value);
             }

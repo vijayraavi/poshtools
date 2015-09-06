@@ -182,7 +182,7 @@ namespace PowerShellTools.Explorer
         {
             CommandFormatterOptions options = new CommandFormatterOptions()
             {
-                AsHashTable = _options.FormatAsHashTable,
+                FormateStyle = _options.FormatAsHashTable ? CommandFormatStyle.HashTable : CommandFormatStyle.Inline,
                 ParameterSet = _selectedItem
             };
 
@@ -197,9 +197,10 @@ namespace PowerShellTools.Explorer
 
         private void Copy()
         {
+            // TODO: Get the value to copy directly from the command preview box
             CommandFormatterOptions options = new CommandFormatterOptions()
             {
-                AsHashTable = true,
+                FormateStyle = _options.FormatAsHashTable ? CommandFormatStyle.HashTable : CommandFormatStyle.Inline,
                 ParameterSet = _selectedItem
             };
 
