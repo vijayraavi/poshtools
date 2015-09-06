@@ -151,7 +151,7 @@ namespace PowerShellTools.Explorer
 
         private static string FormatString(string name, string value, bool hash)
         {
-            return hash ? string.Format("{0}={1};", name, QuotedString(value)) : string.Format(" -{0} {1}", name, QuotedString(value));
+            return hash ? string.Format("{0}={1};", name, QuotedString(value, true)) : string.Format(" -{0} {1}", name, QuotedString(value));
         }
 
         private static string FormatBool(string name, string value, bool hash)
