@@ -366,7 +366,7 @@
                     </DataGrid>
                 </Expander>
 
-                <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="False">
+                <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="True">
                     <Expander.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Options" FontWeight="SemiBold" />
@@ -378,7 +378,7 @@
         </ScrollViewer>
         
 
-        <Label Grid.Row="3" Content="Preview (Drag to insert)" Margin="10 10 10 5" />
+        <Label Grid.Row="3" Content="Format Preview (Drag to insert)" Margin="10 10 10 5" />
         
         <local:CommandPreview Grid.Row="4" 
                               Margin="10 0 10 0"

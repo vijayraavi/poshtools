@@ -11,7 +11,7 @@
     </Style>
 
     <Style TargetType="{x:Type Label}">
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.GrayText}}" />
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Margin" Value="0" />
@@ -139,6 +139,9 @@
             </Setter.Value>
         </Setter>
         <Style.Triggers>
+            <Trigger Property="IsFocused" Value="True">
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
+            </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
@@ -184,6 +187,7 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.WindowBackground}}" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:HostControl}">
@@ -227,6 +231,9 @@
                         </ScrollViewer>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
+                        </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
                             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
@@ -277,6 +284,9 @@
                                       SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"/>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
+                        </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Cursor" Value="Hand" />
                             <!--<Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />-->
@@ -357,6 +367,9 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
+                        </Trigger>
                         <Trigger Property="IsChecked" Value="true">
                             <Setter Property="Data" TargetName="indicator" Value="M5.5,0.5L0.5,5.5L5.5,5.5z"/>
                             <Setter Property="Fill" TargetName="indicator" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
@@ -588,6 +601,9 @@
                         <Trigger Property="HasItems" Value="False">
                             <Setter Property="Height" TargetName="DropDownBorder" Value="95" />
                         </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
+                        </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
                             <!--<Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />-->
@@ -631,6 +647,9 @@
                                       SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"/>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
+                        </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
                             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.Highlight}}" />
