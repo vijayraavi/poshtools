@@ -176,6 +176,7 @@
     <Compile Include="Controls\ObservableList.cs" />
     <Compile Include="Controls\ObservableObject.cs" />
     <Compile Include="Controls\OptionTemplateSelector.cs" />
+    <Compile Include="Controls\ScrollViewerCorrector.cs" />
     <Compile Include="Controls\SearchableTextBox.cs" />
     <Compile Include="Controls\ViewModel.cs" />
     <Compile Include="Controls\ViewModelCommand.cs" />

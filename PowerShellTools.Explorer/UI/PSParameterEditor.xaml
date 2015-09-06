@@ -16,6 +16,48 @@
             <local:IntValueConverter x:Key="IntValueConverter"/>
             <local:LongValueConverter x:Key="LongValueConverter" />
 
+            <!-- Fixes an issue when a datagrid is placed within a scrollviewer that the datagrid
+                 doesn't pass scrollevents to the scrollviewer preventing scrolling -->
+            <Style TargetType="{x:Type ScrollViewer}">
+                <Style.Setters>
+                    <Setter Property="local:ScrollViewerBehavior.PassTruScrolling" Value="True" />
+                </Style.Setters>
+            </Style>
+            
+            <Style x:Key="ScrollViewerStyle" TargetType="{x:Type ScrollViewer}">
+                <Setter Property="OverridesDefaultStyle" Value="True" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                            <Border Margin="0 5 0 5"  BorderThickness="0 0 0 1" BorderBrush="{DynamicResource {x:Static local:ThemeResources.DropDownBorder}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ScrollContentPresenter Grid.Column="0"
+                                                            CanContentScroll="{TemplateBinding CanContentScroll}"
+                                                            x:Name="ScrollContentPresenter"
+                                                            Cursor="{TemplateBinding Cursor}" />
+                                    <ScrollBar x:Name="PART_VerticalScrollBar" 
+                                               Width="18"
+                                               IsTabStop="False"
+                                               Visibility="Visible"
+                                               Grid.Column="1" 
+                                               Orientation="Vertical"
+                                               Minimum="0" 
+                                               Maximum="{TemplateBinding ScrollableHeight}" 
+                                               ViewportSize="{TemplateBinding ViewportHeight}" 
+                                               Value="{TemplateBinding VerticalOffset}" 
+                                               Cursor="Arrow" 
+                                               Margin="0,-1,-1,-1"/>
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            
             <ControlTemplate x:Key="ErrorTemplate">
                 <Grid>
                     <Border BorderThickness="1" BorderBrush="{DynamicResource {x:Static local:ThemeResources.RequiredHighlight}}">
@@ -199,7 +241,7 @@
                   SelectedIndex="{Binding Path=SelectedIndex}"
                   SelectedItem="{Binding Path=SelectedItem}" 
                   IsEnabled="{Binding Path=Model.HasParameterSets, Mode=OneWay}" />
-        <ScrollViewer Grid.Row="2">
+        <ScrollViewer Grid.Row="2" Style="{StaticResource ScrollViewerStyle}">
             <StackPanel>
                 <Expander Style="{StaticResource StatusGroupExpander}" IsExpanded="True">
                     <Expander.Header>
