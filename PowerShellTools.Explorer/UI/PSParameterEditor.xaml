@@ -144,7 +144,7 @@
                 <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ErrorTemplate}" />
             </Style>
 
-            <Style x:Key="InLineCheckBoxStyle" TargetType="{x:Type CheckBox}">
+            <Style x:Key="InLineCheckBoxStyle" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource CheckBox}">
                 <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBackground}}" />
                 <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBorder}}" />

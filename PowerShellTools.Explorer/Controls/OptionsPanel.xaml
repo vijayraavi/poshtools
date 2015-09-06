@@ -76,6 +76,7 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Margin" Value="2" />
                 <Setter Property="Padding" Value="2" />
+                <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ErrorTemplate}" />
             </Style>
 
             <Style x:Key="InLineComboBoxStyle" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource ComboBox}">
@@ -85,15 +86,26 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="Margin" Value="2" />
                 <Setter Property="Padding" Value="2" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ErrorTemplate}" />
+            </Style>
+
+            <Style x:Key="InLineCheckBoxStyle" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource CheckBox}">
+                <Setter Property="Background" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBackground}}" />
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static local:ThemeResources.WindowForeground}}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static local:ThemeResources.DropDownBorder}}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Margin" Value="2" />
+                <Setter Property="Padding" Value="2" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
 
             <DataTemplate x:Key="BoolOptionValueTemplate">
-                <CheckBox BorderThickness="1"
-                          Margin="2"
-                          IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
-                          HorizontalAlignment="Left" />
+                <CheckBox Style="{StaticResource InLineCheckBoxStyle}" 
+                          IsChecked="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}" />
             </DataTemplate>
-            
+
             <DataTemplate x:Key="ChoiceOptionValueTemplate">
                 <ComboBox Style="{StaticResource InLineComboBoxStyle}"
                           SelectedValue="{Binding Path=Value, UpdateSourceTrigger=PropertyChanged}"
@@ -106,13 +118,12 @@
                     <scm:SortDescription PropertyName="Caption" />
                 </CollectionViewSource.SortDescriptions>
             </CollectionViewSource>
-            
+
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <DataGrid Margin="15 5 5 5" 
-                  BorderThickness="0" 
-                  Background="Transparent"
+                  BorderThickness="0"
                   AutoGenerateColumns="False"
                   HeadersVisibility="None"
                   SelectionUnit="Cell"
@@ -125,6 +136,9 @@
             <DataGrid.Resources>
                 <local:BindingProxy x:Key="proxy" Data="{Binding}" />
             </DataGrid.Resources>
+            <DataGrid.Background>
+                <ImageBrush/>
+            </DataGrid.Background>
             <DataGrid.Columns>
                 <DataGridTemplateColumn CellStyle="{StaticResource DataGridCellNoEditingStyle}" 
                                         IsReadOnly="True"
