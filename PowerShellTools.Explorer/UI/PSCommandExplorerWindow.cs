@@ -103,6 +103,8 @@ namespace PowerShellTools.Explorer
 
         public override IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
+            ShowCommandExplorer();
+
             ISearchTaskTarget searchTarget = ((UserControl)ContentHost.Content).DataContext as ISearchTaskTarget;
             if (searchTarget == null || pSearchQuery == null || pSearchCallback == null)
             {
