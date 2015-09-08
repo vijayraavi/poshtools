@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -33,16 +28,16 @@ namespace PowerShellTools.Explorer
             {
                 if ((e.NewValue != null) && (e.OldValue == null))
                 {
-                    element.MouseDoubleClick += element_MouseDoubleClick;
+                    element.MouseDoubleClick += OnElementMouseDoubleClick;
                 }
                 else if ((e.NewValue == null) && (e.OldValue != null))
                 {
-                    element.MouseDoubleClick -= element_MouseDoubleClick;
+                    element.MouseDoubleClick -= OnElementMouseDoubleClick;
                 }
             }
         }
 
-        static void element_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private static void OnElementMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             UIElement element = (UIElement)sender;
             ICommand command = (ICommand)element.GetValue(ClickBehavior.DoubleClickCommandProperty);

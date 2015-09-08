@@ -18,7 +18,7 @@ namespace PowerShellTools.Explorer
             _exceptionHandler = exceptionHandler;
         }
 
-        public IPowerShellHostClientService Host
+        private IPowerShellHostClientService Host
         {
             get
             {

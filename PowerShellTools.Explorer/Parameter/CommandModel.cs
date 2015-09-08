@@ -20,12 +20,24 @@ namespace PowerShellTools.Explorer
             Parameters = new ObservableCollection<ParameterModel>();
             ParameterSets = parameterSets;
 
+            CommonParameters = CommonParameterModel.GetCommonParameters();
+            CommonParameters.ForEach(x => x.PropertyChanged += OnParameterPropertyChanged);
+
             SelectParameterSetByName(string.Empty);
         }
 
         public string Name { get; private set; }
         public ObservableCollection<ParameterModel> Parameters { get; private set; }
         public List<string> ParameterSets { get; private set; }
+        public List<CommonParameterModel> CommonParameters { get; private set; }
+        public bool HasParameterSets
+        {
+            get
+            {
+                return ParameterSets != null && 
+                    ParameterSets.Count > 0;
+            }
+        }
 
         public void SelectParameterSetByName(string parameterSet)
         {
@@ -40,28 +52,6 @@ namespace PowerShellTools.Explorer
             {
                 parameter.PropertyChanged += OnParameterPropertyChanged;
             }
-        }
-
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        public string ToString(string parameterSet)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(Name);
-
-            foreach (ParameterModel parameter in Parameters)
-            {
-                if ((parameter.Set == parameterSet | parameter.Set == "__AllParameterSets") && 
-                    !string.IsNullOrWhiteSpace(parameter.Value))
-                {
-                    sb.AppendFormat(" {0}", parameter.ToString());
-                }
-            }
-
-            return sb.ToString();
         }
 
         private void OnParameterPropertyChanged(object sender, PropertyChangedEventArgs e)

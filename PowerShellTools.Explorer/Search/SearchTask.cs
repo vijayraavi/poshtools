@@ -31,7 +31,8 @@ namespace PowerShellTools.Explorer.Search
 
                 foreach (IPowerShellCommand item in sourceItems)
                 {
-                    if (item.Name.ToLowerInvariant().Contains(searchString.ToLowerInvariant()))
+                    if (item.Name.ToLowerInvariant().Contains(searchString.ToLowerInvariant()) |
+                        item.ModuleName.ToLowerInvariant().Contains(searchString.ToLowerInvariant()))
                     {
                         resultItems.Add(item);
                         resultCount++;

@@ -97,5 +97,13 @@ namespace PowerShellTools.Explorer
                 return VsBrushes.DropDownBorderKey;
             }
         }
+
+        public static object RequiredHighlight
+        {
+            get
+            {
+                return VsBrushes.SmartTagBorderKey;
+            }
+        }
     }
 }

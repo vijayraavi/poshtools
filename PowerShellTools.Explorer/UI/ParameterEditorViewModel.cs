@@ -178,7 +178,7 @@ namespace PowerShellTools.Explorer
 
         private void UpdateCommandPreview()
         {
-            CommandPreview = Model.ToString(_selectedItem);
+            CommandPreview = string.Empty;
         }
     }
 }
