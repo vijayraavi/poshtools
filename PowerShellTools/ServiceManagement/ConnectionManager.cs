@@ -4,6 +4,7 @@ using System.ServiceModel;
 using log4net;
 using PowerShellTools.Common;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+using PowerShellTools.Common.ServiceManagement.ExplorerContract;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;
 using PowerShellTools.DebugEngine;
 using PowerShellTools.Options;
@@ -17,12 +18,14 @@ namespace PowerShellTools.ServiceManagement
     {
         private IPowerShellIntelliSenseService _powerShellIntelliSenseService;
         private IPowerShellDebuggingService _powerShellDebuggingService;
+        private IPowerShellExplorerService _powerShellExplorerService;
         private object _syncObject = new object();
         private static object _staticSyncObject = new object();
         private static ConnectionManager _instance;
         private Process _process;
         private ChannelFactory<IPowerShellIntelliSenseService> _intelliSenseServiceChannelFactory;
         private ChannelFactory<IPowerShellDebuggingService> _debuggingServiceChannelFactory;
+        private ChannelFactory<IPowerShellExplorerService> _explorerServiceChannelFactory;
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
         private PowerShellHostProcess _hostProcess;
 
@@ -85,6 +88,18 @@ namespace PowerShellTools.ServiceManagement
             }
         }
 
+        public IPowerShellExplorerService PowerShellExplorerService
+        {
+            get
+            {
+                if (_powerShellExplorerService == null)
+                {
+                    OpenClientConnection();
+                }
+                return _powerShellExplorerService;
+            }
+        }
+
         /// <summary>
         /// PowerShell host process
         /// </summary>
@@ -100,7 +115,7 @@ namespace PowerShellTools.ServiceManagement
         {
             lock (_syncObject)
             {
-                if (_powerShellIntelliSenseService == null || _powerShellDebuggingService == null)
+                if (_powerShellIntelliSenseService == null || _powerShellDebuggingService == null || _powerShellExplorerService == null)
                 {
                     EnsureCloseProcess();
                     var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
@@ -111,6 +126,7 @@ namespace PowerShellTools.ServiceManagement
                     // net.pipe://localhost/UniqueEndpointGuid/{RelativeUri}
                     var intelliSenseServiceEndPointAddress = Constants.ProcessManagerHostUri + _hostProcess.EndpointGuid + "/" + Constants.IntelliSenseHostRelativeUri;
                     var deubggingServiceEndPointAddress = Constants.ProcessManagerHostUri + _hostProcess.EndpointGuid + "/" + Constants.DebuggingHostRelativeUri;
+                    var explorerServiceEndPointAddress = Constants.ProcessManagerHostUri + _hostProcess.EndpointGuid + "/" + Constants.ExplorerHostRelativeUri;
 
                     try
                     {
@@ -126,6 +142,14 @@ namespace PowerShellTools.ServiceManagement
                         _debuggingServiceChannelFactory.Open();
                         _powerShellDebuggingService = _debuggingServiceChannelFactory.CreateChannel();
                         _powerShellDebuggingService.SetRunspace(PowerShellToolsPackage.OverrideExecutionPolicyConfiguration);
+
+                        // TODO: Switch to duplex if Command Explorer can respond to changes in bitness
+                        _explorerServiceChannelFactory = ChannelFactoryHelper.CreateChannelFactory<IPowerShellExplorerService>(explorerServiceEndPointAddress);
+                        //_explorerServiceChannelFactory = ChannelFactoryHelper.CreateDuplexChannelFactory<IPowerShellExplorerService>(explorerServiceEndPointAddress, new InstanceContext(new ExplorerServiceEventsHandlerProxy()));
+                        _explorerServiceChannelFactory.Faulted += ConnectionExceptionHandler;
+                        _explorerServiceChannelFactory.Closed += ConnectionExceptionHandler;
+                        _explorerServiceChannelFactory.Open();
+                        _powerShellExplorerService = _explorerServiceChannelFactory.CreateChannel();
                     }
                     catch
                     {
@@ -191,6 +215,12 @@ namespace PowerShellTools.ServiceManagement
                 _powerShellDebuggingService = null;
             }
 
+            if (_explorerServiceChannelFactory != null)
+            {
+                _explorerServiceChannelFactory.Abort();
+                _explorerServiceChannelFactory = null;
+                _powerShellExplorerService = null;
+            }
         }
     }
 }

@@ -109,6 +109,19 @@
     <Compile Include="Controls\WatermarkAdorner.cs" />
     <Compile Include="Debugging\DebugEngineConstants.cs" />
     <Compile Include="DependencyUtilities.cs" />
+    <Compile Include="Explorer\ConversionFactory.cs" />
+    <Compile Include="Explorer\ExplorerExecutionHelper.cs" />
+    <Compile Include="Explorer\IPowerShellCommand.cs" />
+    <Compile Include="Explorer\IPowerShellCommandMetadata.cs" />
+    <Compile Include="Explorer\IPowerShellParameterMetadata.cs" />
+    <Compile Include="Explorer\IPowerShellModule.cs" />
+    <Compile Include="Explorer\IPowerShellParameterSetMetadata.cs" />
+    <Compile Include="Explorer\ParameterType.cs" />
+    <Compile Include="Explorer\PowerShellCommand.cs" />
+    <Compile Include="Explorer\PowerShellCommandMetadata.cs" />
+    <Compile Include="Explorer\PowerShellParameterMetadata.cs" />
+    <Compile Include="Explorer\PowerShellModule.cs" />
+    <Compile Include="Explorer\PowerShellParameterSetMetadata.cs" />
     <Compile Include="IntelliSense\CommandCompletionHelper.cs" />
     <Compile Include="IntelliSense\EmptyScriptExtent.cs" />
     <Compile Include="IntelliSense\EmptyScriptPosition.cs" />
@@ -116,6 +129,8 @@
     <Compile Include="ServiceManagement\DebuggingContract\ChoiceItem.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\DebugScenarioEnum.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\VsKeyInfo.cs" />
+    <Compile Include="ServiceManagement\ExplorerContract\IPowerShellExplorerService.cs" />
+    <Compile Include="ServiceManagement\ExplorerContract\IPowerShellExplorerServiceCallback.cs" />
     <Compile Include="ServiceManagement\PowerShellRawHostOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">
@@ -148,6 +163,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Build\ProjectAfter.settings" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -65,6 +65,7 @@
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp</StartArguments>
+    <CopyVsixExtensionFiles>False</CopyVsixExtensionFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -240,6 +241,7 @@
     <Compile Include="Commands\ExecuteWithParametersAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteWithParametersAsScriptFromSolutionExplorerCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\OpenExplorerCommand.cs" />
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
     <Compile Include="Commands\ScriptParameterResult.cs" />
@@ -324,11 +326,17 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="ExplorerServiceEventsHandlerProxy.cs" />
     <Compile Include="Intellisense\EdgeTrackingMode.cs" />
     <Compile Include="Intellisense\ProvideBraceCompletion.cs" />
     <Compile Include="LanguageService\BraceCompletion\BraceCompletionContext.cs" />
     <Compile Include="LanguageService\BraceCompletion\BraceCompletionContextProvider.cs" />
     <Compile Include="LanguageService\BraceCompletion\BraceKind.cs" />
+    <Compile Include="LanguageService\BreakpointValidation\AstDataTypeConstants.cs" />
+    <Compile Include="LanguageService\BreakpointValidation\BreakpointDisplayStyle.cs" />
+    <Compile Include="LanguageService\BreakpointValidation\BreakpointPositionInfo.cs" />
+    <Compile Include="LanguageService\BreakpointValidation\BreakpointValidationHelper.cs" />
+    <Compile Include="LanguageService\BreakpointValidation\BreakpointValidationService.cs" />
     <Compile Include="Options\BitnessEventArgs.cs" />
     <Compile Include="Options\BitnessOption.cs" />
     <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
@@ -607,6 +615,7 @@
     <Compile Include="ServiceManagement\PowershellHostProcessHelper.cs" />
     <Compile Include="Service\ExecutionEngine.cs" />
     <Compile Include="Service\IExecutionEngine.cs" />
+    <Compile Include="Service\PowerShellHostClientService.cs" />
     <Compile Include="Service\PowerShellService.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -808,6 +817,10 @@
       <Name>PowerShellTools.Common</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.Explorer\PowerShellTools.Explorer.csproj">
+      <Project>{df5ba825-19af-4b98-af3a-d93d8f026f8d}</Project>
+      <Name>PowerShellTools.Explorer</Name>
     </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.HostService.x86\PowerShellTools.HostService.x86.csproj">
       <Project>{528d75e0-71d8-408c-aeae-485d84e08bd2}</Project>
